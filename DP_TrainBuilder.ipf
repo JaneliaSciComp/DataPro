@@ -35,19 +35,19 @@ Function TrainBuilderViewConstructor() : Graph
 	SetVariable baseLevelSV,win=TrainBuilderView,limits={-10000,10000,1},value= _NUM:baseLevel
 
 	SetVariable delaySV,win=TrainBuilderView,pos={15,45},size={110,15},proc=BuilderContSVTwiddled,title="Delay (ms)"
-	SetVariable delaySV,win=TrainBuilderView,limits={0,1000,1},value= _NUM:delay
+	SetVariable delaySV,win=TrainBuilderView,limits={0,200000,1},value= _NUM:delay
 
 	SetVariable pulseAmplitudeSV,win=TrainBuilderView,pos={155,15},size={130,15},proc=BuilderContSVTwiddled,title="Pulse Amplitude"
 	SetVariable pulseAmplitudeSV,win=TrainBuilderView,limits={-10000,10000,10},value= _NUM:pulseAmplitude
 
 	SetVariable pulseDurationSV,win=TrainBuilderView,pos={155,45},size={140,15},proc=BuilderContSVTwiddled,title="Pulse Duration (ms)"
-	SetVariable pulseDurationSV,win=TrainBuilderView,limits={0.001,1000,1},value= _NUM:pulseDuration
+	SetVariable pulseDurationSV,win=TrainBuilderView,limits={0.001,inf,1},value= _NUM:pulseDuration
 
 	SetVariable nPulsesSV,win=TrainBuilderView,pos={330,15},size={105,15},proc=BuilderContSVTwiddled,title="# of Pulses"
-	SetVariable nPulsesSV,win=TrainBuilderView,limits={1,10000,1},value= _NUM:nPulses
+	SetVariable nPulsesSV,win=TrainBuilderView,limits={1,inf,1},value= _NUM:nPulses
 
 	SetVariable pulseFrequencySV,win=TrainBuilderView,pos={330,45},size={150,15},proc=BuilderContSVTwiddled,title="Pulse Frequency (Hz)"
-	SetVariable pulseFrequencySV,win=TrainBuilderView,limits={0.001,10000,10},value= _NUM:pulseFrequency
+	SetVariable pulseFrequencySV,win=TrainBuilderView,limits={0.001,inf,10},value= _NUM:pulseFrequency
 	
 	Button saveAsDACButton,win=TrainBuilderView,pos={601,5},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As DAC..."
 	Button saveAsTTLButton,win=TrainBuilderView,pos={601,30},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As TTL..."
