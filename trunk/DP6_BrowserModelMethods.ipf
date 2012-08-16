@@ -7,10 +7,10 @@ Function SetICurrentSweep(browserNumber,sweepIndexNew)
 	// Change to the right DF
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 	
-	// Set iCurrentSweep, then sync the view with the "model" state
-	NVAR iCurrentSweep=iCurrentSweep
+	// Set iCurrentSweep, then update the measurements
+	NVAR iCurrentSweep
 	iCurrentSweep=sweepIndexNew
-	SyncBrowserViewToDFState(browserNumber)
+	UpdateMeasurements(browserNumber)
 	
 	// Restore the original DF
 	SetDataFolder savedDFName	
@@ -251,19 +251,18 @@ Function UpdateMeasurements(browserNumber)
 	String savedDF=ChangeToBrowserDF(browserNumber)
 	
 	// Get references to all the variables that we need in this data folder
-	NVAR hold1=hold1, step1=step1, hold2=hold2, step2=step2
-	NVAR tBaselineLeft=tBaselineLeft, tBaselineRight=tBaselineRight
-	NVAR tWindow1Left=tWindow1Left, tWindow1Right=tWindow1Right
-	NVAR tWindow2Left=tWindow2Left, tWindow2Right=tWindow2Right
-	//SVAR traceAWaveName=traceAWaveName
-	//SVAR traceBWaveName=traceBWaveName
-	//SVAR topTraceWaveName=topTraceWaveName
-	SVAR comments=comments
+	//NVAR hold1, step1, hold2, step2
+	// inputs to the measurement process
+	NVAR tBaselineLeft, tBaselineRight
+	NVAR tWindow1Left, tWindow1Right
+	NVAR tWindow2Left, tWindow2Right
 	NVAR to1, from1
 	NVAR to2, from2
+	NVAR lev1
+	// outputs of the measurement process
 	NVAR base, mean1, peak1, rise1
 	NVAR mean2, peak2, rise2
-	NVAR lev1, cross1
+	NVAR cross1
 	
 	// If there's a top wave, calculate features of it
 	String topTraceWaveName=GetTopTraceWaveNameAbs(browserNumber)
@@ -286,7 +285,7 @@ Function UpdateMeasurements(browserNumber)
 				peak1=V_max-base	
 			endif
 			rise1=RiseTime(thisWave,tWindow1Left,tWindow1Right,base,peak1,from1/100,to1/100)
-			cross1=CountThresholdCrossings(thisWave, tWindow1Left, tWindow1Right, lev1)
+			cross1=CountThresholdCrossings(topTraceWaveName, tWindow1Left, tWindow1Right, lev1)
 		else
 			mean1=NaN
 			peak1=NaN
@@ -357,6 +356,7 @@ Function UpdateFit(browserNumber)
 	// the current fit window, trace, and fit parameters.
 	Variable browserNumber
 	
+	Printf "In UpdateFit()\r"
 	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 
@@ -369,24 +369,18 @@ Function UpdateFit(browserNumber)
 	NVAR holdYOffset  // boolean
 	NVAR yOffsetHeldValue
 	// The fit parameters
+	NVAR isFitValid
+	SVAR waveNameAbsOfFitTrace
 	NVAR yOffset, amp1, tau1, amp2, tau2
-
-	//// Enable/disable the yOffset hold SetVariable control
-	//String panelName=ToolsPanelNameFromNumber(browserNumber)
-	//if (holdYOffset)
-	//	SetVariable yOffsetHoldControl,win=$panelName,disable=0
-	//else
-	//	SetVariable yOffsetHoldControl,win=$panelName,disable=2
-	//endif
 
 	// See if everything is set up to do a fit.  If not, return.
 	String topTraceWaveName=GetTopTraceWaveNameAbs(browserNumber)
 	if ( strlen(topTraceWaveName)==0 || IsNan(tFitZero) || IsNan(tFitLeft) || IsNan(tFitRight) )
+		isFitValid=0
 		return nan
 	endif
 	
 	// Store the name of the wave that the fit is going to be done on
-	SVAR waveNameAbsOfFitTrace
 	waveNameAbsOfFitTrace=topTraceWaveName
 	
 	// Make a new wave, fitWave, that's a copy of $topTraceWaveName with the time base shifted 
@@ -455,7 +449,6 @@ Function UpdateFit(browserNumber)
 	endif
 
 	// Mark the fit as valid
-	NVAR isFitValid
 	isFitValid=1
 	
 	//// Add the fit wave to the DP Browser window

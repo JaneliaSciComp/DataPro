@@ -187,7 +187,6 @@ Function SyncBrowserViewToDFState(browserNumber)
 	endif
 
 	// Show/hide the tools panel, as appropriate to the state	
-	//String toolsPanelName=ToolsPanelNameFromNumber(browserNumber)
 	if (showToolsChecked) 
 		if (ToolsPanelExists(browserNumber))
 			//DoWindow /F $toolsPanelName
@@ -196,8 +195,6 @@ Function SyncBrowserViewToDFState(browserNumber)
 			sprintf createPanel "NewToolsPanel(%d)" browserNumber
 			Execute createPanel
 		endif
-		// Update all the measured values for this DP browser
-		UpdateMeasurements(browserNumber)
 	else
 		if (ToolsPanelExists(browserNumber))
 			String toDo
@@ -205,6 +202,9 @@ Function SyncBrowserViewToDFState(browserNumber)
 			Execute toDo
 		endif
 	endif
+	
+	// Update the view of the measurements
+	UpdateMeasurementsView(browserNumber)
 	
 	// Update the visibility of the fit
 	UpdateFitDisplay(browserNumber)
@@ -314,6 +314,7 @@ Function UpdateFitDisplay(browserNumber)
 	NVAR showToolsChecked
 	NVAR isFitValid  // boolean
 	SVAR waveNameAbsOfFitTrace
+	NVAR yOffsetHeldValue
 
 	// Add or remove yFit to the browserWindow, as needed
 	// Also show/hide the fit coefficients, depending on many factors
@@ -322,6 +323,8 @@ Function UpdateFitDisplay(browserNumber)
 	String windowSpec=sprintf1s("WIN:%s",browserName)
 	if (showToolsChecked)
 		// the fit sub-panel is showing
+		SetVariable yOffsetHeldValueSetVariable,win=$browserName#ToolsPanel,value=_NUM:yOffsetHeldValue
+
 		if ( strlen(topTraceWaveNameAbs)>0 )
 			// there is a trace showing
 			if ( isFitValid )
@@ -366,15 +369,9 @@ Function UpdateFitDisplay(browserNumber)
 		// make sure the hold y offset SetVariable is enabled
 		NVAR holdYOffset, yOffsetHeldValue
 		if ( holdYOffset )
-			SetVariable yOffsetHoldControl,win=$browserName#ToolsPanel,disable=0  // normal
+			SetVariable yOffsetHeldValueSetVariable,win=$browserName#ToolsPanel,disable=0  // normal
 		else
-			SetVariable yOffsetHoldControl,win=$browserName#ToolsPanel,disable=2  // gray out
-			if ( IsNan(yOffsetHeldValue) )
-				SetVariable yOffsetHoldControl,win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)  // white out
-				// this doesn't work---seems to be an IgorPro bug
-			else
-				SetVariable yOffsetHoldControl,win=$browserName#ToolsPanel, valueColor=(0,0,0)  // show
-			endif
+			SetVariable yOffsetHeldValueSetVariable,win=$browserName#ToolsPanel,disable=1  // invisible
 		endif
 	else
 		// the fit sub-panel is not showing
@@ -415,6 +412,34 @@ Function SetFitCoefficientVisibility(browserNumber,visible)
 		ValDisplay tau2ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
 		ValDisplay amp2ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
 	endif
+End
+
+Function UpdateMeasurementsView(browserNumber)
+	Variable browserNumber
+	
+	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	String browserName=BrowserNameFromNumber(browserNumber)
+	
+	// Get instance vars we'll need
+	NVAR showToolsChecked
+	NVAR base, mean1, peak1, rise1
+	NVAR mean2, peak2, rise2
+	NVAR cross1
+
+	// white them out if they're nan
+	String windowName=browserName+"#ToolsPanel"
+	if (showToolsChecked)
+		WhiteOutIffNan("baselineValDisplay",windowName,base)
+		WhiteOutIffNan("mean1ValDisplay",windowName,mean1)
+		WhiteOutIffNan("peak1ValDisplay",windowName,peak1)
+		WhiteOutIffNan("rise1ValDisplay",windowName,rise1)
+		WhiteOutIffNan("mean2ValDisplay",windowName,mean2)
+		WhiteOutIffNan("peak2ValDisplay",windowName,peak2)
+		WhiteOutIffNan("rise2ValDisplay",windowName,rise2)
+		WhiteOutIffNan("cross1ValDisplay",windowName,cross1)
+	endif
+	
 End
 
 Function RescaleAxes(browserNumber)
@@ -488,9 +513,9 @@ End
 //	NVAR holdYOffset=holdYOffset
 //	String fitPanelName=FitPanelNameFromNumber(browserNumber)
 //	if (holdYOffset)
-//		SetVariable yOffsetHoldControl,win=$fitPanelName,disable=0
+//		SetVariable yOffsetHeldValueSetVariable,win=$fitPanelName,disable=0
 //	else
-//		SetVariable yOffsetHoldControl,win=$fitPanelName,disable=2
+//		SetVariable yOffsetHeldValueSetVariable,win=$fitPanelName,disable=2
 //	endif
 //	
 //	// Restore old data folder
