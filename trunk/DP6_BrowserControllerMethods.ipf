@@ -147,10 +147,12 @@ Function CreateDataProBrowser() : Graph
 	SetVariable setsweep,limits={1,100000,1},value=_NUM:1
 	
 	absVarName=AbsoluteVarName(browserDFName,"traceAChecked")
-	CheckBox showTraceACheckbox,pos={125,7},size={39,14},proc=UpdateTracesShowing,title="tr.A",value= 1
+	CheckBox showTraceACheckbox,pos={125,7},size={39,14}
+	CheckBox showTraceACheckbox,proc=HandleShowTraceCheckbox,title="tr.A",value= 1
 	CheckBox showTraceACheckbox,variable=$absVarName
 	absVarName=AbsoluteVarName(browserDFName,"traceBChecked")
-	CheckBox showTraceBCheckbox,pos={125,27},size={39,14},proc=UpdateTracesShowing,title="tr.B",value= 0
+	CheckBox showTraceBCheckbox,pos={125,27},size={39,14}
+	CheckBox showTraceBCheckbox,proc=HandleShowTraceCheckbox,title="tr.B",value= 0
 	CheckBox showTraceBCheckbox,variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"baseNameA")
@@ -494,6 +496,16 @@ Function ToolsPanelHook(s)
 	return 0		// If non-zero, we handled event and Igor will ignore it.
 End
 
+Function SetICurrentSweepAndSyncView(browserNumber,iSweep)
+	// Just what it says on the tin.  Called by the data acquisition loop when a sweep is acquired.
+	// Set the sweep in the model
+	Variable browserNumber, iSweep
+	
+	SetICurrentSweep(browserNumber,iSweep)
+	// Sync the view
+	SyncBrowserViewToDFState(browserNumber)
+End
+
 Function HandleSetSweepIndexControl(svStruct) : SetVariableControl
 	// Called when the user changes the sweep number in the DPBrowser, 
 	// which first changes iCurrentSweep.
@@ -538,7 +550,7 @@ Function HandleBaseNameControl(svStruct) : SetVariableControl
 	SyncBrowserViewToDFState(browserNumber)
 End
 
-Function UpdateTracesShowing(cbStruct) : CheckBoxControl
+Function HandleShowTraceCheckbox(cbStruct) : CheckBoxControl
 	// This is called when the user checks/unchecks the "tr.A" or "tr.B" checkboxes in a
 	// DPBrowser window.  Currently, this automatically changes the DF state variables.
 	STRUCT WMCheckboxAction &cbStruct
@@ -547,9 +559,37 @@ Function UpdateTracesShowing(cbStruct) : CheckBoxControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
 	UpdateMeasurements(browserNumber)
-	InvalidateFit(browserNumber)  // model method
-	// BUG: should fix this so fit is only invlaidated if top trace has changed
+	// Shouldn't need to mess with the fit: The view should realize that the fit is for a wave
+	// other than the one showing, and act accordingly.
+	//String topTraceWaveNameAbs=GetTopTraceWaveNameAbs()
+	//if (~AreStringsEqual(waveNameAbsOfFitTrace,topTraceWaveNameAbs)
+	//	InvalidateFit(browserNumber)  // model method
+	//end
 	SyncBrowserViewToDFState(browserNumber)
+End
+
+Function SetTraceAChecked(browserNumber,checked)
+	// Called to check/uncheck the trace A checkbox programmatically
+	Variable browserNumber, checked
+
+	String savDF=ChangeToBrowserDF(browserNumber)
+	NVAR traceAChecked
+	traceAChecked=checked	
+	UpdateMeasurements(browserNumber)
+	SyncBrowserViewToDFState(browserNumber)
+	SetDataFolder savDF
+End
+
+Function SetTraceBChecked(browserNumber,checked)
+	// Called to check/uncheck the trace B checkbox programmatically
+	Variable browserNumber, checked
+
+	String savDF=ChangeToBrowserDF(browserNumber)
+	NVAR traceBChecked
+	traceBChecked=checked	
+	UpdateMeasurements(browserNumber)
+	SyncBrowserViewToDFState(browserNumber)
+	SetDataFolder savDF
 End
 
 Function RejectAccept(ctrlName,rejcheck) : CheckBoxControl

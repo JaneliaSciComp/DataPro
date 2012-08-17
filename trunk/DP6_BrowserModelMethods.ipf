@@ -10,6 +10,7 @@ Function SetICurrentSweep(browserNumber,sweepIndexNew)
 	// Set iCurrentSweep, then update the measurements
 	NVAR iCurrentSweep
 	iCurrentSweep=sweepIndexNew
+	SyncCommentsToTopTrace(browserNumber)
 	UpdateMeasurements(browserNumber)
 	
 	// Restore the original DF
@@ -152,27 +153,21 @@ Function RemoveBaseNamedWaves(base)
 	SetDataFolder savDF
 End
 
-Function GetComments(browserNumber)
-	// Read the comments out of the currently-showing waves, and update the comments variable.
+Function SyncCommentsToTopTrace(browserNumber)
+	// Read the comments out of the currently-showing wave, and update the comments variable.
 	// (This will update the view b/c of the binding.)
 	Variable browserNumber
 
 	// Find name of top browser, switch the DF to its DF, note the former DF name
 	String savDF=ChangeToBrowserDF(browserNumber)
 
-	SVAR comments=comments
-	SVAR traceAWaveName=traceAWaveName
-	SVAR traceBWaveName=traceBWaveName
-	WAVE Wave1=$traceAWaveName
-	WAVE Wave2=$traceBWaveName
-	ControlInfo showTraceACheckbox
-	if ((V_value>0) && (exists(traceAWaveName)==1))
-		comments=GetWaveNoteString(Wave1,"COMMENTS")
+	SVAR comments
+	String topTraceWaveName=GetTopTraceWaveNameAbs(browserNumber)
+	if (strlen(topTraceWaveName)==0)
+		comments=""
 	else
-		ControlInfo showTraceBCheckbox
-		if ((V_value>0) && (exists(traceBWaveName)==1))
-			comments=GetWaveNoteString(Wave2,"COMMENTS")
-		endif
+		String noteString=note($topTraceWaveName)
+		comments=StringByKey("COMMENTS",noteString,"=","\r",1)
 	endif
 	
 	// Restore the original DF
@@ -356,7 +351,7 @@ Function UpdateFit(browserNumber)
 	// the current fit window, trace, and fit parameters.
 	Variable browserNumber
 	
-	Printf "In UpdateFit()\r"
+	//Printf "In UpdateFit()\r"
 	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 

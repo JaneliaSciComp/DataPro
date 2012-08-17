@@ -186,6 +186,11 @@ Function SyncBrowserViewToDFState(browserNumber)
 		Label /W=$browserName /Z right "\\F'Helvetica'\\Z12\\f01\K(32768,32768,32768)"+traceBDisplayName+" (pA)"
 	endif
 
+	// Don't want any units in the tick labels
+	ModifyGraph /W=$browserName /Z tickUnit(bottom)=1
+	ModifyGraph /W=$browserName /Z tickUnit(left)=1
+	ModifyGraph /W=$browserName /Z tickUnit(right)=1
+
 	// Show/hide the tools panel, as appropriate to the state	
 	if (showToolsChecked) 
 		if (ToolsPanelExists(browserNumber))
