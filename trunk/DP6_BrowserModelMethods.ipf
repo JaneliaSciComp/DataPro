@@ -10,7 +10,6 @@ Function SetICurrentSweep(browserNumber,sweepIndexNew)
 	// Set iCurrentSweep, then update the measurements
 	NVAR iCurrentSweep
 	iCurrentSweep=sweepIndexNew
-	SyncCommentsToTopTrace(browserNumber)
 	UpdateMeasurements(browserNumber)
 	
 	// Restore the original DF
@@ -153,26 +152,26 @@ Function RemoveBaseNamedWaves(base)
 	SetDataFolder savDF
 End
 
-Function SyncCommentsToTopTrace(browserNumber)
-	// Read the comments out of the currently-showing wave, and update the comments variable.
-	// (This will update the view b/c of the binding.)
-	Variable browserNumber
-
-	// Find name of top browser, switch the DF to its DF, note the former DF name
-	String savDF=ChangeToBrowserDF(browserNumber)
-
-	SVAR comments
-	String topTraceWaveName=GetTopTraceWaveNameAbs(browserNumber)
-	if (strlen(topTraceWaveName)==0)
-		comments=""
-	else
-		String noteString=note($topTraceWaveName)
-		comments=StringByKey("COMMENTS",noteString,"=","\r",1)
-	endif
-	
-	// Restore the original DF
-	SetDataFolder savDF
-End
+//Function SyncCommentsToTopTrace(browserNumber)
+//	// Read the comments out of the currently-showing wave, and update the comments variable.
+//	// (This will update the view b/c of the binding.)
+//	Variable browserNumber
+//
+//	// Find name of top browser, switch the DF to its DF, note the former DF name
+//	String savDF=ChangeToBrowserDF(browserNumber)
+//
+//	SVAR comments
+//	String topTraceWaveName=GetTopTraceWaveNameAbs(browserNumber)
+//	if (strlen(topTraceWaveName)==0)
+//		comments=""
+//	else
+//		String noteString=note($topTraceWaveName)
+//		comments=StringByKey("COMMENTS",noteString,"=","\r",1)
+//	endif
+//	
+//	// Restore the original DF
+//	SetDataFolder savDF
+//End
 
 Function DoBaseSub(browserNumber)
 	// Perform baseline subtraction on $traceAWaveName and $traceBWaveName.
@@ -190,8 +189,8 @@ Function DoBaseSub(browserNumber)
 	WAVE theWave=$traceAWaveName
 	Variable basesubtracted, baseline
 	if ( traceAChecked && WaveExists($traceAWaveName) )
-		baseline=GetWaveNoteNumber(theWave,"BASELINE")
-		basesubtracted=GetWaveNoteNumber(theWave,"BASESUBTRACTED")
+		baseline=NumberByKeyInWaveNote(theWave,"BASELINE")
+		basesubtracted=NumberByKeyInWaveNote(theWave,"BASESUBTRACTED")
 	endif
 
 	String traceBWaveName=GetTraceBWaveNameAbs(browserNumber)
@@ -199,32 +198,32 @@ Function DoBaseSub(browserNumber)
 	if ( (V_value>0) && WaveExists(traceBWaveName) )			// if baseline subtract is checked
 		 if (basesubtracted<1)							// but the baseline isn't subtracted
 			theWave -=  baseline							// subtract baseline
-			WriteWaveNote($traceAWaveName,"BASESUBTRACTED","1")	// and note baseline subtracted
+			ReplaceStringByKeyInWaveNote($traceAWaveName,"BASESUBTRACTED","1")	// and note baseline subtracted
 		endif
 	else												// if baseline subtract is not checked
 		 if (basesubtracted>0)							// but the baseline is subtracted
 			theWave +=  baseline							// add back the baseline
-			WriteWaveNote($traceAWaveName,"BASESUBTRACTED","0")	// and note baseline not subtracted
+			ReplaceStringByKeyInWaveNote($traceAWaveName,"BASESUBTRACTED","0")	// and note baseline not subtracted
 		endif
 	endif
 
 	NVAR traceBChecked=traceBChecked
 	if ( traceBChecked && WaveExists(traceBWaveName) )
 		WAVE theWave=$traceBWaveName
-		baseline=GetWaveNoteNumber(theWave,"BASELINE")
-		basesubtracted=GetWaveNoteNumber(theWave,"BASESUBTRACTED")
+		baseline=NumberByKeyInWaveNote(theWave,"BASELINE")
+		basesubtracted=NumberByKeyInWaveNote(theWave,"BASESUBTRACTED")
 	endif
 
 	ControlInfo basesub2
 	if ( (V_value>0) && WaveExists(traceBWaveName) )				// if baseline subtract is checked
 		 if (basesubtracted<1)							// but the baseline isn't subtracted
 			theWave -=  baseline							// subtract baseline
-			WriteWaveNote(theWave,"BASESUBTRACTED","1")	// and note baseline subtracted
+			ReplaceStringByKeyInWaveNote(theWave,"BASESUBTRACTED","1")	// and note baseline subtracted
 		endif
 	else												// if baseline subtract is not checked
 		 if (basesubtracted>0)							// but the baseline is subtracted
 			theWave +=  baseline							// add back the baseline
-			WriteWaveNote(theWave,"BASESUBTRACTED","0")	// and note baseline not subtracted
+			ReplaceStringByKeyInWaveNote(theWave,"BASESUBTRACTED","0")	// and note baseline not subtracted
 		endif
 	endif
 	
@@ -472,25 +471,25 @@ Function MarkWaveForAveraging(thisWaveName,filterOnHold,holdCenter,holdTol,filte
 	// reasons to exclude it
 	WAVE thisWave=$thisWaveName
 	Variable dontavg=0  // boolean
-	String waveTypeStr=GetWaveNoteString(thisWave, "WAVETYPE")
+	String waveTypeStr=StringByKeyInWaveNote(thisWave, "WAVETYPE")
 	if (cmpstr(waveTypeStr,"average")==0)
 		dontavg = 1
 	endif
-	if (!dontavg && GetWaveNoteNumber(thisWave, "REJECT"))
+	if (!dontavg && NumberByKeyInWaveNote(thisWave, "REJECT"))
 		dontavg = 1
 	endif
 	if (!dontavg && filterOnHold)
-		Variable hold=GetWaveNoteNumber(thisWave, "BASELINE")
+		Variable hold=NumberByKeyInWaveNote(thisWave, "BASELINE")
 		if ( abs(hold-holdCenter)>holdTol )
 			dontavg = 1
 		endif
 	endif
 	if (!dontavg && filterOnStep)
-		Variable step=GetWaveNoteNumber(thisWave, "STEP")
+		Variable step=NumberByKeyInWaveNote(thisWave, "STEP")
 		if (abs(step-stepCenter)>0.1)  // tolerance is hard-coded
 			dontavg = 1
 		endif
 	endif
-	WriteWaveNote(thisWave,"DONTAVG",num2str(dontavg))
+	ReplaceStringByKeyInWaveNote(thisWave,"DONTAVG",num2str(dontavg))
 End
 

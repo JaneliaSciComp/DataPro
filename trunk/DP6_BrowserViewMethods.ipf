@@ -19,7 +19,6 @@ Function SyncBrowserViewToDFState(browserNumber)
 	NVAR traceBChecked=traceBChecked	
 	SVAR baseNameA=baseNameA
 	SVAR baseNameB=baseNameB
-	SVAR comments=comments
 	WAVE Colors=Colors
 	NVAR showToolsChecked=showToolsChecked
 	NVAR tBaselineLeft=tBaselineLeft
@@ -85,19 +84,22 @@ Function SyncBrowserViewToDFState(browserNumber)
 
 	// topTraceWaveName should be empty if no traces are showing
 	// same for comments
-	comments=""
+	String comments=""
 
 	// If it exists, add $traceBWaveNameAbs to the graph	
 	if (traceBChecked && waveBExists)
 		AppendToGraph /W=$browserName /R /C=(Colors[1][0],Colors[1][1],Colors[1][2]) $traceBWaveNameAbs
-		comments=GetWaveNoteString($traceBWaveNameAbs,"COMMENTS")
+		comments=StringByKeyInWaveNote($traceBWaveNameAbs,"COMMENTS")
 	endif
 	
 	// If it exists, add $traceAWaveNameAbs to the graph	
 	if (traceAChecked && waveAExists)
 		AppendToGraph /W=$browserName /C=(Colors[0][0],Colors[0][1],Colors[0][2]) $traceAWaveNameAbs
-		comments=GetWaveNoteString($traceAWaveNameAbs,"COMMENTS")
+		comments=StringByKeyInWaveNote($traceAWaveNameAbs,"COMMENTS")
 	endif
+	
+	// Write the comments to the view
+	SetVariable commentsSetVariable, win=$browserName, value=_STR:comments
 	
 	// Put the cursors back
 	String topTraceWaveNameRel=GetTopTraceWaveNameRel(browserNumber)
@@ -140,21 +142,21 @@ Function SyncBrowserViewToDFState(browserNumber)
 	endif
 	
 	// Update the rejection box to reflect the reject-status of each wave 
-	UpdateRejectBox(browserNumber)
+	UpdateRejectCheckboxes(browserNumber)
 	
 	// Get the metadata associated with each wave, put relevant values in DF variables
 	NVAR hold1=hold1, step1=step1
 	if (waveAExists && traceAChecked)
-		hold1=GetWaveNoteNumber($traceAWaveNameAbs,"BASELINE")
-		step1=GetWaveNoteNumber($traceAWaveNameAbs,"STEP")
+		hold1=NumberByKeyInWaveNote($traceAWaveNameAbs,"BASELINE")
+		step1=NumberByKeyInWaveNote($traceAWaveNameAbs,"STEP")
 	else
 		hold1=NaN;
 		step1=NaN;
 	endif
 	NVAR hold2=hold2, step2=step2
 	if (waveBExists && traceBChecked)
-		hold2=GetWaveNoteNumber($traceBWaveNameAbs,"BASELINE")
-		step2=GetWaveNoteNumber($traceBWaveNameAbs,"STEP")
+		hold2=NumberByKeyInWaveNote($traceBWaveNameAbs,"BASELINE")
+		step2=NumberByKeyInWaveNote($traceBWaveNameAbs,"STEP")
 	else
 		hold2=NaN;
 		step2=NaN;
@@ -218,7 +220,7 @@ Function SyncBrowserViewToDFState(browserNumber)
 	SetDataFolder savedDFName
 End
 
-Function UpdateRejectBox(browserNumber)
+Function UpdateRejectCheckboxes(browserNumber)
 	// Look at the wave notes for $traceAWaveName and $traceBWaveName, and update the
 	// Reject checkboxes to reflect their rejection-status 
 	Variable browserNumber
@@ -229,18 +231,17 @@ Function UpdateRejectBox(browserNumber)
 	
 	// Update the traceAWaveName reject checkbox
 	String traceAWaveName=GetTraceAWaveNameAbs(browserNumber)
-	NVAR traceAChecked=traceAChecked
-	if ( traceAChecked && WaveExists($traceAWaveName) )
-		WAVE Wave1=$traceAWaveName
-		CheckBox reject1, win=$browserName, value=GetWaveNoteNumber(Wave1,"REJECT")
+	Variable reject
+	if ( WaveExists($traceAWaveName) )
+		reject=NumberByKeyInWaveNote($traceAWaveName,"REJECT")
+		CheckBox rejectACheckbox, win=$browserName, value=reject
 	endif
 	
 	// Update the traceBWaveName reject checkbox
 	String traceBWaveName=GetTraceBWaveNameAbs(browserNumber)
-	NVAR traceBChecked=traceBChecked
-	if ( traceBChecked && WaveExists(traceBWaveName) )
-		WAVE Wave2=$traceBWaveName
-		CheckBox reject2, win=$browserName, value=GetWaveNoteNumber(Wave2,"REJECT")
+	if ( WaveExists($traceBWaveName) )
+		reject=NumberByKeyInWaveNote($traceBWaveName,"REJECT")
+		CheckBox rejectBCheckbox, win=$browserName, value=reject
 	endif
 	
 	// Restore the original DF

@@ -45,7 +45,7 @@ Function CreateDataProBrowser() : Graph
 	// one or the other is showing, topTraceWaveName equals the one showing.  If neither is showing, then
 	// topTraceWaveName==""
 	//String /G topTraceWaveName  
-	String /G comments
+	//String /G comments
 	String /G cursorWaveList=""
 
 	// These store the current y limits for the trace A and trace B axis, if they are showing, or
@@ -167,10 +167,10 @@ Function CreateDataProBrowser() : Graph
 	CheckBox basesub1,value= 0
 	CheckBox basesub2,pos={262,27},size={61,14},proc=BaseSub,title="Base Sub"
 	CheckBox basesub2,value= 0
-	CheckBox reject1,pos={335,7},size={49,14},proc=RejectAccept,title="Reject"
-	CheckBox reject1,value= 0
-	CheckBox reject2,pos={335,27},size={49,14},proc=RejectAccept,title="Reject"
-	CheckBox reject2,value= 0
+	CheckBox rejectACheckbox,pos={335,7},size={49,14},proc=HandleRejectACheckbox,title="Reject"
+	CheckBox rejectACheckbox,value= 0
+	CheckBox rejectBCheckbox,pos={335,27},size={49,14},proc=HandleRejectBCheckbox,title="Reject"
+	CheckBox rejectBCheckbox,value= 0
 	
 	absVarName=AbsoluteVarName(browserDFName,"hold1")
 	SetVariable hold1_disp,pos={400,7},size={70,15},title="Hold",format="%3.3g"
@@ -188,9 +188,8 @@ Function CreateDataProBrowser() : Graph
 	SetVariable step2_disp,pos={480,27},size={70,15},proc=SetStepVarProc,title="Step",format="%3.3g"
 	SetVariable step2_disp,limits={0,0,0},value=$absVarName
 	
-	absVarName=AbsoluteVarName(browserDFName,"comments")
-	SetVariable show_comments,pos={20,55},size={260,15},title="comments"
-	SetVariable show_comments,value=$absVarName
+	SetVariable commentsSetVariable,pos={20,55},size={260,15},title="comments"
+	SetVariable commentsSetVariable,value=_STR:""
 
 	absVarName=AbsoluteVarName(browserDFName,"showToolsChecked")
 	CheckBox showToolsCheckbox,pos={680,15},size={70,18},proc=ShowHideToolsPanel, value=0
@@ -592,26 +591,26 @@ Function SetTraceBChecked(browserNumber,checked)
 	SetDataFolder savDF
 End
 
-Function RejectAccept(ctrlName,rejcheck) : CheckBoxControl
-	String ctrlName
-	Variable rejcheck
-
-	// BUG: This shouldn't be using GetTopBrowserNumber(), and may be broken in other ways
-	
-	// Find name of top browser, switch the DF to its DF, note the former DF name
-	Variable browserNumber=GetTopBrowserNumber()
-	String savDF=ChangeToBrowserDF(browserNumber)
-
-	if (cmpstr(ctrlName,"reject1")==0)
-		SVAR wavename=traceAWaveName
-	else
-		SVAR wavename=traceBWaveName
-	endif
-	SetDataFolder root:
-	WriteWaveNote($wavename,"REJECT",num2str(rejcheck)+"\r")
-	SetDataFolder savDF
+Function HandleRejectACheckbox(cbStruct) : CheckBoxControl
+	STRUCT WMCheckboxAction &cbStruct
+	if (cbStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif	
+	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
+	String traceAWaveNameAbs=GetTraceAWaveNameAbs(browserNumber)
+	ReplaceStringByKeyInWaveNote($traceAWaveNameAbs,"REJECT",num2str(cbStruct.checked))
 End
-	
+
+Function HandleRejectBCheckbox(cbStruct) : CheckBoxControl
+	STRUCT WMCheckboxAction &cbStruct
+	if (cbStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif	
+	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
+	String traceBWaveNameAbs=GetTraceBWaveNameAbs(browserNumber)
+	ReplaceStringByKeyInWaveNote($traceBWaveNameAbs,"REJECT",num2str(cbStruct.checked))
+End
+
 Function BaseSub(cbStruct) : CheckBoxControl
 	// This is called when the user checks/unchecks one of the "Base Sub" checkboxes in a
 	// DPBrowser window.
