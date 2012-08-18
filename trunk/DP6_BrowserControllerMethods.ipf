@@ -35,8 +35,8 @@ Function CreateDataProBrowser() : Graph
 	Variable /G iCurrentSweep=1
 	Variable /G tCursorA=nan
 	Variable /G tCursorB=nan	
-	Variable /G hold1, hold2
-	Variable /G step1, step2
+	Variable /G baseline1, baseline2
+	//Variable /G step1, step2
 	Variable /G showToolsChecked=0  // boolean, "ShowTools" is a built-in, so can't use that
 	Variable /G traceAChecked=1, traceBChecked=0
 	Variable /G xAutoscaling=1, yAAutoscaling=1, yBAutoscaling=1
@@ -73,7 +73,7 @@ Function CreateDataProBrowser() : Graph
 	Variable /G from1=10, to1=90	// these are parameters
 	Variable /G from2=90, to2=10
 	Variable /G lev1=0  // this is a param
-	Variable /G base=nan, mean1=nan, peak1=nan, rise1=nan  // these are statistics
+	Variable /G baseline=nan, mean1=nan, peak1=nan, rise1=nan  // these are statistics
 	Variable /G cross1=nan
 	Variable /G mean2=nan, peak2=nan, rise2=nan
 	
@@ -172,24 +172,24 @@ Function CreateDataProBrowser() : Graph
 	CheckBox rejectBCheckbox,pos={335,27},size={49,14},proc=HandleRejectBCheckbox,title="Reject"
 	CheckBox rejectBCheckbox,value= 0
 	
-	absVarName=AbsoluteVarName(browserDFName,"hold1")
-	SetVariable hold1_disp,pos={400,7},size={70,15},title="Hold",format="%3.3g"
-	SetVariable hold1_disp,limits={0,0,0},value=$absVarName
+	absVarName=AbsoluteVarName(browserDFName,"baseline1")
+	SetVariable baseline1SetVariable,pos={400,7},size={90,15},title="Baseline",format="%3.3g"
+	SetVariable baseline1SetVariable,limits={0,0,0},value=$absVarName
 	
-	absVarName=AbsoluteVarName(browserDFName,"hold2")
-	SetVariable hold2_disp,pos={400,27},size={70,15},title="Hold",format="%3.3g"
-	SetVariable hold2_disp,limits={0,0,0},value=$absVarName
+	absVarName=AbsoluteVarName(browserDFName,"baseline2")
+	SetVariable baseline2SetVariable,pos={400,27},size={90,15},title="Baseline",format="%3.3g"
+	SetVariable baseline2SetVariable,limits={0,0,0},value=$absVarName
 	
-	absVarName=AbsoluteVarName(browserDFName,"step1")
-	SetVariable step1_disp,pos={480,7},size={70,15},proc=SetStepVarProc,title="Step",format="%3.3g"
-	SetVariable step1_disp,limits={0,0,0},value=$absVarName
-	
-	absVarName=AbsoluteVarName(browserDFName,"step2")
-	SetVariable step2_disp,pos={480,27},size={70,15},proc=SetStepVarProc,title="Step",format="%3.3g"
-	SetVariable step2_disp,limits={0,0,0},value=$absVarName
+//	absVarName=AbsoluteVarName(browserDFName,"step1")
+//	SetVariable step1_disp,pos={480,7},size={70,15},proc=SetStepVarProc,title="Step",format="%3.3g"
+//	SetVariable step1_disp,limits={0,0,0},value=$absVarName
+//	
+//	absVarName=AbsoluteVarName(browserDFName,"step2")
+//	SetVariable step2_disp,pos={480,27},size={70,15},proc=SetStepVarProc,title="Step",format="%3.3g"
+//	SetVariable step2_disp,limits={0,0,0},value=$absVarName
 	
 	SetVariable commentsSetVariable,pos={20,55},size={260,15},title="comments"
-	SetVariable commentsSetVariable,value=_STR:""
+	SetVariable commentsSetVariable,proc=HandleCommentsSetVariable,value=_STR:""
 
 	absVarName=AbsoluteVarName(browserDFName,"showToolsChecked")
 	CheckBox showToolsCheckbox,pos={680,15},size={70,18},proc=ShowHideToolsPanel, value=0
@@ -235,7 +235,7 @@ Function NewToolsPanel(browserNumber) : Panel
 	Button setbase,pos={6,6},size={100,20},proc=HandleSetBaselineButton,title="Set Baseline"
 	Button clearBaselineButton,pos={6,6+28},size={100,18},proc=ClearBaseline,title="Clear Baseline"
 
-	String absVarName=AbsoluteVarName(browserDFName,"base")
+	String absVarName=AbsoluteVarName(browserDFName,"baseline")
 	ValDisplay baselineValDisplay,pos={139,8},size={82,17},title="Mean",format="%4.2f"
 	ValDisplay baselineValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
 
@@ -519,6 +519,24 @@ Function HandleSetSweepIndexControl(svStruct) : SetVariableControl
 	// Set the sweep in the model
 	SetICurrentSweep(browserNumber,iSweepInView)
 	// Sync the view
+	SyncBrowserViewToDFState(browserNumber)
+End
+
+Function HandleCommentsSetVariable(svStruct) : SetVariableControl
+	// Called when the user changes the comment in the DPBrowser
+	STRUCT WMSetVariableAction &svStruct	
+	if ( svStruct.eventCode==-1 ) 
+		return 0
+	endif
+	String browserName=svStruct.win
+	Variable browserNumber=BrowserNumberFromName(browserName)
+	String commentsInControl=svStruct.sval
+	// Set the wave comment for the top wave to commentInControl
+	String topTraceWaveNameAbs=GetTopTraceWaveNameAbs(browserNumber)
+	if ( strlen(topTraceWaveNameAbs)>0 )
+		ReplaceStringByKeyInWaveNote($topTraceWaveNameAbs,"COMMENTS",commentsInControl)
+	endif
+	// Sync the view -- necessary when no trace is selected, to clear the comment
 	SyncBrowserViewToDFState(browserNumber)
 End
 

@@ -145,21 +145,17 @@ Function SyncBrowserViewToDFState(browserNumber)
 	UpdateRejectCheckboxes(browserNumber)
 	
 	// Get the metadata associated with each wave, put relevant values in DF variables
-	NVAR hold1=hold1, step1=step1
+	NVAR baseline1
 	if (waveAExists && traceAChecked)
-		hold1=NumberByKeyInWaveNote($traceAWaveNameAbs,"BASELINE")
-		step1=NumberByKeyInWaveNote($traceAWaveNameAbs,"STEP")
+		baseline1=NumberByKeyInWaveNote($traceAWaveNameAbs,"BASELINE")
 	else
-		hold1=NaN;
-		step1=NaN;
+		baseline1=NaN;
 	endif
-	NVAR hold2=hold2, step2=step2
+	NVAR baseline2
 	if (waveBExists && traceBChecked)
-		hold2=NumberByKeyInWaveNote($traceBWaveNameAbs,"BASELINE")
-		step2=NumberByKeyInWaveNote($traceBWaveNameAbs,"STEP")
+		baseline2=NumberByKeyInWaveNote($traceBWaveNameAbs,"BASELINE")
 	else
-		hold2=NaN;
-		step2=NaN;
+		baseline2=NaN;
 	endif
 	
 	// If there is one or more trace in the graph, make sure the axes of the graph are
@@ -234,6 +230,7 @@ Function UpdateRejectCheckboxes(browserNumber)
 	Variable reject
 	if ( WaveExists($traceAWaveName) )
 		reject=NumberByKeyInWaveNote($traceAWaveName,"REJECT")
+		reject = IsNan(reject)?0:reject;  // default to not reject if REJECT key missing
 		CheckBox rejectACheckbox, win=$browserName, value=reject
 	endif
 	
@@ -241,6 +238,7 @@ Function UpdateRejectCheckboxes(browserNumber)
 	String traceBWaveName=GetTraceBWaveNameAbs(browserNumber)
 	if ( WaveExists($traceBWaveName) )
 		reject=NumberByKeyInWaveNote($traceBWaveName,"REJECT")
+		reject = IsNan(reject)?0:reject;
 		CheckBox rejectBCheckbox, win=$browserName, value=reject
 	endif
 	
@@ -429,14 +427,14 @@ Function UpdateMeasurementsView(browserNumber)
 	
 	// Get instance vars we'll need
 	NVAR showToolsChecked
-	NVAR base, mean1, peak1, rise1
+	NVAR baseline, mean1, peak1, rise1
 	NVAR mean2, peak2, rise2
 	NVAR cross1
 
 	// white them out if they're nan
 	String windowName=browserName+"#ToolsPanel"
 	if (showToolsChecked)
-		WhiteOutIffNan("baselineValDisplay",windowName,base)
+		WhiteOutIffNan("baselineValDisplay",windowName,baseline)
 		WhiteOutIffNan("mean1ValDisplay",windowName,mean1)
 		WhiteOutIffNan("peak1ValDisplay",windowName,peak1)
 		WhiteOutIffNan("rise1ValDisplay",windowName,rise1)
