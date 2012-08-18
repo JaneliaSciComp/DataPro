@@ -245,7 +245,7 @@ Function UpdateMeasurements(browserNumber)
 	String savedDF=ChangeToBrowserDF(browserNumber)
 	
 	// Get references to all the variables that we need in this data folder
-	//NVAR hold1, step1, hold2, step2
+	//NVAR baseline1, step1, baseline2, step2
 	// inputs to the measurement process
 	NVAR tBaselineLeft, tBaselineRight
 	NVAR tWindow1Left, tWindow1Right
@@ -254,7 +254,7 @@ Function UpdateMeasurements(browserNumber)
 	NVAR to2, from2
 	NVAR lev1
 	// outputs of the measurement process
-	NVAR base, mean1, peak1, rise1
+	NVAR baseline, mean1, peak1, rise1
 	NVAR mean2, peak2, rise2
 	NVAR cross1
 	
@@ -264,21 +264,21 @@ Function UpdateMeasurements(browserNumber)
 		// Calculate the baseline
 		WAVE thisWave=$topTraceWaveName
 		if ( IsFinite(tBaselineLeft) && IsFinite(tBaselineRight) )
-			base=mean($topTraceWaveName,tBaselineLeft,tBaselineRight)
+			baseline=mean($topTraceWaveName,tBaselineLeft,tBaselineRight)
 		else
-			base=NaN
+			baseline=NaN
 		endif
 		
 		// Calculate features of window 1
 		if ( IsFinite(tWindow1Left) && IsFinite(tWindow1Right) )
 			WaveStats /Q/R=(tWindow1Left,tWindow1Right) thisWave
-			mean1=V_avg-base
-			if (abs(V_min-base)>abs(V_max-base))
-				peak1=V_min-base
+			mean1=V_avg-baseline
+			if (abs(V_min-baseline)>abs(V_max-baseline))
+				peak1=V_min-baseline
 			else
-				peak1=V_max-base	
+				peak1=V_max-baseline	
 			endif
-			rise1=RiseTime(thisWave,tWindow1Left,tWindow1Right,base,peak1,from1/100,to1/100)
+			rise1=RiseTime(thisWave,tWindow1Left,tWindow1Right,baseline,peak1,from1/100,to1/100)
 			cross1=CountThresholdCrossings(topTraceWaveName, tWindow1Left, tWindow1Right, lev1)
 		else
 			mean1=NaN
@@ -289,13 +289,13 @@ Function UpdateMeasurements(browserNumber)
 		// Calculate features of window 2
 		if ( IsFinite(tWindow2Left) && IsFinite(tWindow2Right) )
 			WaveStats /Q/R=(tWindow2Left,tWindow2Right) thisWave
-			mean2=V_avg-base
-			if (abs(V_min-base)>abs(V_max-base))
-				peak2=V_min-base
+			mean2=V_avg-baseline
+			if (abs(V_min-baseline)>abs(V_max-baseline))
+				peak2=V_min-baseline
 			else
-				peak2=V_max-base		
+				peak2=V_max-baseline		
 			endif
-			rise2=RiseTime(thisWave,tWindow2Left,tWindow2Right,base,peak2,from2/100,to2/100)
+			rise2=RiseTime(thisWave,tWindow2Left,tWindow2Right,baseline,peak2,from2/100,to2/100)
 		else
 			mean2=NaN
 			peak2=NaN
@@ -303,7 +303,7 @@ Function UpdateMeasurements(browserNumber)
 		endif
 	else
 		// If no traces are showing
-		base=NaN
+		baseline=NaN
 		mean1=NaN
 		peak1=NaN
 		rise1=NaN
