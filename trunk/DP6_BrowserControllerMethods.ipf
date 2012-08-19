@@ -35,7 +35,7 @@ Function CreateDataProBrowser() : Graph
 	Variable /G iCurrentSweep=1
 	Variable /G tCursorA=nan
 	Variable /G tCursorB=nan	
-	Variable /G baseline1, baseline2
+	Variable /G baselineA, baselineB
 	//Variable /G step1, step2
 	Variable /G showToolsChecked=0  // boolean, "ShowTools" is a built-in, so can't use that
 	Variable /G traceAChecked=1, traceBChecked=0
@@ -97,11 +97,14 @@ Function CreateDataProBrowser() : Graph
 	
 	// Create the globals related to the averaging subpanel
 	// There are all user-specified parameters
-	Variable /G avgfrom=nan
-	Variable /G avgto=nan
-	Variable /G avghold=nan
-	Variable /G holdtolerance=nan
-	Variable /G avgstep=nan
+	Variable /G averageAllSweeps=1
+	Variable /G iSweepFirstAverage=nan
+	Variable /G iSweepLastAvg=nan
+	//Variable /G avghold=nan
+	//Variable /G holdtolerance=nan
+	Variable /G averageAllSteps=1
+	Variable /G stepToAverage=1
+	Variable /G saveAveragesToDisk=1
 	
 	// Make waves for colors
 	Make /O/N=(8,3) Colors
@@ -163,30 +166,29 @@ Function CreateDataProBrowser() : Graph
 	SetVariable bnameset_2,pos={176,27},size={80,15},proc=HandleBaseNameControl,title="name"
 	SetVariable bnameset_2,value=$absVarName
 	
-	CheckBox basesub1,pos={262,7},size={61,14},proc=BaseSub,title="Base Sub"
-	CheckBox basesub1,value= 0
-	CheckBox basesub2,pos={262,27},size={61,14},proc=BaseSub,title="Base Sub"
-	CheckBox basesub2,value= 0
+//	CheckBox baseSubCheckboxA,pos={262,7},size={61,14},proc=BaseSub,title="Base Sub"
+//	CheckBox baseSubCheckboxA,value= 0
+//	CheckBox baseSubCheckboxB,pos={262,27},size={61,14},proc=BaseSub,title="Base Sub"
+//	CheckBox baseSubCheckboxB,value= 0
+	
 	CheckBox rejectACheckbox,pos={335,7},size={49,14},proc=HandleRejectACheckbox,title="Reject"
 	CheckBox rejectACheckbox,value= 0
 	CheckBox rejectBCheckbox,pos={335,27},size={49,14},proc=HandleRejectBCheckbox,title="Reject"
 	CheckBox rejectBCheckbox,value= 0
 	
-	absVarName=AbsoluteVarName(browserDFName,"baseline1")
-	SetVariable baseline1SetVariable,pos={400,7},size={90,15},title="Baseline",format="%3.3g"
-	SetVariable baseline1SetVariable,limits={0,0,0},value=$absVarName
-	
-	absVarName=AbsoluteVarName(browserDFName,"baseline2")
-	SetVariable baseline2SetVariable,pos={400,27},size={90,15},title="Baseline",format="%3.3g"
-	SetVariable baseline2SetVariable,limits={0,0,0},value=$absVarName
-	
-//	absVarName=AbsoluteVarName(browserDFName,"step1")
-//	SetVariable step1_disp,pos={480,7},size={70,15},proc=SetStepVarProc,title="Step",format="%3.3g"
-//	SetVariable step1_disp,limits={0,0,0},value=$absVarName
+//	absVarName=AbsoluteVarName(browserDFName,"baselineA")
+//	SetVariable baseline1SetVariable,pos={400,7},size={90,15},title="Baseline",format="%3.3g"
+//	SetVariable baseline1SetVariable,limits={0,0,0},value=$absVarName
 //	
-//	absVarName=AbsoluteVarName(browserDFName,"step2")
-//	SetVariable step2_disp,pos={480,27},size={70,15},proc=SetStepVarProc,title="Step",format="%3.3g"
-//	SetVariable step2_disp,limits={0,0,0},value=$absVarName
+//	absVarName=AbsoluteVarName(browserDFName,"baselineB")
+//	SetVariable baseline2SetVariable,pos={400,27},size={90,15},title="Baseline",format="%3.3g"
+//	SetVariable baseline2SetVariable,limits={0,0,0},value=$absVarName
+	
+	ValDisplay stepAValDisplay,pos={400,7},size={70,15},title="Step",format="%3.3g"
+	ValDisplay stepAValDisplay,limits={0,0,0},value=_NUM:nan
+	
+	ValDisplay stepBValDisplay,pos={400,27},size={70,15},title="Step",format="%3.3g"
+	ValDisplay stepBValDisplay,limits={0,0,0},value=_NUM:nan
 	
 	SetVariable commentsSetVariable,pos={20,55},size={260,15},title="comments"
 	SetVariable commentsSetVariable,proc=HandleCommentsSetVariable,value=_STR:""
@@ -222,7 +224,7 @@ Function NewToolsPanel(browserNumber) : Panel
 	Variable toolsPanelWidth=250  // pels
 	Variable measureAreaHeight=280  // pels
 	Variable fitAreaHeight=155  // pels
-	Variable averageAreaHeight=140  // pels
+	Variable averageAreaHeight=110  // pels
 	Variable toolsPanelHeight=measureAreaHeight+fitAreaHeight+averageAreaHeight
 	NewPanel /HOST=$browserWindowName /EXT=0 /W=(0,0,toolsPanelWidth,toolsPanelHeight) /N=ToolsPanel /K=1 as "Tools"
 	SetWindow $browserWindowName#ToolsPanel, hook(TPHook)=ToolsPanelHook  // register a callback function for if the panel is closed
@@ -374,36 +376,47 @@ Function NewToolsPanel(browserNumber) : Panel
 	// Averaging controls
 	yOffset=measureAreaHeight+fitAreaHeight
 
-	Button avgnow,pos={20,yOffset+5},size={100,20},proc=DoAverage,title="Average Sweeps"
-	CheckBox saveavg,pos={150,yOffset+8},size={100,20},title="Save to disk",value=1
+	NVAR saveAveragesToDisk
+	Button avgnow,pos={20,yOffset+5},size={100,20},proc=HandleAverageButton,title="Average Sweeps"
+	CheckBox saveAveragesCheckBox,pos={150,yOffset+8},size={100,20},title="Save to disk",value=saveAveragesToDisk
+	CheckBox saveAveragesCheckBox,proc=HandleSaveAveragesCheckBox
 
 	SetDrawEnv fsize= 10,textrgb= (0,0,65535)
 	DrawText 48,yOffset+42,"Selected channels that meet the "
 	SetDrawEnv fsize= 10,textrgb= (0,0,65535)
 	DrawText 45,yOffset+55,"following criteria will be averaged."
+
+	// Controls for which sweeps to average
+	NVAR averageAllSweeps	
+	TitleBox sweepsTitleBox,pos={20,yOffset+63},frame=0,title="Sweeps:"
+	CheckBox allSweepsCheckBox,pos={70,yOffset+63},size={50,20},title="All",value=averageAllSweeps
+	CheckBox allSweepsCheckBox,proc=HandleAllSweepsCheckbox
 	
-	absVarName=AbsoluteVarName(browserDFName,"avgfrom")
-	SetVariable avgfrom_disp,pos={22,yOffset+63},size={100,17},title="Sweeps"
-	SetVariable avgfrom_disp,limits={1,2000,1},value=$absVarName
+	absVarName=AbsoluteVarName(browserDFName,"iSweepFirstAverage")
+	SetVariable firstSweepSetVariable,pos={110,yOffset+63},size={53,17},title=" "
+	SetVariable firstSweepSetVariable,limits={1,2000,1},value=$absVarName, disable=0
 	
-	absVarName=AbsoluteVarName(browserDFName,"avgto")
-	SetVariable avgto_disp,pos={128,yOffset+63},size={66,17},title="To"
-	SetVariable avgto_disp,limits={1,2000,1},value=$absVarName
-	CheckBox range_all,pos={211,yOffset+64},size={50,20},title="All",value=1
+	absVarName=AbsoluteVarName(browserDFName,"iSweepLastAvg")
+	SetVariable lastSweepSetVariable,pos={170,yOffset+63},size={66,17},title="to"
+	SetVariable lastSweepSetVariable,limits={1,2000,1},value=$absVarName, disable=0
 
-	absVarName=AbsoluteVarName(browserDFName,"avghold")
-	SetVariable avghold_disp,pos={47,yOffset+89},size={75,17},title="Hold"
-	SetVariable avghold_disp,limits={-120,120,1},value=$absVarName
+//	absVarName=AbsoluteVarName(browserDFName,"avghold")
+//	SetVariable avghold_disp,pos={47,yOffset+89},size={75,17},title="Hold"
+//	SetVariable avghold_disp,limits={-120,120,1},value=$absVarName
+//
+//	absVarName=AbsoluteVarName(browserDFName,"holdtolerance")
+//	SetVariable holdtol_disp,pos={135,yOffset+88},size={60,17},title="±"
+//	SetVariable holdtol_disp,limits={-120,120,1},value=$absVarName
+//	CheckBox hold_all,pos={212,yOffset+88},size={50,20},title="All",value=1
 
-	absVarName=AbsoluteVarName(browserDFName,"holdtolerance")
-	SetVariable holdtol_disp,pos={135,yOffset+88},size={60,17},title="±"
-	SetVariable holdtol_disp,limits={-120,120,1},value=$absVarName
-	CheckBox hold_all,pos={212,yOffset+88},size={50,20},title="All",value=1
-
-	absVarName=AbsoluteVarName(browserDFName,"avgstep")
-	SetVariable avgstep_disp,pos={49,yOffset+112},size={146,17},title="Step command"
-	SetVariable avgstep_disp,limits={-1000,1000,10},value=$absVarName
-	CheckBox step_all,pos={212,yOffset+111},size={50,20},title="All",value=1
+	// Controls for which steps to show:
+	NVAR averageAllSteps
+	TitleBox stepsTitleBox,pos={20,yOffset+88},frame=0,title="Steps:"
+	CheckBox allStepsCheckBox,pos={70,yOffset+88},size={50,20},title="All",value=averageAllSteps
+	CheckBox allStepsCheckBox,proc=HandleAllStepsCheckbox
+	absVarName=AbsoluteVarName(browserDFName,"stepToAverage")
+	SetVariable stepsSetVariable,pos={110,yOffset+88-1},size={85,17},title="Only:"
+	SetVariable stepsSetVariable,limits={-1000,1000,10},value=$absVarName, disable=0
 
 	// Sync the view with the "model"
 	//SyncFitPanelViewToDFState(browserNumber)
@@ -424,21 +437,6 @@ Function DataProBrowserHook(s)
 	String satelliteWindowName
 	if (s.eventCode==2)					// window being killed
 		//Print "Arghhh..."
-		// Kill Measure panel
-		satelliteWindowName=MeasurePanelNameFromNumber(browserNumber)
-		if (PanelExists(satelliteWindowName))
-			KillWindow $satelliteWindowName
-		endif
-		// Kill Fit panel
-		satelliteWindowName=FitPanelNameFromNumber(browserNumber)
-		if (PanelExists(satelliteWindowName))
-			KillWindow $satelliteWindowName
-		endif
-		// Kill Average panel
-		satelliteWindowName=AveragePanelNameFromNumber(browserNumber)
-		if (PanelExists(satelliteWindowName))
-			KillWindow $satelliteWindowName
-		endif
 		// Kill the data folder
 		KillDataFolder /Z $browserDFName
 	elseif (s.eventCode==7)			// cursor moved (or placed)
@@ -548,8 +546,7 @@ Function HandleDtFitExtendSetVariable(svStruct) : SetVariableControl
 	String browserName=svStruct.win
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	// changing this invalidates the fit, since now the fit trace doesn't match the fit parameters
-	InvalidateFit(browserNumber)  // model method
-	Printf "About to call UpdateFit() in HandleDtFitExtendSetVariable()\r"
+	//Printf "About to call UpdateFit() in HandleDtFitExtendSetVariable()\r"
 	UpdateFit(browserNumber)  // model method
 	SyncBrowserViewToDFState(browserNumber)	
 End
@@ -638,8 +635,7 @@ Function BaseSub(cbStruct) : CheckBoxControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
 	UpdateMeasurements(browserNumber)
-	InvalidateFit(browserNumber)  // model method
-	Printf "About to call UpdateFit() in BaseSub()\r"
+	//Printf "About to call UpdateFit() in BaseSub()\r"
 	UpdateFit(browserNumber)  // model method
 	SyncBrowserViewToDFState(browserNumber)
 End
@@ -900,7 +896,7 @@ Function SetFitZero(bStruct) : ButtonControl
 	//ModifyGraph rgb(fitLineZero)=(26411,1,52428)
 
 	// Update the fit
-	Printf "About to call UpdateFit() in SetFitZero()\r"
+	//Printf "About to call UpdateFit() in SetFitZero()\r"
 	UpdateFit(browserNumber)
 	
 	// Update the view
@@ -937,7 +933,7 @@ Function SetFitRange(bStruct) : ButtonControl
 	tFitRight=xcsr(B,browserName)
 
 	// Update the fit
-	Printf "About to call UpdateFit() in SetFitRange()\r"
+	//Printf "About to call UpdateFit() in SetFitRange()\r"
 	UpdateFit(browserNumber)
 
 	// Update the view
@@ -959,7 +955,7 @@ Function HandleFitButton(bStruct) : ButtonControl
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
 	
 	// Update the fit trace and fit parameters in the model
-	Printf "About to call UpdateFit() in HandleFitButton()\r"
+	//Printf "About to call UpdateFit() in HandleFitButton()\r"
 	UpdateFit(browserNumber)
 	
 	// Sync the view to the model
@@ -986,7 +982,7 @@ Function HandleFitTypePopupMenu(pStruct) : PopupMenuControl
 	endif
 
 	// Update the fit coeffs
-	Printf "About to call UpdateFit() in HandleFitTypePopupMenu()\r"
+	//Printf "About to call UpdateFit() in HandleFitTypePopupMenu()\r"
 	UpdateFit(browserNumber)
 	
 	// Sync the view to the model
@@ -1037,19 +1033,19 @@ Function HandleHoldYOffsetCheckbox(cbStruct) : CheckBoxControl
 			if (yOffsetHeldValue==yOffset)
 				// no need to invalidate in this case!
 			else
-				Printf "About to call UpdateFit() in HandleHoldYOffsetCheckbox() #1\r"
+				//Printf "About to call UpdateFit() in HandleHoldYOffsetCheckbox() #1\r"
 				UpdateFit(browserNumber)
 			endif
 		else
 			// fit is already invalid
-				Printf "About to call UpdateFit() in HandleHoldYOffsetCheckbox() #2\r"
+			//Printf "About to call UpdateFit() in HandleHoldYOffsetCheckbox() #2\r"
 			UpdateFit(browserNumber)
 		endif			
 	else
 		// holdYOffset just turned false -- now the yOffset parameter is free, so a previously-valid fit 
 		// is now invalid
 		yOffsetHeldValue=nan  // when made visible again, want it to get current yOffset
-		Printf "About to call UpdateFit() in HandleHoldYOffsetCheckbox() #3\r"		
+		//Printf "About to call UpdateFit() in HandleHoldYOffsetCheckbox() #3\r"		
 		UpdateFit(browserNumber)
 	endif
 
@@ -1062,7 +1058,7 @@ End
 
 Function HandleYOffsetHeldValueSetVar(svStruct) : SetVariableControl
 	STRUCT WMSetVariableAction &svStruct	
-	Printf "eventcode: %d\r", svStruct.eventCode
+	//Printf "eventcode: %d\r", svStruct.eventCode
 	if ( svStruct.eventCode==-1 ) 
 		return 0
 	endif	
@@ -1072,7 +1068,7 @@ Function HandleYOffsetHeldValueSetVar(svStruct) : SetVariableControl
 	NVAR yOffsetHeldValue
 	yOffsetHeldValue=svStruct.dval  // set the model variable to the value set in the view
 	// changing this invalidates the fit, since now the fit trace (if there is one) doesn't match the fit parameters
-	Printf "About to call UpdateFit() in HandleYOffsetHeldValueSetVar()\r"		
+	//Printf "About to call UpdateFit() in HandleYOffsetHeldValueSetVar()\r"		
 	UpdateFit(browserNumber)  // model method
 	SyncBrowserViewToDFState(browserNumber)	
 	SetDataFolder savedDFName
@@ -1094,9 +1090,207 @@ End
 
 Function RescaleCheckProc(cbStruct) : CheckBoxControl
 	STRUCT WMCheckboxAction &cbStruct
-
+	if (cbStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
 	SyncBrowserViewToDFState(browserNumber)
 	//SyncDFAxesLimitsWithGraph(browserNumber)
 	//RescaleAxes(browserNumber)
+End
+
+Function HandleAllSweepsCheckbox(cbStruct) : CheckBoxControl
+	STRUCT WMCheckboxAction &cbStruct
+	if (cbStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif	
+	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
+	String savedDFName=ChangeToBrowserDF(browserNumber)	
+	NVAR averageAllSweeps
+	averageAllSweeps=cbStruct.checked
+	NVAR iSweepFirstAverage,iSweepLastAvg
+	if ( averageAllSweeps )
+		iSweepFirstAverage=nan
+		iSweepLastAvg=nan
+	else
+		SVAR baseNameA, baseNameB
+		Variable nSweeps1=NTracesFromBaseName(baseNameA)
+		Variable nSweeps2=NTracesFromBaseName(baseNameB)
+		Variable nSweeps=max(nSweeps1,nSweeps2)
+		iSweepFirstAverage=1
+		iSweepLastAvg=nSweeps
+	endif
+	SyncBrowserViewToDFState(browserNumber)
+	SetDataFolder savedDFName
+End
+
+Function HandleAllStepsCheckbox(cbStruct) : CheckBoxControl
+	STRUCT WMCheckboxAction &cbStruct
+	if (cbStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif	
+	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
+	String savedDFName=ChangeToBrowserDF(browserNumber)	
+	NVAR averageAllSteps
+	averageAllSteps=cbStruct.checked
+	SyncBrowserViewToDFState(browserNumber)
+	SetDataFolder savedDFName
+End
+
+Function HandleSaveAveragesCheckBox(cbStruct) : CheckBoxControl
+	STRUCT WMCheckboxAction &cbStruct
+	if (cbStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif	
+	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
+	String savedDFName=ChangeToBrowserDF(browserNumber)	
+	NVAR saveAveragesToDisk
+	saveAveragesToDisk=cbStruct.checked
+	SyncBrowserViewToDFState(browserNumber)
+	SetDataFolder savedDFName
+End
+
+
+Function HandleAverageButton(bStruct) : ButtonControl
+	STRUCT WMButtonAction &bStruct
+	
+	// Check that this is really a button-up on the button
+	if (bStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif
+
+	// Don't echo to transcript	
+	Silent 1
+	
+	// Get the browser number from the bStruct
+	Variable browserNumber=BrowserNumberFromName(bStruct.win);		
+	//String browserName=BrowserNameFromNumber(browserNumber)
+	
+	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	
+	// Determine the range of sweeps present
+	NVAR traceAChecked
+	NVAR traceBChecked	
+	SVAR baseNameA
+	SVAR baseNameB
+	Variable nSweepsA=NTracesFromBaseName(baseNameA)
+	Variable nSweepsB=NTracesFromBaseName(baseNameB)
+	Variable nSweeps
+	if (traceAChecked)
+		if (traceBChecked)
+			nSweeps=max(nSweepsA,nSweepsB)
+		else
+			nSweeps=nSweepsA
+		endif
+	else
+		if (traceBChecked)
+			nSweeps=nSweepsB
+		else
+			nSweeps=nan  // doesn't matter b/c no averaging will happen
+		endif
+	endif
+	
+	// determine which sweeps we're going to average, of those present
+	NVAR averageAllSweeps
+	NVAR iSweepLastAvg
+	NVAR iSweepFirstAverage
+	Variable iFrom, iTo
+	if (averageAllSweeps)
+		iFrom=1
+		iTo=nSweeps
+	else
+		iFrom=iSweepFirstAverage
+		iTo=iSweepLastAvg
+	endif
+	
+	// Figure the dest wave name
+	NVAR acqNextSweepIndex=root:DP_ADCDACcontrol:wavenumber
+	Variable destSweepIndex=acqNextSweepIndex
+	
+	// Do the average(s)
+	NVAR averageAllSteps
+	Variable filterOnHold=0	// there used to by UI to filter on the holding level
+	Variable holdCenter=nan
+	Variable holdTol=nan
+	Variable filterOnStep=!averageAllSteps
+	NVAR stepToAverage
+	if (traceAChecked)
+		ComputeAverageWaves(browserNumber,destSweepIndex,baseNameA,iFrom,iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
+	endif
+	if (traceBChecked)
+		ComputeAverageWaves(browserNumber,destSweepIndex,baseNameB,iFrom,iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
+	endif			
+
+	// increment the next sweep index for acquisition	
+	if (traceAChecked || traceBChecked)
+		acqNextSweepIndex=destSweepIndex+1	
+	endif
+	
+	// Restore original DF
+	SetDataFolder savedDFName
+End
+
+Function ComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom, iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
+	Variable browserNumber
+	Variable destSweepIndex
+	String waveBaseName
+	Variable iFrom, iTo
+	Variable filterOnHold	// boolean
+	Variable holdCenter, holdTol
+	Variable filterOnStep	// boolean
+	Variable stepToAverage
+
+	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+
+	// Figure the destination wave name
+	String destWaveName = sprintf2sd("root:%s%d", waveBaseName, destSweepIndex)
+	
+	// Loop over waves to be averaged, forming the sum and counting the number of waves
+	Variable i, nWavesSummedSoFar=0
+	Variable include
+	for (i=iFrom; i<=iTo; i+=1)
+		String thisWaveName=sprintf2sd("root:%s%d", waveBaseName, i)
+		WAVE thisWave=$thisWaveName
+		include=IncludeInAverage(thisWaveName,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
+		if (include)
+			if (nWavesSummedSoFar==0)
+				Duplicate /O thisWave $destWaveName
+				WAVE outWave=$destWaveName
+				Note /K outWave
+				ReplaceStringByKeyInWaveNote(outWave,"WAVETYPE","average")
+				ReplaceStringByKeyInWaveNote(outWave,"TIME",time())
+				//ReplaceStringByKeyInWaveNote(outWave,"DONTAVG","1")  // redundant b/c already marked as an average
+				ReplaceStringByKeyInWaveNote(outWave,"STEP",num2str(stepToAverage))
+				outwave = 0
+			endif
+			outWave += thisWave
+			nWavesSummedSoFar += 1
+		endif
+	endfor
+	Variable nWavesToAvg=nWavesSummedSoFar
+	
+	// Actually compute the average from the sum
+	String waveBaseNameShort=RemoveEnding(waveBaseName,"_")
+	if (nWavesToAvg>0)
+		outWave /= nWavesToAvg
+	else
+		String message=sprintf1s("%s: No waves met your criteria to be averaged.", waveBaseNameShort)
+		Abort message
+	endif
+	Printf "%s: %d waves were averaged and stored in %s\r", waveBaseNameShort, nWavesToAvg, destWaveName
+	
+	// Save the average wave to disk, if called for
+	NVAR saveAveragesToDisk
+	if (saveAveragesToDisk)
+		String outFileName=sprintf1s("%s.avg", destWaveName)
+		Save /C/I outWave as outFileName
+		Printf "%s: Average saved to disk as %s\r", waveBaseNameShort, outFileName
+	else
+		Printf "%s: Average not saved to disk\r", waveBaseNameShort
+	endif
+	
+	// Restore original DF
+	SetDataFolder savedDFName	
 End
