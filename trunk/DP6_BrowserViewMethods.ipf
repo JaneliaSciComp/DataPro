@@ -144,19 +144,36 @@ Function SyncBrowserViewToDFState(browserNumber)
 	// Update the rejection box to reflect the reject-status of each wave 
 	UpdateRejectCheckboxes(browserNumber)
 	
-	// Get the metadata associated with each wave, put relevant values in DF variables
-	NVAR baseline1
+//	// Get the metadata associated with each wave, put relevant values in DF variables
+//	NVAR baselineA
+//	if (waveAExists && traceAChecked)
+//		baselineA=NumberByKeyInWaveNote($traceAWaveNameAbs,"BASELINE")
+//	else
+//		baselineA=NaN;
+//	endif
+//	NVAR baselineB
+//	if (waveBExists && traceBChecked)
+//		baselineB=NumberByKeyInWaveNote($traceBWaveNameAbs,"BASELINE")
+//	else
+//		baselineB=NaN;
+//	endif
+	
+	// Update the "Step" ValDisplays
+	Variable step
 	if (waveAExists && traceAChecked)
-		baseline1=NumberByKeyInWaveNote($traceAWaveNameAbs,"BASELINE")
+		step=NumberByKeyInWaveNote($traceAWaveNameAbs,"STEP")
 	else
-		baseline1=NaN;
+		step=NaN;
 	endif
-	NVAR baseline2
+	ValDisplay stepAValDisplay,win=$browserName,value=_NUM:step
+	WhiteOutIffNan("stepAValDisplay",browserName,step)
 	if (waveBExists && traceBChecked)
-		baseline2=NumberByKeyInWaveNote($traceBWaveNameAbs,"BASELINE")
+		step=NumberByKeyInWaveNote($traceBWaveNameAbs,"STEP")
 	else
-		baseline2=NaN;
+		step=NaN;
 	endif
+	ValDisplay stepBValDisplay,win=$browserName,value=_NUM:step
+	WhiteOutIffNan("stepBValDisplay",browserName,step)
 	
 	// If there is one or more trace in the graph, make sure the axes of the graph are
 	// consistent with the autoscaling checkboxes, and turn on horizontal grid lines.
@@ -211,6 +228,9 @@ Function SyncBrowserViewToDFState(browserNumber)
 	
 	// Update the visibility of the fit
 	UpdateFitDisplay(browserNumber)
+
+	// Update the visibility of stuff in the averaging pane
+	UpdateAveragingDisplay(browserNumber)
 	
 	// Restore old data folder
 	SetDataFolder savedDFName
@@ -525,3 +545,22 @@ End
 //	// Restore old data folder
 //	SetDataFolder savedDFName
 //End
+
+Function UpdateAveragingDisplay(browserNumber)
+	Variable browserNumber
+	
+	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	String toolsPanelName=ToolsPanelNameFromNumber(browserNumber)
+	NVAR showToolsChecked
+	if (showToolsChecked)
+		// the tools panel is showing
+		// Show/hide the sweeps SetVariables
+		NVAR averageAllSweeps
+		SetVariable  firstSweepSetVariable,win=$toolsPanelName,disable=averageAllSweeps
+		SetVariable  lastSweepSetVariable,win=$toolsPanelName,disable=averageAllSweeps
+		NVAR averageAllSteps
+		SetVariable  stepsSetVariable,win=$toolsPanelName,disable=averageAllSteps
+	endif
+	SetDataFolder savedDFName
+End

@@ -245,7 +245,7 @@ Function UpdateMeasurements(browserNumber)
 	String savedDF=ChangeToBrowserDF(browserNumber)
 	
 	// Get references to all the variables that we need in this data folder
-	//NVAR baseline1, step1, baseline2, step2
+	//NVAR baselineA, step1, baselineB, step2
 	// inputs to the measurement process
 	NVAR tBaselineLeft, tBaselineRight
 	NVAR tWindow1Left, tWindow1Right
@@ -493,3 +493,39 @@ Function MarkWaveForAveraging(thisWaveName,filterOnHold,holdCenter,holdTol,filte
 	ReplaceStringByKeyInWaveNote(thisWave,"DONTAVG",num2str(dontavg))
 End
 
+Function IncludeInAverage(thisWaveName,filterOnHold,holdCenter,holdTol,filterOnStep,stepCenter)
+	// Determine whether to include thisWaveName in the average, based on whether if satisfies the 
+	// conditions as specified by checkHold, holdCenter, etc.
+	// We assume that thisWaveName is in the current DF, or is an absolute wave name.
+	// Returns 1 is wave should be included in average, zero otherwise.
+	String thisWaveName
+	Variable filterOnHold	// boolean
+	Variable holdCenter, holdTol
+	Variable filterOnStep	// boolean
+	Variable stepCenter
+
+	// The default is to include the wave in the average, then we check for a bunch of possible
+	// reasons to exclude it
+	WAVE thisWave=$thisWaveName
+	Variable include=1  // boolean
+	String waveTypeStr=StringByKeyInWaveNote(thisWave, "WAVETYPE")
+	if (AreStringsEqual(waveTypeStr,"average"))
+		include=0
+	endif
+	if (include && NumberByKeyInWaveNote(thisWave, "REJECT"))
+		include=0
+	endif
+	if (include && filterOnHold)
+		Variable hold=NumberByKeyInWaveNote(thisWave, "HOLD")
+		if ( abs(hold-holdCenter)>holdTol )
+			include=0
+		endif
+	endif
+	if (include && filterOnStep)
+		Variable step=NumberByKeyInWaveNote(thisWave, "STEP")
+		if (abs(step-stepCenter)>0.1)  // tolerance is hard-coded
+			include=0
+		endif
+	endif
+	return include
+End
