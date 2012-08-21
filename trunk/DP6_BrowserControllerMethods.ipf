@@ -74,7 +74,7 @@ Function CreateDataProBrowser() : Graph
 	Variable /G from2=90, to2=10
 	Variable /G lev1=0  // this is a param
 	Variable /G baseline=nan, mean1=nan, peak1=nan, rise1=nan  // these are statistics
-	Variable /G cross1=nan
+	Variable /G nCrossings1=nan
 	Variable /G mean2=nan, peak2=nan, rise2=nan
 	
 	// Create the globals related to the fit subpanel
@@ -104,7 +104,7 @@ Function CreateDataProBrowser() : Graph
 	//Variable /G holdtolerance=nan
 	Variable /G averageAllSteps=1
 	Variable /G stepToAverage=1
-	Variable /G saveAveragesToDisk=1
+	Variable /G saveAveragesToDisk=0
 	
 	// Make waves for colors
 	Make /O/N=(8,3) Colors
@@ -263,21 +263,21 @@ Function NewToolsPanel(browserNumber) : Panel
 	DrawText 224,yOffset-61+113,"ms"
 
 	absVarName=AbsoluteVarName(browserDFName,"from1")
-	SetVariable from_disp1,pos={54,yOffset-61+122},size={80,17},proc=UpdateRise,title="From"
+	SetVariable from_disp1,pos={54,yOffset-61+122},size={80,17},proc=HandleMeasurementSetVariable,title="From"
 	SetVariable from_disp1,limits={0,100,10},value=$absVarName
 	DrawText 140,yOffset-61+138,"%"
 
 	absVarName=AbsoluteVarName(browserDFName,"to1")
-	SetVariable to_disp1,pos={154,yOffset+61},size={66,17},proc=UpdateRise,title="To"
+	SetVariable to_disp1,pos={154,yOffset+61},size={66,17},proc=HandleMeasurementSetVariable,title="To"
 	SetVariable to_disp1,limits={0,100,10},value=$absVarName
 	DrawText 227,yOffset-61+136,"%"
 	
 	absVarName=AbsoluteVarName(browserDFName,"lev1")
 	SetVariable levelSetVariable,pos={18,yOffset-61+145},size={80,17}
-	SetVariable levelSetVariable,proc=HandleLevelSetVariable,title="Level"
+	SetVariable levelSetVariable,proc=HandleMeasurementSetVariable,title="Level"
 	SetVariable levelSetVariable,limits={-100,100,10},format="%4.2f",value=$absVarName
 	
-	absVarName=AbsoluteVarName(browserDFName,"cross1")
+	absVarName=AbsoluteVarName(browserDFName,"nCrossings1")
 	ValDisplay cross1ValDisplay,pos={110,yOffset-61+145},size={110,17},title="No. Crossings"
 	ValDisplay cross1ValDisplay,limits={0,0,0},barmisc={0,1000},format="%4.0f",value= #absVarName
 	
@@ -302,12 +302,12 @@ Function NewToolsPanel(browserNumber) : Panel
 	DrawText 227,249,"ms"
 	
 	absVarName=AbsoluteVarName(browserDFName,"from2")
-	SetVariable from_disp2,pos={49,253},size={80,17},proc=UpdateRise,title="From"
+	SetVariable from_disp2,pos={49,253},size={80,17},proc=HandleMeasurementSetVariable,title="From"
 	SetVariable from_disp2,limits={0,100,10},value= $absVarName
 	DrawText 228,268,"%"
 	
 	absVarName=AbsoluteVarName(browserDFName,"to2")
-	SetVariable to_disp2,pos={155,254},size={66,17},proc=UpdateRise,title="To"
+	SetVariable to_disp2,pos={155,254},size={66,17},proc=HandleMeasurementSetVariable,title="To"
 	SetVariable to_disp2,limits={0,100,10},value= $absVarName
 	DrawText 137,268,"%"
 
@@ -788,7 +788,10 @@ Function ClearWindow1(bStruct) : ButtonControl
 	SetDataFolder savedDF	
 End
 
-Function HandleLevelSetVariable(svStruct) : SetVariableControl
+Function HandleMeasurementSetVariable(svStruct) : SetVariableControl
+	// This is a generic handler for several of the measurement sub-panel
+	// SetVariables.  It simply updates the measurements in the model and
+	// syncs the view.
 	STRUCT WMSetVariableAction &svStruct	
 	if ( svStruct.eventCode==-1 ) 
 		return 0
@@ -1288,7 +1291,7 @@ Function ComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom, iT
 		Save /C/I outWave as outFileName
 		Printf "%s: Average saved to disk as %s\r", waveBaseNameShort, outFileName
 	else
-		Printf "%s: Average not saved to disk\r", waveBaseNameShort
+		//Printf "%s: Average not saved to disk\r", waveBaseNameShort
 	endif
 	
 	// Restore original DF

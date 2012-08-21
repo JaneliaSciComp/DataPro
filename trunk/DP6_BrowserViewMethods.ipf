@@ -449,7 +449,7 @@ Function UpdateMeasurementsView(browserNumber)
 	NVAR showToolsChecked
 	NVAR baseline, mean1, peak1, rise1
 	NVAR mean2, peak2, rise2
-	NVAR cross1
+	NVAR nCrossings1
 
 	// white them out if they're nan
 	String windowName=browserName+"#ToolsPanel"
@@ -461,7 +461,7 @@ Function UpdateMeasurementsView(browserNumber)
 		WhiteOutIffNan("mean2ValDisplay",windowName,mean2)
 		WhiteOutIffNan("peak2ValDisplay",windowName,peak2)
 		WhiteOutIffNan("rise2ValDisplay",windowName,rise2)
-		WhiteOutIffNan("cross1ValDisplay",windowName,cross1)
+		WhiteOutIffNan("cross1ValDisplay",windowName,nCrossings1)
 	endif
 	
 End
