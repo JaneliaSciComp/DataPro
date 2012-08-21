@@ -223,7 +223,7 @@ Function NewToolsPanel(browserNumber) : Panel
 	// Create the panel, draw all the controls
 	Variable toolsPanelWidth=250  // pels
 	Variable measureAreaHeight=280  // pels
-	Variable fitAreaHeight=155  // pels
+	Variable fitAreaHeight=155+30  // pels
 	Variable averageAreaHeight=110  // pels
 	Variable toolsPanelHeight=measureAreaHeight+fitAreaHeight+averageAreaHeight
 	NewPanel /HOST=$browserWindowName /EXT=0 /W=(0,0,toolsPanelWidth,toolsPanelHeight) /N=ToolsPanel /K=1 as "Tools"
@@ -235,7 +235,7 @@ Function NewToolsPanel(browserNumber) : Panel
 	SetDrawEnv linethick= 3,linefgc= (65535,0,0)
 	DrawRect 6-3,6-3,6+100+3,6+20+3
 	Button setbase,pos={6,6},size={100,20},proc=HandleSetBaselineButton,title="Set Baseline"
-	Button clearBaselineButton,pos={6,6+28},size={100,18},proc=ClearBaseline,title="Clear Baseline"
+	Button clearBaselineButton,pos={6,6+28-1},size={100,18},proc=ClearBaseline,title="Clear Baseline"
 
 	String absVarName=AbsoluteVarName(browserDFName,"baseline")
 	ValDisplay baselineValDisplay,pos={139,8},size={82,17},title="Mean",format="%4.2f"
@@ -246,7 +246,7 @@ Function NewToolsPanel(browserNumber) : Panel
 	SetDrawEnv linethick= 3,linefgc= (3,52428,1)
 	DrawRect 3,yOffset-3,109,yOffset+20+3
 	Button setwin_1,pos={6,yOffset},size={100,20},proc=SetWindow1,title="Set Window 1"
-	Button clearWindow1Button,pos={6,yOffset+28},size={100,18},proc=ClearWindow1,title="Clear Window 1"
+	Button clearWindow1Button,pos={6,yOffset+28-1},size={100,18},proc=ClearWindow1,title="Clear Window 1"
 
 	absVarName=AbsoluteVarName(browserDFName,"mean1")
 	ValDisplay mean1ValDisplay,pos={138,yOffset-5},size={82,17},title="Mean",format="%4.2f"
@@ -285,7 +285,7 @@ Function NewToolsPanel(browserNumber) : Panel
 	SetDrawEnv linethick= 3,linefgc= (0,0,65535)
 	DrawRect 3,190-3,109,190+20+3
 	Button setwin_2,pos={6,190},size={100,20},proc=SetWindow2,title="Set Window 2"
-	Button clearWindow2Button,pos={6,190+28},size={100,18},proc=ClearWindow2,title="Clear Window 2"
+	Button clearWindow2Button,pos={6,190+28-1},size={100,18},proc=ClearWindow2,title="Clear Window 2"
 
 	absVarName=AbsoluteVarName(browserDFName,"mean2")
 	ValDisplay mean2ValDisplay,pos={139,189},size={82,17},title="Mean",format="%4.2f"
@@ -322,51 +322,55 @@ Function NewToolsPanel(browserNumber) : Panel
 	Button fitButton,pos={123,yOffset+10},size={100,20},proc=HandleFitButton,title="Fit"
 
 	SetDrawEnv linethick= 3,linefgc= (26411,1,52428)	// purple
-	DrawRect 8-3,yOffset+36-3,8+100+2,yOffset+36+20+2
-	Button set_tFitZero,pos={8,yOffset+36},size={100,20},proc=SetFitZero,title="Set Zero"
+	DrawRect 8-3,yOffset+36-3+2,8+100+2,yOffset+36+20+2+2
+	Button set_tFitZero,pos={8,yOffset+36+2},size={100,20},proc=SetFitZero,title="Set Zero"
 
 	SetDrawEnv linethick= 3,linefgc= (0,65535,65535)	// cyan
-	DrawRect 123-3,yOffset+36-3,123+100+2,yOffset+36+20+2
-	Button set_fit_range,pos={123,yOffset+36},size={100,20},proc=SetFitRange,title="Set Range"
+	DrawRect 123-3,yOffset+36-3+2,123+100+2,yOffset+36+20+2+2
+	Button set_fit_range,pos={123,yOffset+36+2},size={100,20},proc=SetFitRange,title="Set Range"
+
+	Button clearTFitZero,pos={8,yOffset+36+28},size={100,18},proc=HandleClearFitZeroButton,title="Clear Zero"
+
+	Button clearTFitRange,pos={123,yOffset+36+28},size={100,18},proc=HandleClearFitRangeButton,title="Clear Range"
 
 	PopupMenu fitTypePopupMenu,pos={8,yOffset+10},size={90,19}
 	PopupMenu fitTypePopupMenu,mode=1,value= #"\"single exp;double exp\""	
 	PopupMenu fitTypePopupMenu,proc=HandleFitTypePopupMenu
 	
 	absVarName=AbsoluteVarName(browserDFName,"tau1")
-	ValDisplay tau1ValDisplay, pos={6,yOffset+64},size={75,17},title="tau 1  ",format="%4.2f"
+	ValDisplay tau1ValDisplay, pos={6,yOffset+64+28},size={75,17},title="tau 1  ",format="%4.2f"
 	ValDisplay tau1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"amp1")
-	ValDisplay amp1ValDisplay,pos={5,yOffset+82},size={75,17},title="amp 1",format="%4.2f"
+	ValDisplay amp1ValDisplay,pos={5,yOffset+82+28},size={75,17},title="amp 1",format="%4.2f"
 	ValDisplay amp1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"tau2")
-	ValDisplay tau2ValDisplay,pos={119,yOffset+64},size={75,17},title="tau 2  ",format="%4.2f"
+	ValDisplay tau2ValDisplay,pos={119,yOffset+64+28},size={75,17},title="tau 2  ",format="%4.2f"
 	ValDisplay tau2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"amp2")
-	ValDisplay amp2ValDisplay,pos={119,yOffset+81},size={75,17},title="amp 2",format="%4.2f"
+	ValDisplay amp2ValDisplay,pos={119,yOffset+81+28},size={75,17},title="amp 2",format="%4.2f"
 	ValDisplay amp2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"dtFitExtend")
-	SetVariable dtFitExtendSetVariable,pos={7,yOffset+125},size={98,17},title="Show fit"
+	SetVariable dtFitExtendSetVariable,pos={7,yOffset+125+28},size={98,17},title="Show fit"
 	SetVariable dtFitExtendSetVariable,limits={0,10000,10},value=$absVarName
 	SetVariable dtFitExtendSetVariable,proc=HandleDtFitExtendSetVariable
-	DrawText 111,yOffset+140,"ms beyond range"
+	DrawText 111,yOffset+140+28,"ms beyond range"
 	
 	absVarName=AbsoluteVarName(browserDFName,"yOffset")
-	ValDisplay yOffsetValDisplay,pos={7,yOffset+102},size={90,17},title="offset",format="%4.2f"
+	ValDisplay yOffsetValDisplay,pos={7,yOffset+102+28},size={90,17},title="offset",format="%4.2f"
 	ValDisplay yOffsetValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
 	
 	// N.B.: This one doesn't use a binding, so the callback must handle updating the model
 	NVAR holdYOffset=holdYOffset
-	CheckBox holdYOffsetCheckbox,pos={110,yOffset+102},size={50,20},title="Hold",value=holdYOffset
+	CheckBox holdYOffsetCheckbox,pos={110,yOffset+102+28},size={50,20},title="Hold",value=holdYOffset
 	CheckBox holdYOffsetCheckbox,proc=HandleHoldYOffsetCheckbox
 	
 	// N.B.: This one doesn't use a binding, so the callback must handle updating the model
 	NVAR yOffsetHeldValue
-	SetVariable yOffsetHeldValueSetVariable,pos={156,yOffset+101},size={70,17},title="at",format="%4.2f"
+	SetVariable yOffsetHeldValueSetVariable,pos={156,yOffset+101+28},size={70,17},title="at",format="%4.2f"
 	SetVariable yOffsetHeldValueSetVariable,limits={-Inf,Inf,1},value=_NUM:yOffsetHeldValue
 	SetVariable yOffsetHeldValueSetVariable,proc=HandleYOffsetHeldValueSetVar	
 
@@ -560,7 +564,7 @@ Function HandleBaseNameControl(svStruct) : SetVariableControl
 	String browserName=svStruct.win
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	UpdateMeasurements(browserNumber)
-	InvalidateFit(browserNumber)  // model method
+	//InvalidateFit(browserNumber)  // model method
 	SyncBrowserViewToDFState(browserNumber)
 End
 
@@ -891,7 +895,7 @@ Function SetFitZero(bStruct) : ButtonControl
 	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 
-	// Draw vertical line to indicate the cursor
+	// Set the model state variable
 	NVAR tFitZero=tFitZero
 	tFitZero=xcsr(A,browserName)
 	//SVAR traceAWaveName=traceAWaveName  // actually the name of a wave, not the wave itself
@@ -900,6 +904,34 @@ Function SetFitZero(bStruct) : ButtonControl
 
 	// Update the fit
 	//Printf "About to call UpdateFit() in SetFitZero()\r"
+	UpdateFit(browserNumber)
+	
+	// Update the view
+	SyncBrowserViewToDFState(browserNumber)
+	
+	// Restore original DF
+	SetDataFolder savedDFName
+End
+
+Function HandleClearFitZeroButton(bStruct) : ButtonControl
+	STRUCT WMButtonAction &bStruct
+	
+	// Check that this is really a button-up on the button
+	if (bStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif
+	
+	// Get the browser number from the bStruct
+	Variable browserNumber=BrowserNumberFromName(bStruct.win);
+	
+	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+
+	// Clear the model state variable
+	NVAR tFitZero
+	tFitZero=nan
+
+	// Update the fit
 	UpdateFit(browserNumber)
 	
 	// Update the view
@@ -937,6 +969,36 @@ Function SetFitRange(bStruct) : ButtonControl
 
 	// Update the fit
 	//Printf "About to call UpdateFit() in SetFitRange()\r"
+	UpdateFit(browserNumber)
+
+	// Update the view
+	SyncBrowserViewToDFState(browserNumber)
+	
+	// Restore original DF
+	SetDataFolder savedDFName
+End
+
+Function HandleClearFitRangeButton(bStruct) : ButtonControl
+	STRUCT WMButtonAction &bStruct
+	
+	// Check that this is really a button-up on the button
+	if (bStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif
+	
+	// Get the browser number from the bStruct
+	Variable browserNumber=BrowserNumberFromName(bStruct.win);
+	
+	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+
+	// Set internal "cursors"
+	NVAR tFitLeft
+	NVAR tFitRight
+	tFitLeft=nan
+	tFitRight=nan
+
+	// Update the fit
 	UpdateFit(browserNumber)
 
 	// Update the view
