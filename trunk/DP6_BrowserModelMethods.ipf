@@ -256,7 +256,7 @@ Function UpdateMeasurements(browserNumber)
 	// outputs of the measurement process
 	NVAR baseline, mean1, peak1, rise1
 	NVAR mean2, peak2, rise2
-	NVAR cross1
+	NVAR nCrossings1
 	
 	// If there's a top wave, calculate features of it
 	String topTraceWaveName=GetTopTraceWaveNameAbs(browserNumber)
@@ -279,11 +279,12 @@ Function UpdateMeasurements(browserNumber)
 				peak1=V_max-baseline	
 			endif
 			rise1=RiseTime(thisWave,tWindow1Left,tWindow1Right,baseline,peak1,from1/100,to1/100)
-			cross1=CountThresholdCrossings(topTraceWaveName, tWindow1Left, tWindow1Right, lev1)
+			nCrossings1=CountThresholdCrossings(topTraceWaveName, tWindow1Left, tWindow1Right, lev1)
 		else
 			mean1=NaN
 			peak1=NaN
 			rise1=NaN
+			nCrossings1=nan		
 		endif
 		
 		// Calculate features of window 2
@@ -307,6 +308,7 @@ Function UpdateMeasurements(browserNumber)
 		mean1=NaN
 		peak1=NaN
 		rise1=NaN
+		nCrossings1=nan
 		mean2=NaN
 		peak2=NaN
 		rise2=NaN		
@@ -507,25 +509,27 @@ Function IncludeInAverage(thisWaveName,filterOnHold,holdCenter,holdTol,filterOnS
 	// The default is to include the wave in the average, then we check for a bunch of possible
 	// reasons to exclude it
 	WAVE thisWave=$thisWaveName
-	Variable include=1  // boolean
+	if ( !WaveExists(thisWave) )
+		return 0
+	endif
 	String waveTypeStr=StringByKeyInWaveNote(thisWave, "WAVETYPE")
 	if (AreStringsEqual(waveTypeStr,"average"))
-		include=0
+		return 0
 	endif
-	if (include && NumberByKeyInWaveNote(thisWave, "REJECT"))
-		include=0
+	if ( NumberByKeyInWaveNote(thisWave, "REJECT") )
+		return 0
 	endif
-	if (include && filterOnHold)
+	if (filterOnHold)
 		Variable hold=NumberByKeyInWaveNote(thisWave, "HOLD")
 		if ( abs(hold-holdCenter)>holdTol )
-			include=0
+			return 0
 		endif
 	endif
-	if (include && filterOnStep)
+	if (filterOnStep)
 		Variable step=NumberByKeyInWaveNote(thisWave, "STEP")
 		if (abs(step-stepCenter)>0.1)  // tolerance is hard-coded
-			include=0
+			return 0
 		endif
 	endif
-	return include
+	return 1
 End
