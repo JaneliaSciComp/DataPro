@@ -318,34 +318,34 @@ Function UpdateMeasurements(browserNumber)
 	SetDataFolder savedDF
 End
 
-Function InvalidateFit(browserNumber)
-	// This is a model method that marks the fit coefficients as not being valid
-	Variable browserNumber
-	
-	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
-	String savedDFName=ChangeToBrowserDF(browserNumber)
-
-	// the instance vars we''ll need
-	NVAR isFitValid
-	SVAR waveNameAbsOfFitTrace
-	NVAR amp1, tau1, amp2, tau2, yOffset
-
-	// mark the fit as invalid
-	isFitValid=0
-	
-	// set this guy to empty, to keep ourselves out of trouble
-	waveNameAbsOfFitTrace=""
-	
-	// don't really need to nan-out coeffs, but what the hell
-	amp1=nan
-	tau1=nan
-	amp2=nan
-	tau2=nan
-	yOffset=nan
-
-	// there may still be a yFit wave in the current workspace, but if the view does it's job, it
-	// will never be seen
-End
+//Function InvalidateFit(browserNumber)
+//	// This is a model method that marks the fit coefficients as not being valid
+//	Variable browserNumber
+//	
+//	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
+//	String savedDFName=ChangeToBrowserDF(browserNumber)
+//
+//	// the instance vars we''ll need
+//	NVAR isFitValid
+//	SVAR waveNameAbsOfFitTrace
+//	NVAR amp1, tau1, amp2, tau2, yOffset
+//
+//	// mark the fit as invalid
+//	isFitValid=0
+//	
+//	// set this guy to empty, to keep ourselves out of trouble
+//	waveNameAbsOfFitTrace=""
+//	
+//	// don't really need to nan-out coeffs, but what the hell
+//	amp1=nan
+//	tau1=nan
+//	amp2=nan
+//	tau2=nan
+//	yOffset=nan
+//
+//	// there may still be a yFit wave in the current workspace, but if the view does it's job, it
+//	// will never be seen
+//End
 
 Function UpdateFit(browserNumber)
 	// A model method (in spirit), changes the yFit wave and the fit coefficient instance variables to reflect 
