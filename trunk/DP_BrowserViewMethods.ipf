@@ -14,7 +14,6 @@ Function SyncBrowserViewToDFState(browserNumber)
 
 	// Get references to the DF vars we need
 	NVAR iCurrentSweep=iCurrentSweep
-	NVAR clamp_mode=root:DP_ADCDACcontrol:clamp_mode
 	NVAR traceAChecked=traceAChecked
 	NVAR traceBChecked=traceBChecked	
 	SVAR baseNameA=baseNameA
@@ -193,13 +192,10 @@ Function SyncBrowserViewToDFState(browserNumber)
 	String traceADisplayName=WaveNameFromBaseAndSweep(baseNameA,iCurrentSweep)
 	String traceBDisplayName=WaveNameFromBaseAndSweep(baseNameB,iCurrentSweep)
 	Label /W=$browserName /Z bottom "\\F'Helvetica'\\Z12\\f01Time (ms)"
-	if (clamp_mode<1)
-		Label /W=$browserName /Z left "\\F'Helvetica'\\Z12\\f01\K(0,0,0)"+traceADisplayName+" (pA)"
-		Label /W=$browserName /Z right "\\F'Helvetica'\\Z12\\f01\K(32768,32768,32768)"+traceBDisplayName+" (mV)"
-	else
-		Label /W=$browserName /Z left "\\F'Helvetica'\\Z12\\f01\K(0,0,0)"+traceADisplayName+" (mV)"
-		Label /W=$browserName /Z right "\\F'Helvetica'\\Z12\\f01\K(32768,32768,32768)"+traceBDisplayName+" (pA)"
-	endif
+	String unitsA=WaveUnits(traceAWaveNameAbs,-1)  // -1 means data units
+	String unitsB=WaveUnits(traceBWaveNameAbs,-1)
+	Label /W=$browserName /Z left "\\F'Helvetica'\\Z12\\f01\K(0,0,0)"+traceADisplayName+" ("+unitsA+")"
+	Label /W=$browserName /Z right "\\F'Helvetica'\\Z12\\f01\K(32768,32768,32768)"+traceBDisplayName+" ("+unitsB+")"
 
 	// Don't want any units in the tick labels
 	ModifyGraph /W=$browserName /Z tickUnit(bottom)=1
