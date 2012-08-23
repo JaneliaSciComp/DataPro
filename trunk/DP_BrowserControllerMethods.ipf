@@ -1270,7 +1270,7 @@ Function HandleAverageButton(bStruct) : ButtonControl
 	endif
 	
 	// Figure the dest wave name
-	NVAR acqNextSweepIndex=root:DP_ADCDACcontrol:wavenumber
+	NVAR acqNextSweepIndex=root:DP_ADCDACcontrol:iSweep
 	Variable destSweepIndex=acqNextSweepIndex
 	
 	// Do the average(s)
