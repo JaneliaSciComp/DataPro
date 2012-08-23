@@ -189,14 +189,18 @@ Function SyncBrowserViewToDFState(browserNumber)
 	endif
 
 	// Set axis labels on the graph
-	String traceADisplayName=WaveNameFromBaseAndSweep(baseNameA,iCurrentSweep)
-	String traceBDisplayName=WaveNameFromBaseAndSweep(baseNameB,iCurrentSweep)
 	Label /W=$browserName /Z bottom "\\F'Helvetica'\\Z12\\f01Time (ms)"
-	String unitsA=WaveUnits(traceAWaveNameAbs,-1)  // -1 means data units
-	String unitsB=WaveUnits(traceBWaveNameAbs,-1)
-	Label /W=$browserName /Z left "\\F'Helvetica'\\Z12\\f01\K(0,0,0)"+traceADisplayName+" ("+unitsA+")"
-	Label /W=$browserName /Z right "\\F'Helvetica'\\Z12\\f01\K(32768,32768,32768)"+traceBDisplayName+" ("+unitsB+")"
-
+	if (waveAExists)
+		String traceADisplayName=WaveNameFromBaseAndSweep(baseNameA,iCurrentSweep)
+		String unitsA=WaveUnits($traceAWaveNameAbs,-1)  // -1 means data units
+		Label /W=$browserName /Z left "\\F'Helvetica'\\Z12\\f01\K(0,0,0)"+traceADisplayName+" ("+unitsA+")"
+	endif
+	if (waveBExists)
+		String traceBDisplayName=WaveNameFromBaseAndSweep(baseNameB,iCurrentSweep)
+		String unitsB=WaveUnits($traceBWaveNameAbs,-1)
+		Label /W=$browserName /Z right "\\F'Helvetica'\\Z12\\f01\K(32768,32768,32768)"+traceBDisplayName+" ("+unitsB+")"
+	endif
+	
 	// Don't want any units in the tick labels
 	ModifyGraph /W=$browserName /Z tickUnit(bottom)=1
 	ModifyGraph /W=$browserName /Z tickUnit(left)=1
