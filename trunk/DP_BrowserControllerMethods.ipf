@@ -454,12 +454,13 @@ Function DataProBrowserHook(s)
 		endif
 	elseif (s.eventCode==8)			// graph modified
 		// We catch this b/c we need to know if the y axis limits change
-		NVAR yAMin=yAMin
-		NVAR yAMax=yAMax
-		NVAR yBMin=yBMin
-		NVAR yBMax=yBMax
-		NVAR xMin=xMin
-		NVAR xMax=xMax
+		String savedDF=ChangeToBrowserDF(browserNumber)
+		NVAR yAMin
+		NVAR yAMax
+		NVAR yBMin
+		NVAR yBMax
+		NVAR xMin
+		NVAR xMax
 		GetAxis /W=$browserName /Q left
 		if (V_flag==0)  // V_flag will be zero if the axis actually exists
 			yAMin=V_min
@@ -475,6 +476,7 @@ Function DataProBrowserHook(s)
 			xMin=V_min
 			xMax=V_max
 		endif
+		SetDataFolder savedDF
 	endif
 
 	return 0		// If non-zero, we handled event and Igor will ignore it.
