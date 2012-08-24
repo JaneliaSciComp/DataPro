@@ -9,6 +9,17 @@ How to install DataPro
 3. Copy the file "Shortcut to DataPro.ipf" to your "Igor Procedures"
    folder.
 
+4. Edit the file DataPro.ipf, changing the fourth line of the function
+   StartDataPro() from
+
+   NewPath DataPro "C:\\Documents and Settings\\Adam\\My
+   Documents\\WaveMetrics\\Igor Pro 6 User Files\\User
+   Procedures\\DataPro\\trunk\\"
+
+   so that the path given points to the newly-installed DataPro
+   folder, which will have a name similar to datapro_rel_700.  Be sure
+   to use double backslashes (as above) to separate path elements.
+
 If DataPro is installed correctly, you should have a menu item called
 "DataPro" in the Igor Pro main menu.
 
