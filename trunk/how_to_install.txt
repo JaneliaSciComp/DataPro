@@ -1,15 +1,12 @@
 How to install DataPro
 
-1. Copy DataPro folder in to the "User Procedures" folder in your "Igor
+If you don't need to also use older versions of DataPro:
+
+-----
+1. Copy DataPro folder to the "Igor Procedures" folder in your "Igor
    Pro 6 User Files" folder.
 
-2. Right-click on the DataPro.ipf file, select "Create Shortcut".
-   This will create a file called "Shortcut to DataPro.ipf"
-
-3. Copy the file "Shortcut to DataPro.ipf" to your "Igor Procedures"
-   folder.
-
-4. Edit the file DataPro.ipf, changing the fourth line of the function
+2. Edit the file DataPro.ipf, changing the fourth line of the function
    StartDataPro() from
 
    NewPath DataPro "C:\\Documents and Settings\\Adam\\My
@@ -18,10 +15,42 @@ How to install DataPro
 
    so that the path given points to the newly-installed DataPro
    folder, which will have a name similar to datapro_rel_700.  Be sure
-   to use double backslashes (as above) to separate path elements.
+   to use double backslashes (as above) to separate path elements on
+   Microsoft Windows.
+-----
 
-If DataPro is installed correctly, you should have a menu item called
-"DataPro" in the Igor Pro main menu.
+If you _do_ need to also use older versions of DataPro:
+
+-----
+1. Copy DataPro folder to the "User Procedures" (NOT "Igor
+   Procedures") folder in your "Igor Pro 6 User Files" folder.
+
+2. Edit the file DataPro.ipf, changing the fourth line of the function
+   StartDataPro() from
+
+   NewPath DataPro "C:\\Documents and Settings\\Adam\\My
+   Documents\\WaveMetrics\\Igor Pro 6 User Files\\User
+   Procedures\\DataPro\\trunk\\"
+
+   so that the path given points to the newly-installed DataPro
+   folder, which will have a name similar to datapro_rel_700.  Be sure
+   to use double backslashes (as above) to separate path elements on
+   Microsoft Windows.
+
+3. In experiments where you want to use this version of DataPro, add
+   the line
+
+     #include "DataPro"
+
+   to the experiments procedure file.  You can access this from the
+   Igor Pro menu by going to
+   Windows > Procedure Windows > Procedure Window.  (Note: You will
+   have to do this for each experiment and/or template that you want
+   to use this version of DataPro with.)
+-----
+
+In either case, if DataPro is installed correctly, you should have a
+menu item called "DataPro" in the Igor Pro main menu.
 
 To start DataPro, select "Start DataPro" from the "DataPro" menu.
 
