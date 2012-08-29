@@ -130,7 +130,7 @@ End
 
 Function RemoveBaseNamedWaves(base)
 	String base
-	String savDF, targetWindow, allwaves, thiswave
+	String savDF, targetWindow, allwaves, thisWaveName
 	Variable i
 	savDF=GetDataFolder(1)
 	SetDataFolder root:
@@ -140,11 +140,11 @@ Function RemoveBaseNamedWaves(base)
 	if (strlen(allwaves)>0)
 		i=0
 		do
-			thiswave=GetStrFromList(allwaves,i,";")
-			if (strlen(thiswave)==0)
+			thisWaveName=GetStrFromList(allwaves,i,";")
+			if (strlen(thisWaveName)==0)
 				break
 			else
-				RemoveFromGraph $thiswave
+				RemoveFromGraph $thisWaveName
 			endif
 			i+=1
 		while(1)
