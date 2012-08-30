@@ -3,20 +3,13 @@ How to install DataPro
 If you don't need to also use older versions of DataPro:
 
 -----
-1. Copy DataPro folder to the "Igor Procedures" folder in your "Igor
-   Pro 6 User Files" folder.
+1. Copy DataPro folder to the "User Procedures" (NOT "Igor
+   Procedures") folder in your "Igor Pro 6 User Files" folder.
 
-2. Edit the file DataPro.ipf, changing the fourth line of the function
-   StartDataPro() from
+2. Right-click on the "DataPro.ipf" file.  Select "Create Shortcut".
+   Drag the newly-created file "Shortcut to DataPro.ipf" to the "Igor
+   Procedures" folder in your "Igor Pro 6 User Files" folder.
 
-   NewPath DataPro "C:\\Documents and Settings\\Adam\\My
-   Documents\\WaveMetrics\\Igor Pro 6 User Files\\User
-   Procedures\\DataPro\\trunk\\"
-
-   so that the path given points to the newly-installed DataPro
-   folder, which will have a name similar to datapro_rel_700.  Be sure
-   to use double backslashes (as above) to separate path elements on
-   Microsoft Windows.
 -----
 
 If you _do_ need to also use older versions of DataPro:
@@ -25,19 +18,7 @@ If you _do_ need to also use older versions of DataPro:
 1. Copy DataPro folder to the "User Procedures" (NOT "Igor
    Procedures") folder in your "Igor Pro 6 User Files" folder.
 
-2. Edit the file DataPro.ipf, changing the fourth line of the function
-   StartDataPro() from
-
-   NewPath DataPro "C:\\Documents and Settings\\Adam\\My
-   Documents\\WaveMetrics\\Igor Pro 6 User Files\\User
-   Procedures\\DataPro\\trunk\\"
-
-   so that the path given points to the newly-installed DataPro
-   folder, which will have a name similar to datapro_rel_700.  Be sure
-   to use double backslashes (as above) to separate path elements on
-   Microsoft Windows.
-
-3. In experiments where you want to use this version of DataPro, add
+2. In experiments where you want to use this version of DataPro, add
    the line
 
      #include "DataPro"
