@@ -111,7 +111,7 @@ Function /S GetTraceAWaveNameRel(browserNumber)
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 	NVAR iCurrentSweep=iCurrentSweep
 	SVAR baseNameA=baseNameA
-	String retval=sprintf2sd("%s%d", baseNameA, iCurrentSweep)
+	String retval=sprintf2sd("%s_%d", baseNameA, iCurrentSweep)
 	SetDataFolder savedDFName
 	return retval
 End
@@ -123,7 +123,7 @@ Function /S GetTraceBWaveNameRel(browserNumber)
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 	NVAR iCurrentSweep=iCurrentSweep
 	SVAR baseNameB=baseNameB
-	String retval=sprintf2sd("%s%d", baseNameB, iCurrentSweep)
+	String retval=sprintf2sd("%s_%d", baseNameB, iCurrentSweep)
 	SetDataFolder savedDFName
 	return retval
 End
