@@ -30,8 +30,8 @@ Function CreateDataProBrowser() : Graph
 
 	// Create the state variables for this instance
 	//Variable /G iOldSweep,
-	String /G baseNameA="ad0_"
-	String /G baseNameB="ad1_"
+	String /G baseNameA="ad0"
+	String /G baseNameB="ad1"
 	Variable /G iCurrentSweep=1
 	Variable /G tCursorA=nan
 	Variable /G tCursorB=nan	
