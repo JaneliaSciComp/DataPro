@@ -24,14 +24,14 @@ Function CreateDataProBrowser() : Graph
 	String browserDFName=BrowserDFNameFromNumber(browserNumber)
 	NewDataFolder /O/S $browserDFName
 
-	// References for globals not in our own DF
-	SVAR baseNameANow=root:DP_ADCDACcontrol:adcname0
-	SVAR baseNameBNow=root:DP_ADCDACcontrol:adcname1
+	//// References for globals not in our own DF
+	//SVAR baseNameANow=root:DP_ADCDACcontrol:adcname0
+	//SVAR baseNameBNow=root:DP_ADCDACcontrol:adcname1
 
 	// Create the state variables for this instance
 	//Variable /G iOldSweep,
-	String /G baseNameA=baseNameANow
-	String /G baseNameB=baseNameBNow
+	String /G baseNameA="ad0_"
+	String /G baseNameB="ad1_"
 	Variable /G iCurrentSweep=1
 	Variable /G tCursorA=nan
 	Variable /G tCursorB=nan	
