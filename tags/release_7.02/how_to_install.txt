@@ -1,0 +1,37 @@
+How to install DataPro
+
+If you don't need to also use older versions of DataPro:
+
+-----
+1. Copy DataPro folder to the "User Procedures" (NOT "Igor
+   Procedures") folder in your "Igor Pro 6 User Files" folder.
+
+2. Right-click on the "DataPro.ipf" file.  Select "Create Shortcut".
+   Drag the newly-created file "Shortcut to DataPro.ipf" to the "Igor
+   Procedures" folder in your "Igor Pro 6 User Files" folder.
+
+-----
+
+If you _do_ need to also use older versions of DataPro:
+
+-----
+1. Copy DataPro folder to the "User Procedures" (NOT "Igor
+   Procedures") folder in your "Igor Pro 6 User Files" folder.
+
+2. In experiments where you want to use this version of DataPro, add
+   the line
+
+     #include "DataPro"
+
+   to the experiments procedure file.  You can access this from the
+   Igor Pro menu by going to
+   Windows > Procedure Windows > Procedure Window.  (Note: You will
+   have to do this for each experiment and/or template that you want
+   to use this version of DataPro with.)
+-----
+
+In either case, if DataPro is installed correctly, you should have a
+menu item called "DataPro" in the Igor Pro main menu.
+
+To start DataPro, select "Start DataPro" from the "DataPro" menu.
+
