@@ -25,8 +25,8 @@ Function CreateDataProBrowser() : Graph
 	NewDataFolder /O/S $browserDFName
 
 	//// References for globals not in our own DF
-	//SVAR baseNameANow=root:DP_ADCDACcontrol:adcname0
-	//SVAR baseNameBNow=root:DP_ADCDACcontrol:adcname1
+	//SVAR baseNameANow=root:DP_DigitizerControl:adcname0
+	//SVAR baseNameBNow=root:DP_DigitizerControl:adcname1
 
 	// Create the state variables for this instance
 	//Variable /G iOldSweep,
@@ -116,7 +116,7 @@ Function CreateDataProBrowser() : Graph
 	//PauseUpdate; Silent 1		// building window...
 	String browserName=BrowserNameFromNumber(browserNumber)
 	String browserTitle=BrowserTitleFromNumber(browserNumber)
-	Display /W=(177,44,757,548) /K=1 /N=$browserName as browserTitle
+	Display /W=(177-30,44,757-30,548) /K=1 /N=$browserName as browserTitle
 	SetWindow $browserName, hook(DPHook)=DataProBrowserHook
 	ShowInfo
 	
@@ -1272,7 +1272,7 @@ Function HandleAverageButton(bStruct) : ButtonControl
 	endif
 	
 	// Figure the dest wave name
-	NVAR acqNextSweepIndex=root:DP_ADCDACcontrol:iSweep
+	NVAR acqNextSweepIndex=root:DP_DigitizerControl:iSweep
 	Variable destSweepIndex=acqNextSweepIndex
 	
 	// Do the average(s)
