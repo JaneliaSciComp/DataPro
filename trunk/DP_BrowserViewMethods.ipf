@@ -279,7 +279,7 @@ Function AddCursorLineToGraph(graphName,cursorWaveName,tCursor,r,g,b)
 	NVAR iCurrentSweep=iCurrentSweep
 		
 	// Get the max and min of wave A trace
-	String traceAWaveName=sprintf2sd("root:%s%d", baseNameA, iCurrentSweep)
+	String traceAWaveName=sprintf2sd("root:%s_%d", baseNameA, iCurrentSweep)
 	Variable waveAExists=WaveExists($traceAWaveName)
 	Variable yAMin, yAMax
 	if (waveAExists)
@@ -292,7 +292,7 @@ Function AddCursorLineToGraph(graphName,cursorWaveName,tCursor,r,g,b)
 	endif
 
 	// Get the max and min of wave B trace
-	String traceBWaveName=sprintf2sd("root:%s%d", baseNameB, iCurrentSweep)
+	String traceBWaveName=sprintf2sd("root:%s_%d", baseNameB, iCurrentSweep)
 	Variable waveBExists=WaveExists($traceBWaveName)		
 	Variable yBMin, yBMax
 	if (waveBExists)

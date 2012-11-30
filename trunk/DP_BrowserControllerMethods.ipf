@@ -98,7 +98,7 @@ Function CreateDataProBrowser() : Graph
 	// Create the globals related to the averaging subpanel
 	// There are all user-specified parameters
 	//Variable nSweeps=getNSweeps(browserNumber)		// Safe to call even this early
-	Variable /G saveAveragesToDisk=0
+	//Variable /G renameAverages=0
 	Variable /G averageAllSweeps=1
 	Variable /G iSweepFirstAverage=1
 	//Variable /G iSweepLastAvg=max(nSweeps,1)
@@ -382,10 +382,11 @@ Function NewToolsPanel(browserNumber) : Panel
 	// Averaging controls
 	yOffset=measureAreaHeight+fitAreaHeight
 
-	NVAR saveAveragesToDisk
 	Button avgnow,pos={20,yOffset+5},size={100,20},proc=HandleAverageButton,title="Average Sweeps"
-	CheckBox saveAveragesCheckBox,pos={150,yOffset+8},size={100,20},title="Save to disk",value=saveAveragesToDisk
-	CheckBox saveAveragesCheckBox,proc=HandleSaveAveragesCheckBox
+
+	//NVAR renameAverages
+	//CheckBox saveAveragesCheckBox,pos={150,yOffset+8},size={100,20},title="Rename",value=renameAverages
+	//CheckBox saveAveragesCheckBox,proc=HandleSaveAveragesCheckBox
 
 	SetDrawEnv fsize= 10,textrgb= (0,0,65535)
 	DrawText 48,yOffset+42,"Selected channels that meet the "
@@ -1213,8 +1214,8 @@ Function HandleSaveAveragesCheckBox(cbStruct) : CheckBoxControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
 	String savedDFName=ChangeToBrowserDF(browserNumber)	
-	NVAR saveAveragesToDisk
-	saveAveragesToDisk=cbStruct.checked
+	NVAR renameAverages
+	renameAverages=cbStruct.checked
 	SyncBrowserViewToDFState(browserNumber)
 	SetDataFolder savedDFName
 End
@@ -1330,13 +1331,25 @@ Function ComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom, iT
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 
 	// Figure the destination wave name
-	String destWaveName = sprintf2sd("root:%s%d", waveBaseName, destSweepIndex)
+	String destWaveName = sprintf2sd("root:%s_%d", waveBaseName, destSweepIndex)
+	
+//	// Handle possible renaming of the dest wave
+//	NVAR renameAverages
+//	if (renameAverages)
+//		Variable destWaveNameAlternate
+//		Prompt destWaveNameAlternate, sprintf1s("Name of destination wave for %s: ",waveBaseName)
+//		DoPrompt sprintf1s("Enter name of destination wave for %s: ",waveBaseName), destWaveNameAlternate
+//		if (V_flag)
+//			return
+//		endif
+//		// do error checking on destWaveNameAlternate, if valid use it, if not prompt again
+//	end
 	
 	// Loop over waves to be averaged, forming the sum and counting the number of waves
 	Variable i, nWavesSummedSoFar=0
 	Variable include
 	for (i=iFrom; i<=iTo; i+=1)
-		String thisWaveName=sprintf2sd("root:%s%d", waveBaseName, i)
+		String thisWaveName=sprintf2sd("root:%s_%d", waveBaseName, i)
 		WAVE thisWave=$thisWaveName
 		include=IncludeInAverage(thisWaveName,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
 		if (include)
@@ -1357,24 +1370,24 @@ Function ComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom, iT
 	Variable nWavesToAvg=nWavesSummedSoFar
 	
 	// Actually compute the average from the sum
-	String waveBaseNameShort=RemoveEnding(waveBaseName,"_")
+	//String waveBaseNameShort=RemoveEnding(waveBaseName,"_")
 	if (nWavesToAvg>0)
 		outWave /= nWavesToAvg
 	else
-		String message=sprintf1s("%s: No waves met your criteria to be averaged.", waveBaseNameShort)
+		String message=sprintf1s("%s: No waves met your criteria to be averaged.", waveBaseName)
 		Abort message
 	endif
-	Printf "%s: %d waves were averaged and stored in %s\r", waveBaseNameShort, nWavesToAvg, destWaveName
+	Printf "%s: %d waves were averaged and stored in %s\r", waveBaseName, nWavesToAvg, destWaveName
 	
-	// Save the average wave to disk, if called for
-	NVAR saveAveragesToDisk
-	if (saveAveragesToDisk)
-		String outFileName=sprintf1s("%s.avg", destWaveName)
-		Save /C/I outWave as outFileName
-		Printf "%s: Average saved to disk as %s\r", waveBaseNameShort, outFileName
-	else
-		//Printf "%s: Average not saved to disk\r", waveBaseNameShort
-	endif
+//	// Save the average wave to disk, if called for
+//	NVAR renameAverages
+//	if (renameAverages)
+//		String outFileName=sprintf1s("%s.avg", destWaveName)
+//		Save /C/I outWave as outFileName
+//		Printf "%s: Average saved to disk as %s\r", waveBaseName, outFileName
+//	else
+//		//Printf "%s: Average not saved to disk\r", waveBaseName
+//	endif
 	
 	// Restore original DF
 	SetDataFolder savedDFName	
