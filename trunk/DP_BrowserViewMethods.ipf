@@ -395,7 +395,8 @@ Function UpdateFitDisplay(browserNumber)
 		if ( holdYOffset )
 			SetVariable yOffsetHeldValueSetVariable,win=$browserName#ToolsPanel,disable=0  // normal
 		else
-			SetVariable yOffsetHeldValueSetVariable,win=$browserName#ToolsPanel,disable=1  // invisible
+			//SetVariable yOffsetHeldValueSetVariable,win=$browserName#ToolsPanel,disable=1  // invisible
+			SetVariable yOffsetHeldValueSetVariable,win=$browserName#ToolsPanel,disable=2  // grayed
 		endif
 	else
 		// the fit sub-panel is not showing
