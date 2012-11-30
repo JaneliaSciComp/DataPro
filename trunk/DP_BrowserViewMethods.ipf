@@ -557,10 +557,10 @@ Function UpdateAveragingDisplay(browserNumber)
 		// the tools panel is showing
 		// Show/hide the sweeps SetVariables
 		NVAR averageAllSweeps
-		SetVariable  firstSweepSetVariable,win=$toolsPanelName,disable=averageAllSweeps
-		SetVariable  lastSweepSetVariable,win=$toolsPanelName,disable=averageAllSweeps
+		SetVariable  firstSweepSetVariable,win=$toolsPanelName,disable=2*averageAllSweeps
+		SetVariable  lastSweepSetVariable,win=$toolsPanelName,disable=2*averageAllSweeps
 		NVAR averageAllSteps
-		SetVariable  stepsSetVariable,win=$toolsPanelName,disable=averageAllSteps
+		SetVariable stepsSetVariable,win=$toolsPanelName,disable=2*averageAllSteps
 	endif
 	SetDataFolder savedDFName
 End
