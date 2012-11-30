@@ -87,7 +87,7 @@ Function CreateDataProBrowser() : Graph
 	Variable /G tFitRight=nan
 	Variable /G dtFitExtend=0 // ms, a parameter
 	Variable /G holdYOffset=0 // whether or not to fix yOffset when fitting, a parameter
-	Variable /G yOffsetHeldValue=nan  // value to fix yOffset at when fitting, if holdYOffset
+	Variable /G yOffsetHeldValue=0  // value to fix yOffset at when fitting, if holdYOffset
 	// the fit coefficients
 	Variable /G amp1=nan  
 	Variable /G tau1=nan
@@ -97,11 +97,12 @@ Function CreateDataProBrowser() : Graph
 	
 	// Create the globals related to the averaging subpanel
 	// There are all user-specified parameters
-	Variable nSweeps=getNSweeps(browserNumber)		// Safe to call even this early
+	//Variable nSweeps=getNSweeps(browserNumber)		// Safe to call even this early
 	Variable /G saveAveragesToDisk=0
 	Variable /G averageAllSweeps=1
 	Variable /G iSweepFirstAverage=1
-	Variable /G iSweepLastAvg=nSweeps
+	//Variable /G iSweepLastAvg=max(nSweeps,1)
+	Variable /G iSweepLastAvg=1
 	//Variable /G avghold=nan
 	//Variable /G holdtolerance=nan
 	Variable /G averageAllSteps=1
@@ -1112,7 +1113,7 @@ Function HandleHoldYOffsetCheckbox(cbStruct) : CheckBoxControl
 	else
 		// holdYOffset just turned false -- now the yOffset parameter is free, so a previously-valid fit 
 		// is now invalid
-		yOffsetHeldValue=nan  // when made visible again, want it to get current yOffset
+		//yOffsetHeldValue=nan  // when made visible again, want it to get current yOffset
 		//Printf "About to call UpdateFit() in HandleHoldYOffsetCheckbox() #3\r"		
 		UpdateFit(browserNumber)
 	endif
@@ -1248,8 +1249,10 @@ Function getNSweeps(browserNumber)
 
 	// Restore original DF
 	SetDataFolder savedDFName
+	
+	// Return
+	return nSweeps
 End
-
 
 Function HandleAverageButton(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
