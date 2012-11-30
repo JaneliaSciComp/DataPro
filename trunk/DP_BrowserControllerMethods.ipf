@@ -97,14 +97,15 @@ Function CreateDataProBrowser() : Graph
 	
 	// Create the globals related to the averaging subpanel
 	// There are all user-specified parameters
+	Variable nSweeps=getNSweeps(browserNumber)		// Safe to call even this early
+	Variable /G saveAveragesToDisk=0
 	Variable /G averageAllSweeps=1
-	Variable /G iSweepFirstAverage=nan
-	Variable /G iSweepLastAvg=nan
+	Variable /G iSweepFirstAverage=1
+	Variable /G iSweepLastAvg=nSweeps
 	//Variable /G avghold=nan
 	//Variable /G holdtolerance=nan
 	Variable /G averageAllSteps=1
 	Variable /G stepToAverage=1
-	Variable /G saveAveragesToDisk=0
 	
 	// Make waves for colors
 	Make /O/N=(8,3) Colors
@@ -1175,18 +1176,18 @@ Function HandleAllSweepsCheckbox(cbStruct) : CheckBoxControl
 	String savedDFName=ChangeToBrowserDF(browserNumber)	
 	NVAR averageAllSweeps
 	averageAllSweeps=cbStruct.checked
-	NVAR iSweepFirstAverage,iSweepLastAvg
-	if ( averageAllSweeps )
-		iSweepFirstAverage=nan
-		iSweepLastAvg=nan
-	else
-		SVAR baseNameA, baseNameB
-		Variable nSweeps1=NTracesFromBaseName(baseNameA)
-		Variable nSweeps2=NTracesFromBaseName(baseNameB)
-		Variable nSweeps=max(nSweeps1,nSweeps2)
-		iSweepFirstAverage=1
-		iSweepLastAvg=nSweeps
-	endif
+//	NVAR iSweepFirstAverage,iSweepLastAvg
+//	if ( averageAllSweeps )
+//		iSweepFirstAverage=nan
+//		iSweepLastAvg=nan
+//	else
+//		SVAR baseNameA, baseNameB
+//		Variable nSweeps1=NTracesFromBaseName(baseNameA)
+//		Variable nSweeps2=NTracesFromBaseName(baseNameB)
+//		Variable nSweeps=max(nSweeps1,nSweeps2)
+//		iSweepFirstAverage=1
+//		iSweepLastAvg=nSweeps
+//	endif
 	SyncBrowserViewToDFState(browserNumber)
 	SetDataFolder savedDFName
 End
@@ -1217,22 +1218,9 @@ Function HandleSaveAveragesCheckBox(cbStruct) : CheckBoxControl
 	SetDataFolder savedDFName
 End
 
-
-Function HandleAverageButton(bStruct) : ButtonControl
-	STRUCT WMButtonAction &bStruct
-	
-	// Check that this is really a button-up on the button
-	if (bStruct.eventCode!=2)
-		return 0							// we only handle mouse up in control
-	endif
-
-	// Don't echo to transcript	
-	Silent 1
-	
-	// Get the browser number from the bStruct
-	Variable browserNumber=BrowserNumberFromName(bStruct.win);		
-	//String browserName=BrowserNameFromNumber(browserNumber)
-	
+Function getNSweeps(browserNumber)
+	Variable browserNumber
+		
 	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 	
@@ -1254,9 +1242,32 @@ Function HandleAverageButton(bStruct) : ButtonControl
 		if (traceBChecked)
 			nSweeps=nSweepsB
 		else
-			nSweeps=nan  // doesn't matter b/c no averaging will happen
+			nSweeps=0
 		endif
 	endif
+
+	// Restore original DF
+	SetDataFolder savedDFName
+End
+
+
+Function HandleAverageButton(bStruct) : ButtonControl
+	STRUCT WMButtonAction &bStruct
+	
+	// Check that this is really a button-up on the button
+	if (bStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif
+
+	// Get the browser number from the bStruct
+	Variable browserNumber=BrowserNumberFromName(bStruct.win);		
+	//String browserName=BrowserNameFromNumber(browserNumber)
+	
+	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	
+	// Determine the range of sweeps present
+	Variable nSweeps=getNSweeps(browserNumber)
 	
 	// determine which sweeps we're going to average, of those present
 	NVAR averageAllSweeps
@@ -1267,8 +1278,8 @@ Function HandleAverageButton(bStruct) : ButtonControl
 		iFrom=1
 		iTo=nSweeps
 	else
-		iFrom=iSweepFirstAverage
-		iTo=iSweepLastAvg
+		iFrom=max(1,iSweepFirstAverage)
+		iTo=min(iSweepLastAvg,nSweeps)
 	endif
 	
 	// Figure the dest wave name
@@ -1276,7 +1287,11 @@ Function HandleAverageButton(bStruct) : ButtonControl
 	Variable destSweepIndex=acqNextSweepIndex
 	
 	// Do the average(s)
+	SVAR baseNameA
+	SVAR baseNameB
 	NVAR averageAllSteps
+	NVAR traceAChecked
+	NVAR traceBChecked	
 	Variable filterOnHold=0	// there used to by UI to filter on the holding level
 	Variable holdCenter=nan
 	Variable holdTol=nan
