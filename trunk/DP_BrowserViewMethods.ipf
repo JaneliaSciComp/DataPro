@@ -38,9 +38,6 @@ Function SyncBrowserViewToDFState(browserNumber)
 	NVAR tCursorA
 	NVAR tCursorB
 	
-	// Turn off output to console
-	Silent 1
-	
 	// Note which axes currently exist
 	String browserName=BrowserNameFromNumber(browserNumber)
 	Variable leftAxisExists=0, rightAxisExists=0, bottomAxisExists=0		// boolean
