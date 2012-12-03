@@ -87,7 +87,7 @@ Function CreateDataProBrowser() : Graph
 	Variable /G tFitRight=nan
 	Variable /G dtFitExtend=0 // ms, a parameter
 	Variable /G holdYOffset=0 // whether or not to fix yOffset when fitting, a parameter
-	Variable /G yOffsetHeldValue=0  // value to fix yOffset at when fitting, if holdYOffset
+	Variable /G yOffsetHeldValue=nan  // value to fix yOffset at when fitting, if holdYOffset
 	// the fit coefficients
 	Variable /G amp1=nan  
 	Variable /G tau1=nan
@@ -101,8 +101,8 @@ Function CreateDataProBrowser() : Graph
 	//Variable /G renameAverages=0
 	Variable /G averageAllSweeps=1
 	Variable /G iSweepFirstAverage=1
-	//Variable /G iSweepLastAvg=max(nSweeps,1)
-	Variable /G iSweepLastAvg=1
+	//Variable /G iSweepLastAverage=max(nSweeps,1)
+	Variable /G iSweepLastAverage=1
 	//Variable /G avghold=nan
 	//Variable /G holdtolerance=nan
 	Variable /G averageAllSteps=1
@@ -394,19 +394,18 @@ Function NewToolsPanel(browserNumber) : Panel
 	DrawText 45,yOffset+55,"following criteria will be averaged."
 
 	// Controls for which sweeps to average
-	NVAR averageAllSweeps	
+	NVAR averageAllSweeps, iSweepFirstAverage, iSweepLastAverage
 	TitleBox sweepsTitleBox,pos={20,yOffset+63},frame=0,title="Sweeps:"
 	CheckBox allSweepsCheckBox,pos={70,yOffset+63},size={50,20},title="All",value=averageAllSweeps
 	CheckBox allSweepsCheckBox,proc=HandleAllSweepsCheckbox
 	
-	absVarName=AbsoluteVarName(browserDFName,"iSweepFirstAverage")
+	//absVarName=AbsoluteVarName(browserDFName,"iSweepFirstAverage")
 	SetVariable firstSweepSetVariable,pos={110,yOffset+63},size={53,17},title=" "
-	SetVariable firstSweepSetVariable,limits={1,2000,1},value=$absVarName, disable=0
+	SetVariable firstSweepSetVariable,limits={1,2000,1},proc=FirstSweepSetVariableUsed
 	
-	absVarName=AbsoluteVarName(browserDFName,"iSweepLastAvg")
 	SetVariable lastSweepSetVariable,pos={170,yOffset+63},size={66,17},title="to"
-	SetVariable lastSweepSetVariable,limits={1,2000,1},value=$absVarName, disable=0
-
+	SetVariable lastSweepSetVariable,limits={1,2000,1},proc=LastSweepSetVariableUsed
+	
 //	absVarName=AbsoluteVarName(browserDFName,"avghold")
 //	SetVariable avghold_disp,pos={47,yOffset+89},size={75,17},title="Hold"
 //	SetVariable avghold_disp,limits={-120,120,1},value=$absVarName
@@ -421,9 +420,11 @@ Function NewToolsPanel(browserNumber) : Panel
 	TitleBox stepsTitleBox,pos={20,yOffset+88},frame=0,title="Steps:"
 	CheckBox allStepsCheckBox,pos={70,yOffset+88},size={50,20},title="All",value=averageAllSteps
 	CheckBox allStepsCheckBox,proc=HandleAllStepsCheckbox
-	absVarName=AbsoluteVarName(browserDFName,"stepToAverage")
 	SetVariable stepsSetVariable,pos={110,yOffset+88-1},size={85,17},title="Only:"
-	SetVariable stepsSetVariable,limits={-1000,1000,10},value=$absVarName, disable=0
+	SetVariable stepsSetVariable,limits={-1000,1000,10},proc=StepsSetVariableUsed
+
+	// set the enablement of the averaging fields appropriately
+	UpdateAveragingDisplay(browserNumber)
 
 	// Sync the view with the "model"
 	//SyncFitPanelViewToDFState(browserNumber)
@@ -1178,20 +1179,46 @@ Function HandleAllSweepsCheckbox(cbStruct) : CheckBoxControl
 	String savedDFName=ChangeToBrowserDF(browserNumber)	
 	NVAR averageAllSweeps
 	averageAllSweeps=cbStruct.checked
-//	NVAR iSweepFirstAverage,iSweepLastAvg
+//	NVAR iSweepFirstAverage,iSweepLastAverage
 //	if ( averageAllSweeps )
 //		iSweepFirstAverage=nan
-//		iSweepLastAvg=nan
+//		iSweepLastAverage=nan
 //	else
 //		SVAR baseNameA, baseNameB
 //		Variable nSweeps1=NTracesFromBaseName(baseNameA)
 //		Variable nSweeps2=NTracesFromBaseName(baseNameB)
 //		Variable nSweeps=max(nSweeps1,nSweeps2)
 //		iSweepFirstAverage=1
-//		iSweepLastAvg=nSweeps
+//		iSweepLastAverage=nSweeps
 //	endif
 	SyncBrowserViewToDFState(browserNumber)
 	SetDataFolder savedDFName
+End
+
+Function FirstSweepSetVariableUsed(svStruct) : SetVariableControl
+	STRUCT WMSetVariableAction &svStruct	
+	if ( svStruct.eventCode==-1 ) 
+		return 0
+	endif	
+	String browserName=svStruct.win
+	Variable browserNumber=BrowserNumberFromName(browserName)
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	NVAR iSweepFirstAverage
+	iSweepFirstAverage=svStruct.dval  // set the model variable to the value set in the view
+	SetDataFolder savedDFName	
+End
+
+Function LastSweepSetVariableUsed(svStruct) : SetVariableControl
+	STRUCT WMSetVariableAction &svStruct	
+	if ( svStruct.eventCode==-1 ) 
+		return 0
+	endif	
+	String browserName=svStruct.win
+	Variable browserNumber=BrowserNumberFromName(browserName)
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	NVAR iSweepLastAverage
+	iSweepLastAverage=svStruct.dval  // set the model variable to the value set in the view
+	SetDataFolder savedDFName	
 End
 
 Function HandleAllStepsCheckbox(cbStruct) : CheckBoxControl
@@ -1205,6 +1232,19 @@ Function HandleAllStepsCheckbox(cbStruct) : CheckBoxControl
 	averageAllSteps=cbStruct.checked
 	SyncBrowserViewToDFState(browserNumber)
 	SetDataFolder savedDFName
+End
+
+Function StepsSetVariableUsed(svStruct) : SetVariableControl
+	STRUCT WMSetVariableAction &svStruct	
+	if ( svStruct.eventCode==-1 ) 
+		return 0
+	endif	
+	String browserName=svStruct.win
+	Variable browserNumber=BrowserNumberFromName(browserName)
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	NVAR stepToAverage
+	stepToAverage=svStruct.dval  // set the model variable to the value set in the view
+	SetDataFolder savedDFName	
 End
 
 Function HandleSaveAveragesCheckBox(cbStruct) : CheckBoxControl
@@ -1275,7 +1315,7 @@ Function HandleAverageButton(bStruct) : ButtonControl
 	
 	// determine which sweeps we're going to average, of those present
 	NVAR averageAllSweeps
-	NVAR iSweepLastAvg
+	NVAR iSweepLastAverage
 	NVAR iSweepFirstAverage
 	Variable iFrom, iTo
 	if (averageAllSweeps)
@@ -1283,7 +1323,7 @@ Function HandleAverageButton(bStruct) : ButtonControl
 		iTo=nSweeps
 	else
 		iFrom=max(1,iSweepFirstAverage)
-		iTo=min(iSweepLastAvg,nSweeps)
+		iTo=min(iSweepLastAverage,nSweeps)
 	endif
 	
 	// Figure the dest wave name
