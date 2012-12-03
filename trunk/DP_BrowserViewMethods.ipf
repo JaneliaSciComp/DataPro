@@ -344,8 +344,6 @@ Function UpdateFitDisplay(browserNumber)
 	String windowSpec=sprintf1s("WIN:%s",browserName)
 	if (showToolsChecked)
 		// the fit sub-panel is showing
-		SetVariable yOffsetHeldValueSetVariable,win=$browserName#ToolsPanel,value=_NUM:yOffsetHeldValue
-
 		if ( strlen(topTraceWaveNameAbs)>0 )
 			// there is a trace showing
 			if ( isFitValid )
@@ -390,9 +388,11 @@ Function UpdateFitDisplay(browserNumber)
 		// make sure the hold y offset SetVariable is enabled
 		NVAR holdYOffset, yOffsetHeldValue
 		if ( holdYOffset )
+			SetVariable yOffsetHeldValueSetVariable,win=$browserName#ToolsPanel,value=_NUM:yOffsetHeldValue
 			SetVariable yOffsetHeldValueSetVariable,win=$browserName#ToolsPanel,disable=0  // normal
 		else
 			//SetVariable yOffsetHeldValueSetVariable,win=$browserName#ToolsPanel,disable=1  // invisible
+			SetVariable yOffsetHeldValueSetVariable,win=$browserName#ToolsPanel,value=_STR:""
 			SetVariable yOffsetHeldValueSetVariable,win=$browserName#ToolsPanel,disable=2  // grayed
 		endif
 	else
@@ -554,10 +554,23 @@ Function UpdateAveragingDisplay(browserNumber)
 	if (showToolsChecked)
 		// the tools panel is showing
 		// Show/hide the sweeps SetVariables
-		NVAR averageAllSweeps
+		NVAR averageAllSweeps, iSweepFirstAverage, iSweepLastAverage
+		if (averageAllSweeps)
+			SetVariable  firstSweepSetVariable,win=$toolsPanelName,value=_STR:""
+			SetVariable  lastSweepSetVariable,win=$toolsPanelName,value=_STR:""
+		else
+			SetVariable  firstSweepSetVariable,win=$toolsPanelName,value=_NUM:iSweepFirstAverage
+			SetVariable  lastSweepSetVariable,win=$toolsPanelName,value=_NUM:iSweepLastAverage
+		endif
 		SetVariable  firstSweepSetVariable,win=$toolsPanelName,disable=2*averageAllSweeps
 		SetVariable  lastSweepSetVariable,win=$toolsPanelName,disable=2*averageAllSweeps
-		NVAR averageAllSteps
+		NVAR averageAllSteps, stepToAverage
+		if (averageAllSteps)
+			SetVariable  stepsSetVariable,win=$toolsPanelName,value=_STR:""
+		else
+			SetVariable  stepsSetVariable,win=$toolsPanelName,value=_NUM:stepToAverage
+		endif
+		
 		SetVariable stepsSetVariable,win=$toolsPanelName,disable=2*averageAllSteps
 	endif
 	SetDataFolder savedDFName
