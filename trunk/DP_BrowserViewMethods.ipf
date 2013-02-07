@@ -3,7 +3,7 @@
 
 #pragma rtGlobals=1		// Use modern global access method.
 
-Function SyncBrowserViewToDFState(browserNumber)
+Function BrowserModelChanged(browserNumber)
 	// This syncs the indicated DPBrowser view to the values of the model variables in the browser's DF,
 	// which are assumed to be self-consistent.
 	Variable browserNumber
@@ -13,28 +13,28 @@ Function SyncBrowserViewToDFState(browserNumber)
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 
 	// Get references to the DF vars we need
-	NVAR iCurrentSweep=iCurrentSweep
-	NVAR traceAChecked=traceAChecked
-	NVAR traceBChecked=traceBChecked	
-	SVAR baseNameA=baseNameA
-	SVAR baseNameB=baseNameB
-	WAVE Colors=Colors
-	NVAR showToolsChecked=showToolsChecked
-	NVAR tBaselineLeft=tBaselineLeft
-	NVAR tBaselineRight=tBaselineRight
-	NVAR tWindow1Left=tWindow1Left
-	NVAR tWindow1Right=tWindow1Right
-	NVAR tWindow2Left=tWindow2Left
-	NVAR tWindow2Right=tWindow2Right
-	NVAR tFitZero=tFitZero
-	NVAR tFitLeft=tFitLeft
-	NVAR tFitRight=tFitRight
-	NVAR yAMin=yAMin
-	NVAR yAMax=yAMax
-	NVAR yBMin=yBMin
-	NVAR yBMax=yBMax	
-	NVAR xMin=xMin
-	NVAR xMax=xMax
+	NVAR iCurrentSweep
+	NVAR traceAChecked
+	NVAR traceBChecked
+	SVAR baseNameA
+	SVAR baseNameB
+	WAVE Colors
+	NVAR showToolsChecked
+	NVAR tBaselineLeft
+	NVAR tBaselineRight
+	NVAR tWindow1Left
+	NVAR tWindow1Right
+	NVAR tWindow2Left
+	NVAR tWindow2Right
+	NVAR tFitZero
+	NVAR tFitLeft
+	NVAR tFitRight
+	NVAR yAMin
+	NVAR yAMax
+	NVAR yBMin
+	NVAR yBMax
+	NVAR xMin
+	NVAR xMax
 	NVAR tCursorA
 	NVAR tCursorB
 	
