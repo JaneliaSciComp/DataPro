@@ -37,6 +37,9 @@ Function BrowserModelChanged(browserNumber)
 	NVAR xMax
 	NVAR tCursorA
 	NVAR tCursorB
+	SVAR colorNameList
+	SVAR colorNameA
+	SVAR colorNameB
 	
 	// Note which axes currently exist
 	String browserName=BrowserNameFromNumber(browserNumber)
@@ -82,15 +85,17 @@ Function BrowserModelChanged(browserNumber)
 	// same for comments
 	String comments=""
 
-	// If it exists, add $traceBWaveNameAbs to the graph	
+	// If it exists, add $traceBWaveNameAbs to the graph
+	Variable iColor=WhichListItem(colorNameB,colorNameList)
 	if (traceBChecked && waveBExists)
-		AppendToGraph /W=$browserName /R /C=(Colors[1][0],Colors[1][1],Colors[1][2]) $traceBWaveNameAbs
+		AppendToGraph /W=$browserName /R /C=(colors[0][iColor],colors[1][iColor],colors[2][iColor]) $traceBWaveNameAbs
 		comments=StringByKeyInWaveNote($traceBWaveNameAbs,"COMMENTS")
 	endif
 	
 	// If it exists, add $traceAWaveNameAbs to the graph	
+	iColor=WhichListItem(colorNameA,colorNameList)
 	if (traceAChecked && waveAExists)
-		AppendToGraph /W=$browserName /C=(Colors[0][0],Colors[0][1],Colors[0][2]) $traceAWaveNameAbs
+		AppendToGraph /W=$browserName /C=(colors[0][iColor],colors[1][iColor],colors[2][iColor]) $traceAWaveNameAbs
 		comments=StringByKeyInWaveNote($traceAWaveNameAbs,"COMMENTS")
 	endif
 	
