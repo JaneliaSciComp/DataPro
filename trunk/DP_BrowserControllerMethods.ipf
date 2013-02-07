@@ -108,11 +108,26 @@ Function CreateDataProBrowser() : Graph
 	Variable /G averageAllSteps=1
 	Variable /G stepToAverage=1
 	
-	// Make waves for colors
-	Make /O/N=(8,3) Colors
-	Colors[][0]={0,32768,0,65535,3,29524,4369,39321,65535}
-	Colors[][1]={0,32768,0,0,52428,1,4369,26208,0}
-	Colors[][2]={0,32768,65535,0,1,58982,4369,1,26214}
+//	// Make a wave for colors
+//	Make /O /N=(8,3) colors
+//	colors[][0]={0,32768,0,65535,3,29524,4369,39321,65535}
+//	colors[][1]={0,32768,0,0,52428,1,4369,26208,0}
+//	colors[][2]={0,32768,65535,0,1,58982,4369,1,26214}
+
+	// Make a 2D wave for the colors
+	Make /O /N=(3,7) colors
+	colors[][0]={0,0,0}			//black
+	colors[][1]={32768,32768,32768}		// gray
+	colors[][2]={60000,0,0}	// red
+	colors[][3]={0,32768,0}	// green
+	colors[][4]={0,0,65535}	// blue
+	colors[][5]={65535,22616,0}	// orange
+	colors[][6]={26411,0,52428}	// purple
+
+	// More color stuff
+	String /G colorNameList="Black;Gray;Red;Green;Blue;Orange;Purple"
+	String /G colorNameA="Black"
+	String /G colorNameB="Gray"
 
 	// Layout the window widgets
 	String browserName=BrowserNameFromNumber(browserNumber)
@@ -150,46 +165,59 @@ Function CreateDataProBrowser() : Graph
 	//SetVariable setsweep,limits={1,100000,1},value= $absVarName
 	SetVariable setsweep,limits={1,100000,1},value=_NUM:1
 	
+	Variable yBaselineForTraceA=7
+	Variable yBaselineForTraceB=30
 	absVarName=AbsoluteVarName(browserDFName,"traceAChecked")
-	CheckBox showTraceACheckbox,pos={125,7},size={39,14}
+	CheckBox showTraceACheckbox,pos={125,yBaselineForTraceA},size={39,14}
 	CheckBox showTraceACheckbox,proc=HandleShowTraceCheckbox,title="tr.A",value= 1
 	CheckBox showTraceACheckbox,variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"traceBChecked")
-	CheckBox showTraceBCheckbox,pos={125,27},size={39,14}
+	CheckBox showTraceBCheckbox,pos={125,yBaselineForTraceB},size={39,14}
 	CheckBox showTraceBCheckbox,proc=HandleShowTraceCheckbox,title="tr.B",value= 0
 	CheckBox showTraceBCheckbox,variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"baseNameA")
-	SetVariable bnameset_1,pos={176,7},size={80,15},proc=HandleBaseNameControl,title="name"
+	SetVariable bnameset_1,pos={176,yBaselineForTraceA},size={80,14},proc=HandleBaseNameControl,title="name"
 	SetVariable bnameset_1,value=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"baseNameB")
-	SetVariable bnameset_2,pos={176,27},size={80,15},proc=HandleBaseNameControl,title="name"
+	SetVariable bnameset_2,pos={176,yBaselineForTraceB},size={80,14},proc=HandleBaseNameControl,title="name"
 	SetVariable bnameset_2,value=$absVarName
 	
-//	CheckBox baseSubCheckboxA,pos={262,7},size={61,14},proc=BaseSub,title="Base Sub"
+//	CheckBox baseSubCheckboxA,pos={262,yBaselineForTraceA},size={61,14},proc=BaseSub,title="Base Sub"
 //	CheckBox baseSubCheckboxA,value= 0
-//	CheckBox baseSubCheckboxB,pos={262,27},size={61,14},proc=BaseSub,title="Base Sub"
+//	CheckBox baseSubCheckboxB,pos={262,yBaselineForTraceB},size={61,14},proc=BaseSub,title="Base Sub"
 //	CheckBox baseSubCheckboxB,value= 0
 	
-	CheckBox rejectACheckbox,pos={335,7},size={49,14},proc=HandleRejectACheckbox,title="Reject"
+	// This kind of color popup doesn't work in a ControlBar, seemingly...
+	//PopupMenu traceAColorPopupMenu,pos={262,yBaselineForTraceA},size={96,20},proc=ColorPopMenuProc,title="color:"
+	//PopupMenu traceAColorPopupMenu,mode=1,popColor= (0,65535,65535),value= "*COLORPOP*"	
+	String colorNameListFU="\""+colorNameList+"\""
+	PopupMenu traceAColorPopupMenu,pos={265,yBaselineForTraceA-2},size={96,14},proc=TraceAColorSelected,title="color:"
+	PopupMenu traceAColorPopupMenu,mode=1,value=#colorNameListFU
+	PopupMenu traceBColorPopupMenu,pos={265,yBaselineForTraceB-2},size={96,14},proc=TraceBColorSelected,title="color:"
+	PopupMenu traceBColorPopupMenu,mode=2,value=#colorNameListFU
+		
+	Variable xOffset=370		
+	CheckBox rejectACheckbox,pos={xOffset,yBaselineForTraceA},size={49,14},proc=HandleRejectACheckbox,title="Reject"
 	CheckBox rejectACheckbox,value= 0
-	CheckBox rejectBCheckbox,pos={335,27},size={49,14},proc=HandleRejectBCheckbox,title="Reject"
+	CheckBox rejectBCheckbox,pos={xOffset,yBaselineForTraceB},size={49,14},proc=HandleRejectBCheckbox,title="Reject"
 	CheckBox rejectBCheckbox,value= 0
 	
 //	absVarName=AbsoluteVarName(browserDFName,"baselineA")
-//	SetVariable baseline1SetVariable,pos={400,7},size={90,15},title="Baseline",format="%3.3g"
+//	SetVariable baseline1SetVariable,pos={400,yBaselineForTraceA},size={90,15},title="Baseline",format="%3.3g"
 //	SetVariable baseline1SetVariable,limits={0,0,0},value=$absVarName
 //	
 //	absVarName=AbsoluteVarName(browserDFName,"baselineB")
-//	SetVariable baseline2SetVariable,pos={400,27},size={90,15},title="Baseline",format="%3.3g"
+//	SetVariable baseline2SetVariable,pos={400,yBaselineForTraceB},size={90,15},title="Baseline",format="%3.3g"
 //	SetVariable baseline2SetVariable,limits={0,0,0},value=$absVarName
 	
-	ValDisplay stepAValDisplay,pos={400,7},size={70,15},title="Step",format="%3.3g"
+	xOffset=xOffset+65
+	ValDisplay stepAValDisplay,pos={xOffset,yBaselineForTraceA},size={70,14},title="Step",format="%3.3g"
 	ValDisplay stepAValDisplay,limits={0,0,0},value=_NUM:nan
 	
-	ValDisplay stepBValDisplay,pos={400,27},size={70,15},title="Step",format="%3.3g"
+	ValDisplay stepBValDisplay,pos={xOffset,yBaselineForTraceB},size={70,14},title="Step",format="%3.3g"
 	ValDisplay stepBValDisplay,limits={0,0,0},value=_NUM:nan
 	
 	SetVariable commentsSetVariable,pos={20,55},size={260,15},title="comments"
@@ -211,9 +239,6 @@ End
 
 Function NewToolsPanel(browserNumber) : Panel
 	Variable browserNumber // the number of the DataProBrowser we belong to
-	
-	// Turn off window updates until we're done drawing, turn off echoing to console
-	PauseUpdate; Silent 1
 	
 	// Save the current data folder, change to this browser's DF
 	String savedDF=ChangeToBrowserDF(browserNumber)
@@ -323,7 +348,7 @@ Function NewToolsPanel(browserNumber) : Panel
 	DrawText 199,yOffset+78,"ms"
 	Button fitButton,pos={123,yOffset+10},size={100,20},proc=HandleFitButton,title="Fit"
 
-	SetDrawEnv linethick= 3,linefgc= (26411,1,52428)	// purple
+	SetDrawEnv linethick= 3,linefgc= (26411,0,52428)	// purple
 	DrawRect 8-3,yOffset+36-3+2,8+100+2,yOffset+36+20+2+2
 	Button set_tFitZero,pos={8,yOffset+36+2},size={100,20},proc=SetFitZero,title="Set Zero"
 
@@ -1460,3 +1485,42 @@ Function ComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom,iTo
 	// Restore original DF
 	SetDataFolder savedDFName	
 End
+
+Function TraceAColorSelected(pStruct) : PopupMenuControl
+	STRUCT WMPopupAction &pStruct
+	// Check that this is really a button-up on the button
+	if (pStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif
+	// Get the browser number from the pStruct
+	Variable browserNumber=BrowserNumberFromName(pStruct.win);		
+	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	// Notify the model
+	SVAR colorNameA
+	colorNameA=pStruct.popStr
+	// Notify the view
+	BrowserModelChanged(browserNumber)
+	// Restore original DF
+	SetDataFolder savedDFName		
+End
+
+Function TraceBColorSelected(pStruct) : PopupMenuControl
+	STRUCT WMPopupAction &pStruct
+	// Check that this is really a button-up on the button
+	if (pStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif
+	// Get the browser number from the pStruct
+	Variable browserNumber=BrowserNumberFromName(pStruct.win);		
+	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	// Notify the model
+	SVAR colorNameB
+	colorNameB=pStruct.popStr
+	// Notify the view
+	BrowserModelChanged(browserNumber)
+	// Restore original DF
+	SetDataFolder savedDFName		
+End
+
