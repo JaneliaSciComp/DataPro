@@ -98,7 +98,7 @@ Function CreateDataProBrowser() : Graph
 	// Create the globals related to the averaging subpanel
 	// There are all user-specified parameters
 	//Variable nSweeps=getNSweeps(browserNumber)		// Safe to call even this early
-	//Variable /G renameAverages=0
+	Variable /G renameAverages=0
 	Variable /G averageAllSweeps=1
 	Variable /G iSweepFirstAverage=1
 	//Variable /G iSweepLastAverage=max(nSweeps,1)
@@ -115,7 +115,6 @@ Function CreateDataProBrowser() : Graph
 	Colors[][2]={0,32768,65535,0,1,58982,4369,1,26214}
 
 	// Layout the window widgets
-	//PauseUpdate; Silent 1		// building window...
 	String browserName=BrowserNameFromNumber(browserNumber)
 	String browserTitle=BrowserTitleFromNumber(browserNumber)
 	Display /W=(177-30,44,757-30,548) /K=1 /N=$browserName as browserTitle
@@ -155,6 +154,7 @@ Function CreateDataProBrowser() : Graph
 	CheckBox showTraceACheckbox,pos={125,7},size={39,14}
 	CheckBox showTraceACheckbox,proc=HandleShowTraceCheckbox,title="tr.A",value= 1
 	CheckBox showTraceACheckbox,variable=$absVarName
+	
 	absVarName=AbsoluteVarName(browserDFName,"traceBChecked")
 	CheckBox showTraceBCheckbox,pos={125,27},size={39,14}
 	CheckBox showTraceBCheckbox,proc=HandleShowTraceCheckbox,title="tr.B",value= 0
@@ -206,7 +206,7 @@ Function CreateDataProBrowser() : Graph
 	//Button avgswps,pos={690,65},size={70,18},proc=SummonAveragePanel,title="Average"
 	
 	// Sync the view with the "model"
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 End
 
 Function NewToolsPanel(browserNumber) : Panel
@@ -382,11 +382,11 @@ Function NewToolsPanel(browserNumber) : Panel
 	// Averaging controls
 	yOffset=measureAreaHeight+fitAreaHeight
 
-	Button avgnow,pos={20,yOffset+5},size={100,20},proc=HandleAverageButton,title="Average Sweeps"
+	Button avgnow,pos={20,yOffset+5},size={100,20},proc=AverageSweepsButtonPressed,title="Average Sweeps"
 
-	//NVAR renameAverages
-	//CheckBox saveAveragesCheckBox,pos={150,yOffset+8},size={100,20},title="Rename",value=renameAverages
-	//CheckBox saveAveragesCheckBox,proc=HandleSaveAveragesCheckBox
+	NVAR renameAverages
+	CheckBox renameAveragesCheckBox,pos={150,yOffset+8},size={100,20},title="Rename",value=renameAverages
+	CheckBox renameAveragesCheckBox,proc=RenameAveragesCheckBoxTwiddled
 
 	SetDrawEnv fsize= 10,textrgb= (0,0,65535)
 	DrawText 48,yOffset+42,"Selected channels that meet the "
@@ -510,7 +510,7 @@ Function SetICurrentSweepAndSyncView(browserNumber,iSweep)
 	
 	SetICurrentSweep(browserNumber,iSweep)
 	// Sync the view
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 End
 
 Function HandleSetSweepIndexControl(svStruct) : SetVariableControl
@@ -527,7 +527,7 @@ Function HandleSetSweepIndexControl(svStruct) : SetVariableControl
 	// Set the sweep in the model
 	SetICurrentSweep(browserNumber,iSweepInView)
 	// Sync the view
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 End
 
 Function HandleCommentsSetVariable(svStruct) : SetVariableControl
@@ -545,7 +545,7 @@ Function HandleCommentsSetVariable(svStruct) : SetVariableControl
 		ReplaceStringByKeyInWaveNote($topTraceWaveNameAbs,"COMMENTS",commentsInControl)
 	endif
 	// Sync the view -- necessary when no trace is selected, to clear the comment
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 End
 
 Function HandleDtFitExtendSetVariable(svStruct) : SetVariableControl
@@ -558,7 +558,7 @@ Function HandleDtFitExtendSetVariable(svStruct) : SetVariableControl
 	// changing this invalidates the fit, since now the fit trace doesn't match the fit parameters
 	//Printf "About to call UpdateFit() in HandleDtFitExtendSetVariable()\r"
 	UpdateFit(browserNumber)  // model method
-	SyncBrowserViewToDFState(browserNumber)	
+	BrowserModelChanged(browserNumber)	
 End
 
 Function HandleBaseNameControl(svStruct) : SetVariableControl
@@ -571,7 +571,7 @@ Function HandleBaseNameControl(svStruct) : SetVariableControl
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	UpdateMeasurements(browserNumber)
 	//InvalidateFit(browserNumber)  // model method
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 End
 
 Function HandleShowTraceCheckbox(cbStruct) : CheckBoxControl
@@ -589,7 +589,7 @@ Function HandleShowTraceCheckbox(cbStruct) : CheckBoxControl
 	//if (~AreStringsEqual(waveNameAbsOfFitTrace,topTraceWaveNameAbs)
 	//	InvalidateFit(browserNumber)  // model method
 	//end
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 End
 
 Function SetTraceAChecked(browserNumber,checked)
@@ -600,7 +600,7 @@ Function SetTraceAChecked(browserNumber,checked)
 	NVAR traceAChecked
 	traceAChecked=checked	
 	UpdateMeasurements(browserNumber)
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 	SetDataFolder savDF
 End
 
@@ -612,7 +612,7 @@ Function SetTraceBChecked(browserNumber,checked)
 	NVAR traceBChecked
 	traceBChecked=checked	
 	UpdateMeasurements(browserNumber)
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 	SetDataFolder savDF
 End
 
@@ -647,7 +647,7 @@ Function BaseSub(cbStruct) : CheckBoxControl
 	UpdateMeasurements(browserNumber)
 	//Printf "About to call UpdateFit() in BaseSub()\r"
 	UpdateFit(browserNumber)  // model method
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 End
 
 Function ShowHideToolsPanel(cbStruct) : CheckboxControl
@@ -658,7 +658,7 @@ Function ShowHideToolsPanel(cbStruct) : CheckboxControl
 		return 0							// we only handle mouse up in control
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 End
 
 Function HandleSetBaselineButton(bStruct) : ButtonControl
@@ -692,7 +692,7 @@ Function HandleSetBaselineButton(bStruct) : ButtonControl
 	UpdateMeasurements(browserNumber)
 
 	// Update the view
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 	
 	// Restore the orignal DF
 	SetDataFolder savedDF	
@@ -723,7 +723,7 @@ Function ClearBaseline(bStruct) : ButtonControl
 	UpdateMeasurements(browserNumber)
 	
 	// Update the view
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 	
 	// Restore the orignal DF
 	SetDataFolder savedDF	
@@ -761,7 +761,7 @@ Function SetWindow1(bStruct) : ButtonControl
 	UpdateMeasurements(browserNumber)
 
 	// Update the view
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 
 	// Restore the orignal DF
 	SetDataFolder savedDF	
@@ -792,7 +792,7 @@ Function ClearWindow1(bStruct) : ButtonControl
 	UpdateMeasurements(browserNumber)
 	
 	// Update the view
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 	
 	// Restore the orignal DF
 	SetDataFolder savedDF	
@@ -808,7 +808,7 @@ Function HandleMeasurementSetVariable(svStruct) : SetVariableControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(svStruct.win)
 	UpdateMeasurements(browserNumber)
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 End
 
 Function SetWindow2(bStruct)
@@ -843,7 +843,7 @@ Function SetWindow2(bStruct)
 	UpdateMeasurements(browserNumber)
 
 	// Update the view
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 
 	// Restore the orignal DF
 	SetDataFolder savedDF	
@@ -875,7 +875,7 @@ Function ClearWindow2(bStruct) : ButtonControl
 	UpdateMeasurements(browserNumber)
 	
 	// Update the view
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 	
 	// Restore the orignal DF
 	SetDataFolder savedDF	
@@ -913,7 +913,7 @@ Function SetFitZero(bStruct) : ButtonControl
 	UpdateFit(browserNumber)
 	
 	// Update the view
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 	
 	// Restore original DF
 	SetDataFolder savedDFName
@@ -941,7 +941,7 @@ Function HandleClearFitZeroButton(bStruct) : ButtonControl
 	UpdateFit(browserNumber)
 	
 	// Update the view
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 	
 	// Restore original DF
 	SetDataFolder savedDFName
@@ -978,7 +978,7 @@ Function SetFitRange(bStruct) : ButtonControl
 	UpdateFit(browserNumber)
 
 	// Update the view
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 	
 	// Restore original DF
 	SetDataFolder savedDFName
@@ -1008,7 +1008,7 @@ Function HandleClearFitRangeButton(bStruct) : ButtonControl
 	UpdateFit(browserNumber)
 
 	// Update the view
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 	
 	// Restore original DF
 	SetDataFolder savedDFName
@@ -1030,7 +1030,7 @@ Function HandleFitButton(bStruct) : ButtonControl
 	UpdateFit(browserNumber)
 	
 	// Sync the view to the model
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 End
 
 Function HandleFitTypePopupMenu(pStruct) : PopupMenuControl
@@ -1057,7 +1057,7 @@ Function HandleFitTypePopupMenu(pStruct) : PopupMenuControl
 	UpdateFit(browserNumber)
 	
 	// Sync the view to the model
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 End
 
 Function HandleHoldYOffsetCheckbox(cbStruct) : CheckBoxControl
@@ -1121,7 +1121,7 @@ Function HandleHoldYOffsetCheckbox(cbStruct) : CheckBoxControl
 	endif
 
 	// Sync the the view with the current state
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 
 	// Restore old data folder
 	SetDataFolder savedDFName
@@ -1141,7 +1141,7 @@ Function HandleYOffsetHeldValueSetVar(svStruct) : SetVariableControl
 	// changing this invalidates the fit, since now the fit trace (if there is one) doesn't match the fit parameters
 	//Printf "About to call UpdateFit() in HandleYOffsetHeldValueSetVar()\r"		
 	UpdateFit(browserNumber)  // model method
-	SyncBrowserViewToDFState(browserNumber)	
+	BrowserModelChanged(browserNumber)	
 	SetDataFolder savedDFName
 End
 
@@ -1165,7 +1165,7 @@ Function RescaleCheckProc(cbStruct) : CheckBoxControl
 		return 0							// we only handle mouse up in control
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 	//SyncDFAxesLimitsWithGraph(browserNumber)
 	//RescaleAxes(browserNumber)
 End
@@ -1191,7 +1191,7 @@ Function HandleAllSweepsCheckbox(cbStruct) : CheckBoxControl
 //		iSweepFirstAverage=1
 //		iSweepLastAverage=nSweeps
 //	endif
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 	SetDataFolder savedDFName
 End
 
@@ -1230,7 +1230,7 @@ Function HandleAllStepsCheckbox(cbStruct) : CheckBoxControl
 	String savedDFName=ChangeToBrowserDF(browserNumber)	
 	NVAR averageAllSteps
 	averageAllSteps=cbStruct.checked
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 	SetDataFolder savedDFName
 End
 
@@ -1247,7 +1247,7 @@ Function StepsSetVariableUsed(svStruct) : SetVariableControl
 	SetDataFolder savedDFName	
 End
 
-Function HandleSaveAveragesCheckBox(cbStruct) : CheckBoxControl
+Function RenameAveragesCheckBoxTwiddled(cbStruct) : CheckBoxControl
 	STRUCT WMCheckboxAction &cbStruct
 	if (cbStruct.eventCode!=2)
 		return 0							// we only handle mouse up in control
@@ -1256,7 +1256,7 @@ Function HandleSaveAveragesCheckBox(cbStruct) : CheckBoxControl
 	String savedDFName=ChangeToBrowserDF(browserNumber)	
 	NVAR renameAverages
 	renameAverages=cbStruct.checked
-	SyncBrowserViewToDFState(browserNumber)
+	BrowserModelChanged(browserNumber)
 	SetDataFolder savedDFName
 End
 
@@ -1295,7 +1295,7 @@ Function getNSweeps(browserNumber)
 	return nSweeps
 End
 
-Function HandleAverageButton(bStruct) : ButtonControl
+Function AverageSweepsButtonPressed(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
 	
 	// Check that this is really a button-up on the button
@@ -1357,7 +1357,7 @@ Function HandleAverageButton(bStruct) : ButtonControl
 	SetDataFolder savedDFName
 End
 
-Function ComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom, iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
+Function ComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom,iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
 	Variable browserNumber
 	Variable destSweepIndex
 	String waveBaseName
@@ -1373,17 +1373,45 @@ Function ComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom, iT
 	// Figure the destination wave name
 	String destWaveName = sprintf2sd("root:%s_%d", waveBaseName, destSweepIndex)
 	
-//	// Handle possible renaming of the dest wave
-//	NVAR renameAverages
-//	if (renameAverages)
-//		Variable destWaveNameAlternate
-//		Prompt destWaveNameAlternate, sprintf1s("Name of destination wave for %s: ",waveBaseName)
-//		DoPrompt sprintf1s("Enter name of destination wave for %s: ",waveBaseName), destWaveNameAlternate
-//		if (V_flag)
-//			return
-//		endif
-//		// do error checking on destWaveNameAlternate, if valid use it, if not prompt again
-//	end
+	// Handle possible renaming of the dest wave
+	NVAR renameAverages
+	if (renameAverages)
+		String waveBaseNameAlternate, waveNameAlternate
+		Variable haveValidWaveName=0
+		Variable cancelled=0
+		do
+			Prompt waveBaseNameAlternate, sprintf1s("Name of destination wave for average of selected %s sweeps: ",waveBaseName)
+			DoPrompt "Enter name of destination wave", waveBaseNameAlternate
+			if (V_flag)
+				// This means the user clicked "Cancel"
+				cancelled=1
+			else
+				// This means the user clicked "Continue"
+				// Test that what the user gave us is a valid wave name
+				if ( IsStandardName(waveBaseNameAlternate) )
+					haveValidWaveName=1					
+					// If a wave by that name already exists, make sure it's OK to overwrite it
+					waveNameAlternate=sprintf1s("root:%s", waveBaseNameAlternate)
+					if ( exists(waveNameAlternate)==1 )
+						// Wave by that name already exists
+						DoAlert /T="Overwrite existing wave?" 2, sprintf1s("%s already exists.  Overwrite?",waveNameAlternate)
+						if (V_flag!=1)
+							// User said no, don't overwrite, or hit Cancel
+							cancelled=1
+						endif
+					endif
+				else
+					haveValidWaveName=0
+				endif
+			endif
+		while ( !haveValidWaveName && !cancelled)
+		if (haveValidWaveName && !cancelled)
+			destWaveName=waveNameAlternate
+		else
+			// Cancelled
+			return 0		// Have to return something
+		endif
+	endif
 	
 	// Loop over waves to be averaged, forming the sum and counting the number of waves
 	Variable i, nWavesSummedSoFar=0
@@ -1417,7 +1445,7 @@ Function ComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom, iT
 		String message=sprintf1s("%s: No waves met your criteria to be averaged.", waveBaseName)
 		Abort message
 	endif
-	Printf "%s: %d waves were averaged and stored in %s\r", waveBaseName, nWavesToAvg, destWaveName
+	Printf "%d sweeps of %s were averaged and stored in %s\r", nWavesToAvg, waveBaseName, destWaveName
 	
 //	// Save the average wave to disk, if called for
 //	NVAR renameAverages
