@@ -3,6 +3,127 @@
 
 #pragma rtGlobals=1		// Use modern global access method.
 
+Function BrowserViewConstructor(browserNumber) : Graph
+	// Figure out what the index of this DataProBrowser instance should be
+	Variable browserNumber
+
+	// Find name of top browser, switch the DF to its DF, note the former DF name
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+
+	// Layout the window widgets
+	String browserName=BrowserNameFromNumber(browserNumber)
+	String browserTitle=BrowserTitleFromNumber(browserNumber)
+	Display /W=(177-30,44,757-30,548) /K=1 /N=$browserName as browserTitle
+	SetWindow $browserName, hook(DPHook)=DataProBrowserHook
+	ShowInfo
+	
+	// Draw the right "panel" and associated controls 
+	//ControlBar /R /W=$browserName 200  // create right side control bar
+	//NewPanel /W=(740,45,1016,337) /N=$measureWindowName /K=1 as measureWindowTitle
+	//Variable rightPanelX=957-200
+	//Button setbase,pos={rightPanelX+6,6},size={100,20},proc=SetBaseline,title="Set Baseline"
+	//Button setwin_1,pos={rightPanelX+5,61},size={100,20},proc=SetWin,title="Set Window 1"
+	//Button setwin_2,pos={rightPanelX+8,190},size={100,20},proc=SetWin,title="Set Window 2"
+
+	// Draw the top "panel" and associated controls 
+	ControlBar /T /W=$browserName 100
+	
+	String browserDFName=BrowserDFNameFromNumber(browserNumber)
+	String absVarName=AbsoluteVarName(browserDFName,"yAAutoscaling")
+	CheckBox autoscaleYACheckbox,pos={106,80},size={102,14},proc=RescaleCheckProc,title="Autoscale y for trace A"
+	CheckBox autoscaleYACheckbox,value= 1, variable=$absVarName
+	
+	absVarName=AbsoluteVarName(browserDFName,"yBAutoscaling")
+	CheckBox autoscaleYBCheckbox,pos={246,80},size={102,14},proc=RescaleCheckProc,title="Autoscale y for trace B"
+	CheckBox autoscaleYBCheckbox,value= 1, variable=$absVarName
+	
+	absVarName=AbsoluteVarName(browserDFName,"xAutoscaling")
+	CheckBox autoscaleXCheckbox,pos={386,80},size={72,14},proc=RescaleCheckProc,title="Autoscale x"
+	CheckBox autoscaleXCheckbox,value= 1, variable=$absVarName
+	
+	absVarName=AbsoluteVarName(browserDFName,"iCurrentSweep")
+	SetVariable setsweep,pos={11,15},size={100,18},proc=HandleSetSweepIndexControl,title="Sweep"
+	SetVariable setsweep,fSize=12
+	//SetVariable setsweep,limits={1,100000,1},value= $absVarName
+	SetVariable setsweep,limits={1,100000,1},value=_NUM:1
+	
+	Variable yBaselineForTraceA=7
+	Variable yBaselineForTraceB=30
+	absVarName=AbsoluteVarName(browserDFName,"traceAChecked")
+	CheckBox showTraceACheckbox,pos={125,yBaselineForTraceA},size={39,14}
+	CheckBox showTraceACheckbox,proc=HandleShowTraceCheckbox,title="tr.A",value= 1
+	CheckBox showTraceACheckbox,variable=$absVarName
+	
+	absVarName=AbsoluteVarName(browserDFName,"traceBChecked")
+	CheckBox showTraceBCheckbox,pos={125,yBaselineForTraceB},size={39,14}
+	CheckBox showTraceBCheckbox,proc=HandleShowTraceCheckbox,title="tr.B",value= 0
+	CheckBox showTraceBCheckbox,variable=$absVarName
+	
+	absVarName=AbsoluteVarName(browserDFName,"baseNameA")
+	SetVariable bnameset_1,pos={176,yBaselineForTraceA},size={80,14},proc=HandleBaseNameControl,title="name"
+	SetVariable bnameset_1,value=$absVarName
+	
+	absVarName=AbsoluteVarName(browserDFName,"baseNameB")
+	SetVariable bnameset_2,pos={176,yBaselineForTraceB},size={80,14},proc=HandleBaseNameControl,title="name"
+	SetVariable bnameset_2,value=$absVarName
+	
+//	CheckBox baseSubCheckboxA,pos={262,yBaselineForTraceA},size={61,14},proc=BaseSub,title="Base Sub"
+//	CheckBox baseSubCheckboxA,value= 0
+//	CheckBox baseSubCheckboxB,pos={262,yBaselineForTraceB},size={61,14},proc=BaseSub,title="Base Sub"
+//	CheckBox baseSubCheckboxB,value= 0
+	
+	// This kind of color popup doesn't work in a ControlBar, seemingly...
+	//PopupMenu traceAColorPopupMenu,pos={262,yBaselineForTraceA},size={96,20},proc=ColorPopMenuProc,title="color:"
+	//PopupMenu traceAColorPopupMenu,mode=1,popColor= (0,65535,65535),value= "*COLORPOP*"	
+	
+	SVAR colorNameList
+	String colorNameListFU="\""+colorNameList+"\""
+	PopupMenu traceAColorPopupMenu,pos={265,yBaselineForTraceA-2},size={96,14},proc=TraceAColorSelected,title="color:"
+	PopupMenu traceAColorPopupMenu,mode=1,value=#colorNameListFU
+	PopupMenu traceBColorPopupMenu,pos={265,yBaselineForTraceB-2},size={96,14},proc=TraceBColorSelected,title="color:"
+	PopupMenu traceBColorPopupMenu,mode=2,value=#colorNameListFU
+		
+	Variable xOffset=370		
+	CheckBox rejectACheckbox,pos={xOffset,yBaselineForTraceA},size={49,14},proc=HandleRejectACheckbox,title="Reject"
+	CheckBox rejectACheckbox,value= 0
+	CheckBox rejectBCheckbox,pos={xOffset,yBaselineForTraceB},size={49,14},proc=HandleRejectBCheckbox,title="Reject"
+	CheckBox rejectBCheckbox,value= 0
+	
+//	absVarName=AbsoluteVarName(browserDFName,"baselineA")
+//	SetVariable baseline1SetVariable,pos={400,yBaselineForTraceA},size={90,15},title="Baseline",format="%3.3g"
+//	SetVariable baseline1SetVariable,limits={0,0,0},value=$absVarName
+//	
+//	absVarName=AbsoluteVarName(browserDFName,"baselineB")
+//	SetVariable baseline2SetVariable,pos={400,yBaselineForTraceB},size={90,15},title="Baseline",format="%3.3g"
+//	SetVariable baseline2SetVariable,limits={0,0,0},value=$absVarName
+	
+	xOffset=xOffset+65
+	ValDisplay stepAValDisplay,pos={xOffset,yBaselineForTraceA},size={70,14},title="Step",format="%3.3g"
+	ValDisplay stepAValDisplay,limits={0,0,0},value=_NUM:nan
+	
+	ValDisplay stepBValDisplay,pos={xOffset,yBaselineForTraceB},size={70,14},title="Step",format="%3.3g"
+	ValDisplay stepBValDisplay,limits={0,0,0},value=_NUM:nan
+	
+	SetVariable commentsSetVariable,pos={20,55},size={260,15},title="comments"
+	SetVariable commentsSetVariable,proc=HandleCommentsSetVariable,value=_STR:""
+
+	absVarName=AbsoluteVarName(browserDFName,"showToolsChecked")
+	CheckBox showToolsCheckbox,pos={680,15},size={70,18},proc=ShowHideToolsPanel, value=0
+	CheckBox showToolsCheckbox,title="Show Tools",variable=$absVarName
+	
+	//Button tools,pos={690,15},size={70,18},proc=SummonToolsPanel,title="Tools"
+	
+	//Button measure,pos={690,15},size={70,18},proc=SummonMeasurePanel,title="Measure"
+	//Button fit,pos={690,40},size={70,18},proc=SummonFitPanel,title="Fit"
+	//Button avgswps,pos={690,65},size={70,18},proc=SummonAveragePanel,title="Average"
+	
+	// Sync the view with the "model"
+	BrowserModelChanged(browserNumber)
+	
+	// Restore old data folder
+	SetDataFolder savedDFName	
+End
+
 Function BrowserModelChanged(browserNumber)
 	// This syncs the indicated DPBrowser view to the values of the model variables in the browser's DF,
 	// which are assumed to be self-consistent.

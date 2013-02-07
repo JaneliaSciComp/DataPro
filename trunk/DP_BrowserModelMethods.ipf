@@ -1,5 +1,129 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
+Function BrowserModelConstructor()
+	// Figure out what the index of this DataProBrowser instance should be
+	Variable browserNumber
+	browserNumber=LargestBrowserNumber()+1
+
+	// Save the current DF
+	String savedDF=GetDataFolder(1)	
+
+	// Create a new data folder for this instance to store some state variables in, switch to it
+	String browserDFName=BrowserDFNameFromNumber(browserNumber)
+	NewDataFolder /O/S $browserDFName
+
+	//// References for globals not in our own DF
+	//SVAR baseNameANow=root:DP_DigitizerControl:adcname0
+	//SVAR baseNameBNow=root:DP_DigitizerControl:adcname1
+
+	// Create the state variables for this instance
+	//Variable /G iOldSweep,
+	String /G baseNameA="ad0"
+	String /G baseNameB="ad1"
+	Variable /G iCurrentSweep=1
+	Variable /G tCursorA=nan
+	Variable /G tCursorB=nan	
+	Variable /G baselineA, baselineB
+	//Variable /G step1, step2
+	Variable /G showToolsChecked=0  // boolean, "ShowTools" is a built-in, so can't use that
+	Variable /G traceAChecked=1, traceBChecked=0
+	Variable /G xAutoscaling=1, yAAutoscaling=1, yBAutoscaling=1
+	//String /G traceAWaveName, traceBWaveName
+	// If both channel 1 and 2 are currently showing, then topTraceWaveName==traceAWaveName.  If only
+	// one or the other is showing, topTraceWaveName equals the one showing.  If neither is showing, then
+	// topTraceWaveName==""
+	//String /G topTraceWaveName  
+	//String /G comments
+	String /G cursorWaveList=""
+
+	// These store the current y limits for the trace A and trace B axis, if they are showing, or
+	// what the values were the last time they were showing, if they are not showing.
+	// If they have never been shown, they are set to the defaults below.
+	// If auto-scaling of an axis is turned off, then the axis limits get set to these values when it is 
+	// shown.
+	Variable /G yAMin=-3
+	Variable /G yAMax=3
+	Variable /G yBMin=-3
+	Variable /G yBMax=3
+	Variable /G xMin=0
+	Variable /G xMax=100
+
+	// Create the globals related to the measure subpanel
+	//String /G baselineWaveName=""
+	Variable /G tBaselineLeft=nan
+	Variable /G tBaselineRight=nan
+	//String /G dataWindow1WaveName=""
+	Variable /G tWindow1Left=nan
+	Variable /G tWindow1Right=nan
+	//String /G dataWindow2WaveName=""
+	Variable /G tWindow2Left=nan
+	Variable /G tWindow2Right=nan
+	Variable /G from1=10, to1=90	// these are parameters
+	Variable /G from2=90, to2=10
+	Variable /G lev1=0  // this is a param
+	Variable /G baseline=nan, mean1=nan, peak1=nan, rise1=nan  // these are statistics
+	Variable /G nCrossings1=nan
+	Variable /G mean2=nan, peak2=nan, rise2=nan
+	
+	// Create the globals related to the fit subpanel
+	Variable /G isFitValid=0  	// true iff the current fit coefficients represent the output of a valid fit
+							// to waveNameAbsOfFitTrace, with the current fit parameters
+	String /G waveNameAbsOfFitTrace=""
+	String /G fitType="single exp" 
+	Variable /G tFitZero=nan
+	Variable /G tFitLeft=nan
+	Variable /G tFitRight=nan
+	Variable /G dtFitExtend=0 // ms, a parameter
+	Variable /G holdYOffset=0 // whether or not to fix yOffset when fitting, a parameter
+	Variable /G yOffsetHeldValue=nan  // value to fix yOffset at when fitting, if holdYOffset
+	// the fit coefficients
+	Variable /G amp1=nan  
+	Variable /G tau1=nan
+	Variable /G amp2=nan
+	Variable /G tau2=nan
+	Variable /G yOffset=nan
+	
+	// Create the globals related to the averaging subpanel
+	// There are all user-specified parameters
+	//Variable nSweeps=getNSweeps(browserNumber)		// Safe to call even this early
+	Variable /G renameAverages=0
+	Variable /G averageAllSweeps=1
+	Variable /G iSweepFirstAverage=1
+	//Variable /G iSweepLastAverage=max(nSweeps,1)
+	Variable /G iSweepLastAverage=1
+	//Variable /G avghold=nan
+	//Variable /G holdtolerance=nan
+	Variable /G averageAllSteps=1
+	Variable /G stepToAverage=1
+	
+//	// Make a wave for colors
+//	Make /O /N=(8,3) colors
+//	colors[][0]={0,32768,0,65535,3,29524,4369,39321,65535}
+//	colors[][1]={0,32768,0,0,52428,1,4369,26208,0}
+//	colors[][2]={0,32768,65535,0,1,58982,4369,1,26214}
+
+	// Make a 2D wave for the colors
+	Make /O /N=(3,7) colors
+	colors[][0]={0,0,0}			//black
+	colors[][1]={32768,32768,32768}		// gray
+	colors[][2]={60000,0,0}	// red
+	colors[][3]={0,32768,0}	// green
+	colors[][4]={0,0,65535}	// blue
+	colors[][5]={65535,22616,0}	// orange
+	colors[][6]={26411,0,52428}	// purple
+
+	// More color stuff
+	String /G colorNameList="Black;Gray;Red;Green;Blue;Orange;Purple"
+	String /G colorNameA="Black"
+	String /G colorNameB="Gray"
+
+	// Restore the original DF
+	SetDataFolder savedDF	
+	
+	// Return the browser number
+	return browserNumber
+End
+
 Function SetICurrentSweep(browserNumber,sweepIndexNew)
 	// Set the current sweep index to something, which is assumed to be valid.
 	Variable browserNumber, sweepIndexNew
