@@ -30,9 +30,9 @@ Function NewToolsPanel(browserNumber) : Panel
 	
 	// Create the panel, draw all the controls
 	Variable toolsPanelWidth=250  // pels
-	Variable measureAreaHeight=280  // pels
+	Variable measureAreaHeight=278  // pels
 	Variable fitAreaHeight=155+30  // pels
-	Variable averageAreaHeight=110  // pels
+	Variable averageAreaHeight=110-28  // pels
 	Variable toolsPanelHeight=measureAreaHeight+fitAreaHeight+averageAreaHeight
 	NewPanel /HOST=$browserWindowName /EXT=0 /W=(0,0,toolsPanelWidth,toolsPanelHeight) /N=ToolsPanel /K=1 as "Tools"
 	SetWindow $browserWindowName#ToolsPanel, hook(TPHook)=ToolsPanelHook  // register a callback function for if the panel is closed
@@ -54,7 +54,7 @@ Function NewToolsPanel(browserNumber) : Panel
 	SetDrawEnv linethick= 3,linefgc= (3,52428,1)
 	DrawRect 3,yOffset-3,109,yOffset+20+3
 	Button setwin_1,pos={6,yOffset},size={100,20},proc=SetWindow1,title="Set Window 1"
-	Button clearWindow1Button,pos={6,yOffset+28-1},size={100,18},proc=ClearWindow1,title="Clear Window 1"
+	Button clearWindow1Button,pos={6,yOffset+27},size={100,18},proc=ClearWindow1,title="Clear Window 1"
 
 	absVarName=AbsoluteVarName(browserDFName,"mean1")
 	ValDisplay mean1ValDisplay,pos={138,yOffset-5},size={82,17},title="Mean",format="%4.2f"
@@ -68,17 +68,17 @@ Function NewToolsPanel(browserNumber) : Panel
 	ValDisplay rise1ValDisplay,pos={115,yOffset+38},size={105,17},title="Transit Time"
 	ValDisplay rise1ValDisplay,format="%4.2f",limits={0,0,0},barmisc={0,1000}
 	ValDisplay rise1ValDisplay,value= #absVarName
-	DrawText 224,yOffset-61+113,"ms"
+	TitleBox rise1UnitsTitleBox,pos={224,yOffset+38+1},frame=0, title="ms"
 
 	absVarName=AbsoluteVarName(browserDFName,"from1")
-	SetVariable from_disp1,pos={54,yOffset-61+122},size={80,17},proc=HandleMeasurementSetVariable,title="From"
+	SetVariable from_disp1,pos={54,yOffset+61},size={80,17},proc=HandleMeasurementSetVariable,title="From"
 	SetVariable from_disp1,limits={0,100,10},value=$absVarName
-	DrawText 140,yOffset-61+138,"%"
+	TitleBox fromUnitsTitleBox,pos={137,yOffset+61+2},frame=0, title="%"
 
 	absVarName=AbsoluteVarName(browserDFName,"to1")
 	SetVariable to_disp1,pos={154,yOffset+61},size={66,17},proc=HandleMeasurementSetVariable,title="To"
 	SetVariable to_disp1,limits={0,100,10},value=$absVarName
-	DrawText 227,yOffset-61+136,"%"
+	TitleBox toUnitsTitleBox,pos={223,yOffset+61+2},frame=0, title="%"
 	
 	absVarName=AbsoluteVarName(browserDFName,"lev1")
 	SetVariable levelSetVariable,pos={18,yOffset-61+145},size={80,17}
@@ -90,34 +90,46 @@ Function NewToolsPanel(browserNumber) : Panel
 	ValDisplay cross1ValDisplay,limits={0,0,0},barmisc={0,1000},format="%4.0f",value= #absVarName
 	
 	// Window 2 controls
+	yOffset=190
 	SetDrawEnv linethick= 3,linefgc= (0,0,65535)
-	DrawRect 3,190-3,109,190+20+3
-	Button setwin_2,pos={6,190},size={100,20},proc=SetWindow2,title="Set Window 2"
-	Button clearWindow2Button,pos={6,190+28-1},size={100,18},proc=ClearWindow2,title="Clear Window 2"
+	DrawRect 3,yOffset-3,109,yOffset+20+3
+	Button setwin_2,pos={6,yOffset},size={100,20},proc=SetWindow2,title="Set Window 2"
+	Button clearWindow2Button,pos={6,yOffset+27},size={100,18},proc=ClearWindow2,title="Clear Window 2"
 
 	absVarName=AbsoluteVarName(browserDFName,"mean2")
-	ValDisplay mean2ValDisplay,pos={139,189},size={82,17},title="Mean",format="%4.2f"
+	ValDisplay mean2ValDisplay,pos={138,yOffset-5},size={82,17},title="Mean",format="%4.2f"
 	ValDisplay mean2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"peak2")
-	ValDisplay peak2ValDisplay,pos={142,211},size={79,17},title="Peak",format="%4.2f"
+	ValDisplay peak2ValDisplay,pos={140,yOffset+17},size={79,17},title="Peak",format="%4.2f"
 	ValDisplay peak2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"rise2")
-	ValDisplay rise2ValDisplay,pos={116,233},size={105,17},title="Transit Time"
+	ValDisplay rise2ValDisplay,pos={115,yOffset+38},size={105,17},title="Transit Time"
 	ValDisplay rise2ValDisplay,format="%4.2f",limits={0,0,0},barmisc={0,1000}
 	ValDisplay rise2ValDisplay,value= #absVarName
-	DrawText 227,249,"ms"
+	TitleBox rise2UnitsTitleBox,pos={224,yOffset+38+1},frame=0, title="ms"
 	
+//	absVarName=AbsoluteVarName(browserDFName,"from2")
+//	SetVariable from_disp2,pos={49,253},size={80,17},proc=HandleMeasurementSetVariable,title="From"
+//	SetVariable from_disp2,limits={0,100,10},value= $absVarName
+//	DrawText 228,268,"%"
+//	
+//	absVarName=AbsoluteVarName(browserDFName,"to2")
+//	SetVariable to_disp2,pos={155,254},size={66,17},proc=HandleMeasurementSetVariable,title="To"
+//	SetVariable to_disp2,limits={0,100,10},value= $absVarName
+//	DrawText 137,268,"%"
+
 	absVarName=AbsoluteVarName(browserDFName,"from2")
-	SetVariable from_disp2,pos={49,253},size={80,17},proc=HandleMeasurementSetVariable,title="From"
-	SetVariable from_disp2,limits={0,100,10},value= $absVarName
-	DrawText 228,268,"%"
-	
+	SetVariable from_disp2,pos={54,yOffset+61},size={80,17},proc=HandleMeasurementSetVariable,title="From"
+	SetVariable from_disp2,limits={0,100,10},value=$absVarName
+	TitleBox fromUnitsTitleBox,pos={137,yOffset+61+2},frame=0, title="%"
+
 	absVarName=AbsoluteVarName(browserDFName,"to2")
-	SetVariable to_disp2,pos={155,254},size={66,17},proc=HandleMeasurementSetVariable,title="To"
-	SetVariable to_disp2,limits={0,100,10},value= $absVarName
-	DrawText 137,268,"%"
+	SetVariable to_disp2,pos={154,yOffset+61},size={66,17},proc=HandleMeasurementSetVariable,title="To"
+	SetVariable to_disp2,limits={0,100,10},value=$absVarName
+	TitleBox toUnitsTitleBox,pos={223,yOffset+61+2},frame=0, title="%"
+
 
 	// Horizontal rule
 	DrawLine 8,measureAreaHeight,245,measureAreaHeight
@@ -165,7 +177,7 @@ Function NewToolsPanel(browserNumber) : Panel
 	SetVariable dtFitExtendSetVariable,pos={7,yOffset+125+28},size={98,17},title="Show fit"
 	SetVariable dtFitExtendSetVariable,limits={0,10000,10},value=$absVarName
 	SetVariable dtFitExtendSetVariable,proc=HandleDtFitExtendSetVariable
-	DrawText 111,yOffset+140+28,"ms beyond range"
+	TitleBox dtFitExtendUnitsTitleBox,pos={109,yOffset+125+28+2},frame=0, title="ms beyond range"
 	
 	absVarName=AbsoluteVarName(browserDFName,"yOffset")
 	ValDisplay yOffsetValDisplay,pos={7,yOffset+102+28},size={90,17},title="offset",format="%4.2f"
@@ -194,22 +206,23 @@ Function NewToolsPanel(browserNumber) : Panel
 	CheckBox renameAveragesCheckBox,pos={150,yOffset+8},size={100,20},title="Rename",value=renameAverages
 	CheckBox renameAveragesCheckBox,proc=RenameAveragesCheckBoxTwiddled
 
-	SetDrawEnv fsize= 10,textrgb= (0,0,65535)
-	DrawText 48,yOffset+42,"Selected channels that meet the "
-	SetDrawEnv fsize= 10,textrgb= (0,0,65535)
-	DrawText 45,yOffset+55,"following criteria will be averaged."
+	//SetDrawEnv fsize= 10,textrgb= (0,0,65535)
+	//DrawText 48,yOffset+42,"Selected channels that meet the "
+	//SetDrawEnv fsize= 10,textrgb= (0,0,65535)
+	//DrawText 45,yOffset+55,"following criteria will be averaged."
 
 	// Controls for which sweeps to average
+	yOffset=yOffset+63-28
 	NVAR averageAllSweeps, iSweepFirstAverage, iSweepLastAverage
-	TitleBox sweepsTitleBox,pos={20,yOffset+63},frame=0,title="Sweeps:"
-	CheckBox allSweepsCheckBox,pos={70,yOffset+63},size={50,20},title="All",value=averageAllSweeps
+	TitleBox sweepsTitleBox,pos={20,yOffset},frame=0,title="Sweeps:"
+	CheckBox allSweepsCheckBox,pos={70,yOffset},size={50,20},title="All",value=averageAllSweeps
 	CheckBox allSweepsCheckBox,proc=HandleAllSweepsCheckbox
 	
 	//absVarName=AbsoluteVarName(browserDFName,"iSweepFirstAverage")
-	SetVariable firstSweepSetVariable,pos={110,yOffset+63},size={53,17},title=" "
+	SetVariable firstSweepSetVariable,pos={110,yOffset},size={53,17},title=" "
 	SetVariable firstSweepSetVariable,limits={1,2000,1},proc=FirstSweepSetVariableUsed
 	
-	SetVariable lastSweepSetVariable,pos={170,yOffset+63},size={66,17},title="to"
+	SetVariable lastSweepSetVariable,pos={170,yOffset},size={66,17},title="to"
 	SetVariable lastSweepSetVariable,limits={1,2000,1},proc=LastSweepSetVariableUsed
 	
 //	absVarName=AbsoluteVarName(browserDFName,"avghold")
@@ -222,11 +235,12 @@ Function NewToolsPanel(browserNumber) : Panel
 //	CheckBox hold_all,pos={212,yOffset+88},size={50,20},title="All",value=1
 
 	// Controls for which steps to show:
+	yOffset=yOffset+88-63
 	NVAR averageAllSteps
-	TitleBox stepsTitleBox,pos={20,yOffset+88},frame=0,title="Steps:"
-	CheckBox allStepsCheckBox,pos={70,yOffset+88},size={50,20},title="All",value=averageAllSteps
+	TitleBox stepsTitleBox,pos={20,yOffset},frame=0,title="Steps:"
+	CheckBox allStepsCheckBox,pos={70,yOffset},size={50,20},title="All",value=averageAllSteps
 	CheckBox allStepsCheckBox,proc=HandleAllStepsCheckbox
-	SetVariable stepsSetVariable,pos={110,yOffset+88-1},size={85,17},title="Only:"
+	SetVariable stepsSetVariable,pos={110,yOffset-1},size={85,17},title="Only:"
 	SetVariable stepsSetVariable,limits={-1000,1000,10},proc=StepsSetVariableUsed
 
 	// set the enablement of the averaging fields appropriately
