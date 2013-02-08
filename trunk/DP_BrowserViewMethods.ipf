@@ -13,7 +13,18 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	// Layout the window widgets
 	String browserName=BrowserNameFromNumber(browserNumber)
 	String browserTitle=BrowserTitleFromNumber(browserNumber)
-	Display /W=(177-30,44,757-30,548) /K=1 /N=$browserName as browserTitle
+	// These are all in pixels
+	Variable xOffset=8
+	Variable yOffset=54
+	Variable width=700
+	Variable height=680
+	// Convert dimensions to points
+	Variable pointsPerPixel=72/ScreenResolution
+	Variable xOffsetInPoints=pointsPerPixel*xOffset
+	Variable yOffsetInPoints=pointsPerPixel*yOffset
+	Variable widthInPoints=pointsPerPixel*width
+	Variable heightInPoints=pointsPerPixel*height
+	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) /K=1 /N=$browserName as browserTitle
 	SetWindow $browserName, hook(DPHook)=DataProBrowserHook
 	ShowInfo
 	
@@ -83,7 +94,7 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	PopupMenu traceBColorPopupMenu,pos={265,yBaselineForTraceB-2},size={96,14},proc=TraceBColorSelected,title="color:"
 	PopupMenu traceBColorPopupMenu,mode=2,value=#colorNameListFU
 		
-	Variable xOffset=370		
+	xOffset=370		// pixels
 	CheckBox rejectACheckbox,pos={xOffset,yBaselineForTraceA},size={49,14},proc=HandleRejectACheckbox,title="Reject"
 	CheckBox rejectACheckbox,value= 0
 	CheckBox rejectBCheckbox,pos={xOffset,yBaselineForTraceB},size={49,14},proc=HandleRejectBCheckbox,title="Reject"
@@ -108,7 +119,7 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	SetVariable commentsSetVariable,proc=HandleCommentsSetVariable,value=_STR:""
 
 	absVarName=AbsoluteVarName(browserDFName,"showToolsChecked")
-	CheckBox showToolsCheckbox,pos={680,15},size={70,18},proc=ShowHideToolsPanel, value=0
+	CheckBox showToolsCheckbox,pos={610,yBaselineForTraceA+1},size={70,18},proc=ShowHideToolsPanel, value=0
 	CheckBox showToolsCheckbox,title="Show Tools",variable=$absVarName
 	
 	//Button tools,pos={690,15},size={70,18},proc=SummonToolsPanel,title="Tools"
