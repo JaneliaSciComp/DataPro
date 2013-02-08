@@ -406,7 +406,7 @@ Function HandleShowTraceCheckbox(cbStruct) : CheckBoxControl
 	// Shouldn't need to mess with the fit: The view should realize that the fit is for a wave
 	// other than the one showing, and act accordingly.
 	//String topTraceWaveNameAbs=GetTopTraceWaveNameAbs()
-	//if (~AreStringsEqual(waveNameAbsOfFitTrace,topTraceWaveNameAbs)
+	//if (!AreStringsEqual(waveNameAbsOfFitTrace,topTraceWaveNameAbs)
 	//	InvalidateFit(browserNumber)  // model method
 	//end
 	BrowserModelChanged(browserNumber)
