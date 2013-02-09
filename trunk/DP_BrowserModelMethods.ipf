@@ -13,8 +13,8 @@ Function BrowserModelConstructor()
 	NewDataFolder /O/S $browserDFName
 
 	//// References for globals not in our own DF
-	//SVAR baseNameANow=root:DP_DigitizerControl:adcname0
-	//SVAR baseNameBNow=root:DP_DigitizerControl:adcname1
+	//SVAR baseNameANow=root:DP_Digitizer:adcname0
+	//SVAR baseNameBNow=root:DP_Digitizer:adcname1
 
 	// Create the state variables for this instance
 	//Variable /G iOldSweep,
@@ -254,9 +254,9 @@ End
 
 Function RemoveBaseNamedWaves(base)
 	String base
-	String savDF, targetWindow, allwaves, thisWaveName
+	String savedDF, targetWindow, allwaves, thisWaveName
 	Variable i
-	savDF=GetDataFolder(1)
+	savedDF=GetDataFolder(1)
 	SetDataFolder root:
 	base+="*"
 	sprintf targetWindow, "WIN:"
@@ -273,7 +273,7 @@ Function RemoveBaseNamedWaves(base)
 			i+=1
 		while(1)
 	endif
-	SetDataFolder savDF
+	SetDataFolder savedDF
 End
 
 //Function SyncCommentsToTopTrace(browserNumber)
@@ -282,7 +282,7 @@ End
 //	Variable browserNumber
 //
 //	// Find name of top browser, switch the DF to its DF, note the former DF name
-//	String savDF=ChangeToBrowserDF(browserNumber)
+//	String savedDF=ChangeToBrowserDF(browserNumber)
 //
 //	SVAR comments
 //	String topTraceWaveName=GetTopTraceWaveNameAbs(browserNumber)
@@ -294,7 +294,7 @@ End
 //	endif
 //	
 //	// Restore the original DF
-//	SetDataFolder savDF
+//	SetDataFolder savedDF
 //End
 
 Function DoBaseSub(browserNumber)
