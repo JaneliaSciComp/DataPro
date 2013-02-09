@@ -416,24 +416,24 @@ Function SetTraceAChecked(browserNumber,checked)
 	// Called to check/uncheck the trace A checkbox programmatically
 	Variable browserNumber, checked
 
-	String savDF=ChangeToBrowserDF(browserNumber)
+	String savedDF=ChangeToBrowserDF(browserNumber)
 	NVAR traceAChecked
 	traceAChecked=checked	
 	UpdateMeasurements(browserNumber)
 	BrowserModelChanged(browserNumber)
-	SetDataFolder savDF
+	SetDataFolder savedDF
 End
 
 Function SetTraceBChecked(browserNumber,checked)
 	// Called to check/uncheck the trace B checkbox programmatically
 	Variable browserNumber, checked
 
-	String savDF=ChangeToBrowserDF(browserNumber)
+	String savedDF=ChangeToBrowserDF(browserNumber)
 	NVAR traceBChecked
 	traceBChecked=checked	
 	UpdateMeasurements(browserNumber)
 	BrowserModelChanged(browserNumber)
-	SetDataFolder savDF
+	SetDataFolder savedDF
 End
 
 Function HandleRejectACheckbox(cbStruct) : CheckBoxControl
@@ -1147,7 +1147,7 @@ Function AverageSweepsButtonPressed(bStruct) : ButtonControl
 	endif
 	
 	// Figure the dest wave name
-	NVAR acqNextSweepIndex=root:DP_DigitizerControl:iSweep
+	NVAR acqNextSweepIndex=root:DP_Digitizer:iSweep
 	Variable destSweepIndex=acqNextSweepIndex
 	
 	// Do the average(s)
