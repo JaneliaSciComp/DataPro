@@ -13,8 +13,19 @@ Function SineBuilderViewConstructor() : Graph
 	SineBuilderModelConstructor()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_SineBuilder
-	WAVE theDACWave	
-	Display /W=(80,150,780,450) /K=1 /N=SineBuilderView theDACWave as "Sine Wave Builder"
+	WAVE theDACWave
+	// These are all in pixels
+	Variable xOffset=105
+	Variable yOffset=200
+	Variable width=705
+	Variable height=400
+	// Convert dimensions to points
+	Variable pointsPerPixel=72/ScreenResolution
+	Variable xOffsetInPoints=pointsPerPixel*xOffset
+	Variable yOffsetInPoints=pointsPerPixel*yOffset
+	Variable widthInPoints=pointsPerPixel*width
+	Variable heightInPoints=pointsPerPixel*height
+	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) 	 /K=1 /N=SineBuilderView theDACWave as "Sine Wave Builder"
 	//ModifyGraph /W=SineBuilderView /Z margin(top)=36
 	ModifyGraph /W=SineBuilderView /Z grid(left)=1
 	Label /W=SineBuilderView /Z bottom "Time (ms)"
