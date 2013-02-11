@@ -1319,3 +1319,19 @@ Function TraceBColorSelected(pStruct) : PopupMenuControl
 	SetDataFolder savedDFName		
 End
 
+Function DigitizerAddDACWave(w,waveNameString)
+	Wave w
+	String waveNameString
+
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Digitizer
+
+	if (!GrepString(waveNameString,"_DAC$"))
+		waveNameString+="_DAC"
+	endif
+	//String waveNameString=NameOfWave(w)
+	Duplicate /O w $waveNameString
+	DigitizerModelChanged()
+	
+	SetDataFolder savedDF
+End
