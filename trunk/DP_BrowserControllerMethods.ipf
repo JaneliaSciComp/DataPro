@@ -1335,3 +1335,38 @@ Function DigitizerAddDACWave(w,waveNameString)
 	
 	SetDataFolder savedDF
 End
+
+Function DigitizerAddTTLWave(w,waveNameString)
+	Wave w
+	String waveNameString
+
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Digitizer
+
+	if (!GrepString(waveNameString,"_TTL$"))
+		waveNameString+="_TTL"
+	endif
+	//String waveNameString=NameOfWave(w)
+	Duplicate /O w $waveNameString
+	DigitizerModelChanged()
+	
+	SetDataFolder savedDF
+End
+
+Function DigitizerAddDACOrTTLWave(w,waveNameString)
+	Wave w
+	String waveNameString
+
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Digitizer
+
+	if (!GrepString(waveNameString,"_DAC$") && !GrepString(waveNameString,"_TTL$"))
+		waveNameString+="_DAC"
+	endif
+	//String waveNameString=NameOfWave(w)
+	Duplicate /O w $waveNameString
+	DigitizerModelChanged()
+	
+	SetDataFolder savedDF
+End
+
