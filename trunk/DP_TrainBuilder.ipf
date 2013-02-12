@@ -22,7 +22,7 @@ Function TrainBuilderViewConstructor() : Graph
 	Label /W=TrainBuilderView /Z left "Signal (pure)"
 	ModifyGraph /W=TrainBuilderView /Z tickUnit(bottom)=1
 	ModifyGraph /W=TrainBuilderView /Z tickUnit(left)=1
-	ControlBar 90
+	ControlBar 80
 
 	SetVariable baseLevelSV,win=TrainBuilderView,pos={15,15},size={110,15},proc=TrainBuilderSetVariableTwiddled,title="Base Level"
 	SetVariable baseLevelSV,win=TrainBuilderView,limits={-10000,10000,1},value= baseLevel

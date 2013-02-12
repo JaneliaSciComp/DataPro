@@ -22,7 +22,7 @@ Function RampBuilderViewConstructor() : Graph
 	Label /W=RampBuilderView /Z left "Signal (pure)"
 	ModifyGraph /W=RampBuilderView /Z tickUnit(bottom)=1
 	ModifyGraph /W=RampBuilderView /Z tickUnit(left)=1
-	ControlBar 90
+	ControlBar 80
 	
 	SetVariable preLevelSV,win=RampBuilderView,pos={25,20},size={140,15},proc=RampBuilderSetVariableTwiddled,title="Pre-Ramp Level"
 	SetVariable preLevelSV,win=RampBuilderView,limits={-10000,10000,10},value= preLevel
