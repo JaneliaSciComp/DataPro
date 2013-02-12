@@ -24,7 +24,7 @@ Function PSCBuilderViewConstructor() : Graph
 	Label /W=PSCBuilderView /Z left "Signal (pure)"
 	ModifyGraph /W=PSCBuilderView /Z tickUnit(bottom)=1
 	ModifyGraph /W=PSCBuilderView /Z tickUnit(left)=1
-	ControlBar 90
+	ControlBar 80
 	SetVariable delaySV,win=PSCBuilderView,pos={42,12},size={110,17},proc=PSCBuilderSetVariableTwiddled,title="Delay (ms)"
 	SetVariable delaySV,win=PSCBuilderView,limits={0,1000,1},value= delay
 	//SetVariable timeAfterSV,win=PSCBuilderView,pos={301,13},size={120,17},proc=PSCBuilderSetVariableTwiddled,title="Time After (ms)"

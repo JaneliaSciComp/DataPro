@@ -23,7 +23,7 @@ Function SineBuilderViewConstructor() : Graph
 	Label /W=SineBuilderView /Z left "Signal (pure)"
 	ModifyGraph /W=SineBuilderView /Z tickUnit(bottom)=1
 	ModifyGraph /W=SineBuilderView /Z tickUnit(left)=1
-	ControlBar 90
+	ControlBar 80
 	SetVariable sine_pre,win=SineBuilderView,pos={40,12},size={140,17},proc=SineBuilderSetVariableTwiddled,title="Delay (ms)"
 	SetVariable sine_pre,win=SineBuilderView,limits={0,1000,1},value= delay
 	SetVariable sine_dur,win=SineBuilderView,pos={205,12},size={120,17},proc=SineBuilderSetVariableTwiddled,title="Duration (ms)"
