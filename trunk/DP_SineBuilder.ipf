@@ -25,7 +25,7 @@ Function SineBuilderViewConstructor() : Graph
 	Variable yOffsetInPoints=pointsPerPixel*yOffset
 	Variable widthInPoints=pointsPerPixel*width
 	Variable heightInPoints=pointsPerPixel*height
-	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) 	 /K=1 /N=SineBuilderView theDACWave as "Sine Wave Builder"
+	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) /K=1 /N=SineBuilderView theDACWave as "Sine Builder"
 	//ModifyGraph /W=SineBuilderView /Z margin(top)=36
 	ModifyGraph /W=SineBuilderView /Z grid(left)=1
 	Label /W=SineBuilderView /Z bottom "Time (ms)"

@@ -4,6 +4,7 @@ Function PSCBuilderViewConstructor() : Graph
 	PSCBuilderModelConstructor()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_PSCBuilder
+	NVAR tauRise, tauDecay1, tauDecay2
 	WAVE theDACWave
 	// These are all in pixels
 	Variable xOffset=105
@@ -16,7 +17,7 @@ Function PSCBuilderViewConstructor() : Graph
 	Variable yOffsetInPoints=pointsPerPixel*yOffset
 	Variable widthInPoints=pointsPerPixel*width
 	Variable heightInPoints=pointsPerPixel*height
-	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) 	 /K=1 /N=PSCBuilderView theDACWave as "PSC Wave Builder"
+	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) 	 /K=1 /N=PSCBuilderView theDACWave as "PSC Builder"
 	//ModifyGraph /W=PSCBuilderView /Z margin(top)=36
 	ModifyGraph /W=PSCBuilderView /Z grid(left)=1
 	Label /W=PSCBuilderView /Z bottom "Time (ms)"
@@ -24,27 +25,27 @@ Function PSCBuilderViewConstructor() : Graph
 	ModifyGraph /W=PSCBuilderView /Z tickUnit(bottom)=1
 	ModifyGraph /W=PSCBuilderView /Z tickUnit(left)=1
 	ControlBar 90
-	SetVariable psc_pre,pos={42,12},size={110,17},proc=PSCBuilderSetVariableTwiddled,title="Delay (ms)"
-	SetVariable psc_pre,limits={0,1000,1},value= delay
-	SetVariable psc_post,pos={301,13},size={120,17},proc=PSCBuilderSetVariableTwiddled,title="Time After (ms)"
-	SetVariable psc_post,limits={10,1000,10},value= timeAfter
-	SetVariable psc_amp,pos={28,43},size={120,17},proc=PSCBuilderSetVariableTwiddled,title="Amplitude"
-	SetVariable psc_amp,limits={-10000,10000,10},value= amplitude
-	SetVariable psc_taur,pos={163,43},size={120,17},proc=PSCBuilderSetVariableTwiddled,title="Rise Tau (ms)"
-	SetVariable psc_taur,format="%g",limits={0,10000,0.1},value= tauRise
-	SetVariable psc_taud1,pos={320,42},size={130,17},proc=PSCBuilderSetVariableTwiddled,title="Decay Tau 1 (ms)"
-	SetVariable psc_taud1,format="%g",limits={0,10000,1},value= tauDecay1
-	SetVariable psc_taud2,pos={470,41},size={130,17},proc=PSCBuilderSetVariableTwiddled,title="Decay Tau 2 (ms)"
-	SetVariable psc_taud2,format="%g",limits={0,10000,10},value= tauDecay2
+	SetVariable delaySV,win=PSCBuilderView,pos={42,12},size={110,17},proc=PSCBuilderSetVariableTwiddled,title="Delay (ms)"
+	SetVariable delaySV,win=PSCBuilderView,limits={0,1000,1},value= delay
+	SetVariable timeAfterSV,win=PSCBuilderView,pos={301,13},size={120,17},proc=PSCBuilderSetVariableTwiddled,title="Time After (ms)"
+	SetVariable timeAfterSV,win=PSCBuilderView,limits={10,1000,10},value= timeAfter
+	SetVariable amplitudeSV,win=PSCBuilderView,pos={28,43},size={120,17},proc=PSCBuilderSetVariableTwiddled,title="Amplitude"
+	SetVariable amplitudeSV,win=PSCBuilderView,limits={-10000,10000,10},value= amplitude
+	SetVariable riseTauSV,win=PSCBuilderView,pos={163,43},size={120,17},proc=PSCBuilderRiseTauSVTwiddled,title="Rise Tau (ms)"
+	SetVariable riseTauSV,win=PSCBuilderView,format="%g",limits={0,10000,0.1},value= _NUM:tauRise
+	SetVariable decayTau1SV,win=PSCBuilderView,pos={320,42},size={130,17},proc=PSCBuilderDecayTau1SVTwiddled,title="Decay Tau 1 (ms)"
+	SetVariable decayTau1SV,win=PSCBuilderView,format="%g",limits={0,10000,1},value= _NUM:tauDecay1
+	SetVariable decayTau2SV,win=PSCBuilderView,pos={470,41},size={130,17},proc=PSCBuilderDecayTau2SVTwiddled,title="Decay Tau 2 (ms)"
+	SetVariable decayTau2SV,win=PSCBuilderView,format="%g",limits={0,10000,10},value= _NUM:tauDecay2
 	
-	SetVariable psc_dur,pos={173,13},size={110,17},proc=PSCBuilderSetVariableTwiddled,title="Duration (ms)"
-	SetVariable psc_dur,limits={0,1000,10},value= duration
+	SetVariable durationSV,pos={173,13},size={110,17},proc=PSCBuilderSetVariableTwiddled,title="Duration (ms)"
+	SetVariable durationSV,limits={0,1000,10},value= duration
 
-	SetVariable psc_wt_td2,pos={440,12},size={140,17},proc=PSCBuilderSetVariableTwiddled,title="Weight of Decay 2"
-	SetVariable psc_wt_td2,format="%2.1f",limits={0,1,0.1},value= weightDecay2
+	SetVariable weightDecay2SV,pos={440,12},size={140,17},proc=PSCBuilderSetVariableTwiddled,title="Weight of Decay 2"
+	SetVariable weightDecay2SV,format="%2.1f",limits={0,1,0.1},value= weightDecay2
 	
-	Button train_save,win=PSCBuilderView,pos={670,10},size={90,20},proc=PSCBuilderSaveAsButtonPressed,title="Save As..."
-	Button PSCBuilderImportButton,win=PSCBuilderView,pos={670,45},size={90,20},proc=PSCBuilderImportButtonPressed,title="Import..."
+	Button saveAsButton,win=PSCBuilderView,pos={670,10},size={90,20},proc=PSCBuilderSaveAsButtonPressed,title="Save As..."
+	Button importButton,win=PSCBuilderView,pos={670,45},size={90,20},proc=PSCBuilderImportButtonPressed,title="Import..."
 	//SetDrawLayer UserFront
 	//SetDrawEnv fstyle= 1
 	//DrawText -0.038,-0.06,"When done, save the wave with an extension _DAC"
@@ -82,13 +83,84 @@ Function PSCBuilderModelConstructor()
 	SetDataFolder savedDF
 End
 
+Function PSCBuilderRiseTauSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
+	// Callback for SetVariables that don't require any bounds checking
+	String ctrlName
+	Variable varNum
+	String varStr
+	String varName
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder "root:DP_PSCBuilder"
+
+	NVAR tauDecay1, tauRise
+	if (varNum<tauDecay1)
+		// valid value, set the instance var
+		tauRise=varNum
+		PSCBuilderModelParamsChanged()
+	else
+		// invalid value, set the SV to display the old value
+		SetVariable riseTauSV,win=PSCBuilderView,value= _NUM:tauRise
+	endif
+	
+	SetDataFolder savedDF
+End
+
+Function PSCBuilderDecayTau1SVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
+	// Callback for SetVariables that don't require any bounds checking
+	String ctrlName
+	Variable varNum
+	String varStr
+	String varName
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder "root:DP_PSCBuilder"
+
+	NVAR tauRise, tauDecay1, tauDecay2
+	if (tauRise<varNum && varNum<=tauDecay2)
+		// valid value, set the instance var
+		tauDecay1=varNum
+		PSCBuilderModelParamsChanged()
+	else
+		// invalid value, set the SV to display the old value
+		SetVariable decayTau1SV,win=PSCBuilderView,value= _NUM:tauDecay1
+	endif
+	
+	SetDataFolder savedDF
+End
+
+Function PSCBuilderDecayTau2SVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
+	// Callback for SetVariables that don't require any bounds checking
+	String ctrlName
+	Variable varNum
+	String varStr
+	String varName
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder "root:DP_PSCBuilder"
+
+	NVAR tauRise, tauDecay1, tauDecay2
+	if (tauRise<varNum && tauDecay1<=varNum)
+		// valid value, set the instance var
+		tauDecay2=varNum
+		PSCBuilderModelParamsChanged()
+	else
+		// invalid value, set the SV to display the old value
+		SetVariable decayTau2SV,win=PSCBuilderView,value= _NUM:tauDecay2
+	endif
+	
+	SetDataFolder savedDF
+End
+
 Function PSCBuilderSetVariableTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
+	// Callback for SetVariables that don't require any bounds checking
 	String ctrlName
 	Variable varNum
 	String varStr
 	String varName
 	PSCBuilderModelParamsChanged()
 End
+
 
 Function PSCBuilderSaveAsButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
@@ -143,22 +215,15 @@ Function PSCBuilderModelParamsChanged()
 	ReplaceStringByKeyInWaveNote(theDACWave,"duration",num2str(duration))
 	ReplaceStringByKeyInWaveNote(theDACWave,"timeAfter",num2str(timeAfter))
 	Variable nDelay=round(delay/dt)
-	Variable nCentral=round(duration/dt)
+	Variable nDuration=round(duration/dt)
 	// Set the delay portion
-	Variable jFirst=0
-	Variable jLast=nDelay-1
-	theDACWave[jFirst,jLast]=0
+	theDACWave[0,nDelay-1]=0
 	// Set the main portion
-	jFirst=jLast+1
-	jLast=jFirst+round(duration/dt)-1
-	theDACWave[jFirst,jLast]=	-exp(-(x-delay)/tauRise)+(1-weightDecay2)*exp(-(x-delay)/tauDecay1)+weightDecay2*exp(-(x-delay)/tauDecay2)
+	theDACWave[nDelay,nDelay+nDuration-1]= -exp(-(x-delay)/tauRise)+(1-weightDecay2)*exp(-(x-delay)/tauDecay1)+weightDecay2*exp(-(x-delay)/tauDecay2)
 	// Set the trailing portion
-	jFirst=jLast+1
-	jLast=nTotal-1
-	theDACWave[jFirst,jLast]=0
+	theDACWave[nDelay+nDuration,nTotal-1]=0
 	// re-scale to have the proper amplitude
-	Make /FREE waveAbs=abs(theDACWave)
-	Wavestats /Q waveAbs
+	Wavestats /Q theDACWave
 	theDACWave=(amplitude/V_max)*theDACWave		// want the peak amplitude to be amplitude
 	// restore saved DF
 	SetDataFolder savedDF
