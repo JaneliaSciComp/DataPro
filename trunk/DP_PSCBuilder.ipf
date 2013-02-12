@@ -27,8 +27,8 @@ Function PSCBuilderViewConstructor() : Graph
 	ControlBar 90
 	SetVariable delaySV,win=PSCBuilderView,pos={42,12},size={110,17},proc=PSCBuilderSetVariableTwiddled,title="Delay (ms)"
 	SetVariable delaySV,win=PSCBuilderView,limits={0,1000,1},value= delay
-	SetVariable timeAfterSV,win=PSCBuilderView,pos={301,13},size={120,17},proc=PSCBuilderSetVariableTwiddled,title="Time After (ms)"
-	SetVariable timeAfterSV,win=PSCBuilderView,limits={10,1000,10},value= timeAfter
+	//SetVariable timeAfterSV,win=PSCBuilderView,pos={301,13},size={120,17},proc=PSCBuilderSetVariableTwiddled,title="Time After (ms)"
+	//SetVariable timeAfterSV,win=PSCBuilderView,limits={10,1000,10},value= timeAfter
 	SetVariable amplitudeSV,win=PSCBuilderView,pos={28,43},size={120,17},proc=PSCBuilderSetVariableTwiddled,title="Amplitude"
 	SetVariable amplitudeSV,win=PSCBuilderView,limits={-10000,10000,10},value= amplitude
 	SetVariable riseTauSV,win=PSCBuilderView,pos={163,43},size={120,17},proc=PSCBuilderRiseTauSVTwiddled,title="Rise Tau (ms)"
@@ -38,8 +38,8 @@ Function PSCBuilderViewConstructor() : Graph
 	SetVariable decayTau2SV,win=PSCBuilderView,pos={470,41},size={130,17},proc=PSCBuilderDecayTau2SVTwiddled,title="Decay Tau 2 (ms)"
 	SetVariable decayTau2SV,win=PSCBuilderView,format="%g",limits={0,10000,10},value= _NUM:tauDecay2
 	
-	SetVariable durationSV,pos={173,13},size={110,17},proc=PSCBuilderSetVariableTwiddled,title="Duration (ms)"
-	SetVariable durationSV,limits={0,1000,10},value= duration
+	//SetVariable durationSV,pos={173,13},size={110,17},proc=PSCBuilderSetVariableTwiddled,title="Duration (ms)"
+	//SetVariable durationSV,limits={0,1000,10},value= duration
 
 	SetVariable weightDecay2SV,pos={440,12},size={140,17},proc=PSCBuilderSetVariableTwiddled,title="Weight of Decay 2"
 	SetVariable weightDecay2SV,format="%2.1f",limits={0,1,0.1},value= weightDecay2
@@ -61,11 +61,12 @@ Function PSCBuilderModelConstructor()
 	// Create a new DF
 	NewDataFolder /O /S root:DP_PSCBuilder
 	
-	Variable /G dt=DigitizerGetDt()		// sampling interval, ms
+	//Variable /G dt=DigitizerGetDt()		// sampling interval, ms
+	//Variable /G totalDuration=DigitizerGetTotalDuration()		// totalDuration, ms
 	
 	// Parameters of post-synaptic current stimulus
 	Variable /G delay
-	Variable /G duration
+	//Variable /G duration
 	Variable /G timeAfter
 	Variable /G amplitude
 	Variable /G tauRise
@@ -84,7 +85,6 @@ Function PSCBuilderModelConstructor()
 End
 
 Function PSCBuilderRiseTauSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
-	// Callback for SetVariables that don't require any bounds checking
 	String ctrlName
 	Variable varNum
 	String varStr
@@ -107,7 +107,6 @@ Function PSCBuilderRiseTauSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariab
 End
 
 Function PSCBuilderDecayTau1SVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
-	// Callback for SetVariables that don't require any bounds checking
 	String ctrlName
 	Variable varNum
 	String varStr
@@ -130,7 +129,6 @@ Function PSCBuilderDecayTau1SVTwiddled(ctrlName,varNum,varStr,varName) : SetVari
 End
 
 Function PSCBuilderDecayTau2SVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
-	// Callback for SetVariables that don't require any bounds checking
 	String ctrlName
 	Variable varNum
 	String varStr
@@ -160,7 +158,6 @@ Function PSCBuilderSetVariableTwiddled(ctrlName,varNum,varStr,varName) : SetVari
 	String varName
 	PSCBuilderModelParamsChanged()
 End
-
 
 Function PSCBuilderSaveAsButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
@@ -197,8 +194,8 @@ Function PSCBuilderModelParamsChanged()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder "root:DP_PSCBuilder"
 	NVAR delay, duration, amplitude, tauRise, tauDecay1, tauDecay2, weightDecay2, timeAfter
-	Variable totalDuration=delay+duration+timeAfter
-	NVAR dt
+	Variable dt=DigitizerGetDt()		// sampling interval, ms
+	Variable totalDuration=DigitizerGetTotalDuration()		// totalDuration, ms
 	WAVE theDACWave
 	Variable nTotal=round(totalDuration/dt)
 	Redimension /N=(nTotal) theDACWave
@@ -212,16 +209,13 @@ Function PSCBuilderModelParamsChanged()
 	ReplaceStringByKeyInWaveNote(theDACWave,"tauDecay2",num2str(tauDecay2))
 	ReplaceStringByKeyInWaveNote(theDACWave,"weightDecay2",num2str(weightDecay2))
 	ReplaceStringByKeyInWaveNote(theDACWave,"delay",num2str(delay))
-	ReplaceStringByKeyInWaveNote(theDACWave,"duration",num2str(duration))
-	ReplaceStringByKeyInWaveNote(theDACWave,"timeAfter",num2str(timeAfter))
+	//ReplaceStringByKeyInWaveNote(theDACWave,"duration",num2str(duration))
+	//ReplaceStringByKeyInWaveNote(theDACWave,"timeAfter",num2str(timeAfter))
 	Variable nDelay=round(delay/dt)
-	Variable nDuration=round(duration/dt)
 	// Set the delay portion
 	theDACWave[0,nDelay-1]=0
 	// Set the main portion
-	theDACWave[nDelay,nDelay+nDuration-1]= -exp(-(x-delay)/tauRise)+(1-weightDecay2)*exp(-(x-delay)/tauDecay1)+weightDecay2*exp(-(x-delay)/tauDecay2)
-	// Set the trailing portion
-	theDACWave[nDelay+nDuration,nTotal-1]=0
+	theDACWave[nDelay,nTotal-1]= -exp(-(x-delay)/tauRise)+(1-weightDecay2)*exp(-(x-delay)/tauDecay1)+weightDecay2*exp(-(x-delay)/tauDecay2)
 	// re-scale to have the proper amplitude
 	Wavestats /Q theDACWave
 	theDACWave=(amplitude/V_max)*theDACWave		// want the peak amplitude to be amplitude
@@ -237,32 +231,32 @@ Function ImportPSCWave(waveNameString)
 	String savedDF=GetDataFolder(1)
 	SetDataFolder "root:DP_PSCBuilder"
 
-	NVAR delay, duration, amplitude, tauRise, tauDecay1, tauDecay2, weightDecay2, timeAfter
+	NVAR delay, amplitude, tauRise, tauDecay1, tauDecay2, weightDecay2
 
 	String waveTypeString
 	Variable i
 	if (AreStringsEqual(waveNameString,"(Default Settings)"))
 		delay=10
-		duration=50
+		//duration=50
 		amplitude=10
 		tauRise=0.2
 		tauDecay1=2
 		tauDecay2=10
 		weightDecay2=0.5
-		timeAfter=10
+		//timeAfter=10
 	else
 		// Get the wave from the digitizer
 		Wave exportedWave=DigitizerGetWaveByName(waveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
 		if (AreStringsEqual(waveTypeString,"pscdac"))
-			duration=NumberByKeyInWaveNote(exportedWave,"duration")
+			//duration=NumberByKeyInWaveNote(exportedWave,"duration")
 			amplitude=NumberByKeyInWaveNote(exportedWave,"amplitude")
 			tauRise=NumberByKeyInWaveNote(exportedWave,"tauRise")
 			tauDecay1=NumberByKeyInWaveNote(exportedWave,"tauDecay1")
 			tauDecay2=NumberByKeyInWaveNote(exportedWave,"tauDecay2")
 			weightDecay2=NumberByKeyInWaveNote(exportedWave,"weightDecay2")
 			delay=NumberByKeyInWaveNote(exportedWave,"delay")
-			timeAfter=NumberByKeyInWaveNote(exportedWave,"timeAfter")
+			//timeAfter=NumberByKeyInWaveNote(exportedWave,"timeAfter")
 		else
 			Abort("This is not a PSC wave; choose another")
 		endif

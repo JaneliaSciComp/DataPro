@@ -1,14 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
-//Function LaunchSineBuilder()
-//	if (wintype("SineBuilder")<1)
-//		SineVarChange()
-//		SineBuilder()
-//	else
-//		DoWindow /F SineBuilder
-//	endif
-//End
-
 Function SineBuilderViewConstructor() : Graph
 	SineBuilderModelConstructor()
 	String savedDF=GetDataFolder(1)
@@ -33,16 +24,16 @@ Function SineBuilderViewConstructor() : Graph
 	ModifyGraph /W=SineBuilderView /Z tickUnit(bottom)=1
 	ModifyGraph /W=SineBuilderView /Z tickUnit(left)=1
 	ControlBar 90
-	SetVariable sine_pre,win=SineBuilderView,pos={40,12},size={140,17},proc=SineBuilderSetVariableTwiddled,title="Delay Before (ms)"
-	SetVariable sine_pre,win=SineBuilderView,limits={0,1000,1},value= sineDelayBefore
+	SetVariable sine_pre,win=SineBuilderView,pos={40,12},size={140,17},proc=SineBuilderSetVariableTwiddled,title="Delay (ms)"
+	SetVariable sine_pre,win=SineBuilderView,limits={0,1000,1},value= delay
 	SetVariable sine_dur,win=SineBuilderView,pos={205,12},size={120,17},proc=SineBuilderSetVariableTwiddled,title="Duration (ms)"
-	SetVariable sine_dur,win=SineBuilderView,format="%g",limits={0,10000,10},value= sineDuration
-	SetVariable sine_post,win=SineBuilderView,pos={350,12},size={140,17},proc=SineBuilderSetVariableTwiddled,title="Delay After (ms)"
-	SetVariable sine_post,win=SineBuilderView,limits={10,1000,10},value= sineDelayAfter
+	SetVariable sine_dur,win=SineBuilderView,format="%g",limits={0,10000,10},value= duration
+	//SetVariable sine_post,win=SineBuilderView,pos={350,12},size={140,17},proc=SineBuilderSetVariableTwiddled,title="Delay After (ms)"
+	//SetVariable sine_post,win=SineBuilderView,limits={10,1000,10},value= DelayAfter
 	SetVariable sine_amp,win=SineBuilderView,pos={128,43},size={120,17},proc=SineBuilderSetVariableTwiddled,title="Amplitude"
-	SetVariable sine_amp,win=SineBuilderView,limits={-10000,10000,10},value= sineAmplitude
+	SetVariable sine_amp,win=SineBuilderView,limits={-10000,10000,10},value= amplitude
 	SetVariable sine_freq,win=SineBuilderView,pos={286,43},size={130,17},proc=SineBuilderSetVariableTwiddled,title="Frequency (Hz)"
-	SetVariable sine_freq,win=SineBuilderView,format="%g",limits={0,10000,10},value= sineFrequency
+	SetVariable sine_freq,win=SineBuilderView,format="%g",limits={0,10000,10},value= frequency
 	//SetVariable sine_sint,pos={466,12},size={120,17},proc=SineBuilderSetVariableTwiddled,title="samp. int."
 	//SetVariable sine_sint,limits={0.01,1000,0.01},value= dtSine
 	Button train_save,win=SineBuilderView,pos={601,10},size={90,20},proc=SineBuilderSaveAsButtonPressed,title="Save As..."
@@ -70,14 +61,15 @@ Function SineBuilderModelConstructor()
 	// Create a new DF
 	NewDataFolder /O /S root:DP_SineBuilder
 	
-	Variable /G dt=DigitizerGetDt()		// sampling interval, ms
+	//Variable /G dt=DigitizerGetDt()		// sampling interval, ms
+	//Variable /G totalDuration=DigitizerGetTotalDuration()		// total stimulus duration, ms
 	
 	// Parameters of sine wave stimulus
-	Variable /G sineDelayBefore
-	Variable /G sineDuration
-	Variable /G sineDelayAfter
-	Variable /G sineAmplitude
-	Variable /G sineFrequency
+	Variable /G delay
+	Variable /G duration
+	//Variable /G sineDelayAfter
+	Variable /G amplitude
+	Variable /G frequency
 
 	// Create the wave
 	Make /O theDACWave
@@ -110,11 +102,6 @@ Function SineBuilderSaveAsButtonPressed(ctrlName) : ButtonControl
 	SetDataFolder root:DP_SineBuilder
 	WAVE theDACWave
 	DigitizerAddDACWave(theDACWave,waveNameString)
-	//Duplicate /O NewDAC $waveNameString
-	//String filestr
-	//filestr=waveNameString+".bwav"
-	//Save /C $waveNameString as filestr
-	//DigitizerModelChanged()
 	SetDataFolder savedDF
 End
 
@@ -129,7 +116,6 @@ Function SineBuilderImportButtonPressed(ctrlName) : ButtonControl
 		return -1		// user hit Cancel
 	endif
 	ImportSineWave(waveNameString)
-	//SineBuilderModelParamsChanged()
 End
 
 Function SineBuilderModelParamsChanged()
@@ -137,9 +123,9 @@ Function SineBuilderModelParamsChanged()
 	// This is a _model_ method -- The view updates itself when theDACWave changes.
 	String savedDF=GetDataFolder(1)
 	SetDataFolder "root:DP_SineBuilder"
-	NVAR sineDelayBefore, sineDuration, sineDelayAfter, sineAmplitude, sineFrequency
-	Variable totalDuration=sineDelayBefore+sineDuration+sineDelayAfter
-	NVAR dt
+	NVAR delay, duration, amplitude, frequency
+	Variable dt=DigitizerGetDt()		// sampling interval, ms
+	Variable totalDuration=DigitizerGetTotalDuration()		// totalDuration, ms
 	WAVE theDACWave
 	Variable nTotal=round(totalDuration/dt)
 	Redimension /N=(nTotal) theDACWave
@@ -147,22 +133,20 @@ Function SineBuilderModelParamsChanged()
 	Note /K theDACWave
 	ReplaceStringByKeyInWaveNote(theDACWave,"WAVETYPE","sinedac")
 	ReplaceStringByKeyInWaveNote(theDACWave,"TIME",time())
-	ReplaceStringByKeyInWaveNote(theDACWave,"sineAmplitude",num2str(sineAmplitude))
-	ReplaceStringByKeyInWaveNote(theDACWave,"sineFrequency",num2str(sineFrequency))
-	ReplaceStringByKeyInWaveNote(theDACWave,"sineDelayBefore",num2str(sineDelayBefore))
-	ReplaceStringByKeyInWaveNote(theDACWave,"sineDuration",num2str(sineDuration))
-	ReplaceStringByKeyInWaveNote(theDACWave,"sineDelayAfter",num2str(sineDelayAfter))
+	ReplaceStringByKeyInWaveNote(theDACWave,"amplitude",num2str(amplitude))
+	ReplaceStringByKeyInWaveNote(theDACWave,"frequency",num2str(frequency))
+	ReplaceStringByKeyInWaveNote(theDACWave,"delay",num2str(delay))
+	ReplaceStringByKeyInWaveNote(theDACWave,"duration",num2str(duration))
+	//ReplaceStringByKeyInWaveNote(theDACWave,"sineDelayAfter",num2str(sineDelayAfter))
 	Variable jFirst=0
-	Variable jLast=round(sineDelayBefore/dt)-1
+	Variable jLast=round(delay/dt)-1
 	theDACWave[jFirst,jLast]=0
 	jFirst=jLast+1
-	jLast=jFirst+round(sineDuration/dt)-1
-	theDACWave[jFirst,jLast]=sineAmplitude*sin(sineFrequency*2*PI*(x-sineDelayBefore)/1000)
+	jLast=jFirst+round(duration/dt)-1
+	theDACWave[jFirst,jLast]=amplitude*sin(frequency*2*PI*(x-delay)/1000)
 	jFirst=jLast+1
 	jLast=nTotal-1
 	theDACWave[jFirst,jLast]=0
-	//WAVE NewDAC
-	//Duplicate /O theDACWave NewDAC
 	SetDataFolder savedDF
 End
 
@@ -185,26 +169,26 @@ Function ImportSineWave(waveNameString)
 	String savedDF=GetDataFolder(1)
 	SetDataFolder "root:DP_SineBuilder"
 
-	NVAR sineDelayBefore, sineDuration, sineDelayAfter, sineAmplitude, sineFrequency
+	NVAR delay, duration, amplitude, frequency
 
 	String waveTypeString
 	Variable i
 	if (AreStringsEqual(waveNameString,"(Default Settings)"))
-		sineDelayBefore=10
-		sineDuration=50
-		sineDelayAfter=10
-		sineAmplitude=10
-		sineFrequency=100
+		delay=10
+		duration=50
+		//sineDelayAfter=10
+		amplitude=10
+		frequency=100
 	else
 		// Get the wave from the digitizer
 		Wave exportedWave=DigitizerGetWaveByName(waveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
 		if (AreStringsEqual(waveTypeString,"sinedac"))
-			sineAmplitude=NumberByKeyInWaveNote(exportedWave,"sineAmplitude")
-			sineFrequency=NumberByKeyInWaveNote(exportedWave,"sineFrequency")
-			sineDuration=NumberByKeyInWaveNote(exportedWave,"sineDuration")
-			sineDelayBefore=NumberByKeyInWaveNote(exportedWave,"sineDelayBefore")
-			sineDelayAfter=NumberByKeyInWaveNote(exportedWave,"sineDelayAfter")
+			amplitude=NumberByKeyInWaveNote(exportedWave,"amplitude")
+			frequency=NumberByKeyInWaveNote(exportedWave,"frequency")
+			duration=NumberByKeyInWaveNote(exportedWave,"duration")
+			delay=NumberByKeyInWaveNote(exportedWave,"delay")
+			//sineDelayAfter=NumberByKeyInWaveNote(exportedWave,"sineDelayAfter")
 		else
 			Abort("This is not a sine wave; choose another")
 		endif
