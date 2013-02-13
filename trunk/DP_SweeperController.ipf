@@ -8,6 +8,28 @@ Function SweeperControllerSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariab
 	String varName
 	SweeperParametersChanged()		// Make the model self-consistent
 	SweeperViewSweeperChanged()	// Tell the view that the model has changed
+	
+	// Update any builders that currently exist, b/c user might have changed dt ot totalDuration
+	// (could be smarter about this)
+	if (DataFolderExists("root:DP_SineBuilder"))
+		SineBuilderModelParamsChanged()
+	endif
+	if (DataFolderExists("root:DP_PSCBuilder"))
+		PSCBModelParametersChanged()
+		PSCBViewModelChanged()	// PSCBuilder also needs this, b/c it's fancy
+	endif	
+	if (DataFolderExists("root:DP_RampBuilder"))
+		RampBuilderModelParamsChanged()
+	endif	
+	if (DataFolderExists("root:DP_TrainBuilder"))
+		TrainBuilderModelParamsChanged()
+	endif	
+	if (DataFolderExists("root:DP_FiveStepBuilder"))
+		FSBModelParamsChanged()
+	endif	
+
+	// Fix: Should also update any _DAC or _TTL waves in DP_Sweeper DF if they 
+	// twiddled dt or totalDuration.
 End
 
 Function SCGetDataButtonPressed(ctrlName) : ButtonControl
