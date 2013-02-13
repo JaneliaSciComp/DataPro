@@ -168,7 +168,7 @@ Function PSCBuilderSaveAsButtonPressed(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_PSCBuilder
 	WAVE theDACWave
-	DigitizerAddDACWave(theDACWave,waveNameString)
+	SweeperControllerAddDACWave(theDACWave,waveNameString)
 	SetDataFolder savedDF
 End
 

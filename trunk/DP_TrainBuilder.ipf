@@ -93,7 +93,7 @@ Function TrainBuilderSaveAsButtonPressed(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_TrainBuilder
 	WAVE theDACWave
-	DigitizerAddDACOrTTLWave(theDACWave,waveNameString)
+	SweepContAddDACOrTTLWave(theDACWave,waveNameString)
 	SetDataFolder savedDF
 End
 
