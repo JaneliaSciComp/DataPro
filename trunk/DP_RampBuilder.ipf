@@ -93,7 +93,7 @@ Function RampBuilderImportButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 
 	String waveNameString
-	String popupListString="(Default Settings);"+GetDigitizerWaveNamesEndingIn("DAC")
+	String popupListString="(Default Settings);"+GetSweeperWaveNamesEndingIn("DAC")
 	Prompt waveNameString, "Select wave to import:", popup, popupListString
 	DoPrompt "Import...", waveNameString
 	if (V_Flag)
@@ -108,8 +108,8 @@ Function RampBuilderModelParamsChanged()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder "root:DP_RampBuilder"
 	NVAR preLevel, delay, duration, postLevel
-	Variable dt=DigitizerGetDt()		// sampling interval, ms
-	Variable totalDuration=DigitizerGetTotalDuration()		// totalDuration, ms
+	Variable dt=SweeperGetDt()		// sampling interval, ms
+	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
 	WAVE theDACWave
 	Variable nTotal=round(totalDuration/dt)
 	Redimension /N=(nTotal) theDACWave
@@ -149,7 +149,7 @@ Function ImportRampWave(waveNameString)
 		postLevel=10
 	else
 		// Get the wave from the digitizer
-		Wave exportedWave=DigitizerGetWaveByName(waveNameString)
+		Wave exportedWave=SweeperGetWaveByName(waveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
 		if (AreStringsEqual(waveTypeString,"rampdac"))
 			preLevel=NumberByKeyInWaveNote(exportedWave,"preLevel")

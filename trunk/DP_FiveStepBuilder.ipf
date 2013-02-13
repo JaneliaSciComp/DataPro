@@ -118,7 +118,7 @@ Function FSBImportButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 
 	String waveNameString
-	String popupListString="(Default Settings);"+GetDigitizerWaveNamesEndingIn("DAC")+GetDigitizerWaveNamesEndingIn("TTL")
+	String popupListString="(Default Settings);"+GetSweeperWaveNamesEndingIn("DAC")+GetSweeperWaveNamesEndingIn("TTL")
 	Prompt waveNameString, "Select wave to import:", popup, popupListString
 	DoPrompt "Import...", waveNameString
 	if (V_Flag)
@@ -144,8 +144,8 @@ Function FSBModelParamsChanged()
 	NVAR level5
 	//NVAR duration5
 	
-	Variable dt=DigitizerGetDt()		// sampling interval, ms
-	Variable totalDuration=DigitizerGetTotalDuration()		// totalDuration, ms
+	Variable dt=SweeperGetDt()		// sampling interval, ms
+	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
 	WAVE theWave
 	Variable nTotal=round(totalDuration/dt)
 	Redimension /N=(nTotal) theWave
@@ -213,7 +213,7 @@ Function ImportFiveStepWave(waveNameString)
 		level5=0
 	else
 		// Get the wave from the digitizer
-		Wave exportedWave=DigitizerGetWaveByName(waveNameString)
+		Wave exportedWave=SweeperGetWaveByName(waveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
 		if (AreStringsEqual(waveTypeString,"fivestepdac"))
 			level1=NumberByKeyInWaveNote(exportedWave,"level1")
