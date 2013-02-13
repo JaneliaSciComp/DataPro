@@ -101,7 +101,7 @@ Function TrainBuilderImportButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 
 	String waveNameString
-	String popupListString="(Default Settings);"+GetDigitizerWaveNamesEndingIn("DAC")+GetDigitizerWaveNamesEndingIn("TTL")
+	String popupListString="(Default Settings);"+GetSweeperWaveNamesEndingIn("DAC")+GetSweeperWaveNamesEndingIn("TTL")
 	Prompt waveNameString, "Select wave to import:", popup, popupListString
 	DoPrompt "Import...", waveNameString
 	if (V_Flag)
@@ -116,8 +116,8 @@ Function TrainBuilderModelParamsChanged()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder "root:DP_TrainBuilder"
 	NVAR nPulses, pulseDuration, baseLevel, pulseAmplitude, delay, pulseFrequency
-	Variable dt=DigitizerGetDt()		// sampling interval, ms
-	Variable totalDuration=DigitizerGetTotalDuration()		// totalDuration, ms
+	Variable dt=SweeperGetDt()		// sampling interval, ms
+	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
 	WAVE theDACWave
 	Variable nTotal=round(totalDuration/dt)
 	Redimension /N=(nTotal) theDACWave
@@ -167,7 +167,7 @@ Function ImportTrainWave(waveNameString)
 		pulseFrequency=100	// Hz
 	else
 		// Get the wave from the digitizer
-		Wave exportedWave=DigitizerGetWaveByName(waveNameString)
+		Wave exportedWave=SweeperGetWaveByName(waveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
 		if (AreStringsEqual(waveTypeString,"traindac"))
 			nPulses=NumberByKeyInWaveNote(exportedWave,"nPulses")

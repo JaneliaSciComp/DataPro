@@ -38,7 +38,7 @@ Function SineBuilderViewConstructor() : Graph
 	//SetVariable sine_sint,limits={0.01,1000,0.01},value= dtSine
 	Button train_save,win=SineBuilderView,pos={601,10},size={90,20},proc=SineBuilderSaveAsButtonPressed,title="Save As..."
 	//PopupMenu editsine_popup0,pos={578,42},size={100,19},proc=SineBuilderImportPopupTwiddled,title="Import: "
-	//PopupMenu editsine_popup0,mode=1,value=#"\"(New);\"+GetDigitizerWaveNamesEndingIn(\"DAC\")"
+	//PopupMenu editsine_popup0,mode=1,value=#"\"(New);\"+GetSweeperWaveNamesEndingIn(\"DAC\")"
 	Button SineBuilderImportButton,win=SineBuilderView,pos={601,45},size={90,20},proc=SineBuilderImportButtonPressed,title="Import..."
 	//SetDrawLayer UserFront
 	//SetDrawEnv fstyle= 1
@@ -60,10 +60,7 @@ Function SineBuilderModelConstructor()
 	
 	// Create a new DF
 	NewDataFolder /O /S root:DP_SineBuilder
-	
-	//Variable /G dt=DigitizerGetDt()		// sampling interval, ms
-	//Variable /G totalDuration=DigitizerGetTotalDuration()		// total stimulus duration, ms
-	
+		
 	// Parameters of sine wave stimulus
 	Variable /G delay
 	Variable /G duration
@@ -109,7 +106,7 @@ Function SineBuilderImportButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 
 	String waveNameString
-	String popupListString="(Default Settings);"+GetDigitizerWaveNamesEndingIn("DAC")
+	String popupListString="(Default Settings);"+GetSweeperWaveNamesEndingIn("DAC")
 	Prompt waveNameString, "Select wave to import:", popup, popupListString
 	DoPrompt "Import...", waveNameString
 	if (V_Flag)
@@ -124,8 +121,8 @@ Function SineBuilderModelParamsChanged()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder "root:DP_SineBuilder"
 	NVAR delay, duration, amplitude, frequency
-	Variable dt=DigitizerGetDt()		// sampling interval, ms
-	Variable totalDuration=DigitizerGetTotalDuration()		// totalDuration, ms
+	Variable dt=SweeperGetDt()		// sampling interval, ms
+	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
 	WAVE theDACWave
 	Variable nTotal=round(totalDuration/dt)
 	Redimension /N=(nTotal) theDACWave
@@ -181,7 +178,7 @@ Function ImportSineWave(waveNameString)
 		frequency=100
 	else
 		// Get the wave from the digitizer
-		Wave exportedWave=DigitizerGetWaveByName(waveNameString)
+		Wave exportedWave=SweeperGetWaveByName(waveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
 		if (AreStringsEqual(waveTypeString,"sinedac"))
 			amplitude=NumberByKeyInWaveNote(exportedWave,"amplitude")

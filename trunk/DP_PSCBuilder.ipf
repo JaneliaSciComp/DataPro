@@ -61,9 +61,6 @@ Function PSCBuilderModelConstructor()
 	// Create a new DF
 	NewDataFolder /O /S root:DP_PSCBuilder
 	
-	//Variable /G dt=DigitizerGetDt()		// sampling interval, ms
-	//Variable /G totalDuration=DigitizerGetTotalDuration()		// totalDuration, ms
-	
 	// Parameters of post-synaptic current stimulus
 	Variable /G delay
 	//Variable /G duration
@@ -179,7 +176,7 @@ Function PSCBuilderImportButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 
 	String waveNameString
-	String popupListString="(Default Settings);"+GetDigitizerWaveNamesEndingIn("DAC")
+	String popupListString="(Default Settings);"+GetSweeperWaveNamesEndingIn("DAC")
 	Prompt waveNameString, "Select wave to import:", popup, popupListString
 	DoPrompt "Import...", waveNameString
 	if (V_Flag)
@@ -194,8 +191,8 @@ Function PSCBuilderModelParamsChanged()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder "root:DP_PSCBuilder"
 	NVAR delay, duration, amplitude, tauRise, tauDecay1, tauDecay2, weightDecay2, timeAfter
-	Variable dt=DigitizerGetDt()		// sampling interval, ms
-	Variable totalDuration=DigitizerGetTotalDuration()		// totalDuration, ms
+	Variable dt=SweeperGetDt()		// sampling interval, ms
+	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
 	WAVE theDACWave
 	Variable nTotal=round(totalDuration/dt)
 	Redimension /N=(nTotal) theDACWave
@@ -246,7 +243,7 @@ Function ImportPSCWave(waveNameString)
 		//timeAfter=10
 	else
 		// Get the wave from the digitizer
-		Wave exportedWave=DigitizerGetWaveByName(waveNameString)
+		Wave exportedWave=SweeperGetWaveByName(waveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
 		if (AreStringsEqual(waveTypeString,"pscdac"))
 			//duration=NumberByKeyInWaveNote(exportedWave,"duration")
