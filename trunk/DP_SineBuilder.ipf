@@ -48,12 +48,6 @@ Function SineBuilderViewConstructor() : Graph
 	SetDataFolder savedDF
 End
 
-//Function SineButtonProc(ctrlName) : ButtonControl
-//	String ctrlName
-//	//LaunchSineBuilder()
-//	RaiseOrCreateView("SineBuilderView")
-//End
-
 Function SineBuilderModelConstructor()
 	// Save the current DF
 	String savedDF=GetDataFolder(1)
@@ -98,7 +92,7 @@ Function SineBuilderSaveAsButtonPressed(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_SineBuilder
 	WAVE theDACWave
-	DigitizerAddDACWave(theDACWave,waveNameString)
+	SweeperControllerAddDACWave(theDACWave,waveNameString)
 	SetDataFolder savedDF
 End
 

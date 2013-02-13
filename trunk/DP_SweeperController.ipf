@@ -193,12 +193,12 @@ Function AcquireSweep(comment)
 	endif
 	
 	// Get the ADC and DAC sequences from the model
-	String daseq=GetDACSequence()
-	String adseq=GetADCSequence()
+	String daSequence=GetDACSequence()
+	String adSequence=GetADCSequence()
 	Variable seqLength=GetSequenceLength()
 
 	// Actually acquire the data for this sweep
-	Wave FIFOin=SamplerSampleData(adseq,daseq,seqLength,FIFOout) 
+	Wave FIFOin=SamplerSampleData(adSequence,daSequence,seqLength,FIFOout) 
 	// raw acquired data is now in root:DP_Sweeper:FIFOin wave
 		
 	// Get the number of ADC channels in use
@@ -206,9 +206,7 @@ Function AcquireSweep(comment)
 	
 	// Extract individual traces from FIFOin, store them in the appropriate waves
 	//String nameOfVarHoldingADCWaveBaseName
-	WAVE /T unitsFromMode
 	Variable iADCChannel		// index of the relevant ADC channel
-	WAVE adcMode	// wave s.t. adcMode[i] gives the channel type-code for ADC i
 	String stepAsString=StringByKeyInWaveNote(FIFOout,"STEP")	// will add to ADC waves	
 	Variable nSamplesPerTrace=numpnts(FIFOin)/nADCInUse
 	Variable ingain
@@ -216,26 +214,18 @@ Function AcquireSweep(comment)
 	Variable dtFIFOin=deltax(FIFOin)
 	String units
 	for (iTrace=0; iTrace<nADCInUse; iTrace+=1)
-		SetDataFolder root:DP_Sweeper  // added by ALT 2012-05-23
-			// Must be here for adc1, adc2, etc. to get saved to waves with the right names
-		iADCChannel=str2num(adseq[iTrace])
-		//sprintf nameOfVarHoldingADCWaveBaseName "adcBaseName%d", iADCChannel
-		//SVAR base=$nameOfVarHoldingADCWaveBaseName
+		iADCChannel=str2num(adSequence[iTrace])
 		sprintf thisWaveNameRel "%s_%d", adcBaseName[iTrace], iSweep
-		//sprintf savename "%s.bwav", thisWaveNameRel
-		SetDataFolder root:
-		Make /O /N=(nSamplesPerTrace) $thisWaveNameRel
 		String thisWaveNameAbs="root:"+thisWaveNameRel
+		Make /O /N=(nSamplesPerTrace) $thisWaveNameAbs
 		WAVE thisWave=$thisWaveNameAbs
 		AnnotateADCWaveBang(thisWave,stepAsString,comment)
 		ingain=GetADCNativeUnitsPerPoint(iADCChannel)
 		thisWave=FIFOin[nADCInUse*p+iTrace]*ingain
 			// copy this trace out of the FIFO, and scale it by the gain
 		Setscale /P x, 0, nADCInUse*dtFIFOin, "ms", thisWave
-		//units=unitsFromMode[adcMode[iADCChannel]]
 		units=GetADCChannelUnitsString(iADCChannel)
 		SetScale d 0, 0, units, thisWave
-		//Save /O /P=home thisWave as savename
 	endfor
 	
 	// Update the sweep number in the DP Browsers
@@ -261,3 +251,50 @@ Function AcquireSweep(comment)
 	SetDataFolder savedDF
 End
 
+Function SweeperControllerAddDACWave(w,waveNameString)
+	Wave w
+	String waveNameString
+
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+
+	if (!GrepString(waveNameString,"_DAC$"))
+		waveNameString+="_DAC"
+	endif
+	Duplicate /O w $waveNameString
+	SweeperViewSweeperChanged()
+	
+	SetDataFolder savedDF
+End
+
+Function SweeperControllerAddTTLWave(w,waveNameString)
+	Wave w
+	String waveNameString
+
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+
+	if (!GrepString(waveNameString,"_TTL$"))
+		waveNameString+="_TTL"
+	endif
+	Duplicate /O w $waveNameString
+	SweeperViewSweeperChanged()
+	
+	SetDataFolder savedDF
+End
+
+Function SweepContAddDACOrTTLWave(w,waveNameString)
+	Wave w
+	String waveNameString
+
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+
+	if (!GrepString(waveNameString,"_DAC$") && !GrepString(waveNameString,"_TTL$"))
+		waveNameString+="_DAC"
+	endif
+	Duplicate /O w $waveNameString
+	SweeperViewSweeperChanged()
+	
+	SetDataFolder savedDF
+End

@@ -85,7 +85,7 @@ Function RampBuilderSaveAsButtonPressed(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_RampBuilder
 	WAVE theDACWave
-	DigitizerAddDACWave(theDACWave,waveNameString)
+	SweeperControllerAddDACWave(theDACWave,waveNameString)
 	SetDataFolder savedDF
 End
 

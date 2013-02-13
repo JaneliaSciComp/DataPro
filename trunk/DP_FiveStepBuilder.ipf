@@ -110,7 +110,7 @@ Function FSBSaveAsButtonPressed(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_FiveStepBuilder
 	WAVE theWave
-	DigitizerAddDACOrTTLWave(theWave,waveNameString)
+	SweepContAddDACOrTTLWave(theWave,waveNameString)
 	SetDataFolder savedDF
 End
 
@@ -218,13 +218,13 @@ Function ImportFiveStepWave(waveNameString)
 		if (AreStringsEqual(waveTypeString,"fivestepdac"))
 			level1=NumberByKeyInWaveNote(exportedWave,"level1")
 			duration1=NumberByKeyInWaveNote(exportedWave,"duration1")
-			level1=NumberByKeyInWaveNote(exportedWave,"level2")
-			duration1=NumberByKeyInWaveNote(exportedWave,"duration2")
-			level1=NumberByKeyInWaveNote(exportedWave,"level3")
-			duration1=NumberByKeyInWaveNote(exportedWave,"duration3")
-			level1=NumberByKeyInWaveNote(exportedWave,"level4")
-			duration1=NumberByKeyInWaveNote(exportedWave,"duration4")
-			level1=NumberByKeyInWaveNote(exportedWave,"level5")
+			level2=NumberByKeyInWaveNote(exportedWave,"level2")
+			duration2=NumberByKeyInWaveNote(exportedWave,"duration2")
+			level3=NumberByKeyInWaveNote(exportedWave,"level3")
+			duration3=NumberByKeyInWaveNote(exportedWave,"duration3")
+			level4=NumberByKeyInWaveNote(exportedWave,"level4")
+			duration4=NumberByKeyInWaveNote(exportedWave,"duration4")
+			level5=NumberByKeyInWaveNote(exportedWave,"level5")
 		else
 			Abort("This is not a five-step wave; choose another")
 		endif
