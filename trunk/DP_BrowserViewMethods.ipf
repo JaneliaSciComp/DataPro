@@ -129,17 +129,23 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	//Button avgswps,pos={690,65},size={70,18},proc=SummonAveragePanel,title="Average"
 	
 	// Sync the view with the "model"
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	
 	// Restore old data folder
 	SetDataFolder savedDFName	
 End
 
-Function BrowserModelChanged(browserNumber)
+Function BrowserViewModelChanged(browserNumber)
 	// This syncs the indicated DPBrowser view to the values of the model variables in the browser's DF,
 	// which are assumed to be self-consistent.
 	Variable browserNumber
-	
+
+	// If the window doesn't exist, nothing to do
+	String browserName=BrowserNameFromNumber(browserNumber)	
+	if (!GraphExists(browserName))
+		return 0		// Have to return something
+	endif
+
 	// Find name of top browser, switch the DF to its DF, note the former DF name
 	//Variable browserNumber=GetTopBrowserNumber()
 	String savedDFName=ChangeToBrowserDF(browserNumber)
@@ -174,7 +180,6 @@ Function BrowserModelChanged(browserNumber)
 	SVAR colorNameB
 	
 	// Note which axes currently exist
-	String browserName=BrowserNameFromNumber(browserNumber)
 	Variable leftAxisExists=0, rightAxisExists=0, bottomAxisExists=0		// boolean
 	GetAxis /W=$browserName /Q left
 	if (V_flag==0)  // V_flag will be zero if the axis actually exists

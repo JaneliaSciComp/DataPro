@@ -54,6 +54,21 @@ Function PSCBViewConstructor() : Graph
 	SetDataFolder savedDF
 End
 
+Function PSCBViewModelChanged()
+	// View method called when the model changes, causes the view to sync itself with the model.
+	if (!GraphExists("PSCBuilderView"))
+		return 0		// Have to return something
+	endif	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder "root:DP_PSCBuilder"
+	NVAR tauRise, tauDecay1, tauDecay2
+	// Update the SetVariables that don't automatically update themselves
+	SetVariable riseTauSV,win=PSCBuilderView,value= _NUM:tauRise
+	SetVariable decayTau1SV,win=PSCBuilderView,value= _NUM:tauDecay1
+	SetVariable decayTau2SV,win=PSCBuilderView,value= _NUM:tauDecay2
+	SetDataFolder savedDF	
+End
+
 Function PSCBModelConstructor()
 	// Save the current DF
 	String savedDF=GetDataFolder(1)
@@ -281,14 +296,3 @@ End
 //	return psc
 //End
 
-Function PSCBViewModelChanged()
-	// View method called when the model changes, causes the view to sync itself with the model.
-	String savedDF=GetDataFolder(1)
-	SetDataFolder "root:DP_PSCBuilder"
-	NVAR tauRise, tauDecay1, tauDecay2
-	// Update the SetVariables that don't automatically update themselves
-	SetVariable riseTauSV,win=PSCBuilderView,value= _NUM:tauRise
-	SetVariable decayTau1SV,win=PSCBuilderView,value= _NUM:tauDecay1
-	SetVariable decayTau2SV,win=PSCBuilderView,value= _NUM:tauDecay2
-	SetDataFolder savedDF	
-End

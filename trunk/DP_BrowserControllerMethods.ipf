@@ -330,7 +330,7 @@ Function SetICurrentSweepAndSyncView(browserNumber,iSweep)
 	
 	SetICurrentSweep(browserNumber,iSweep)
 	// Sync the view
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 End
 
 Function HandleSetSweepIndexControl(svStruct) : SetVariableControl
@@ -347,7 +347,7 @@ Function HandleSetSweepIndexControl(svStruct) : SetVariableControl
 	// Set the sweep in the model
 	SetICurrentSweep(browserNumber,iSweepInView)
 	// Sync the view
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 End
 
 Function HandleCommentsSetVariable(svStruct) : SetVariableControl
@@ -365,7 +365,7 @@ Function HandleCommentsSetVariable(svStruct) : SetVariableControl
 		ReplaceStringByKeyInWaveNote($topTraceWaveNameAbs,"COMMENTS",commentsInControl)
 	endif
 	// Sync the view -- necessary when no trace is selected, to clear the comment
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 End
 
 Function HandleDtFitExtendSetVariable(svStruct) : SetVariableControl
@@ -378,7 +378,7 @@ Function HandleDtFitExtendSetVariable(svStruct) : SetVariableControl
 	// changing this invalidates the fit, since now the fit trace doesn't match the fit parameters
 	//Printf "About to call UpdateFit() in HandleDtFitExtendSetVariable()\r"
 	UpdateFit(browserNumber)  // model method
-	BrowserModelChanged(browserNumber)	
+	BrowserViewModelChanged(browserNumber)	
 End
 
 Function HandleBaseNameControl(svStruct) : SetVariableControl
@@ -391,7 +391,7 @@ Function HandleBaseNameControl(svStruct) : SetVariableControl
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	UpdateMeasurements(browserNumber)
 	//InvalidateFit(browserNumber)  // model method
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 End
 
 Function HandleShowTraceCheckbox(cbStruct) : CheckBoxControl
@@ -409,7 +409,7 @@ Function HandleShowTraceCheckbox(cbStruct) : CheckBoxControl
 	//if (!AreStringsEqual(waveNameAbsOfFitTrace,topTraceWaveNameAbs)
 	//	InvalidateFit(browserNumber)  // model method
 	//end
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 End
 
 Function SetTraceAChecked(browserNumber,checked)
@@ -420,7 +420,7 @@ Function SetTraceAChecked(browserNumber,checked)
 	NVAR traceAChecked
 	traceAChecked=checked	
 	UpdateMeasurements(browserNumber)
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	SetDataFolder savedDF
 End
 
@@ -432,7 +432,7 @@ Function SetTraceBChecked(browserNumber,checked)
 	NVAR traceBChecked
 	traceBChecked=checked	
 	UpdateMeasurements(browserNumber)
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	SetDataFolder savedDF
 End
 
@@ -467,7 +467,7 @@ Function BaseSub(cbStruct) : CheckBoxControl
 	UpdateMeasurements(browserNumber)
 	//Printf "About to call UpdateFit() in BaseSub()\r"
 	UpdateFit(browserNumber)  // model method
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 End
 
 Function ShowHideToolsPanel(cbStruct) : CheckboxControl
@@ -478,7 +478,7 @@ Function ShowHideToolsPanel(cbStruct) : CheckboxControl
 		return 0							// we only handle mouse up in control
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 End
 
 Function HandleSetBaselineButton(bStruct) : ButtonControl
@@ -512,7 +512,7 @@ Function HandleSetBaselineButton(bStruct) : ButtonControl
 	UpdateMeasurements(browserNumber)
 
 	// Update the view
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	
 	// Restore the orignal DF
 	SetDataFolder savedDF	
@@ -543,7 +543,7 @@ Function ClearBaseline(bStruct) : ButtonControl
 	UpdateMeasurements(browserNumber)
 	
 	// Update the view
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	
 	// Restore the orignal DF
 	SetDataFolder savedDF	
@@ -581,7 +581,7 @@ Function SetWindow1(bStruct) : ButtonControl
 	UpdateMeasurements(browserNumber)
 
 	// Update the view
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 
 	// Restore the orignal DF
 	SetDataFolder savedDF	
@@ -612,7 +612,7 @@ Function ClearWindow1(bStruct) : ButtonControl
 	UpdateMeasurements(browserNumber)
 	
 	// Update the view
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	
 	// Restore the orignal DF
 	SetDataFolder savedDF	
@@ -628,7 +628,7 @@ Function HandleMeasurementSetVariable(svStruct) : SetVariableControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(svStruct.win)
 	UpdateMeasurements(browserNumber)
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 End
 
 Function SetWindow2(bStruct)
@@ -663,7 +663,7 @@ Function SetWindow2(bStruct)
 	UpdateMeasurements(browserNumber)
 
 	// Update the view
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 
 	// Restore the orignal DF
 	SetDataFolder savedDF	
@@ -695,7 +695,7 @@ Function ClearWindow2(bStruct) : ButtonControl
 	UpdateMeasurements(browserNumber)
 	
 	// Update the view
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	
 	// Restore the orignal DF
 	SetDataFolder savedDF	
@@ -733,7 +733,7 @@ Function SetFitZero(bStruct) : ButtonControl
 	UpdateFit(browserNumber)
 	
 	// Update the view
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	
 	// Restore original DF
 	SetDataFolder savedDFName
@@ -761,7 +761,7 @@ Function HandleClearFitZeroButton(bStruct) : ButtonControl
 	UpdateFit(browserNumber)
 	
 	// Update the view
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	
 	// Restore original DF
 	SetDataFolder savedDFName
@@ -798,7 +798,7 @@ Function SetFitRange(bStruct) : ButtonControl
 	UpdateFit(browserNumber)
 
 	// Update the view
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	
 	// Restore original DF
 	SetDataFolder savedDFName
@@ -828,7 +828,7 @@ Function HandleClearFitRangeButton(bStruct) : ButtonControl
 	UpdateFit(browserNumber)
 
 	// Update the view
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	
 	// Restore original DF
 	SetDataFolder savedDFName
@@ -850,7 +850,7 @@ Function HandleFitButton(bStruct) : ButtonControl
 	UpdateFit(browserNumber)
 	
 	// Sync the view to the model
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 End
 
 Function HandleFitTypePopupMenu(pStruct) : PopupMenuControl
@@ -877,7 +877,7 @@ Function HandleFitTypePopupMenu(pStruct) : PopupMenuControl
 	UpdateFit(browserNumber)
 	
 	// Sync the view to the model
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 End
 
 Function HandleHoldYOffsetCheckbox(cbStruct) : CheckBoxControl
@@ -941,7 +941,7 @@ Function HandleHoldYOffsetCheckbox(cbStruct) : CheckBoxControl
 	endif
 
 	// Sync the the view with the current state
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 
 	// Restore old data folder
 	SetDataFolder savedDFName
@@ -961,7 +961,7 @@ Function HandleYOffsetHeldValueSetVar(svStruct) : SetVariableControl
 	// changing this invalidates the fit, since now the fit trace (if there is one) doesn't match the fit parameters
 	//Printf "About to call UpdateFit() in HandleYOffsetHeldValueSetVar()\r"		
 	UpdateFit(browserNumber)  // model method
-	BrowserModelChanged(browserNumber)	
+	BrowserViewModelChanged(browserNumber)	
 	SetDataFolder savedDFName
 End
 
@@ -985,7 +985,7 @@ Function RescaleCheckProc(cbStruct) : CheckBoxControl
 		return 0							// we only handle mouse up in control
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	//SyncDFAxesLimitsWithGraph(browserNumber)
 	//RescaleAxes(browserNumber)
 End
@@ -1011,7 +1011,7 @@ Function HandleAllSweepsCheckbox(cbStruct) : CheckBoxControl
 //		iSweepFirstAverage=1
 //		iSweepLastAverage=nSweeps
 //	endif
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	SetDataFolder savedDFName
 End
 
@@ -1050,7 +1050,7 @@ Function HandleAllStepsCheckbox(cbStruct) : CheckBoxControl
 	String savedDFName=ChangeToBrowserDF(browserNumber)	
 	NVAR averageAllSteps
 	averageAllSteps=cbStruct.checked
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	SetDataFolder savedDFName
 End
 
@@ -1076,7 +1076,7 @@ Function RenameAveragesCheckBoxTwiddled(cbStruct) : CheckBoxControl
 	String savedDFName=ChangeToBrowserDF(browserNumber)	
 	NVAR renameAverages
 	renameAverages=cbStruct.checked
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	SetDataFolder savedDFName
 End
 
@@ -1295,7 +1295,7 @@ Function TraceAColorSelected(pStruct) : PopupMenuControl
 	SVAR colorNameA
 	colorNameA=pStruct.popStr
 	// Notify the view
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	// Restore original DF
 	SetDataFolder savedDFName		
 End
@@ -1314,7 +1314,7 @@ Function TraceBColorSelected(pStruct) : PopupMenuControl
 	SVAR colorNameB
 	colorNameB=pStruct.popStr
 	// Notify the view
-	BrowserModelChanged(browserNumber)
+	BrowserViewModelChanged(browserNumber)
 	// Restore original DF
 	SetDataFolder savedDFName		
 End
