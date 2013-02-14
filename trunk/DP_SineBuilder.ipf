@@ -118,11 +118,11 @@ Function SineBuilderModelParamsChanged()
 	Variable dt=SweeperGetDt()		// sampling interval, ms
 	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
 	WAVE theDACWave
-	Variable nTotal=round(totalDuration/dt)
+	Variable nTotal=SweeperGetNumberOfScans()
 	Redimension /N=(nTotal) theDACWave
 	Setscale /P x, 0, dt, "ms", theDACWave
 	Note /K theDACWave
-	ReplaceStringByKeyInWaveNote(theDACWave,"WAVETYPE","sinedac")
+	ReplaceStringByKeyInWaveNote(theDACWave,"WAVETYPE","Sine")
 	ReplaceStringByKeyInWaveNote(theDACWave,"TIME",time())
 	ReplaceStringByKeyInWaveNote(theDACWave,"amplitude",num2str(amplitude))
 	ReplaceStringByKeyInWaveNote(theDACWave,"frequency",num2str(frequency))
@@ -174,7 +174,7 @@ Function ImportSineWave(waveNameString)
 		// Get the wave from the digitizer
 		Wave exportedWave=SweeperGetWaveByName(waveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
-		if (AreStringsEqual(waveTypeString,"sinedac"))
+		if (AreStringsEqual(waveTypeString,"Sine"))
 			amplitude=NumberByKeyInWaveNote(exportedWave,"amplitude")
 			frequency=NumberByKeyInWaveNote(exportedWave,"frequency")
 			duration=NumberByKeyInWaveNote(exportedWave,"duration")
@@ -187,4 +187,35 @@ Function ImportSineWave(waveNameString)
 	SineBuilderModelParamsChanged()
 	
 	SetDataFolder savedDF	
+End
+
+Function resampleSine(w,dt,totalDuration)
+	Wave w
+	Variable dt, totalDuration
+	
+	Variable delay=NumberByKeyInWaveNote(w,"delay")
+	Variable duration=NumberByKeyInWaveNote(w,"duration")
+	Variable amplitude=NumberByKeyInWaveNote(w,"amplitude")
+	Variable frequency=NumberByKeyInWaveNote(w,"frequency")
+	
+	resampleSineFromParameters(w,dt,totalDuration,delay,duration,amplitude,frequency)
+End
+
+Function resampleSineFromParameters(w,dt,totalDuration,delay,duration,amplitude,frequency)
+	// Compute the sine wave from the parameters
+	Wave w
+	Variable dt,totalDuration,delay,duration,amplitude,frequency
+	
+	Variable nScans=numberOfScans(dt,totalDuration)
+	Redimension /N=(nScans) w
+	Setscale /P x, 0, dt, "ms", w
+	Variable jFirst=0
+	Variable jLast=round(delay/dt)-1
+	w[jFirst,jLast]=0
+	jFirst=jLast+1
+	jLast=jFirst+round(duration/dt)-1
+	w[jFirst,jLast]=amplitude*sin(frequency*2*PI*(x-delay)/1000)
+	jFirst=jLast+1
+	jLast=nScans-1
+	w[jFirst,jLast]=0
 End
