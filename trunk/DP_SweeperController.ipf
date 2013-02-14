@@ -6,30 +6,35 @@ Function SweeperControllerSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariab
 	Variable varNum
 	String varStr
 	String varName
-	SweeperParametersChanged()		// Make the model self-consistent
-	SweeperViewSweeperChanged()	// Tell the view that the model has changed
-	
 	// Update any builders that currently exist, b/c user might have changed dt ot totalDuration
 	// (could be smarter about this)
-	if (DataFolderExists("root:DP_SineBuilder"))
-		SineBuilderModelParamsChanged()
+	if ( AreStringsEqual(ctrlName,"dtSV") || AreStringsEqual(ctrlName,"totalDurationSV") )
+		if (DataFolderExists("root:DP_SineBuilder"))
+			SineBuilderModelParamsChanged()
+		endif
+		if (DataFolderExists("root:DP_PSCBuilder"))
+			PSCBModelParametersChanged()
+			PSCBViewModelChanged()	// PSCBuilder also needs this, b/c it's fancy
+		endif	
+		if (DataFolderExists("root:DP_RampBuilder"))
+			RampBuilderModelParamsChanged()
+		endif	
+		if (DataFolderExists("root:DP_TrainBuilder"))
+			TrainBuilderModelParamsChanged()
+		endif	
+		if (DataFolderExists("root:DP_FiveStepBuilder"))
+			FSBModelParamsChanged()
+		endif	
+		// Fix: Should also update any _DAC or _TTL waves in DP_Sweeper DF if they 
+		// twiddled dt or totalDuration.
+		SweeperDtOrTotalDurChanged()		
+	else
+		// Some other control twiddled
+		SweeperUpdateStepPulseWave()	// Update this wave
+		SweeperUpdateSynPulseWave()	// Update this wave
 	endif
-	if (DataFolderExists("root:DP_PSCBuilder"))
-		PSCBModelParametersChanged()
-		PSCBViewModelChanged()	// PSCBuilder also needs this, b/c it's fancy
-	endif	
-	if (DataFolderExists("root:DP_RampBuilder"))
-		RampBuilderModelParamsChanged()
-	endif	
-	if (DataFolderExists("root:DP_TrainBuilder"))
-		TrainBuilderModelParamsChanged()
-	endif	
-	if (DataFolderExists("root:DP_FiveStepBuilder"))
-		FSBModelParamsChanged()
-	endif	
-
-	// Fix: Should also update any _DAC or _TTL waves in DP_Sweeper DF if they 
-	// twiddled dt or totalDuration.
+	
+	SweeperViewSweeperChanged()	// Tell the view that the model has changed	
 End
 
 Function SCGetDataButtonPressed(ctrlName) : ButtonControl
@@ -207,8 +212,8 @@ Function AcquireSweep(comment)
 	Variable leftmin, leftmax
 	
 	DoWindow /F SweepControl	
-	StepPulseParametersChanged()
-	SynPulseParametersChanged()
+	SweeperUpdateStepPulseWave()
+	SweeperUpdateSynPulseWave()
 	Wave FIFOout=GetFIFOout()
 	if (numpnts(FIFOout)==0)
 		Abort "There must be at least one valid DAC or TTL output wave"

@@ -147,7 +147,7 @@ Function FSBModelParamsChanged()
 	Variable dt=SweeperGetDt()		// sampling interval, ms
 	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
 	WAVE theWave
-	Variable nTotal=round(totalDuration/dt)
+	Variable nTotal=SweeperGetNumberOfScans()
 	Redimension /N=(nTotal) theWave
 	Setscale /P x, 0, dt, "ms", theWave
 	Note /K theWave

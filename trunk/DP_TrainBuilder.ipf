@@ -119,7 +119,7 @@ Function TrainBuilderModelParamsChanged()
 	Variable dt=SweeperGetDt()		// sampling interval, ms
 	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
 	WAVE theDACWave
-	Variable nTotal=round(totalDuration/dt)
+	Variable nTotal=SweeperGetNumberOfScans()
 	Redimension /N=(nTotal) theDACWave
 	Setscale /P x, 0, dt, "ms", theDACWave
 	Note /K theDACWave
