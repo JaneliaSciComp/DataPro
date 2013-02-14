@@ -323,3 +323,8 @@ Function SweepContAddDACOrTTLWave(w,waveNameString)
 	
 	SetDataFolder savedDF
 End
+
+Function SweepControllerDigitizerChanged()
+	// Used to notify the SweeperController that the Digitizer model has changed.
+	SweeperViewDigitizerChanged()
+End
