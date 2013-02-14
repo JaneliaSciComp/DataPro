@@ -285,6 +285,7 @@ Function SweeperControllerAddDACWave(w,waveNameString)
 	endif
 	Duplicate /O w $waveNameString
 	SweeperViewSweeperChanged()
+	OVControllerSweeperWavesChanged()
 	
 	SetDataFolder savedDF
 End
@@ -301,6 +302,7 @@ Function SweeperControllerAddTTLWave(w,waveNameString)
 	endif
 	Duplicate /O w $waveNameString
 	SweeperViewSweeperChanged()
+	OVControllerSweeperWavesChanged()
 	
 	SetDataFolder savedDF
 End
@@ -317,6 +319,7 @@ Function SweepContAddDACOrTTLWave(w,waveNameString)
 	endif
 	Duplicate /O w $waveNameString
 	SweeperViewSweeperChanged()
+	OVControllerSweeperWavesChanged()
 	
 	SetDataFolder savedDF
 End
