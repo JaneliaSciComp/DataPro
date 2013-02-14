@@ -84,11 +84,11 @@ Function HandleDACWavePopupMenu(ctrlName,popNum,popStr) : PopupMenuControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Sweeper
 
-	WAVE /T dacWavePopupSelection
+	WAVE /T dacWaveName
 
 	Variable iChannel	
 	iChannel=str2num(ctrlName[3])
-	dacWavePopupSelection[iChannel]=popStr
+	dacWaveName[iChannel]=popStr
 
 	SetDataFolder savedDF
 End
@@ -129,11 +129,11 @@ Function HandleTTLWavePopupMenu(ctrlName,popNum,popStr) : PopupMenuControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Sweeper
 
-	WAVE /T ttlWavePopupSelection
+	WAVE /T ttlOutputWaveName
 
 	Variable iChannel
 	iChannel=str2num(ctrlName[3])
-	ttlWavePopupSelection[iChannel]=popStr
+	ttlOutputWaveName[iChannel]=popStr
 
 	SetDataFolder savedDF
 End
