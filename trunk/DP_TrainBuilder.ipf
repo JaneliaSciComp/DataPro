@@ -42,8 +42,9 @@ Function TrainBuilderViewConstructor() : Graph
 	SetVariable pulseFrequencySV,win=TrainBuilderView,pos={330,45},size={150,15},proc=TrainBuilderSetVariableTwiddled,title="Pulse Frequency (Hz)"
 	SetVariable pulseFrequencySV,win=TrainBuilderView,limits={0.001,10000,10},value= pulseFrequency
 	
-	Button saveAsButton,win=TrainBuilderView,pos={601,10},size={90,20},proc=TrainBuilderSaveAsButtonPressed,title="Save As..."
-	Button importButton,win=TrainBuilderView,pos={601,45},size={90,20},proc=TrainBuilderImportButtonPressed,title="Import..."
+	Button saveAsDACButton,win=TrainBuilderView,pos={601,5},size={90,20},proc=TrainBuilderSaveAsDACButtonPrsd,title="Save As DAC..."
+	Button saveAsTTLButton,win=TrainBuilderView,pos={601,30},size={90,20},proc=TrainBuilderSaveAsTTLButtonPrsd,title="Save As TTL..."
+	Button importButton,win=TrainBuilderView,pos={601,55},size={90,20},proc=TrainBuilderImportButtonPressed,title="Import..."
 	SetDataFolder savedDF
 End
 
@@ -82,11 +83,11 @@ Function TrainBuilderSetVariableTwiddled(ctrlName,varNum,varStr,varName) : SetVa
 	TrainBuilderModelUpdateWave()
 End
 
-Function TrainBuilderSaveAsButtonPressed(ctrlName) : ButtonControl
+Function TrainBuilderSaveAsDACButtonPrsd(ctrlName) : ButtonControl
 	String ctrlName
 
 	String waveNameString
-	Prompt waveNameString, "Enter wave name to save as (should end in _DAC or _TTL):"
+	Prompt waveNameString, "Enter wave name to save as (should end in _DAC):"
 	DoPrompt "Save as...", waveNameString
 	if (V_Flag)
 		return -1		// user hit Cancel
@@ -94,7 +95,23 @@ Function TrainBuilderSaveAsButtonPressed(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_TrainBuilder
 	WAVE theWave
-	SweepContAddDACOrTTLWave(theWave,waveNameString)
+	SweeperControllerAddDACWave(theWave,waveNameString)
+	SetDataFolder savedDF
+End
+
+Function TrainBuilderSaveAsTTLButtonPrsd(ctrlName) : ButtonControl
+	String ctrlName
+
+	String waveNameString
+	Prompt waveNameString, "Enter wave name to save as (should end in _TTL):"
+	DoPrompt "Save as...", waveNameString
+	if (V_Flag)
+		return -1		// user hit Cancel
+	endif
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_TrainBuilder
+	WAVE theWave
+	SweeperControllerAddTTLWave(theWave,waveNameString)
 	SetDataFolder savedDF
 End
 

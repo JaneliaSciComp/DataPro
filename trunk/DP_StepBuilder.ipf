@@ -53,8 +53,9 @@ Function StepBuilderViewConstructor() : Graph
 	SetVariable level5SV,win=StepBuilderView,pos={xOffset,15},size={100,15},proc=StepBuilderSVTwiddled,title="Level 5"
 	SetVariable level5SV,win=StepBuilderView,limits={-10000,10000,10},value= level5
 	
-	Button saveAsButton,win=StepBuilderView,pos={width-100,10},size={90,20},proc=FSBSaveAsButtonPressed,title="Save As..."
-	Button importButton,win=StepBuilderView,pos={width-100,45},size={90,20},proc=FSBImportButtonPressed,title="Import..."
+	Button saveAsDACButton,win=StepBuilderView,pos={801,5},size={90,20},proc=StepBuilderSaveAsDACButtonPrsd,title="Save As DAC..."
+	Button saveAsTTLButton,win=StepBuilderView,pos={801,30},size={90,20},proc=StepBuilderSaveAsTTLButtonPrsd,title="Save As TTL..."
+	Button importButton,win=StepBuilderView,pos={801,55},size={90,20},proc=StepBuilderImportButtonPressed,title="Import..."
 
 	SetDataFolder savedDF
 End
@@ -98,11 +99,11 @@ Function StepBuilderSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableCont
 	StepBuilderModelUpdateWave()
 End
 
-Function FSBSaveAsButtonPressed(ctrlName) : ButtonControl
+Function StepBuilderSaveAsDACButtonPrsd(ctrlName) : ButtonControl
 	String ctrlName
 
 	String waveNameString
-	Prompt waveNameString, "Enter wave name to save as (should end in _DAC or _TTL):"
+	Prompt waveNameString, "Enter wave name to save as (should end in _DAC):"
 	DoPrompt "Save as...", waveNameString
 	if (V_Flag)
 		return -1		// user hit Cancel
@@ -110,11 +111,27 @@ Function FSBSaveAsButtonPressed(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_StepBuilder
 	WAVE theWave
-	SweepContAddDACOrTTLWave(theWave,waveNameString)
+	SweeperControllerAddDACWave(theWave,waveNameString)
 	SetDataFolder savedDF
 End
 
-Function FSBImportButtonPressed(ctrlName) : ButtonControl
+Function StepBuilderSaveAsTTLButtonPrsd(ctrlName) : ButtonControl
+	String ctrlName
+
+	String waveNameString
+	Prompt waveNameString, "Enter wave name to save as (should end in _TTL):"
+	DoPrompt "Save as...", waveNameString
+	if (V_Flag)
+		return -1		// user hit Cancel
+	endif
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_StepBuilder
+	WAVE theWave
+	SweeperControllerAddTTLWave(theWave,waveNameString)
+	SetDataFolder savedDF
+End
+
+Function StepBuilderImportButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 
 	String waveNameString
