@@ -214,11 +214,9 @@ Function PSCBModelParametersChanged()
 	Variable dt=SweeperGetDt()		// sampling interval, ms
 	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
 	WAVE theDACWave
-	Variable nTotal=SweeperGetNumberOfScans()
-	Redimension /N=(nTotal) theDACWave
-	Setscale /P x, 0, dt, "ms", theDACWave
+	resamplePSCFromParamsBang(theDACWave,dt,totalDuration,delay,amplitude,tauRise,tauDecay1,tauDecay2,weightDecay2)	
 	Note /K theDACWave
-	ReplaceStringByKeyInWaveNote(theDACWave,"WAVETYPE","pscdac")
+	ReplaceStringByKeyInWaveNote(theDACWave,"WAVETYPE","PSC")
 	ReplaceStringByKeyInWaveNote(theDACWave,"TIME",time())
 	ReplaceStringByKeyInWaveNote(theDACWave,"amplitude",num2str(amplitude))
 	ReplaceStringByKeyInWaveNote(theDACWave,"tauRise",num2str(tauRise))
@@ -226,16 +224,6 @@ Function PSCBModelParametersChanged()
 	ReplaceStringByKeyInWaveNote(theDACWave,"tauDecay2",num2str(tauDecay2))
 	ReplaceStringByKeyInWaveNote(theDACWave,"weightDecay2",num2str(weightDecay2))
 	ReplaceStringByKeyInWaveNote(theDACWave,"delay",num2str(delay))
-	//ReplaceStringByKeyInWaveNote(theDACWave,"duration",num2str(duration))
-	//ReplaceStringByKeyInWaveNote(theDACWave,"timeAfter",num2str(timeAfter))
-	Variable nDelay=round(delay/dt)
-	// Set the delay portion
-	theDACWave[0,nDelay-1]=0
-	// Set the main portion
-	theDACWave[nDelay,nTotal-1]= -exp(-(x-delay)/tauRise)+(1-weightDecay2)*exp(-(x-delay)/tauDecay1)+weightDecay2*exp(-(x-delay)/tauDecay2)
-	// re-scale to have the proper amplitude
-	Wavestats /Q theDACWave
-	theDACWave=(amplitude/V_max)*theDACWave		// want the peak amplitude to be amplitude
 	// restore saved DF
 	SetDataFolder savedDF
 End
@@ -264,15 +252,13 @@ Function PSCBControllerImportPSCWave(waveNameString)
 		// Get the wave from the digitizer
 		Wave exportedWave=SweeperGetWaveByName(waveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
-		if (AreStringsEqual(waveTypeString,"pscdac"))
-			//duration=NumberByKeyInWaveNote(exportedWave,"duration")
+		if (AreStringsEqual(waveTypeString,"PSC"))
 			amplitude=NumberByKeyInWaveNote(exportedWave,"amplitude")
 			tauRise=NumberByKeyInWaveNote(exportedWave,"tauRise")
 			tauDecay1=NumberByKeyInWaveNote(exportedWave,"tauDecay1")
 			tauDecay2=NumberByKeyInWaveNote(exportedWave,"tauDecay2")
 			weightDecay2=NumberByKeyInWaveNote(exportedWave,"weightDecay2")
 			delay=NumberByKeyInWaveNote(exportedWave,"delay")
-			//timeAfter=NumberByKeyInWaveNote(exportedWave,"timeAfter")
 		else
 			Abort("This is not a PSC wave; choose another")
 		endif
@@ -283,16 +269,34 @@ Function PSCBControllerImportPSCWave(waveNameString)
 	SetDataFolder savedDF	
 End
 
-//Function /WAVE PSCFunction(dt,duration,amplitude,tauRise,tauDecay1,tauDecay2,weightDecay2)
-//	Variable dt, duration, amplitude, tauRise, tauDecay1, tauDecay2, weightDecay2
-//	
-//	Variable n=round(duration/dt)
-//	Make /FREE /N=(n) psc
-//	Setscale /P x, 0, dt, "ms", psc
-//	psc=(1-exp(-x/tauRise))*((1-weightDecay2)*exp(-x/tauDecay1)+weightDecay2*exp(-x/tauDecay2))
-//		// THIS IS DIFFERENT THAN IN OLD DATAPRO!!
-//	Wavestats /Q psc
-//	psc=(amplitude/V_max)*psc		// want the peak amplitude to be amplitude
-//	return psc
-//End
+Function resamplePSCBang(w,dt,totalDuration)
+	Wave w
+	Variable dt, totalDuration
+	
+	Variable delay=NumberByKeyInWaveNote(w,"delay")
+	Variable amplitude=NumberByKeyInWaveNote(w,"amplitude")
+	Variable tauRise=NumberByKeyInWaveNote(w,"tauRise")
+	Variable tauDecay1=NumberByKeyInWaveNote(w,"tauDecay1")
+	Variable tauDecay2=NumberByKeyInWaveNote(w,"tauDecay2")
+	Variable weightDecay2=NumberByKeyInWaveNote(w,"weightDecay2")
+	
+	resamplePSCFromParamsBang(w,dt,totalDuration,delay,amplitude,tauRise,tauDecay1,tauDecay2,weightDecay2)
+End
 
+Function resamplePSCFromParamsBang(w,dt,totalDuration,delay,amplitude,tauRise,tauDecay1,tauDecay2,weightDecay2)
+	// Compute the PSC wave from the parameters
+	Wave w
+	Variable dt,totalDuration,delay,amplitude,tauRise,tauDecay1,tauDecay2,weightDecay2
+	
+	Variable nScans=numberOfScans(dt,totalDuration)
+	Redimension /N=(nScans) w
+	Setscale /P x, 0, dt, "ms", w
+	Variable nDelay=round(delay/dt)
+	// Set the delay portion
+	w[0,nDelay-1]=0
+	// Set the main portion
+	w[nDelay,nTotal-1]= -exp(-(x-delay)/tauRise)+(1-weightDecay2)*exp(-(x-delay)/tauDecay1)+weightDecay2*exp(-(x-delay)/tauDecay2)
+	// re-scale to have the proper amplitude
+	Wavestats /Q w
+	w=(amplitude/V_max)*w		// want the peak amplitude to be amplitude
+End

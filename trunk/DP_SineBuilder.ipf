@@ -58,7 +58,6 @@ Function SineBuilderModelConstructor()
 	// Parameters of sine wave stimulus
 	Variable /G delay
 	Variable /G duration
-	//Variable /G sineDelayAfter
 	Variable /G amplitude
 	Variable /G frequency
 
@@ -118,9 +117,7 @@ Function SineBuilderModelParamsChanged()
 	Variable dt=SweeperGetDt()		// sampling interval, ms
 	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
 	WAVE theDACWave
-	Variable nTotal=SweeperGetNumberOfScans()
-	Redimension /N=(nTotal) theDACWave
-	Setscale /P x, 0, dt, "ms", theDACWave
+	resampleSineFromParamsBang(theDACWave,dt,totalDuration,delay,duration,amplitude,frequency)
 	Note /K theDACWave
 	ReplaceStringByKeyInWaveNote(theDACWave,"WAVETYPE","Sine")
 	ReplaceStringByKeyInWaveNote(theDACWave,"TIME",time())
@@ -128,29 +125,8 @@ Function SineBuilderModelParamsChanged()
 	ReplaceStringByKeyInWaveNote(theDACWave,"frequency",num2str(frequency))
 	ReplaceStringByKeyInWaveNote(theDACWave,"delay",num2str(delay))
 	ReplaceStringByKeyInWaveNote(theDACWave,"duration",num2str(duration))
-	//ReplaceStringByKeyInWaveNote(theDACWave,"sineDelayAfter",num2str(sineDelayAfter))
-	Variable jFirst=0
-	Variable jLast=round(delay/dt)-1
-	theDACWave[jFirst,jLast]=0
-	jFirst=jLast+1
-	jLast=jFirst+round(duration/dt)-1
-	theDACWave[jFirst,jLast]=amplitude*sin(frequency*2*PI*(x-delay)/1000)
-	jFirst=jLast+1
-	jLast=nTotal-1
-	theDACWave[jFirst,jLast]=0
 	SetDataFolder savedDF
 End
-
-//Function SineBuilderImportPopupTwiddled(ctrlName,popNum,popStr) : PopupMenuControl
-//	String ctrlName
-//	Variable popNum
-//	String popStr
-//	//String showstr
-//	//sprintf showstr, "ShowSineWave(\"%s\")", popStr
-//	//Execute showstr
-//	ImportSineWave(popStr)
-//	SineBuilderModelParamsChanged()
-//End
 
 Function ImportSineWave(waveNameString)
 	// Imports the stimulus parameters from a pre-existing wave in the digitizer
@@ -167,7 +143,6 @@ Function ImportSineWave(waveNameString)
 	if (AreStringsEqual(waveNameString,"(Default Settings)"))
 		delay=10
 		duration=50
-		//sineDelayAfter=10
 		amplitude=10
 		frequency=100
 	else
@@ -189,7 +164,7 @@ Function ImportSineWave(waveNameString)
 	SetDataFolder savedDF	
 End
 
-Function resampleSine(w,dt,totalDuration)
+Function resampleSineBang(w,dt,totalDuration)
 	Wave w
 	Variable dt, totalDuration
 	
@@ -198,10 +173,10 @@ Function resampleSine(w,dt,totalDuration)
 	Variable amplitude=NumberByKeyInWaveNote(w,"amplitude")
 	Variable frequency=NumberByKeyInWaveNote(w,"frequency")
 	
-	resampleSineFromParameters(w,dt,totalDuration,delay,duration,amplitude,frequency)
+	resampleSineFromParamsBang(w,dt,totalDuration,delay,duration,amplitude,frequency)
 End
 
-Function resampleSineFromParameters(w,dt,totalDuration,delay,duration,amplitude,frequency)
+Function resampleSineFromParamsBang(w,dt,totalDuration,delay,duration,amplitude,frequency)
 	// Compute the sine wave from the parameters
 	Wave w
 	Variable dt,totalDuration,delay,duration,amplitude,frequency
