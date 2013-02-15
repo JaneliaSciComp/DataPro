@@ -5,7 +5,7 @@ Function PSCBViewConstructor() : Graph
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_PSCBuilder
 	NVAR tauRise, tauDecay1, tauDecay2
-	WAVE theDACWave
+	WAVE theWave
 	// These are all in pixels
 	Variable xOffset=105
 	Variable yOffset=200
@@ -17,7 +17,7 @@ Function PSCBViewConstructor() : Graph
 	Variable yOffsetInPoints=pointsPerPixel*yOffset
 	Variable widthInPoints=pointsPerPixel*width
 	Variable heightInPoints=pointsPerPixel*height
-	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) 	 /K=1 /N=PSCBuilderView theDACWave as "PSC Builder"
+	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) 	 /K=1 /N=PSCBuilderView theWave as "PSC Builder"
 	//ModifyGraph /W=PSCBuilderView /Z margin(top)=36
 	ModifyGraph /W=PSCBuilderView /Z grid(left)=1
 	Label /W=PSCBuilderView /Z bottom "Time (ms)"
@@ -50,7 +50,6 @@ Function PSCBViewConstructor() : Graph
 	//SetDrawEnv fstyle= 1
 	//DrawText -0.038,-0.06,"When done, save the wave with an extension _DAC"
 	//DrawLine -0.085,-0.035,1.04,-0.035
-	PSCBModelParametersChanged()
 	SetDataFolder savedDF
 End
 
@@ -77,8 +76,9 @@ Function PSCBModelConstructor()
 	NewDataFolder /O /S root:DP_PSCBuilder
 	
 	// Parameters of post-synaptic current stimulus
+	Variable /G dt=SweeperGetDt()
+	Variable /G totalDuration=SweeperGetTotalDuration()
 	Variable /G delay
-	//Variable /G duration
 	Variable /G timeAfter
 	Variable /G amplitude
 	Variable /G tauRise
@@ -87,7 +87,7 @@ Function PSCBModelConstructor()
 	Variable /G weightDecay2
 
 	// Create the wave
-	Make /O theDACWave
+	Make /O theWave
 
 	// Set to default params
 	delay=10
@@ -97,6 +97,9 @@ Function PSCBModelConstructor()
 	tauDecay2=10
 	weightDecay2=0.5
 		
+	// Update the wave
+	PSCBuilderModelUpdateWave()	
+
 	// Restore the original data folder
 	SetDataFolder savedDF
 End
@@ -114,7 +117,7 @@ Function PSCBControllerRiseTauSVTwiddled(ctrlName,varNum,varStr,varName) : SetVa
 	if (varNum<tauDecay1)
 		// valid value, set the instance var
 		tauRise=varNum
-		PSCBModelParametersChanged()
+		PSCBuilderModelUpdateWave()
 	else
 		// invalid value, set the SV to display the old value
 		SetVariable riseTauSV,win=PSCBuilderView,value= _NUM:tauRise
@@ -136,7 +139,7 @@ Function PSCBControllerDecayTau1SVTwid(ctrlName,varNum,varStr,varName) : SetVari
 	if (tauRise<varNum && varNum<=tauDecay2)
 		// valid value, set the instance var
 		tauDecay1=varNum
-		PSCBModelParametersChanged()
+		PSCBuilderModelUpdateWave()
 	else
 		// invalid value, set the SV to display the old value
 		SetVariable decayTau1SV,win=PSCBuilderView,value= _NUM:tauDecay1
@@ -158,7 +161,7 @@ Function PSCBControllerDecayTau2SVTwid(ctrlName,varNum,varStr,varName) : SetVari
 	if (tauRise<varNum && tauDecay1<=varNum)
 		// valid value, set the instance var
 		tauDecay2=varNum
-		PSCBModelParametersChanged()
+		PSCBuilderModelUpdateWave()
 	else
 		// invalid value, set the SV to display the old value
 		SetVariable decayTau2SV,win=PSCBuilderView,value= _NUM:tauDecay2
@@ -173,7 +176,7 @@ Function PSCBControllerSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableC
 	Variable varNum
 	String varStr
 	String varName
-	PSCBModelParametersChanged()
+	PSCBuilderModelUpdateWave()
 End
 
 Function PSCBControllerSaveAsButtonPress(ctrlName) : ButtonControl
@@ -187,8 +190,8 @@ Function PSCBControllerSaveAsButtonPress(ctrlName) : ButtonControl
 	endif
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_PSCBuilder
-	WAVE theDACWave
-	SweeperControllerAddDACWave(theDACWave,waveNameString)
+	WAVE theWave
+	SweeperControllerAddDACWave(theWave,waveNameString)
 	SetDataFolder savedDF
 End
 
@@ -205,25 +208,25 @@ Function PSCBControllerImportButtonPress(ctrlName) : ButtonControl
 	PSCBControllerImportPSCWave(waveNameString)
 End
 
-Function PSCBModelParametersChanged()
-	// Updates the theDACWave wave to match the model parameters.
-	// This is a _model_ method -- The view updates itself when theDACWave changes.
+Function PSCBuilderModelUpdateWave()
+	// Updates the theWave wave to match the model parameters.
+	// This is a _model_ method -- The view updates itself when theWave changes.
 	String savedDF=GetDataFolder(1)
 	SetDataFolder "root:DP_PSCBuilder"
 	NVAR delay, duration, amplitude, tauRise, tauDecay1, tauDecay2, weightDecay2, timeAfter
-	Variable dt=SweeperGetDt()		// sampling interval, ms
-	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
-	WAVE theDACWave
-	resamplePSCFromParamsBang(theDACWave,dt,totalDuration,delay,amplitude,tauRise,tauDecay1,tauDecay2,weightDecay2)	
-	Note /K theDACWave
-	ReplaceStringByKeyInWaveNote(theDACWave,"WAVETYPE","PSC")
-	ReplaceStringByKeyInWaveNote(theDACWave,"TIME",time())
-	ReplaceStringByKeyInWaveNote(theDACWave,"amplitude",num2str(amplitude))
-	ReplaceStringByKeyInWaveNote(theDACWave,"tauRise",num2str(tauRise))
-	ReplaceStringByKeyInWaveNote(theDACWave,"tauDecay1",num2str(tauDecay1))
-	ReplaceStringByKeyInWaveNote(theDACWave,"tauDecay2",num2str(tauDecay2))
-	ReplaceStringByKeyInWaveNote(theDACWave,"weightDecay2",num2str(weightDecay2))
-	ReplaceStringByKeyInWaveNote(theDACWave,"delay",num2str(delay))
+	NVAR dt		// sampling interval, ms
+	NVAR totalDuration		// totalDuration, ms
+	WAVE theWave
+	resamplePSCFromParamsBang(theWave,dt,totalDuration,delay,amplitude,tauRise,tauDecay1,tauDecay2,weightDecay2)	
+	Note /K theWave
+	ReplaceStringByKeyInWaveNote(theWave,"WAVETYPE","PSC")
+	ReplaceStringByKeyInWaveNote(theWave,"TIME",time())
+	ReplaceStringByKeyInWaveNote(theWave,"amplitude",num2str(amplitude))
+	ReplaceStringByKeyInWaveNote(theWave,"tauRise",num2str(tauRise))
+	ReplaceStringByKeyInWaveNote(theWave,"tauDecay1",num2str(tauDecay1))
+	ReplaceStringByKeyInWaveNote(theWave,"tauDecay2",num2str(tauDecay2))
+	ReplaceStringByKeyInWaveNote(theWave,"weightDecay2",num2str(weightDecay2))
+	ReplaceStringByKeyInWaveNote(theWave,"delay",num2str(delay))
 	// restore saved DF
 	SetDataFolder savedDF
 End
@@ -241,13 +244,11 @@ Function PSCBControllerImportPSCWave(waveNameString)
 	Variable i
 	if (AreStringsEqual(waveNameString,"(Default Settings)"))
 		delay=10
-		//duration=50
 		amplitude=10
 		tauRise=0.2
 		tauDecay1=2
 		tauDecay2=10
 		weightDecay2=0.5
-		//timeAfter=10
 	else
 		// Get the wave from the digitizer
 		Wave exportedWave=SweeperGetWaveByName(waveNameString)
@@ -263,7 +264,7 @@ Function PSCBControllerImportPSCWave(waveNameString)
 			Abort("This is not a PSC wave; choose another")
 		endif
 	endif
-	PSCBModelParametersChanged()		// Make the model self-consistent
+	PSCBuilderModelUpdateWave()		// Make the model self-consistent
 	PSCBViewModelChanged()			// Update the view to match the model
 	
 	SetDataFolder savedDF	
@@ -295,8 +296,52 @@ Function resamplePSCFromParamsBang(w,dt,totalDuration,delay,amplitude,tauRise,ta
 	// Set the delay portion
 	w[0,nDelay-1]=0
 	// Set the main portion
+	if (nDelay>=nScans)
+		return 0
+	endif
 	w[nDelay,nScans-1]= -exp(-(x-delay)/tauRise)+(1-weightDecay2)*exp(-(x-delay)/tauDecay1)+weightDecay2*exp(-(x-delay)/tauDecay2)
 	// re-scale to have the proper amplitude
 	Wavestats /Q w
 	w=(amplitude/V_max)*w		// want the peak amplitude to be amplitude
+End
+
+Function PSCBuilderContSweepDtOrTChngd()
+	// Used to notify the PSC Builder of a change to dt or totalDuration in the Sweeper.
+	// This is a controller method
+	PSCBuilderModelSweepDtOrTChngd()
+	PSCBuilderViewModelChanged()
+End
+
+Function PSCBuilderModelSweepDtOrTChngd()
+	// Used to notify the PSC Builder model of a change to dt or totalDuration in the Sweeper.
+	
+	// If no PSC Builder currently exists, do nothing
+	if (!DataFolderExists("root:DP_PSCBuilder"))
+		return 0
+	endif
+	
+	// Save, set the DF
+	String savedDF=GetDataFolder(1)
+	SetDataFolder "root:DP_PSCBuilder"
+	
+	NVAR dt, totalDuration
+	
+	// Get dt, totalDuration from the sweeper
+	dt=SweeperGetDt()
+	totalDuration=SweeperGetTotalDuration()
+	// Update the	wave
+	PSCBuilderModelUpdateWave()
+	
+	// Restore the DF
+	SetDataFolder savedDF		
+End
+
+Function PSCBuilderViewModelChanged()
+	// Nothing to do here, everything will auto-update.
+End
+
+Function PSCBuilderModelParamsChanged()
+	// Used to notify the model that a parameter has been changed
+	// by a old-style SetVariable
+	PSCBuilderModelUpdateWave()
 End

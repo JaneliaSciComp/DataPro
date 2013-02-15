@@ -4,7 +4,7 @@ Function SineBuilderViewConstructor() : Graph
 	SineBuilderModelConstructor()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_SineBuilder
-	WAVE theDACWave
+	WAVE theWave
 	// These are all in pixels
 	Variable xOffset=105
 	Variable yOffset=200
@@ -16,8 +16,7 @@ Function SineBuilderViewConstructor() : Graph
 	Variable yOffsetInPoints=pointsPerPixel*yOffset
 	Variable widthInPoints=pointsPerPixel*width
 	Variable heightInPoints=pointsPerPixel*height
-	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) /K=1 /N=SineBuilderView theDACWave as "Sine Builder"
-	//ModifyGraph /W=SineBuilderView /Z margin(top)=36
+	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) /K=1 /N=SineBuilderView theWave as "Sine Builder"
 	ModifyGraph /W=SineBuilderView /Z grid(left)=1
 	Label /W=SineBuilderView /Z bottom "Time (ms)"
 	Label /W=SineBuilderView /Z left "Signal (pure)"
@@ -28,23 +27,12 @@ Function SineBuilderViewConstructor() : Graph
 	SetVariable sine_pre,win=SineBuilderView,limits={0,1000,1},value= delay
 	SetVariable sine_dur,win=SineBuilderView,pos={205,12},size={120,17},proc=SineBuilderSetVariableTwiddled,title="Duration (ms)"
 	SetVariable sine_dur,win=SineBuilderView,format="%g",limits={0,10000,10},value= duration
-	//SetVariable sine_post,win=SineBuilderView,pos={350,12},size={140,17},proc=SineBuilderSetVariableTwiddled,title="Delay After (ms)"
-	//SetVariable sine_post,win=SineBuilderView,limits={10,1000,10},value= DelayAfter
 	SetVariable sine_amp,win=SineBuilderView,pos={128,43},size={120,17},proc=SineBuilderSetVariableTwiddled,title="Amplitude"
 	SetVariable sine_amp,win=SineBuilderView,limits={-10000,10000,10},value= amplitude
 	SetVariable sine_freq,win=SineBuilderView,pos={286,43},size={130,17},proc=SineBuilderSetVariableTwiddled,title="Frequency (Hz)"
 	SetVariable sine_freq,win=SineBuilderView,format="%g",limits={0,10000,10},value= frequency
-	//SetVariable sine_sint,pos={466,12},size={120,17},proc=SineBuilderSetVariableTwiddled,title="samp. int."
-	//SetVariable sine_sint,limits={0.01,1000,0.01},value= dtSine
 	Button train_save,win=SineBuilderView,pos={601,10},size={90,20},proc=SineBuilderSaveAsButtonPressed,title="Save As..."
-	//PopupMenu editsine_popup0,pos={578,42},size={100,19},proc=SineBuilderImportPopupTwiddled,title="Import: "
-	//PopupMenu editsine_popup0,mode=1,value=#"\"(New);\"+GetSweeperWaveNamesEndingIn(\"DAC\")"
 	Button SineBuilderImportButton,win=SineBuilderView,pos={601,45},size={90,20},proc=SineBuilderImportButtonPressed,title="Import..."
-	//SetDrawLayer UserFront
-	//SetDrawEnv fstyle= 1
-	//DrawText -0.038,-0.06,"When done, save the wave with an extension _DAC"
-	//DrawLine -0.085,-0.035,1.04,-0.035
-	SineBuilderModelParamsChanged()
 	SetDataFolder savedDF
 End
 
@@ -56,13 +44,15 @@ Function SineBuilderModelConstructor()
 	NewDataFolder /O /S root:DP_SineBuilder
 		
 	// Parameters of sine wave stimulus
+	Variable /G dt=SweeperGetDt()
+	Variable /G totalDuration=SweeperGetTotalDuration()
 	Variable /G delay
 	Variable /G duration
 	Variable /G amplitude
 	Variable /G frequency
 
 	// Create the wave
-	Make /O theDACWave
+	Make /O theWave
 
 	// Set to default params
 	ImportSineWave("(Default Settings)")
@@ -77,6 +67,7 @@ Function SineBuilderSetVariableTwiddled(ctrlName,varNum,varStr,varName) : SetVar
 	String varStr
 	String varName
 	SineBuilderModelParamsChanged()
+	SineBuilderViewModelChanged()
 End
 
 Function SineBuilderSaveAsButtonPressed(ctrlName) : ButtonControl
@@ -90,8 +81,8 @@ Function SineBuilderSaveAsButtonPressed(ctrlName) : ButtonControl
 	endif
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_SineBuilder
-	WAVE theDACWave
-	SweeperControllerAddDACWave(theDACWave,waveNameString)
+	WAVE theWave
+	SweeperControllerAddDACWave(theWave,waveNameString)
 	SetDataFolder savedDF
 End
 
@@ -108,23 +99,21 @@ Function SineBuilderImportButtonPressed(ctrlName) : ButtonControl
 	ImportSineWave(waveNameString)
 End
 
-Function SineBuilderModelParamsChanged()
-	// Updates the theDACWave wave to match the model parameters.
-	// This is a _model_ method -- The view updates itself when theDACWave changes.
+Function SineBuilderModelUpdateWave()
+	// Updates the theWave wave to match the model parameters.
+	// This is a private _model_ method -- The view updates itself when theWave changes.
 	String savedDF=GetDataFolder(1)
 	SetDataFolder "root:DP_SineBuilder"
-	NVAR delay, duration, amplitude, frequency
-	Variable dt=SweeperGetDt()		// sampling interval, ms
-	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
-	WAVE theDACWave
-	resampleSineFromParamsBang(theDACWave,dt,totalDuration,delay,duration,amplitude,frequency)
-	Note /K theDACWave
-	ReplaceStringByKeyInWaveNote(theDACWave,"WAVETYPE","Sine")
-	ReplaceStringByKeyInWaveNote(theDACWave,"TIME",time())
-	ReplaceStringByKeyInWaveNote(theDACWave,"amplitude",num2str(amplitude))
-	ReplaceStringByKeyInWaveNote(theDACWave,"frequency",num2str(frequency))
-	ReplaceStringByKeyInWaveNote(theDACWave,"delay",num2str(delay))
-	ReplaceStringByKeyInWaveNote(theDACWave,"duration",num2str(duration))
+	NVAR dt, totalDuration, delay, duration, amplitude, frequency
+	WAVE theWave
+	resampleSineFromParamsBang(theWave,dt,totalDuration,delay,duration,amplitude,frequency)
+	Note /K theWave
+	ReplaceStringByKeyInWaveNote(theWave,"WAVETYPE","Sine")
+	ReplaceStringByKeyInWaveNote(theWave,"TIME",time())
+	ReplaceStringByKeyInWaveNote(theWave,"amplitude",num2str(amplitude))
+	ReplaceStringByKeyInWaveNote(theWave,"frequency",num2str(frequency))
+	ReplaceStringByKeyInWaveNote(theWave,"delay",num2str(delay))
+	ReplaceStringByKeyInWaveNote(theWave,"duration",num2str(duration))
 	SetDataFolder savedDF
 End
 
@@ -159,7 +148,7 @@ Function ImportSineWave(waveNameString)
 			Abort("This is not a sine wave; choose another")
 		endif
 	endif
-	SineBuilderModelParamsChanged()
+	SineBuilderModelUpdateWave()
 	
 	SetDataFolder savedDF	
 End
@@ -186,11 +175,60 @@ Function resampleSineFromParamsBang(w,dt,totalDuration,delay,duration,amplitude,
 	Setscale /P x, 0, dt, "ms", w
 	Variable jFirst=0
 	Variable jLast=round(delay/dt)-1
+	if (jFirst>=nScans)
+		return 0
+	endif
 	w[jFirst,jLast]=0
 	jFirst=jLast+1
 	jLast=jFirst+round(duration/dt)-1
+	if (jFirst>=nScans)
+		return 0
+	endif
 	w[jFirst,jLast]=amplitude*sin(frequency*2*PI*(x-delay)/1000)
 	jFirst=jLast+1
 	jLast=nScans-1
+	if (jFirst>=nScans)
+		return 0
+	endif
 	w[jFirst,jLast]=0
+End
+
+Function SineBuilderContSweepDtOrTChngd()
+	// Used to notify the Sine Builder of a change to dt or totalDuration in the Sweeper.
+	SineBuilderModelSweepDtOrTChngd()
+	SineBuilderViewModelChanged()
+End
+
+Function SineBuilderModelSweepDtOrTChngd()
+	// Used to notify the Sine Builder model of a change to dt or totalDuration in the Sweeper.
+	
+	// If no Sine Builder currently exists, do nothing
+	if (!DataFolderExists("root:DP_SineBuilder"))
+		return 0
+	endif
+	
+	// Save, set the DF
+	String savedDF=GetDataFolder(1)
+	SetDataFolder "root:DP_SineBuilder"
+	
+	NVAR dt, totalDuration
+	
+	// Get dt, totalDuration from the sweeper
+	dt=SweeperGetDt()
+	totalDuration=SweeperGetTotalDuration()
+	// Update the	wave
+	SineBuilderModelUpdateWave()
+	
+	// Restore the DF
+	SetDataFolder savedDF		
+End
+
+Function SineBuilderViewModelChanged()
+	// Nothing to do here, everything will auto-update.
+End
+
+Function SineBuilderModelParamsChanged()
+	// Used to notify the model that a parameter has been changed
+	// by a old-style SetVariable
+	SineBuilderModelUpdateWave()
 End
