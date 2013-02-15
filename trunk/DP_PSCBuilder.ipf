@@ -183,7 +183,7 @@ Function PSCBControllerSaveAsButtonPress(ctrlName) : ButtonControl
 	String ctrlName
 
 	String waveNameString
-	Prompt waveNameString, "Enter wave name to save as (should end in _DAC):"
+	Prompt waveNameString, "Enter wave name to save as:"
 	DoPrompt "Save as...", waveNameString
 	if (V_Flag)
 		return -1		// user hit Cancel
@@ -251,7 +251,7 @@ Function PSCBControllerImportPSCWave(waveNameString)
 		weightDecay2=0.5
 	else
 		// Get the wave from the digitizer
-		Wave exportedWave=SweeperGetWaveByName(waveNameString)
+		Wave exportedWave=SweeperGetDACWaveByName(waveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
 		if (AreStringsEqual(waveTypeString,"PSC"))
 			amplitude=NumberByKeyInWaveNote(exportedWave,"amplitude")

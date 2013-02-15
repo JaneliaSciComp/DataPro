@@ -87,7 +87,7 @@ Function TrainBuilderSaveAsDACButtonPrsd(ctrlName) : ButtonControl
 	String ctrlName
 
 	String waveNameString
-	Prompt waveNameString, "Enter wave name to save as (should end in _DAC):"
+	Prompt waveNameString, "Enter wave name to save as:"
 	DoPrompt "Save as...", waveNameString
 	if (V_Flag)
 		return -1		// user hit Cancel
@@ -103,7 +103,7 @@ Function TrainBuilderSaveAsTTLButtonPrsd(ctrlName) : ButtonControl
 	String ctrlName
 
 	String waveNameString
-	Prompt waveNameString, "Enter wave name to save as (should end in _TTL):"
+	Prompt waveNameString, "Enter wave name to save as:"
 	DoPrompt "Save as...", waveNameString
 	if (V_Flag)
 		return -1		// user hit Cancel
@@ -118,14 +118,14 @@ End
 Function TrainBuilderImportButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 
-	String waveNameString
-	String popupListString="(Default Settings);"+GetSweeperWaveNamesEndingIn("DAC")+GetSweeperWaveNamesEndingIn("TTL")
-	Prompt waveNameString, "Select wave to import:", popup, popupListString
-	DoPrompt "Import...", waveNameString
+	String popupItem
+	String popupListString="(Default Settings);"+SweeperGetFancyWaveList()
+	Prompt popupItem, "Select wave to import:", popup, popupListString
+	DoPrompt "Import...", popupItem
 	if (V_Flag)
 		return -1		// user hit Cancel
 	endif
-	ImportTrainWave(waveNameString)
+	ImportTrainWave(popupItem)
 End
 
 Function TrainBuilderModelUpdateWave()
@@ -150,10 +150,10 @@ Function TrainBuilderModelUpdateWave()
 	SetDataFolder savedDF
 End
 
-Function ImportTrainWave(waveNameString)
+Function ImportTrainWave(fancyWaveNameString)
 	// Imports the stimulus parameters from a pre-existing wave in the digitizer
 	// This is a model method
-	String waveNameString
+	String fancyWaveNameString
 	
 	String savedDF=GetDataFolder(1)
 	SetDataFolder "root:DP_TrainBuilder"
@@ -162,7 +162,7 @@ Function ImportTrainWave(waveNameString)
 
 	String waveTypeString
 	Variable i
-	if (AreStringsEqual(waveNameString,"(Default Settings)"))
+	if (AreStringsEqual(fancyWaveNameString,"(Default Settings)"))
 		nPulses=10
 		pulseDuration=2		// ms
 		baseLevel=0
@@ -171,7 +171,7 @@ Function ImportTrainWave(waveNameString)
 		pulseFrequency=100	// Hz
 	else
 		// Get the wave from the digitizer
-		Wave exportedWave=SweeperGetWaveByName(waveNameString)
+		Wave exportedWave=SweeperGetWaveByFancyName(fancyWaveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
 		if (AreStringsEqual(waveTypeString,"Train"))
 			nPulses=NumberByKeyInWaveNote(exportedWave,"nPulses")

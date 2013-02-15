@@ -74,7 +74,7 @@ Function SineBuilderSaveAsButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 
 	String waveNameString
-	Prompt waveNameString, "Enter wave name to save as (should end in _DAC):"
+	Prompt waveNameString, "Enter wave name to save as:"
 	DoPrompt "Save as...", waveNameString
 	if (V_Flag)
 		return -1		// user hit Cancel
@@ -136,7 +136,7 @@ Function ImportSineWave(waveNameString)
 		frequency=100
 	else
 		// Get the wave from the digitizer
-		Wave exportedWave=SweeperGetWaveByName(waveNameString)
+		Wave exportedWave=SweeperGetDACWaveByName(waveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
 		if (AreStringsEqual(waveTypeString,"Sine"))
 			amplitude=NumberByKeyInWaveNote(exportedWave,"amplitude")
