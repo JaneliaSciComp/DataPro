@@ -4,7 +4,7 @@ Function RampBuilderViewConstructor() : Graph
 	RampBuilderModelConstructor()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_RampBuilder
-	WAVE theDACWave
+	WAVE theWave
 	// These are all in pixels
 	Variable xOffset=105
 	Variable yOffset=200
@@ -16,7 +16,7 @@ Function RampBuilderViewConstructor() : Graph
 	Variable yOffsetInPoints=pointsPerPixel*yOffset
 	Variable widthInPoints=pointsPerPixel*width
 	Variable heightInPoints=pointsPerPixel*height
-	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) /K=1 /N=RampBuilderView theDACWave as "Ramp Builder"
+	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) /K=1 /N=RampBuilderView theWave as "Ramp Builder"
 	ModifyGraph /W=RampBuilderView /Z grid(left)=1
 	Label /W=RampBuilderView /Z bottom "Time (ms)"
 	Label /W=RampBuilderView /Z left "Signal (pure)"
@@ -38,7 +38,6 @@ Function RampBuilderViewConstructor() : Graph
 
 	Button saveAsButton,win=RampBuilderView,pos={601,10},size={90,20},proc=RampBuilderSaveAsButtonPressed,title="Save As..."
 	Button importButton,win=RampBuilderView,pos={601,45},size={90,20},proc=RampBuilderImportButtonPressed,title="Import..."
-	RampBuilderModelParamsChanged()
 	SetDataFolder savedDF
 End
 
@@ -50,13 +49,15 @@ Function RampBuilderModelConstructor()
 	NewDataFolder /O /S root:DP_RampBuilder
 		
 	// Parameters of sine wave stimulus
+	Variable /G dt=SweeperGetDt()
+	Variable /G totalDuration=SweeperGetTotalDuration()
 	Variable /G preLevel
 	Variable /G delay
 	Variable /G duration
 	Variable /G postLevel
 
 	// Create the wave
-	Make /O theDACWave
+	Make /O theWave
 
 	// Set to default params
 	ImportRampWave("(Default Settings)")
@@ -70,7 +71,7 @@ Function RampBuilderSetVariableTwiddled(ctrlName,varNum,varStr,varName) : SetVar
 	Variable varNum
 	String varStr
 	String varName
-	RampBuilderModelParamsChanged()
+	RampBuilderModelUpdateWave()
 End
 
 Function RampBuilderSaveAsButtonPressed(ctrlName) : ButtonControl
@@ -84,8 +85,8 @@ Function RampBuilderSaveAsButtonPressed(ctrlName) : ButtonControl
 	endif
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_RampBuilder
-	WAVE theDACWave
-	SweeperControllerAddDACWave(theDACWave,waveNameString)
+	WAVE theWave
+	SweeperControllerAddDACWave(theWave,waveNameString)
 	SetDataFolder savedDF
 End
 
@@ -102,23 +103,23 @@ Function RampBuilderImportButtonPressed(ctrlName) : ButtonControl
 	ImportRampWave(waveNameString)
 End
 
-Function RampBuilderModelParamsChanged()
-	// Updates the theDACWave wave to match the model parameters.
-	// This is a _model_ method -- The view updates itself when theDACWave changes.
+Function RampBuilderModelUpdateWave()
+	// Updates the theWave wave to match the model parameters.
+	// This is a _model_ method -- The view updates itself when theWave changes.
 	String savedDF=GetDataFolder(1)
 	SetDataFolder "root:DP_RampBuilder"
 	NVAR preLevel, delay, duration, postLevel
-	Variable dt=SweeperGetDt()		// sampling interval, ms
-	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
-	WAVE theDACWave
-	resampleRampFromParamsBang(theDACWave,dt,totalDuration,preLevel,delay,duration,postLevel)
-	Note /K theDACWave
-	ReplaceStringByKeyInWaveNote(theDACWave,"WAVETYPE","Ramp")
-	ReplaceStringByKeyInWaveNote(theDACWave,"TIME",time())
-	ReplaceStringByKeyInWaveNote(theDACWave,"preLevel",num2str(preLevel))
-	ReplaceStringByKeyInWaveNote(theDACWave,"delay",num2str(delay))
-	ReplaceStringByKeyInWaveNote(theDACWave,"duration",num2str(duration))
-	ReplaceStringByKeyInWaveNote(theDACWave,"postLevel",num2str(postLevel))
+	NVAR dt		// sampling interval, ms
+	NVAR totalDuration		// totalDuration, ms
+	WAVE theWave
+	resampleRampFromParamsBang(theWave,dt,totalDuration,preLevel,delay,duration,postLevel)
+	Note /K theWave
+	ReplaceStringByKeyInWaveNote(theWave,"WAVETYPE","Ramp")
+	ReplaceStringByKeyInWaveNote(theWave,"TIME",time())
+	ReplaceStringByKeyInWaveNote(theWave,"preLevel",num2str(preLevel))
+	ReplaceStringByKeyInWaveNote(theWave,"delay",num2str(delay))
+	ReplaceStringByKeyInWaveNote(theWave,"duration",num2str(duration))
+	ReplaceStringByKeyInWaveNote(theWave,"postLevel",num2str(postLevel))
 	SetDataFolder savedDF
 End
 
@@ -152,7 +153,7 @@ Function ImportRampWave(waveNameString)
 			Abort("This is not a ramp wave; choose another")
 		endif
 	endif
-	RampBuilderModelParamsChanged()
+	RampBuilderModelUpdateWave()
 	
 	SetDataFolder savedDF	
 End
@@ -180,7 +181,51 @@ Function resampleRampFromParamsBang(w,dt,totalDuration,preLevel,delay,duration,p
 	Variable nDelay=round(delay/dt)
 	Variable nDuration=round(duration/dt)	
 	Variable slope=(postLevel-preLevel)/duration
+	w=postLevel
 	w[0,nDelay-1]=preLevel
+	if (nDelay>=nScans)
+		return 0
+	endif	
 	w[nDelay,nDelay+nDuration-1]=preLevel+slope*(x-delay)
-	w[nDelay+nDuration,nScans-1]=postLevel
+End
+
+Function RampBuilderContSweepDtOrTChngd()
+	// Used to notify the Ramp Builder of a change to dt or totalDuration in the Sweeper.
+	// This is a controller method
+	RampBuilderModelSweepDtOrTChngd()
+	RampBuilderViewModelChanged()
+End
+
+Function RampBuilderModelSweepDtOrTChngd()
+	// Used to notify the Ramp Builder model of a change to dt or totalDuration in the Sweeper.
+	
+	// If no Ramp Builder currently exists, do nothing
+	if (!DataFolderExists("root:DP_RampBuilder"))
+		return 0
+	endif
+	
+	// Save, set the DF
+	String savedDF=GetDataFolder(1)
+	SetDataFolder "root:DP_RampBuilder"
+	
+	NVAR dt, totalDuration
+	
+	// Get dt, totalDuration from the sweeper
+	dt=SweeperGetDt()
+	totalDuration=SweeperGetTotalDuration()
+	// Update the	wave
+	RampBuilderModelUpdateWave()
+	
+	// Restore the DF
+	SetDataFolder savedDF		
+End
+
+Function RampBuilderViewModelChanged()
+	// Nothing to do here, everything will auto-update.
+End
+
+Function RampBuilderModelParamsChanged()
+	// Used to notify the model that a parameter has been changed
+	// by a old-style SetVariable
+	RampBuilderModelUpdateWave()
 End

@@ -4,7 +4,7 @@ Function TrainBuilderViewConstructor() : Graph
 	TrainBuilderModelConstructor()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_TrainBuilder
-	WAVE theDACWave
+	WAVE theWave
 	// These are all in pixels
 	Variable xOffset=105
 	Variable yOffset=200
@@ -16,7 +16,7 @@ Function TrainBuilderViewConstructor() : Graph
 	Variable yOffsetInPoints=pointsPerPixel*yOffset
 	Variable widthInPoints=pointsPerPixel*width
 	Variable heightInPoints=pointsPerPixel*height
-	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) /K=1 /N=TrainBuilderView theDACWave as "Train Builder"
+	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) /K=1 /N=TrainBuilderView theWave as "Train Builder"
 	ModifyGraph /W=TrainBuilderView /Z grid(left)=1
 	Label /W=TrainBuilderView /Z bottom "Time (ms)"
 	Label /W=TrainBuilderView /Z left "Signal (pure)"
@@ -44,7 +44,6 @@ Function TrainBuilderViewConstructor() : Graph
 	
 	Button saveAsButton,win=TrainBuilderView,pos={601,10},size={90,20},proc=TrainBuilderSaveAsButtonPressed,title="Save As..."
 	Button importButton,win=TrainBuilderView,pos={601,45},size={90,20},proc=TrainBuilderImportButtonPressed,title="Import..."
-	TrainBuilderModelParamsChanged()
 	SetDataFolder savedDF
 End
 
@@ -56,6 +55,8 @@ Function TrainBuilderModelConstructor()
 	NewDataFolder /O /S root:DP_TrainBuilder
 		
 	// Parameters of sine wave stimulus
+	Variable /G dt=SweeperGetDt()
+	Variable /G totalDuration=SweeperGetTotalDuration()
 	Variable /G nPulses
 	Variable /G pulseDuration
 	Variable /G baseLevel
@@ -64,7 +65,7 @@ Function TrainBuilderModelConstructor()
 	Variable /G pulseFrequency
 
 	// Create the wave
-	Make /O theDACWave
+	Make /O theWave
 
 	// Set to default params
 	ImportTrainWave("(Default Settings)")
@@ -78,7 +79,7 @@ Function TrainBuilderSetVariableTwiddled(ctrlName,varNum,varStr,varName) : SetVa
 	Variable varNum
 	String varStr
 	String varName
-	TrainBuilderModelParamsChanged()
+	TrainBuilderModelUpdateWave()
 End
 
 Function TrainBuilderSaveAsButtonPressed(ctrlName) : ButtonControl
@@ -92,8 +93,8 @@ Function TrainBuilderSaveAsButtonPressed(ctrlName) : ButtonControl
 	endif
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_TrainBuilder
-	WAVE theDACWave
-	SweepContAddDACOrTTLWave(theDACWave,waveNameString)
+	WAVE theWave
+	SweepContAddDACOrTTLWave(theWave,waveNameString)
 	SetDataFolder savedDF
 End
 
@@ -110,25 +111,25 @@ Function TrainBuilderImportButtonPressed(ctrlName) : ButtonControl
 	ImportTrainWave(waveNameString)
 End
 
-Function TrainBuilderModelParamsChanged()
-	// Updates the theDACWave wave to match the model parameters.
-	// This is a _model_ method -- The view updates itself when theDACWave changes.
+Function TrainBuilderModelUpdateWave()
+	// Updates the theWave wave to match the model parameters.
+	// This is a private _model_ method.
 	String savedDF=GetDataFolder(1)
 	SetDataFolder "root:DP_TrainBuilder"
 	NVAR nPulses, pulseDuration, baseLevel, pulseAmplitude, delay, pulseFrequency
-	Variable dt=SweeperGetDt()		// sampling interval, ms
-	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
-	WAVE theDACWave
-	resampleTrainBang(theDACWave,dt,totalDuration)
-	Note /K theDACWave
-	ReplaceStringByKeyInWaveNote(theDACWave,"WAVETYPE","Train")
-	ReplaceStringByKeyInWaveNote(theDACWave,"TIME",time())
-	ReplaceStringByKeyInWaveNote(theDACWave,"nPulses",num2str(nPulses))
-	ReplaceStringByKeyInWaveNote(theDACWave,"pulseDuration",num2str(pulseDuration))
-	ReplaceStringByKeyInWaveNote(theDACWave,"baseLevel",num2str(baseLevel))
-	ReplaceStringByKeyInWaveNote(theDACWave,"pulseAmplitude",num2str(pulseAmplitude))
-	ReplaceStringByKeyInWaveNote(theDACWave,"delay",num2str(delay))
-	ReplaceStringByKeyInWaveNote(theDACWave,"pulseFrequency",num2str(pulseFrequency))
+	NVAR dt		// sampling interval, ms
+	NVAR totalDuration		// totalDuration, ms
+	WAVE theWave
+	resampleTrainFromParamsBang(theWave,dt,totalDuration,baseLevel,delay,nPulses,pulseDuration,pulseAmplitude,pulseFrequency)
+	Note /K theWave
+	ReplaceStringByKeyInWaveNote(theWave,"WAVETYPE","Train")
+	ReplaceStringByKeyInWaveNote(theWave,"TIME",time())
+	ReplaceStringByKeyInWaveNote(theWave,"nPulses",num2str(nPulses))
+	ReplaceStringByKeyInWaveNote(theWave,"pulseDuration",num2str(pulseDuration))
+	ReplaceStringByKeyInWaveNote(theWave,"baseLevel",num2str(baseLevel))
+	ReplaceStringByKeyInWaveNote(theWave,"pulseAmplitude",num2str(pulseAmplitude))
+	ReplaceStringByKeyInWaveNote(theWave,"delay",num2str(delay))
+	ReplaceStringByKeyInWaveNote(theWave,"pulseFrequency",num2str(pulseFrequency))
 	SetDataFolder savedDF
 End
 
@@ -166,7 +167,7 @@ Function ImportTrainWave(waveNameString)
 			Abort("This is not a train wave; choose another")
 		endif
 	endif
-	TrainBuilderModelParamsChanged()
+	TrainBuilderModelUpdateWave()
 	
 	SetDataFolder savedDF	
 End
@@ -202,7 +203,52 @@ Function resampleTrainFromParamsBang(w,dt,totalDuration,baseLevel,delay,nPulses,
 	Variable jOffset=nDelay
 	Variable i
 	for (i=0; i<nPulses; i+=1)
+		if (jOffset>=nScans)
+			break
+		endif
 		w[jOffset,jOffset+nPulse-1]=baseLevel+pulseAmplitude
 		jOffset+=nPeriod;
 	endfor
 End
+
+Function TrainBuilderContSweepDtOrTChngd()
+	// Used to notify the Train Builder of a change to dt or totalDuration in the Sweeper.
+	// This is a controller method
+	TrainBuilderModlSweepDtOrTChngd()
+	TrainBuilderViewModelChanged()
+End
+
+Function TrainBuilderModlSweepDtOrTChngd()
+	// Used to notify the Train Builder model of a change to dt or totalDuration in the Sweeper.
+	
+	// If no Train Builder currently exists, do nothing
+	if (!DataFolderExists("root:DP_TrainBuilder"))
+		return 0
+	endif
+	
+	// Save, set the DF
+	String savedDF=GetDataFolder(1)
+	SetDataFolder "root:DP_TrainBuilder"
+	
+	NVAR dt, totalDuration
+	
+	// Get dt, totalDuration from the sweeper
+	dt=SweeperGetDt()
+	totalDuration=SweeperGetTotalDuration()
+	// Update the	wave
+	TrainBuilderModelUpdateWave()
+	
+	// Restore the DF
+	SetDataFolder savedDF		
+End
+
+Function TrainBuilderViewModelChanged()
+	// Nothing to do here, everything will auto-update.
+End
+
+Function TrainBuilderModelParamsChanged()
+	// Used to notify the model that a parameter has been changed
+	// by a old-style SetVariable
+	TrainBuilderModelUpdateWave()
+End
+

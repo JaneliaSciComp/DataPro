@@ -1,40 +1,47 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 Function SweeperControllerSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
-	// Callback for SetVariables that don't require any bounds checking
+	// Callback for SetVariables that don't require any bounds checking or other special treatment
 	String ctrlName
 	Variable varNum
 	String varStr
 	String varName
-	// Update any builders that currently exist, b/c user might have changed dt ot totalDuration
-	// (could be smarter about this)
-	if ( AreStringsEqual(ctrlName,"dtSV") || AreStringsEqual(ctrlName,"totalDurationSV") )
-		if (DataFolderExists("root:DP_SineBuilder"))
-			SineBuilderModelParamsChanged()
-		endif
-		if (DataFolderExists("root:DP_PSCBuilder"))
-			PSCBModelParametersChanged()
-			PSCBViewModelChanged()	// PSCBuilder also needs this, b/c it's fancy
-		endif	
-		if (DataFolderExists("root:DP_RampBuilder"))
-			RampBuilderModelParamsChanged()
-		endif	
-		if (DataFolderExists("root:DP_TrainBuilder"))
-			TrainBuilderModelParamsChanged()
-		endif	
-		if (DataFolderExists("root:DP_FiveStepBuilder"))
-			FSBModelParamsChanged()
-		endif	
-		// Fix: Should also update any _DAC or _TTL waves in DP_Sweeper DF if they 
-		// twiddled dt or totalDuration.
-		SweeperDtOrTotalDurChanged()		
-	else
-		// Some other control twiddled
-		SweeperUpdateStepPulseWave()	// Update this wave
-		SweeperUpdateSynPulseWave()	// Update this wave
-	endif
-	
+
+	SweeperUpdateStepPulseWave()	// Update this wave
+	SweeperUpdateSynPulseWave()	// Update this wave
 	SweeperViewSweeperChanged()	// Tell the view that the model has changed	
+	OVControllerSweeperWavesChanged()	// Tell the OutputViewer that the sweeper waves were (possibly) changed
+End
+
+Function SweeperControllerDtSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum
+	String varStr
+	String varName
+	
+	SweeperSetDt(varNum)
+	SweepContDtOrTotalDurChanged()
+End
+
+Function SweepContTotalDurationSVTwid(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum
+	String varStr
+	String varName
+
+	SweeperSetTotalDuration(varNum)
+	SweepContDtOrTotalDurChanged()
+End
+
+Function SweepContDtOrTotalDurChanged()
+	// private method, used to notify everyone that needs notifying after a change to dt or totalDuration
+	SweeperViewSweeperChanged()	// Tell the view that the model has changed
+	SineBuilderContSweepDtOrTChngd()
+	PSCBuilderContSweepDtOrTChngd()
+	RampBuilderContSweepDtOrTChngd()
+	TrainBuilderContSweepDtOrTChngd()
+	StepBuilderContSweepDtOrTChngd()
+	OVControllerSweeperWavesChanged()	// Tell the OutputViewer that the sweeper waves have changed	
 End
 
 Function SCGetDataButtonPressed(ctrlName) : ButtonControl

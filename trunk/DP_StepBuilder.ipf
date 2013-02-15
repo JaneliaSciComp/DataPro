@@ -1,9 +1,9 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
-Function FiveStepBuilderViewConstructor() : Graph
-	FiveStepBuilderModelConstructor()
+Function StepBuilderViewConstructor() : Graph
+	StepBuilderModelConstructor()
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FiveStepBuilder
+	SetDataFolder root:DP_StepBuilder
 	WAVE theWave
 	// These are all in pixels
 	Variable xOffset=105
@@ -16,59 +16,59 @@ Function FiveStepBuilderViewConstructor() : Graph
 	Variable yOffsetInPoints=pointsPerPixel*yOffset
 	Variable widthInPoints=pointsPerPixel*width
 	Variable heightInPoints=pointsPerPixel*height
-	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) /K=1 /N=FiveStepBuilderView theWave as "Five Step Builder"
-	ModifyGraph /W=FiveStepBuilderView /Z grid(left)=1
-	Label /W=FiveStepBuilderView /Z bottom "Time (ms)"
-	Label /W=FiveStepBuilderView /Z left "Signal (pure)"
-	ModifyGraph /W=FiveStepBuilderView /Z tickUnit(bottom)=1
-	ModifyGraph /W=FiveStepBuilderView /Z tickUnit(left)=1
+	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) /K=1 /N=StepBuilderView theWave as "Step Builder"
+	ModifyGraph /W=StepBuilderView /Z grid(left)=1
+	Label /W=StepBuilderView /Z bottom "Time (ms)"
+	Label /W=StepBuilderView /Z left "Signal (pure)"
+	ModifyGraph /W=StepBuilderView /Z tickUnit(bottom)=1
+	ModifyGraph /W=StepBuilderView /Z tickUnit(left)=1
 	ControlBar 80
 
 	Variable xShift=160
 	xOffset=15		// Now this is used as an offset into the window
-	SetVariable level1SV,win=FiveStepBuilderView,pos={xOffset,15},size={100,15},proc=FiveStepBuilderSVTwiddled,title="Level 1"
-	SetVariable level1SV,win=FiveStepBuilderView,limits={-10000,10000,10}, value= level1
-	SetVariable duration1SV,win=FiveStepBuilderView,pos={xOffset,45},size={130,15},proc=FiveStepBuilderSVTwiddled,title="Duration 1 (ms)"
-	SetVariable duration1SV,win=FiveStepBuilderView,limits={0,10000,10}, value= duration1 
+	SetVariable level1SV,win=StepBuilderView,pos={xOffset,15},size={100,15},proc=StepBuilderSVTwiddled,title="Level 1"
+	SetVariable level1SV,win=StepBuilderView,limits={-10000,10000,10}, value= level1
+	SetVariable duration1SV,win=StepBuilderView,pos={xOffset,45},size={130,15},proc=StepBuilderSVTwiddled,title="Duration 1 (ms)"
+	SetVariable duration1SV,win=StepBuilderView,limits={0,10000,10}, value= duration1 
 
 	xOffset+=xShift
-	SetVariable level2SV,win=FiveStepBuilderView,pos={xOffset,15},size={100,15},proc=FiveStepBuilderSVTwiddled,title="Level 2"
-	SetVariable level2SV,win=FiveStepBuilderView,limits={-10000,10000,10},value= level2
-	SetVariable duration2SV,win=FiveStepBuilderView,pos={xOffset,45},size={130,15},proc=FiveStepBuilderSVTwiddled,title="Duration 2 (ms)"
-	SetVariable duration2SV,win=FiveStepBuilderView,limits={0,10000,10},value= duration2
+	SetVariable level2SV,win=StepBuilderView,pos={xOffset,15},size={100,15},proc=StepBuilderSVTwiddled,title="Level 2"
+	SetVariable level2SV,win=StepBuilderView,limits={-10000,10000,10},value= level2
+	SetVariable duration2SV,win=StepBuilderView,pos={xOffset,45},size={130,15},proc=StepBuilderSVTwiddled,title="Duration 2 (ms)"
+	SetVariable duration2SV,win=StepBuilderView,limits={0,10000,10},value= duration2
 
 	xOffset+=xShift
-	SetVariable level3SV,win=FiveStepBuilderView,pos={xOffset,15},size={100,15},proc=FiveStepBuilderSVTwiddled,title="Level 3"
-	SetVariable level3SV,win=FiveStepBuilderView,limits={-10000,10000,10},value= level3
-	SetVariable duration3SV,win=FiveStepBuilderView,pos={xOffset,45},size={130,15},proc=FiveStepBuilderSVTwiddled,title="Duration 2 (ms)"
-	SetVariable duration3SV,win=FiveStepBuilderView,limits={0,10000,10},value= duration3
+	SetVariable level3SV,win=StepBuilderView,pos={xOffset,15},size={100,15},proc=StepBuilderSVTwiddled,title="Level 3"
+	SetVariable level3SV,win=StepBuilderView,limits={-10000,10000,10},value= level3
+	SetVariable duration3SV,win=StepBuilderView,pos={xOffset,45},size={130,15},proc=StepBuilderSVTwiddled,title="Duration 2 (ms)"
+	SetVariable duration3SV,win=StepBuilderView,limits={0,10000,10},value= duration3
 
 	xOffset+=xShift
-	SetVariable level4SV,win=FiveStepBuilderView,pos={xOffset,15},size={100,15},proc=FiveStepBuilderSVTwiddled,title="Level 4"
-	SetVariable level4SV,win=FiveStepBuilderView,limits={-10000,10000,10},value= level4
-	SetVariable duration4SV,win=FiveStepBuilderView,pos={xOffset,45},size={130,15},proc=FiveStepBuilderSVTwiddled,title="Duration 4 (ms)"
-	SetVariable duration4SV,win=FiveStepBuilderView,limits={0,10000,10},value= duration4
+	SetVariable level4SV,win=StepBuilderView,pos={xOffset,15},size={100,15},proc=StepBuilderSVTwiddled,title="Level 4"
+	SetVariable level4SV,win=StepBuilderView,limits={-10000,10000,10},value= level4
+	SetVariable duration4SV,win=StepBuilderView,pos={xOffset,45},size={130,15},proc=StepBuilderSVTwiddled,title="Duration 4 (ms)"
+	SetVariable duration4SV,win=StepBuilderView,limits={0,10000,10},value= duration4
 
 	xOffset+=xShift
-	SetVariable level5SV,win=FiveStepBuilderView,pos={xOffset,15},size={100,15},proc=FiveStepBuilderSVTwiddled,title="Level 5"
-	SetVariable level5SV,win=FiveStepBuilderView,limits={-10000,10000,10},value= level5
-	//SetVariable duration5SV,win=FiveStepBuilderView,pos={xOffset,45},size={100,15},proc=FiveStepBuilderSVTwiddled,title="Duration 5 (ms)"
-	//SetVariable duration5SV,win=FiveStepBuilderView,limits={0,10000,10},value= duration5
+	SetVariable level5SV,win=StepBuilderView,pos={xOffset,15},size={100,15},proc=StepBuilderSVTwiddled,title="Level 5"
+	SetVariable level5SV,win=StepBuilderView,limits={-10000,10000,10},value= level5
 	
-	Button saveAsButton,win=FiveStepBuilderView,pos={width-100,10},size={90,20},proc=FSBSaveAsButtonPressed,title="Save As..."
-	Button importButton,win=FiveStepBuilderView,pos={width-100,45},size={90,20},proc=FSBImportButtonPressed,title="Import..."
-	FSBModelParamsChanged()
+	Button saveAsButton,win=StepBuilderView,pos={width-100,10},size={90,20},proc=FSBSaveAsButtonPressed,title="Save As..."
+	Button importButton,win=StepBuilderView,pos={width-100,45},size={90,20},proc=FSBImportButtonPressed,title="Import..."
+
 	SetDataFolder savedDF
 End
 
-Function FiveStepBuilderModelConstructor()
+Function StepBuilderModelConstructor()
 	// Save the current DF
 	String savedDF=GetDataFolder(1)
 	
 	// Create a new DF
-	NewDataFolder /O /S root:DP_FiveStepBuilder
+	NewDataFolder /O /S root:DP_StepBuilder
 		
 	// Parameters of sine wave stimulus
+	Variable /G dt=SweeperGetDt()
+	Variable /G totalDuration=SweeperGetTotalDuration()
 	Variable /G level1
 	Variable /G duration1
 	Variable /G level2
@@ -84,18 +84,18 @@ Function FiveStepBuilderModelConstructor()
 	Make /O theWave
 
 	// Set to default params
-	ImportFiveStepWave("(Default Settings)")
+	ImportStepWave("(Default Settings)")
 		
 	// Restore the original data folder
 	SetDataFolder savedDF
 End
 
-Function FiveStepBuilderSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
+Function StepBuilderSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName
 	Variable varNum
 	String varStr
 	String varName
-	FSBModelParamsChanged()
+	StepBuilderModelUpdateWave()
 End
 
 Function FSBSaveAsButtonPressed(ctrlName) : ButtonControl
@@ -108,7 +108,7 @@ Function FSBSaveAsButtonPressed(ctrlName) : ButtonControl
 		return -1		// user hit Cancel
 	endif
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FiveStepBuilder
+	SetDataFolder root:DP_StepBuilder
 	WAVE theWave
 	SweepContAddDACOrTTLWave(theWave,waveNameString)
 	SetDataFolder savedDF
@@ -124,14 +124,14 @@ Function FSBImportButtonPressed(ctrlName) : ButtonControl
 	if (V_Flag)
 		return -1		// user hit Cancel
 	endif
-	ImportFiveStepWave(waveNameString)
+	ImportStepWave(waveNameString)
 End
 
-Function FSBModelParamsChanged()
+Function StepBuilderModelUpdateWave()
 	// Updates the theWave wave to match the model parameters.
 	// This is a _model_ method -- The view updates itself when theWave changes.
 	String savedDF=GetDataFolder(1)
-	SetDataFolder "root:DP_FiveStepBuilder"
+	SetDataFolder "root:DP_StepBuilder"
 	
 	NVAR level1
 	NVAR duration1
@@ -143,12 +143,12 @@ Function FSBModelParamsChanged()
 	NVAR duration4
 	NVAR level5
 	
-	Variable dt=SweeperGetDt()		// sampling interval, ms
-	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
+	NVAR dt		// sampling interval, ms
+	NVAR totalDuration		// totalDuration, ms
 	WAVE theWave
-	resampleFiveStepFromParamsBang(theWave,dt,totalDuration,level1,duration1,level2,duration2,level3,duration3,level4,duration4,level5)	
+	resampleStepFromParamsBang(theWave,dt,totalDuration,level1,duration1,level2,duration2,level3,duration3,level4,duration4,level5)	
 	Note /K theWave
-	ReplaceStringByKeyInWaveNote(theWave,"WAVETYPE","FiveStep")
+	ReplaceStringByKeyInWaveNote(theWave,"WAVETYPE","Step")
 	ReplaceStringByKeyInWaveNote(theWave,"TIME",time())
 	ReplaceStringByKeyInWaveNote(theWave,"level1",num2str(level1))
 	ReplaceStringByKeyInWaveNote(theWave,"duration1",num2str(duration1))
@@ -162,13 +162,13 @@ Function FSBModelParamsChanged()
 	SetDataFolder savedDF
 End
 
-Function ImportFiveStepWave(waveNameString)
+Function ImportStepWave(waveNameString)
 	// Imports the stimulus parameters from a pre-existing wave in the digitizer
 	// This is a model method
 	String waveNameString
 	
 	String savedDF=GetDataFolder(1)
-	SetDataFolder "root:DP_FiveStepBuilder"
+	SetDataFolder "root:DP_StepBuilder"
 
 	NVAR level1
 	NVAR duration1
@@ -197,7 +197,7 @@ Function ImportFiveStepWave(waveNameString)
 		// Get the wave from the digitizer
 		Wave exportedWave=SweeperGetWaveByName(waveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
-		if (AreStringsEqual(waveTypeString,"FiveStep"))
+		if (AreStringsEqual(waveTypeString,"Step"))
 			level1=NumberByKeyInWaveNote(exportedWave,"level1")
 			duration1=NumberByKeyInWaveNote(exportedWave,"duration1")
 			level2=NumberByKeyInWaveNote(exportedWave,"level2")
@@ -208,15 +208,15 @@ Function ImportFiveStepWave(waveNameString)
 			duration4=NumberByKeyInWaveNote(exportedWave,"duration4")
 			level5=NumberByKeyInWaveNote(exportedWave,"level5")
 		else
-			Abort("This is not a five-step wave; choose another")
+			Abort("This is not a step wave; choose another")
 		endif
 	endif
-	FSBModelParamsChanged()
+	StepBuilderModelUpdateWave()
 	
 	SetDataFolder savedDF	
 End
 
-Function resampleFiveStepBang(w,dt,totalDuration)
+Function resampleStepBang(w,dt,totalDuration)
 	Wave w
 	Variable dt, totalDuration
 	
@@ -230,10 +230,10 @@ Function resampleFiveStepBang(w,dt,totalDuration)
 	Variable duration4=NumberByKeyInWaveNote(w,"duration4")
 	Variable level5=NumberByKeyInWaveNote(w,"level5")
 	
-	resampleFiveStepFromParamsBang(w,dt,totalDuration,level1,duration1,level2,duration2,level3,duration3,level4,duration4,level5)
+	resampleStepFromParamsBang(w,dt,totalDuration,level1,duration1,level2,duration2,level3,duration3,level4,duration4,level5)
 End
 
-Function resampleFiveStepFromParamsBang(w,dt,totalDuration,level1,duration1,level2,duration2,level3,duration3,level4,duration4,level5)
+Function resampleStepFromParamsBang(w,dt,totalDuration,level1,duration1,level2,duration2,level3,duration3,level4,duration4,level5)
 	// Compute the train wave from the parameters
 	Wave w
 	Variable dt,totalDuration,level1,duration1,level2,duration2,level3,duration3,level4,duration4,level5
@@ -243,15 +243,69 @@ Function resampleFiveStepFromParamsBang(w,dt,totalDuration,level1,duration1,leve
 	Setscale /P x, 0, dt, "ms", w
 	Variable jStart,nThis
 	w=level5
+	jStart=0
 	nThis=round(duration1/dt)
+	if (jStart>=nScans)
+		return 0
+	endif
 	w[jStart,jStart+nThis-1]=level1
 	jStart+=nThis
 	nThis=round(duration2/dt)
+	if (jStart>=nScans)
+		return 0
+	endif
 	w[jStart,jStart+nThis-1]=level2
 	jStart+=nThis
 	nThis=round(duration3/dt)
+	if (jStart>=nScans)
+		return 0
+	endif
 	w[jStart,jStart+nThis-1]=level3
 	jStart+=nThis
 	nThis=round(duration4/dt)
+	if (jStart>=nScans)
+		return 0
+	endif
 	w[jStart,jStart+nThis-1]=level4
+End
+
+Function StepBuilderContSweepDtOrTChngd()
+	// Used to notify the Step Builder of a change to dt or totalDuration in the Sweeper.
+	// This is a controller method
+	StepBuilderModelSweepDtOrTChngd()
+	StepBuilderViewModelChanged()
+End
+
+Function StepBuilderModelSweepDtOrTChngd()
+	// Used to notify the Step Builder model of a change to dt or totalDuration in the Sweeper.
+	
+	// If no Step Builder currently exists, do nothing
+	if (!DataFolderExists("root:DP_StepBuilder"))
+		return 0
+	endif
+	
+	// Save, set the DF
+	String savedDF=GetDataFolder(1)
+	SetDataFolder "root:DP_StepBuilder"
+	
+	NVAR dt, totalDuration
+	
+	// Get dt, totalDuration from the sweeper
+	dt=SweeperGetDt()
+	totalDuration=SweeperGetTotalDuration()
+	// Update the	wave
+	StepBuilderModelUpdateWave()
+	
+	// Restore the DF
+	SetDataFolder savedDF		
+End
+
+Function StepBuilderViewModelChanged()
+	// Nothing to do here, everything will auto-update.
+End
+
+Function StepBuilderModelParamsChanged()
+	// Used to notify the model that a parameter has been changed
+	// by a old-style SetVariable
+	StepBuilderModelUpdateWave()
 End
