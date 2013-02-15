@@ -85,6 +85,7 @@ Function HandleDACCheckbox(ctrlName,checked) : CheckBoxControl
 	Variable iDACChannel=str2num(ctrlName[3])
 	WAVE dacChannelOn
 	dacChannelOn[iDACChannel]=checked
+	SweeperViewDACEnablementChanged(iDACChannel)	
 	SetDataFolder savedDF
 End
 
@@ -130,6 +131,7 @@ Function HandleTTLCheckbox(ctrlName,checked) : CheckBoxControl
 	Variable iTTLChannel=str2num(ctrlName[3])
 	WAVE ttlOutputChannelOn
 	ttlOutputChannelOn[iTTLChannel]=checked
+	SweeperViewTTLEnablementChanged(iTTLChannel)
 	SetDataFolder savedDF
 End
 
