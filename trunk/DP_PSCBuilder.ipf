@@ -295,7 +295,7 @@ Function resamplePSCFromParamsBang(w,dt,totalDuration,delay,amplitude,tauRise,ta
 	// Set the delay portion
 	w[0,nDelay-1]=0
 	// Set the main portion
-	w[nDelay,nTotal-1]= -exp(-(x-delay)/tauRise)+(1-weightDecay2)*exp(-(x-delay)/tauDecay1)+weightDecay2*exp(-(x-delay)/tauDecay2)
+	w[nDelay,nScans-1]= -exp(-(x-delay)/tauRise)+(1-weightDecay2)*exp(-(x-delay)/tauDecay1)+weightDecay2*exp(-(x-delay)/tauDecay2)
 	// re-scale to have the proper amplitude
 	Wavestats /Q w
 	w=(amplitude/V_max)*w		// want the peak amplitude to be amplitude

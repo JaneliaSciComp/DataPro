@@ -121,7 +121,7 @@ Function TrainBuilderModelParamsChanged()
 	WAVE theDACWave
 	resampleTrainBang(theDACWave,dt,totalDuration)
 	Note /K theDACWave
-	ReplaceStringByKeyInWaveNote(theDACWave,"WAVETYPE","traindac")
+	ReplaceStringByKeyInWaveNote(theDACWave,"WAVETYPE","Train")
 	ReplaceStringByKeyInWaveNote(theDACWave,"TIME",time())
 	ReplaceStringByKeyInWaveNote(theDACWave,"nPulses",num2str(nPulses))
 	ReplaceStringByKeyInWaveNote(theDACWave,"pulseDuration",num2str(pulseDuration))
@@ -155,7 +155,7 @@ Function ImportTrainWave(waveNameString)
 		// Get the wave from the digitizer
 		Wave exportedWave=SweeperGetWaveByName(waveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
-		if (AreStringsEqual(waveTypeString,"traindac"))
+		if (AreStringsEqual(waveTypeString,"Train"))
 			nPulses=NumberByKeyInWaveNote(exportedWave,"nPulses")
 			pulseDuration=NumberByKeyInWaveNote(exportedWave,"pulseDuration")
 			baseLevel=NumberByKeyInWaveNote(exportedWave,"baseLevel")
@@ -194,7 +194,7 @@ Function resampleTrainFromParamsBang(w,dt,totalDuration,baseLevel,delay,nPulses,
 	Redimension /N=(nScans) w
 	Setscale /P x, 0, dt, "ms", w
 	Variable nDelay=round(delay/dt)
-	theDACWave=baseLevel		// set everything to baseLevel
+	w=baseLevel		// set everything to baseLevel
 	Variable nPulse=round(pulseDuration/dt)
 	Variable pulsePeriod=1000/pulseFrequency		// ms
 	Variable nPeriod=round(pulsePeriod/dt)
