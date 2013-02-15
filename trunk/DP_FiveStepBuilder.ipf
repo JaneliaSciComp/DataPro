@@ -243,7 +243,6 @@ Function resampleFiveStepFromParamsBang(w,dt,totalDuration,level1,duration1,leve
 	Setscale /P x, 0, dt, "ms", w
 	Variable jStart,nThis
 	w=level5
-	Variable jStart=0
 	nThis=round(duration1/dt)
 	w[jStart,jStart+nThis-1]=level1
 	jStart+=nThis

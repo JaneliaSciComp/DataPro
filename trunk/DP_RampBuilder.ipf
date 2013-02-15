@@ -113,7 +113,7 @@ Function RampBuilderModelParamsChanged()
 	WAVE theDACWave
 	resampleRampFromParamsBang(theDACWave,dt,totalDuration,preLevel,delay,duration,postLevel)
 	Note /K theDACWave
-	ReplaceStringByKeyInWaveNote(theDACWave,"WAVETYPE","rampdac")
+	ReplaceStringByKeyInWaveNote(theDACWave,"WAVETYPE","Ramp")
 	ReplaceStringByKeyInWaveNote(theDACWave,"TIME",time())
 	ReplaceStringByKeyInWaveNote(theDACWave,"preLevel",num2str(preLevel))
 	ReplaceStringByKeyInWaveNote(theDACWave,"delay",num2str(delay))
@@ -143,7 +143,7 @@ Function ImportRampWave(waveNameString)
 		// Get the wave from the digitizer
 		Wave exportedWave=SweeperGetWaveByName(waveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
-		if (AreStringsEqual(waveTypeString,"rampdac"))
+		if (AreStringsEqual(waveTypeString,"Ramp"))
 			preLevel=NumberByKeyInWaveNote(exportedWave,"preLevel")
 			delay=NumberByKeyInWaveNote(exportedWave,"delay")
 			duration=NumberByKeyInWaveNote(exportedWave,"duration")
@@ -161,10 +161,10 @@ Function resampleRampBang(w,dt,totalDuration)
 	Wave w
 	Variable dt, totalDuration
 	
-	Variable preLevel=NumberByKeyInWaveNote(exportedWave,"preLevel")
-	Variable delay=NumberByKeyInWaveNote(exportedWave,"delay")
-	Variable duration=NumberByKeyInWaveNote(exportedWave,"duration")
-	Variable postLevel=NumberByKeyInWaveNote(exportedWave,"postLevel")
+	Variable preLevel=NumberByKeyInWaveNote(w,"preLevel")
+	Variable delay=NumberByKeyInWaveNote(w,"delay")
+	Variable duration=NumberByKeyInWaveNote(w,"duration")
+	Variable postLevel=NumberByKeyInWaveNote(w,"postLevel")
 	
 	resampleRampFromParamsBang(w,dt,totalDuration,preLevel,delay,duration,postLevel)
 End
@@ -182,5 +182,5 @@ Function resampleRampFromParamsBang(w,dt,totalDuration,preLevel,delay,duration,p
 	Variable slope=(postLevel-preLevel)/duration
 	w[0,nDelay-1]=preLevel
 	w[nDelay,nDelay+nDuration-1]=preLevel+slope*(x-delay)
-	w[nDelay+nDuration,nTotal-1]=postLevel
+	w[nDelay+nDuration,nScans-1]=postLevel
 End

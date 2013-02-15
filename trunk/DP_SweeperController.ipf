@@ -281,52 +281,25 @@ End
 Function SweeperControllerAddDACWave(w,waveNameString)
 	Wave w
 	String waveNameString
-
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sweeper
-
-	if (!GrepString(waveNameString,"_DAC$"))
-		waveNameString+="_DAC"
-	endif
-	Duplicate /O w $waveNameString
+	SweeperAddDACWave(w,waveNameString)
 	SweeperViewSweeperChanged()
 	OVControllerSweeperWavesChanged()
-	
-	SetDataFolder savedDF
 End
 
 Function SweeperControllerAddTTLWave(w,waveNameString)
 	Wave w
 	String waveNameString
-
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sweeper
-
-	if (!GrepString(waveNameString,"_TTL$"))
-		waveNameString+="_TTL"
-	endif
-	Duplicate /O w $waveNameString
+	SweeperAddTTLWave(w,waveNameString)
 	SweeperViewSweeperChanged()
 	OVControllerSweeperWavesChanged()
-	
-	SetDataFolder savedDF
 End
 
 Function SweepContAddDACOrTTLWave(w,waveNameString)
 	Wave w
 	String waveNameString
-
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sweeper
-
-	if (!GrepString(waveNameString,"_DAC$") && !GrepString(waveNameString,"_TTL$"))
-		waveNameString+="_DAC"
-	endif
-	Duplicate /O w $waveNameString
+	SweeperAddDACOrTTLWave(w,waveNameString)
 	SweeperViewSweeperChanged()
 	OVControllerSweeperWavesChanged()
-	
-	SetDataFolder savedDF
 End
 
 Function SweepControllerDigitizerChanged()
