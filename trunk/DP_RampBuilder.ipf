@@ -111,9 +111,7 @@ Function RampBuilderModelParamsChanged()
 	Variable dt=SweeperGetDt()		// sampling interval, ms
 	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
 	WAVE theDACWave
-	Variable nTotal=SweeperGetNumberOfScans()
-	Redimension /N=(nTotal) theDACWave
-	Setscale /P x, 0, dt, "ms", theDACWave
+	resampleRampFromParamsBang(theDACWave,dt,totalDuration,preLevel,delay,duration,postLevel)
 	Note /K theDACWave
 	ReplaceStringByKeyInWaveNote(theDACWave,"WAVETYPE","rampdac")
 	ReplaceStringByKeyInWaveNote(theDACWave,"TIME",time())
@@ -121,12 +119,6 @@ Function RampBuilderModelParamsChanged()
 	ReplaceStringByKeyInWaveNote(theDACWave,"delay",num2str(delay))
 	ReplaceStringByKeyInWaveNote(theDACWave,"duration",num2str(duration))
 	ReplaceStringByKeyInWaveNote(theDACWave,"postLevel",num2str(postLevel))
-	Variable nDelay=round(delay/dt)
-	Variable nDuration=round(duration/dt)	
-	Variable slope=(postLevel-preLevel)/duration
-	theDACWave[0,nDelay-1]=preLevel
-	theDACWave[nDelay,nDelay+nDuration-1]=preLevel+slope*(x-delay)
-	theDACWave[nDelay+nDuration,nTotal-1]=postLevel
 	SetDataFolder savedDF
 End
 
@@ -163,4 +155,32 @@ Function ImportRampWave(waveNameString)
 	RampBuilderModelParamsChanged()
 	
 	SetDataFolder savedDF	
+End
+
+Function resampleRampBang(w,dt,totalDuration)
+	Wave w
+	Variable dt, totalDuration
+	
+	Variable preLevel=NumberByKeyInWaveNote(exportedWave,"preLevel")
+	Variable delay=NumberByKeyInWaveNote(exportedWave,"delay")
+	Variable duration=NumberByKeyInWaveNote(exportedWave,"duration")
+	Variable postLevel=NumberByKeyInWaveNote(exportedWave,"postLevel")
+	
+	resampleRampFromParamsBang(w,dt,totalDuration,preLevel,delay,duration,postLevel)
+End
+
+Function resampleRampFromParamsBang(w,dt,totalDuration,preLevel,delay,duration,postLevel)
+	// Compute the ramp wave from the parameters
+	Wave w
+	Variable dt,totalDuration,preLevel,delay,duration,postLevel
+	
+	Variable nScans=numberOfScans(dt,totalDuration)
+	Redimension /N=(nScans) w
+	Setscale /P x, 0, dt, "ms", w
+	Variable nDelay=round(delay/dt)
+	Variable nDuration=round(duration/dt)	
+	Variable slope=(postLevel-preLevel)/duration
+	w[0,nDelay-1]=preLevel
+	w[nDelay,nDelay+nDuration-1]=preLevel+slope*(x-delay)
+	w[nDelay+nDuration,nTotal-1]=postLevel
 End

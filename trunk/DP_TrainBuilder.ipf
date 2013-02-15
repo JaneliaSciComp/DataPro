@@ -119,9 +119,7 @@ Function TrainBuilderModelParamsChanged()
 	Variable dt=SweeperGetDt()		// sampling interval, ms
 	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
 	WAVE theDACWave
-	Variable nTotal=SweeperGetNumberOfScans()
-	Redimension /N=(nTotal) theDACWave
-	Setscale /P x, 0, dt, "ms", theDACWave
+	resampleTrainBang(theDACWave,dt,totalDuration)
 	Note /K theDACWave
 	ReplaceStringByKeyInWaveNote(theDACWave,"WAVETYPE","traindac")
 	ReplaceStringByKeyInWaveNote(theDACWave,"TIME",time())
@@ -131,18 +129,6 @@ Function TrainBuilderModelParamsChanged()
 	ReplaceStringByKeyInWaveNote(theDACWave,"pulseAmplitude",num2str(pulseAmplitude))
 	ReplaceStringByKeyInWaveNote(theDACWave,"delay",num2str(delay))
 	ReplaceStringByKeyInWaveNote(theDACWave,"pulseFrequency",num2str(pulseFrequency))
-	Variable nDelay=round(delay/dt)
-	theDACWave=baseLevel		// set everything to baseLevel
-	Variable nPulse=round(pulseDuration/dt)
-	Variable pulsePeriod=1000/pulseFrequency		// ms
-	Variable nPeriod=round(pulsePeriod/dt)
-	Variable nInterPulse=nPeriod-nPulse
-	Variable jOffset=nDelay
-	Variable i
-	for (i=0; i<nPulses; i+=1)
-		theDACWave[jOffset,jOffset+nPulse-1]=baseLevel+pulseAmplitude
-		jOffset+=nPeriod;
-	endfor
 	SetDataFolder savedDF
 End
 
@@ -183,4 +169,40 @@ Function ImportTrainWave(waveNameString)
 	TrainBuilderModelParamsChanged()
 	
 	SetDataFolder savedDF	
+End
+
+Function resampleTrainBang(w,dt,totalDuration)
+	Wave w
+	Variable dt, totalDuration
+	
+	Variable baseLevel=NumberByKeyInWaveNote(w,"baseLevel")
+	Variable delay=NumberByKeyInWaveNote(w,"delay")
+	Variable nPulses=NumberByKeyInWaveNote(w,"nPulses")
+	Variable pulseDuration=NumberByKeyInWaveNote(w,"pulseDuration")
+	Variable pulseAmplitude=NumberByKeyInWaveNote(w,"pulseAmplitude")
+	Variable pulseFrequency=NumberByKeyInWaveNote(w,"pulseFrequency")
+	
+	resampleTrainFromParamsBang(w,dt,totalDuration,baseLevel,delay,nPulses,pulseDuration,pulseAmplitude,pulseFrequency)
+End
+
+Function resampleTrainFromParamsBang(w,dt,totalDuration,baseLevel,delay,nPulses,pulseDuration,pulseAmplitude,pulseFrequency)
+	// Compute the train wave from the parameters
+	Wave w
+	Variable dt,totalDuration,baseLevel,delay,nPulses,pulseDuration,pulseAmplitude,pulseFrequency
+	
+	Variable nScans=numberOfScans(dt,totalDuration)
+	Redimension /N=(nScans) w
+	Setscale /P x, 0, dt, "ms", w
+	Variable nDelay=round(delay/dt)
+	theDACWave=baseLevel		// set everything to baseLevel
+	Variable nPulse=round(pulseDuration/dt)
+	Variable pulsePeriod=1000/pulseFrequency		// ms
+	Variable nPeriod=round(pulsePeriod/dt)
+	Variable nInterPulse=nPeriod-nPulse
+	Variable jOffset=nDelay
+	Variable i
+	for (i=0; i<nPulses; i+=1)
+		w[jOffset,jOffset+nPulse-1]=baseLevel+pulseAmplitude
+		jOffset+=nPeriod;
+	endfor
 End

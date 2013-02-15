@@ -142,16 +142,13 @@ Function FSBModelParamsChanged()
 	NVAR level4
 	NVAR duration4
 	NVAR level5
-	//NVAR duration5
 	
 	Variable dt=SweeperGetDt()		// sampling interval, ms
 	Variable totalDuration=SweeperGetTotalDuration()		// totalDuration, ms
 	WAVE theWave
-	Variable nTotal=SweeperGetNumberOfScans()
-	Redimension /N=(nTotal) theWave
-	Setscale /P x, 0, dt, "ms", theWave
+	resampleFiveStepFromParamsBang(theWave,dt,totalDuration,level1,duration1,level2,duration2,level3,duration3,level4,duration4,level5)	
 	Note /K theWave
-	ReplaceStringByKeyInWaveNote(theWave,"WAVETYPE","fivestepdac")
+	ReplaceStringByKeyInWaveNote(theWave,"WAVETYPE","FiveStep")
 	ReplaceStringByKeyInWaveNote(theWave,"TIME",time())
 	ReplaceStringByKeyInWaveNote(theWave,"level1",num2str(level1))
 	ReplaceStringByKeyInWaveNote(theWave,"duration1",num2str(duration1))
@@ -162,21 +159,6 @@ Function FSBModelParamsChanged()
 	ReplaceStringByKeyInWaveNote(theWave,"level4",num2str(level4))
 	ReplaceStringByKeyInWaveNote(theWave,"duration4",num2str(duration4))
 	ReplaceStringByKeyInWaveNote(theWave,"level5",num2str(level5))
-	// Set the elements of theWave
-	Variable jStart,nThis
-	theWave=level5
-	jStart=0
-	nThis=round(duration1/dt)
-	theWave[jStart,jStart+nThis-1]=level1
-	jStart+=nThis
-	nThis=round(duration2/dt)
-	theWave[jStart,jStart+nThis-1]=level2
-	jStart+=nThis
-	nThis=round(duration3/dt)
-	theWave[jStart,jStart+nThis-1]=level3
-	jStart+=nThis
-	nThis=round(duration4/dt)
-	theWave[jStart,jStart+nThis-1]=level4
 	SetDataFolder savedDF
 End
 
@@ -215,7 +197,7 @@ Function ImportFiveStepWave(waveNameString)
 		// Get the wave from the digitizer
 		Wave exportedWave=SweeperGetWaveByName(waveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
-		if (AreStringsEqual(waveTypeString,"fivestepdac"))
+		if (AreStringsEqual(waveTypeString,"FiveStep"))
 			level1=NumberByKeyInWaveNote(exportedWave,"level1")
 			duration1=NumberByKeyInWaveNote(exportedWave,"duration1")
 			level2=NumberByKeyInWaveNote(exportedWave,"level2")
@@ -234,3 +216,43 @@ Function ImportFiveStepWave(waveNameString)
 	SetDataFolder savedDF	
 End
 
+Function resampleFiveStepBang(w,dt,totalDuration)
+	Wave w
+	Variable dt, totalDuration
+	
+	Variable level1=NumberByKeyInWaveNote(w,"level1")
+	Variable duration1=NumberByKeyInWaveNote(w,"duration1")
+	Variable level2=NumberByKeyInWaveNote(w,"level2")
+	Variable duration2=NumberByKeyInWaveNote(w,"duration2")
+	Variable level3=NumberByKeyInWaveNote(w,"level3")
+	Variable duration3=NumberByKeyInWaveNote(w,"duration3")
+	Variable level4=NumberByKeyInWaveNote(w,"level4")
+	Variable duration4=NumberByKeyInWaveNote(w,"duration4")
+	Variable level5=NumberByKeyInWaveNote(w,"level5")
+	
+	resampleFiveStepFromParamsBang(w,dt,totalDuration,level1,duration1,level2,duration2,level3,duration3,level4,duration4,level5)
+End
+
+Function resampleFiveStepFromParamsBang(w,dt,totalDuration,level1,duration1,level2,duration2,level3,duration3,level4,duration4,level5)
+	// Compute the train wave from the parameters
+	Wave w
+	Variable dt,totalDuration,level1,duration1,level2,duration2,level3,duration3,level4,duration4,level5
+	
+	Variable nScans=numberOfScans(dt,totalDuration)
+	Redimension /N=(nScans) w
+	Setscale /P x, 0, dt, "ms", w
+	Variable jStart,nThis
+	w=level5
+	Variable jStart=0
+	nThis=round(duration1/dt)
+	w[jStart,jStart+nThis-1]=level1
+	jStart+=nThis
+	nThis=round(duration2/dt)
+	w[jStart,jStart+nThis-1]=level2
+	jStart+=nThis
+	nThis=round(duration3/dt)
+	w[jStart,jStart+nThis-1]=level3
+	jStart+=nThis
+	nThis=round(duration4/dt)
+	w[jStart,jStart+nThis-1]=level4
+End
