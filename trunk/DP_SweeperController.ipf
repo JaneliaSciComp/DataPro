@@ -303,13 +303,13 @@ Function SweeperControllerAddTTLWave(w,waveNameString)
 	OVControllerSweeperWavesChanged()
 End
 
-Function SweepContAddDACOrTTLWave(w,waveNameString)
-	Wave w
-	String waveNameString
-	SweeperAddDACOrTTLWave(w,waveNameString)
-	SweeperViewSweeperChanged()
-	OVControllerSweeperWavesChanged()
-End
+//Function SweepContAddDACOrTTLWave(w,waveNameString)
+//	Wave w
+//	String waveNameString
+//	SweeperAddDACOrTTLWave(w,waveNameString)
+//	SweeperViewSweeperChanged()
+//	OVControllerSweeperWavesChanged()
+//End
 
 Function SweepControllerDigitizerChanged()
 	// Used to notify the SweeperController that the Digitizer model has changed.
