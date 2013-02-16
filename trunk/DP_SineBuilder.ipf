@@ -90,7 +90,7 @@ Function SineBuilderImportButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 
 	String waveNameString
-	String popupListString="(Default Settings);"+GetSweeperWaveNamesEndingIn("DAC")
+	String popupListString="(Default Settings);"+SweeperGetFancyWaveListOfType("Sine")
 	Prompt waveNameString, "Select wave to import:", popup, popupListString
 	DoPrompt "Import...", waveNameString
 	if (V_Flag)
@@ -117,10 +117,10 @@ Function SineBuilderModelUpdateWave()
 	SetDataFolder savedDF
 End
 
-Function ImportSineWave(waveNameString)
+Function ImportSineWave(fancyWaveNameString)
 	// Imports the stimulus parameters from a pre-existing wave in the digitizer
 	// This is a model method
-	String waveNameString
+	String fancyWaveNameString
 	
 	String savedDF=GetDataFolder(1)
 	SetDataFolder "root:DP_SineBuilder"
@@ -129,14 +129,14 @@ Function ImportSineWave(waveNameString)
 
 	String waveTypeString
 	Variable i
-	if (AreStringsEqual(waveNameString,"(Default Settings)"))
+	if (AreStringsEqual(fancyWaveNameString,"(Default Settings)"))
 		delay=10
 		duration=50
 		amplitude=10
 		frequency=100
 	else
 		// Get the wave from the digitizer
-		Wave exportedWave=SweeperGetDACWaveByName(waveNameString)
+		Wave exportedWave=SweeperGetWaveByFancyName(fancyWaveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
 		if (AreStringsEqual(waveTypeString,"Sine"))
 			amplitude=NumberByKeyInWaveNote(exportedWave,"amplitude")

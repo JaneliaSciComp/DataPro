@@ -119,7 +119,7 @@ Function TrainBuilderImportButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 
 	String popupItem
-	String popupListString="(Default Settings);"+SweeperGetFancyWaveList()
+	String popupListString="(Default Settings);"+SweeperGetFancyWaveListOfType("Train")
 	Prompt popupItem, "Select wave to import:", popup, popupListString
 	DoPrompt "Import...", popupItem
 	if (V_Flag)
