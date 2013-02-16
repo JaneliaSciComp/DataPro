@@ -38,9 +38,9 @@ Function SweepContDtOrTotalDurChanged()
 	SweeperViewSweeperChanged()	// Tell the view that the model has changed
 	BuilderContSweepDtOrTChngd("Sine")
 	PSCBuilderContSweepDtOrTChngd()
-	RampBuilderContSweepDtOrTChngd()
-	TrainBuilderContSweepDtOrTChngd()
-	StepBuilderContSweepDtOrTChngd()
+	BuilderContSweepDtOrTChngd("Ramp")
+	BuilderContSweepDtOrTChngd("Train")
+	BuilderContSweepDtOrTChngd("Step")
 	OVControllerSweeperWavesChanged()	// Tell the OutputViewer that the sweeper waves have changed	
 End
 
