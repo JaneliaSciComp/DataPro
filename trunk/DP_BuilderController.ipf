@@ -73,7 +73,7 @@ Function BuilderContImportButtonPressed(bStruct) : ButtonControl
 	String builderType=windowName[0,iEnd-1]
 
 	String fancyWaveNameString
-	String popupListString="(Default Settings);"+SweeperGetFancyWaveListOfType("Sine")
+	String popupListString="(Default Settings);"+SweeperGetFancyWaveListOfType(builderType)
 	Prompt fancyWaveNameString, "Select wave to import:", popup, popupListString
 	DoPrompt "Import...", fancyWaveNameString
 	if (V_Flag)
