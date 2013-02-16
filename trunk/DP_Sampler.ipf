@@ -63,8 +63,8 @@ Function /WAVE SamplerSampleData(adseq,daseq,seqLength,FIFOoutFree)
 	
 	String commandLine
 	if (itc==0)
-		WAVE StepPulse_DAC
-		FIFOin=sin(0.05*x)+gnoise(0.1)+StepPulse_DAC+5
+		WAVE stepPulse
+		FIFOin=sin(0.05*x)+gnoise(0.1)+stepPulse+5
 	elseif (itc==16)
 		Execute "ITC16StimClear 0"
 		//Execute "ITC16Seq daseq, adseq"
