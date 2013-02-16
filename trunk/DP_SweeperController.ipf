@@ -290,6 +290,9 @@ End
 Function SweeperControllerAddDACWave(w,waveNameString)
 	Wave w
 	String waveNameString
+	if (IsEmptyString(waveNameString))
+		return -1		// have to return something
+	endif
 	SweeperAddDACWave(w,waveNameString)
 	SweeperViewSweeperChanged()
 	OVControllerSweeperWavesChanged()
@@ -298,6 +301,9 @@ End
 Function SweeperControllerAddTTLWave(w,waveNameString)
 	Wave w
 	String waveNameString
+	if (IsEmptyString(waveNameString))
+		return -1		// have to return something
+	endif
 	SweeperAddTTLWave(w,waveNameString)
 	SweeperViewSweeperChanged()
 	OVControllerSweeperWavesChanged()

@@ -195,7 +195,7 @@ Function PSCBControllerImportButtonPress(ctrlName) : ButtonControl
 	String ctrlName
 
 	String waveNameString
-	String popupListString="(Default Settings);"+GetSweeperWaveNamesEndingIn("DAC")
+	String popupListString="(Default Settings);"+SweeperGetFancyWaveListOfType("PSC")
 	Prompt waveNameString, "Select wave to import:", popup, popupListString
 	DoPrompt "Import...", waveNameString
 	if (V_Flag)
@@ -227,9 +227,9 @@ Function PSCBuilderModelUpdateWave()
 	SetDataFolder savedDF
 End
 
-Function PSCBControllerImportPSCWave(waveNameString)
+Function PSCBControllerImportPSCWave(fancyWaveNameString)
 	// Imports the stimulus parameters from a pre-existing wave in the digitizer
-	String waveNameString
+	String fancyWaveNameString
 	
 	String savedDF=GetDataFolder(1)
 	SetDataFolder "root:DP_PSCBuilder"
@@ -238,7 +238,7 @@ Function PSCBControllerImportPSCWave(waveNameString)
 
 	String waveTypeString
 	Variable i
-	if (AreStringsEqual(waveNameString,"(Default Settings)"))
+	if (AreStringsEqual(fancyWaveNameString,"(Default Settings)"))
 		delay=10
 		amplitude=10
 		tauRise=0.2
@@ -247,7 +247,7 @@ Function PSCBControllerImportPSCWave(waveNameString)
 		weightDecay2=0.5
 	else
 		// Get the wave from the digitizer
-		Wave exportedWave=SweeperGetDACWaveByName(waveNameString)
+		Wave exportedWave=SweeperGetWaveByFancyName(fancyWaveNameString)
 		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
 		if (AreStringsEqual(waveTypeString,"PSC"))
 			amplitude=NumberByKeyInWaveNote(exportedWave,"amplitude")
