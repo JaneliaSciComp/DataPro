@@ -46,10 +46,6 @@ Function PSCBViewConstructor() : Graph
 	
 	Button saveAsButton,win=PSCBuilderView,pos={670,10},size={90,20},proc=PSCBControllerSaveAsButtonPress,title="Save As..."
 	Button importButton,win=PSCBuilderView,pos={670,45},size={90,20},proc=PSCBControllerImportButtonPress,title="Import..."
-	//SetDrawLayer UserFront
-	//SetDrawEnv fstyle= 1
-	//DrawText -0.038,-0.06,"When done, save the wave with an extension _DAC"
-	//DrawLine -0.085,-0.035,1.04,-0.035
 	SetDataFolder savedDF
 End
 
