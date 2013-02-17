@@ -1,11 +1,17 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 Function PSCBViewConstructor() : Graph
-	PSCBModelConstructor()
+	BuilderModelConstructor("PSC")
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_PSCBuilder
-	NVAR tauRise, tauDecay1, tauDecay2
 	WAVE theWave
+	WAVE parameters
+	Variable delay=parameters[0]
+	Variable amplitude=parameters[1]
+	Variable tauRise=parameters[2]		
+	Variable tauDecay1=parameters[3]		
+	Variable tauDecay2=parameters[4]		
+	Variable weightDecay2=parameters[5]		
 	// These are all in pixels
 	Variable xOffset=105
 	Variable yOffset=200
@@ -17,7 +23,7 @@ Function PSCBViewConstructor() : Graph
 	Variable yOffsetInPoints=pointsPerPixel*yOffset
 	Variable widthInPoints=pointsPerPixel*width
 	Variable heightInPoints=pointsPerPixel*height
-	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) 	 /K=1 /N=PSCBuilderView theWave as "PSC Builder"
+	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) /K=1 /N=PSCBuilderView theWave as "PSC Builder"
 	//ModifyGraph /W=PSCBuilderView /Z margin(top)=36
 	ModifyGraph /W=PSCBuilderView /Z grid(left)=1
 	Label /W=PSCBuilderView /Z bottom "Time (ms)"
@@ -25,271 +31,62 @@ Function PSCBViewConstructor() : Graph
 	ModifyGraph /W=PSCBuilderView /Z tickUnit(bottom)=1
 	ModifyGraph /W=PSCBuilderView /Z tickUnit(left)=1
 	ControlBar 80
-	SetVariable delaySV,win=PSCBuilderView,pos={42,12},size={110,17},proc=PSCBControllerSVTwiddled,title="Delay (ms)"
-	SetVariable delaySV,win=PSCBuilderView,limits={0,1000,1},value= delay
-	//SetVariable timeAfterSV,win=PSCBuilderView,pos={301,13},size={120,17},proc=PSCBControllerSVTwiddled,title="Time After (ms)"
-	//SetVariable timeAfterSV,win=PSCBuilderView,limits={10,1000,10},value= timeAfter
-	SetVariable amplitudeSV,win=PSCBuilderView,pos={28,43},size={120,17},proc=PSCBControllerSVTwiddled,title="Amplitude"
-	SetVariable amplitudeSV,win=PSCBuilderView,limits={-10000,10000,10},value= amplitude
+	SetVariable delaySV,win=PSCBuilderView,pos={42,12},size={110,17},proc=BuilderContSVTwiddled,title="Delay (ms)"
+	SetVariable delaySV,win=PSCBuilderView,limits={0,1000,1},value= _NUM:delay
+	SetVariable amplitudeSV,win=PSCBuilderView,pos={28,43},size={120,17},proc=BuilderContSVTwiddled,title="Amplitude"
+	SetVariable amplitudeSV,win=PSCBuilderView,limits={-10000,10000,10},value= _NUM:amplitude
 	SetVariable riseTauSV,win=PSCBuilderView,pos={163,43},size={120,17},proc=PSCBControllerRiseTauSVTwiddled,title="Rise Tau (ms)"
 	SetVariable riseTauSV,win=PSCBuilderView,format="%g",limits={0,10000,0.1},value= _NUM:tauRise
-	SetVariable decayTau1SV,win=PSCBuilderView,pos={320,42},size={130,17},proc=PSCBControllerDecayTau1SVTwid,title="Decay Tau 1 (ms)"
+	SetVariable decayTau1SV,win=PSCBuilderView,pos={320,42},size={130,17},proc=PSCBControllerDecayTauSVTwid,title="Decay Tau 1 (ms)"
 	SetVariable decayTau1SV,win=PSCBuilderView,format="%g",limits={0,10000,1},value= _NUM:tauDecay1
-	SetVariable decayTau2SV,win=PSCBuilderView,pos={470,41},size={130,17},proc=PSCBControllerDecayTau2SVTwid,title="Decay Tau 2 (ms)"
+	SetVariable decayTau2SV,win=PSCBuilderView,pos={470,41},size={130,17},proc=PSCBControllerDecayTauSVTwid,title="Decay Tau 2 (ms)"
 	SetVariable decayTau2SV,win=PSCBuilderView,format="%g",limits={0,10000,10},value= _NUM:tauDecay2
-	
-	//SetVariable durationSV,pos={173,13},size={110,17},proc=PSCBControllerSVTwiddled,title="Duration (ms)"
-	//SetVariable durationSV,limits={0,1000,10},value= duration
-
-	SetVariable weightDecay2SV,pos={440,12},size={140,17},proc=PSCBControllerSVTwiddled,title="Weight of Decay 2"
-	SetVariable weightDecay2SV,format="%2.1f",limits={0,1,0.1},value= weightDecay2
-	
-	Button saveAsButton,win=PSCBuilderView,pos={670,10},size={90,20},proc=PSCBControllerSaveAsButtonPress,title="Save As..."
-	Button importButton,win=PSCBuilderView,pos={670,45},size={90,20},proc=PSCBControllerImportButtonPress,title="Import..."
+	SetVariable weightDecay2SV,pos={440,12},size={140,17},proc=BuilderContSVTwiddled,title="Weight of Decay 2"
+	SetVariable weightDecay2SV,format="%2.1f",limits={0,1,0.1},value= _NUM:weightDecay2
+	Button saveAsDACButton,win=PSCBuilderView,pos={670,10},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As..."
+	Button importButton,win=PSCBuilderView,pos={670,45},size={90,20},proc=BuilderContImportButtonPressed,title="Import..."
 	SetDataFolder savedDF
 End
 
-Function PSCBViewModelChanged()
-	// View method called when the model changes, causes the view to sync itself with the model.
-	if (!GraphExists("PSCBuilderView"))
-		return 0		// Have to return something
-	endif	
-	String savedDF=GetDataFolder(1)
-	SetDataFolder "root:DP_PSCBuilder"
-	NVAR tauRise, tauDecay1, tauDecay2
-	// Update the SetVariables that don't automatically update themselves
-	SetVariable riseTauSV,win=PSCBuilderView,value= _NUM:tauRise
-	SetVariable decayTau1SV,win=PSCBuilderView,value= _NUM:tauDecay1
-	SetVariable decayTau2SV,win=PSCBuilderView,value= _NUM:tauDecay2
-	SetDataFolder savedDF	
+Function PSCBuilderModelInitialize()
+	// Called from the constructor, so DF already set.
+	Variable nParameters=6
+	WAVE /T parameterNames
+	WAVE parametersDefault
+	WAVE parameters
+	Redimension /N=(nParameters) parameterNames
+	parameterNames[0]="delay"
+	parameterNames[1]="amplitude"
+	parameterNames[2]="tauRise"
+	parameterNames[3]="tauDecay1"
+	parameterNames[4]="tauDecay2"
+	parameterNames[5]="weightDecay2"
+	Redimension /N=(nParameters) parametersDefault
+	parametersDefault[0]=10
+	parametersDefault[1]=10
+	parametersDefault[2]=0.2
+	parametersDefault[3]=2
+	parametersDefault[4]=10
+	parametersDefault[5]=0.5
+	Redimension /N=(nParameters) parameters
+	parameters=parametersDefault
 End
 
-Function PSCBModelConstructor()
-	// Save the current DF
-	String savedDF=GetDataFolder(1)
-	
-	// Create a new DF
-	NewDataFolder /O /S root:DP_PSCBuilder
-	
-	// Parameters of post-synaptic current stimulus
-	Variable /G dt=SweeperGetDt()
-	Variable /G totalDuration=SweeperGetTotalDuration()
-	Variable /G delay
-	Variable /G timeAfter
-	Variable /G amplitude
-	Variable /G tauRise
-	Variable /G tauDecay1
-	Variable /G tauDecay2
-	Variable /G weightDecay2
-
-	// Create the wave
-	Make /O theWave
-
-	// Set to default params
-	delay=10
-	amplitude=10
-	tauRise=0.2
-	tauDecay1=2
-	tauDecay2=10
-	weightDecay2=0.5
-		
-	// Update the wave
-	PSCBuilderModelUpdateWave()	
-
-	// Restore the original data folder
-	SetDataFolder savedDF
-End
-
-Function PSCBControllerRiseTauSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
-	String ctrlName
-	Variable varNum
-	String varStr
-	String varName
-	
-	String savedDF=GetDataFolder(1)
-	SetDataFolder "root:DP_PSCBuilder"
-
-	NVAR tauDecay1, tauRise
-	if (varNum<tauDecay1)
-		// valid value, set the instance var
-		tauRise=varNum
-		PSCBuilderModelUpdateWave()
-	else
-		// invalid value, set the SV to display the old value
-		SetVariable riseTauSV,win=PSCBuilderView,value= _NUM:tauRise
-	endif
-	
-	SetDataFolder savedDF
-End
-
-Function PSCBControllerDecayTau1SVTwid(ctrlName,varNum,varStr,varName) : SetVariableControl
-	String ctrlName
-	Variable varNum
-	String varStr
-	String varName
-	
-	String savedDF=GetDataFolder(1)
-	SetDataFolder "root:DP_PSCBuilder"
-
-	NVAR tauRise, tauDecay1, tauDecay2
-	if (tauRise<varNum && varNum<=tauDecay2)
-		// valid value, set the instance var
-		tauDecay1=varNum
-		PSCBuilderModelUpdateWave()
-	else
-		// invalid value, set the SV to display the old value
-		SetVariable decayTau1SV,win=PSCBuilderView,value= _NUM:tauDecay1
-	endif
-	
-	SetDataFolder savedDF
-End
-
-Function PSCBControllerDecayTau2SVTwid(ctrlName,varNum,varStr,varName) : SetVariableControl
-	String ctrlName
-	Variable varNum
-	String varStr
-	String varName
-	
-	String savedDF=GetDataFolder(1)
-	SetDataFolder "root:DP_PSCBuilder"
-
-	NVAR tauRise, tauDecay1, tauDecay2
-	if (tauRise<varNum && tauDecay1<=varNum)
-		// valid value, set the instance var
-		tauDecay2=varNum
-		PSCBuilderModelUpdateWave()
-	else
-		// invalid value, set the SV to display the old value
-		SetVariable decayTau2SV,win=PSCBuilderView,value= _NUM:tauDecay2
-	endif
-	
-	SetDataFolder savedDF
-End
-
-Function PSCBControllerSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
-	// Callback for SetVariables that don't require any bounds checking
-	String ctrlName
-	Variable varNum
-	String varStr
-	String varName
-	PSCBuilderModelUpdateWave()
-End
-
-Function PSCBControllerSaveAsButtonPress(ctrlName) : ButtonControl
-	String ctrlName
-
-	String waveNameString
-	Prompt waveNameString, "Enter wave name to save as:"
-	DoPrompt "Save as...", waveNameString
-	if (V_Flag)
-		return -1		// user hit Cancel
-	endif
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_PSCBuilder
-	WAVE theWave
-	SweeperControllerAddDACWave(theWave,waveNameString)
-	SetDataFolder savedDF
-End
-
-Function PSCBControllerImportButtonPress(ctrlName) : ButtonControl
-	String ctrlName
-
-	String waveNameString
-	String popupListString="(Default Settings);"+SweeperGetFancyWaveListOfType("PSC")
-	Prompt waveNameString, "Select wave to import:", popup, popupListString
-	DoPrompt "Import...", waveNameString
-	if (V_Flag)
-		return -1		// user hit Cancel
-	endif
-	PSCBControllerImportPSCWave(waveNameString)
-End
-
-Function PSCBuilderModelUpdateWave()
-	// Updates the theWave wave to match the model parameters.
-	// This is a _model_ method -- The view updates itself when theWave changes.
-	String savedDF=GetDataFolder(1)
-	SetDataFolder "root:DP_PSCBuilder"
-	NVAR delay, duration, amplitude, tauRise, tauDecay1, tauDecay2, weightDecay2, timeAfter
-	NVAR dt		// sampling interval, ms
-	NVAR totalDuration		// totalDuration, ms
-	WAVE theWave
-	resamplePSCFromParamsBang(theWave,dt,totalDuration,delay,amplitude,tauRise,tauDecay1,tauDecay2,weightDecay2)	
-	Note /K theWave
-	ReplaceStringByKeyInWaveNote(theWave,"WAVETYPE","PSC")
-	ReplaceStringByKeyInWaveNote(theWave,"TIME",time())
-	ReplaceStringByKeyInWaveNote(theWave,"amplitude",num2str(amplitude))
-	ReplaceStringByKeyInWaveNote(theWave,"tauRise",num2str(tauRise))
-	ReplaceStringByKeyInWaveNote(theWave,"tauDecay1",num2str(tauDecay1))
-	ReplaceStringByKeyInWaveNote(theWave,"tauDecay2",num2str(tauDecay2))
-	ReplaceStringByKeyInWaveNote(theWave,"weightDecay2",num2str(weightDecay2))
-	ReplaceStringByKeyInWaveNote(theWave,"delay",num2str(delay))
-	// restore saved DF
-	SetDataFolder savedDF
-End
-
-Function PSCBControllerImportPSCWave(fancyWaveNameString)
-	// Imports the stimulus parameters from a pre-existing wave in the digitizer
-	String fancyWaveNameString
-	
-	String savedDF=GetDataFolder(1)
-	SetDataFolder "root:DP_PSCBuilder"
-
-	NVAR delay, amplitude, tauRise, tauDecay1, tauDecay2, weightDecay2
-
-	String waveTypeString
-	Variable i
-	if (AreStringsEqual(fancyWaveNameString,"(Default Settings)"))
-		delay=10
-		amplitude=10
-		tauRise=0.2
-		tauDecay1=2
-		tauDecay2=10
-		weightDecay2=0.5
-	else
-		// Get the wave from the digitizer
-		Wave exportedWave=SweeperGetWaveByFancyName(fancyWaveNameString)
-		waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
-		if (AreStringsEqual(waveTypeString,"PSC"))
-			amplitude=NumberByKeyInWaveNote(exportedWave,"amplitude")
-			tauRise=NumberByKeyInWaveNote(exportedWave,"tauRise")
-			tauDecay1=NumberByKeyInWaveNote(exportedWave,"tauDecay1")
-			tauDecay2=NumberByKeyInWaveNote(exportedWave,"tauDecay2")
-			weightDecay2=NumberByKeyInWaveNote(exportedWave,"weightDecay2")
-			delay=NumberByKeyInWaveNote(exportedWave,"delay")
-		else
-			Abort("This is not a PSC wave; choose another")
-		endif
-	endif
-	PSCBuilderModelUpdateWave()		// Make the model self-consistent
-	PSCBViewModelChanged()			// Update the view to match the model
-	
-	SetDataFolder savedDF	
-End
-
-Function resamplePSCBang(w,dt,totalDuration)
+Function fillPSCFromParamsBang(w,dt,nScans,parameters,parameterNames)
 	Wave w
-	Variable dt, totalDuration
-	
-	Variable delay=NumberByKeyInWaveNote(w,"delay")
-	Variable amplitude=NumberByKeyInWaveNote(w,"amplitude")
-	Variable tauRise=NumberByKeyInWaveNote(w,"tauRise")
-	Variable tauDecay1=NumberByKeyInWaveNote(w,"tauDecay1")
-	Variable tauDecay2=NumberByKeyInWaveNote(w,"tauDecay2")
-	Variable weightDecay2=NumberByKeyInWaveNote(w,"weightDecay2")
-	
-	resamplePSCFromParamsBang(w,dt,totalDuration,delay,amplitude,tauRise,tauDecay1,tauDecay2,weightDecay2)
-End
+	Variable dt,nScans
+	Wave parameters
+	Wave /T parameterNames
 
-Function resamplePSCFromParamsBang(w,dt,totalDuration,delay,amplitude,tauRise,tauDecay1,tauDecay2,weightDecay2)
-	// Compute the PSC wave from the parameters
-	Wave w
-	Variable dt,totalDuration,delay,amplitude,tauRise,tauDecay1,tauDecay2,weightDecay2
-	
-	Variable nScans=numberOfScans(dt,totalDuration)
-	Redimension /N=(nScans) w
-	Setscale /P x, 0, dt, "ms", w
-	Variable nDelay=round(delay/dt)
+	Variable delay=parameters[0]
+	Variable amplitude=parameters[1]
+	Variable tauRise=parameters[2]		
+	Variable tauDecay1=parameters[3]		
+	Variable tauDecay2=parameters[4]		
+	Variable weightDecay2=parameters[5]		
+
 	// Set the delay portion
+	Variable nDelay=round(delay/dt)
 	w[0,nDelay-1]=0
 	// Set the main portion
 	if (nDelay>=nScans)
@@ -301,43 +98,63 @@ Function resamplePSCFromParamsBang(w,dt,totalDuration,delay,amplitude,tauRise,ta
 	w=(amplitude/V_max)*w		// want the peak amplitude to be amplitude
 End
 
-Function PSCBuilderContSweepDtOrTChngd()
-	// Used to notify the PSC Builder of a change to dt or totalDuration in the Sweeper.
-	// This is a controller method
-	PSCBuilderModelSweepDtOrTChngd()
-	PSCBuilderViewModelChanged()
-End
+// Below are special callback functions that check the validity of certain parameter values
 
-Function PSCBuilderModelSweepDtOrTChngd()
-	// Used to notify the PSC Builder model of a change to dt or totalDuration in the Sweeper.
-	
-	// If no PSC Builder currently exists, do nothing
-	if (!DataFolderExists("root:DP_PSCBuilder"))
+Function PSCBControllerRiseTauSVTwiddled(svStruct) : SetVariableControl
+	STRUCT WMSetVariableAction &svStruct
+	if ( svStruct.eventCode==-1 ) 
 		return 0
 	endif
 	
-	// Save, set the DF
+	// Extract the parameterName from the SV name
+	String svName=svStruct.ctrlName
+	String parameterName=svName[0,strlen(svName)-3]
+	
+	// Get the value
+	Variable value=svStruct.dval
+	
 	String savedDF=GetDataFolder(1)
 	SetDataFolder "root:DP_PSCBuilder"
+
+	WAVE parameters
+	Variable tauDecay1=parameters[3]		
+	Variable tauDecay2=parameters[4]		
+
+	if (value<tauDecay1 && value<tauDecay2) 
+		// valid value, set the instance var
+		BuilderModelSetParameter("PSC","tauRise",value)
+		BuilderViewModelChanged("PSC")
+	endif
+	BuilderViewModelChanged("PSC")
 	
-	NVAR dt, totalDuration
-	
-	// Get dt, totalDuration from the sweeper
-	dt=SweeperGetDt()
-	totalDuration=SweeperGetTotalDuration()
-	// Update the	wave
-	PSCBuilderModelUpdateWave()
-	
-	// Restore the DF
-	SetDataFolder savedDF		
+	SetDataFolder savedDF
 End
 
-Function PSCBuilderViewModelChanged()
-	// Nothing to do here, everything will auto-update.
-End
+Function PSCBControllerDecayTauSVTwid(svStruct) : SetVariableControl
+	STRUCT WMSetVariableAction &svStruct
+	if ( svStruct.eventCode==-1 ) 
+		return 0
+	endif
+	
+	// Extract the parameterName from the SV name
+	String svName=svStruct.ctrlName
+	String parameterName=svName[0,strlen(svName)-3]
+	
+	// Get the value
+	Variable value=svStruct.dval
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder "root:DP_PSCBuilder"
 
-Function PSCBuilderModelParamsChanged()
-	// Used to notify the model that a parameter has been changed
-	// by a old-style SetVariable
-	PSCBuilderModelUpdateWave()
+	WAVE parameters
+	Variable tauRise=parameters[2]		
+
+	if (tauRise<value)
+		// valid value, set the instance var
+		BuilderModelSetParameter("PSC",parameterName,value)
+		BuilderViewModelChanged("PSC")
+	endif
+	BuilderViewModelChanged("PSC")
+	
+	SetDataFolder savedDF
 End
