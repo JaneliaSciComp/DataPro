@@ -35,12 +35,12 @@ Function PSCBViewConstructor() : Graph
 	SetVariable delaySV,win=PSCBuilderView,limits={0,1000,1},value= _NUM:delay
 	SetVariable amplitudeSV,win=PSCBuilderView,pos={28,43},size={120,17},proc=BuilderContSVTwiddled,title="Amplitude"
 	SetVariable amplitudeSV,win=PSCBuilderView,limits={-10000,10000,10},value= _NUM:amplitude
-	SetVariable riseTauSV,win=PSCBuilderView,pos={163,43},size={120,17},proc=PSCBControllerRiseTauSVTwiddled,title="Rise Tau (ms)"
-	SetVariable riseTauSV,win=PSCBuilderView,format="%g",limits={0,10000,0.1},value= _NUM:tauRise
-	SetVariable decayTau1SV,win=PSCBuilderView,pos={320,42},size={130,17},proc=PSCBControllerDecayTauSVTwid,title="Decay Tau 1 (ms)"
-	SetVariable decayTau1SV,win=PSCBuilderView,format="%g",limits={0,10000,1},value= _NUM:tauDecay1
-	SetVariable decayTau2SV,win=PSCBuilderView,pos={470,41},size={130,17},proc=PSCBControllerDecayTauSVTwid,title="Decay Tau 2 (ms)"
-	SetVariable decayTau2SV,win=PSCBuilderView,format="%g",limits={0,10000,10},value= _NUM:tauDecay2
+	SetVariable tauRiseSV,win=PSCBuilderView,pos={163,43},size={120,17},proc=PSCBControllerRiseTauSVTwiddled,title="Rise Tau (ms)"
+	SetVariable tauRiseSV,win=PSCBuilderView,format="%g",limits={0,10000,0.1},value= _NUM:tauRise
+	SetVariable tauDecay1SV,win=PSCBuilderView,pos={320,42},size={130,17},proc=PSCBControllerDecayTauSVTwid,title="Decay Tau 1 (ms)"
+	SetVariable tauDecay1SV,win=PSCBuilderView,format="%g",limits={0,10000,1},value= _NUM:tauDecay1
+	SetVariable tauDecay2SV,win=PSCBuilderView,pos={470,41},size={130,17},proc=PSCBControllerDecayTauSVTwid,title="Decay Tau 2 (ms)"
+	SetVariable tauDecay2SV,win=PSCBuilderView,format="%g",limits={0,10000,10},value= _NUM:tauDecay2
 	SetVariable weightDecay2SV,pos={440,12},size={140,17},proc=BuilderContSVTwiddled,title="Weight of Decay 2"
 	SetVariable weightDecay2SV,format="%2.1f",limits={0,1,0.1},value= _NUM:weightDecay2
 	Button saveAsDACButton,win=PSCBuilderView,pos={670,10},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As..."
@@ -123,7 +123,6 @@ Function PSCBControllerRiseTauSVTwiddled(svStruct) : SetVariableControl
 	if (value<tauDecay1 && value<tauDecay2) 
 		// valid value, set the instance var
 		BuilderModelSetParameter("PSC","tauRise",value)
-		BuilderViewModelChanged("PSC")
 	endif
 	BuilderViewModelChanged("PSC")
 	
@@ -152,7 +151,6 @@ Function PSCBControllerDecayTauSVTwid(svStruct) : SetVariableControl
 	if (tauRise<value)
 		// valid value, set the instance var
 		BuilderModelSetParameter("PSC",parameterName,value)
-		BuilderViewModelChanged("PSC")
 	endif
 	BuilderViewModelChanged("PSC")
 	

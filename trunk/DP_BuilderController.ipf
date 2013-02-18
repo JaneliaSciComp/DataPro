@@ -80,6 +80,7 @@ Function BuilderContImportButtonPressed(bStruct) : ButtonControl
 		return -1		// user hit Cancel
 	endif
 	BuilderModelImportWave(builderType,fancyWaveNameString)
+	BuilderViewModelChanged(builderType)
 End
 
 Function BuilderContSweepDtOrTChngd(builderType)
