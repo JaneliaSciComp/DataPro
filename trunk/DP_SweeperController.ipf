@@ -37,7 +37,7 @@ Function SweepContDtOrTotalDurChanged()
 	// private method, used to notify everyone that needs notifying after a change to dt or totalDuration
 	SweeperViewSweeperChanged()	// Tell the view that the model has changed
 	BuilderContSweepDtOrTChngd("Sine")
-	PSCBuilderContSweepDtOrTChngd()
+	BuilderContSweepDtOrTChngd("PSC")
 	BuilderContSweepDtOrTChngd("Ramp")
 	BuilderContSweepDtOrTChngd("Train")
 	BuilderContSweepDtOrTChngd("Step")
