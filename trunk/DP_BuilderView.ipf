@@ -3,15 +3,22 @@
 Function BuilderViewModelChanged(builderType)
 	String builderType
 	
+	// Synthesize the window name from the builderType
+	String windowName=builderType+"BuilderView"
+	
+	// If the view doesn't exist, just return
+	if (!GraphExists(windowName))
+		return 0		// Have to return something
+	endif
+
+	// Save, set data folder
 	String savedDF=GetDataFolder(1)
-	String dfString=sprintf1s("root:DP_%sBuilder",builderType)
-	SetDataFolder $dfString
+	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)
+	SetDataFolder $dataFolderName
 
 	WAVE parameters
 	WAVE /T parameterNames
 
-	// Synthesize the window name from the builderType
-	String windowName=builderType+"BuilderView"
 
 	// Set each SetVariable to hold the current model value
 	Variable nParameters=numpnts(parameters)

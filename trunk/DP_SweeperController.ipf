@@ -13,13 +13,13 @@ Function SweeperControllerSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariab
 	OVControllerSweeperWavesChanged()	// Tell the OutputViewer that the sweeper waves were (possibly) changed
 End
 
-Function SweeperControllerDtSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
+Function SweeperContDtWantedSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName
 	Variable varNum
 	String varStr
 	String varName
 	
-	SweeperSetDt(varNum)
+	SweeperSetDtWanted(varNum)
 	SweepContDtOrTotalDurChanged()
 End
 
@@ -34,7 +34,7 @@ Function SweepContTotalDurationSVTwid(ctrlName,varNum,varStr,varName) : SetVaria
 End
 
 Function SweepContDtOrTotalDurChanged()
-	// private method, used to notify everyone that needs notifying after a change to dt or totalDuration
+	// private method, used to notify everyone that needs notifying after a change to dtWanted or totalDuration
 	SweeperViewSweeperChanged()	// Tell the view that the model has changed
 	BuilderContSweepDtOrTChngd("Sine")
 	BuilderContSweepDtOrTChngd("PSC")
@@ -46,21 +46,18 @@ End
 
 Function SCGetDataButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
-	AcquireTrial()
+	SweeperControllerAcquireTrial()
 End
 
-Function HandleADCCheckbox(ctrlName,checked) : CheckBoxControl
+Function SweeperControllerADCCheckbox(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sweeper
-	Variable iADCChannel=str2num(ctrlName[3])
-	WAVE adcChannelOn
-	adcChannelOn[iADCChannel]=checked
-	SetDataFolder savedDF
+	Variable iChannel=str2num(ctrlName[3])
+	SweeperSetADCChannelOn(iChannel,checked)
+	SweeperViewADCEnablementChanged(iChannel)
 End
 
-Function HandleADCBaseNameSetVariable(ctrlName,varNum,varStr,varName) : SetVariableControl
+Function SweeperControllerADCBaseNameSV(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName
 	Variable varNum
 	String varStr
@@ -77,19 +74,15 @@ Function HandleADCBaseNameSetVariable(ctrlName,varNum,varStr,varName) : SetVaria
 	SetDataFolder savedDF
 End
 
-Function HandleDACCheckbox(ctrlName,checked) : CheckBoxControl
+Function SweeperControllerDACCheckbox(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sweeper
-	Variable iDACChannel=str2num(ctrlName[3])
-	WAVE dacChannelOn
-	dacChannelOn[iDACChannel]=checked
-	SweeperViewDACEnablementChanged(iDACChannel)	
-	SetDataFolder savedDF
+	Variable iChannel=str2num(ctrlName[3])
+	SweeperSetDACChannelOn(iChannel,checked)
+	SweeperViewDACEnablementChanged(iChannel)
 End
 
-Function HandleDACWavePopupMenu(ctrlName,popNum,popStr) : PopupMenuControl
+Function SweeperControllerDACWavePopup(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
 	Variable popNum
 	String popStr
@@ -106,7 +99,7 @@ Function HandleDACWavePopupMenu(ctrlName,popNum,popStr) : PopupMenuControl
 	SetDataFolder savedDF
 End
 
-Function HandleDACMultiplierSetVariable(ctrlName,varNum,varStr,varName) : SetVariableControl
+Function SweeperControllerDACMultiplier(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName
 	Variable varNum
 	String varStr
@@ -123,19 +116,15 @@ Function HandleDACMultiplierSetVariable(ctrlName,varNum,varStr,varName) : SetVar
 	SetDataFolder savedDF
 End
 
-Function HandleTTLCheckbox(ctrlName,checked) : CheckBoxControl
+Function SweeperControllerTTLCheckbox(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sweeper
-	Variable iTTLChannel=str2num(ctrlName[3])
-	WAVE ttlOutputChannelOn
-	ttlOutputChannelOn[iTTLChannel]=checked
-	SweeperViewTTLEnablementChanged(iTTLChannel)
-	SetDataFolder savedDF
+	Variable iChannel=str2num(ctrlName[3])
+	SweeperSetTTLOutputChannelOn(iChannel,checked)
+	SweeperViewTTLEnablementChanged(iChannel)
 End
 
-Function HandleTTLWavePopupMenu(ctrlName,popNum,popStr) : PopupMenuControl
+Function SweeperControllerTTLWavePopup(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
 	Variable popNum
 	String popStr
@@ -152,7 +141,7 @@ Function HandleTTLWavePopupMenu(ctrlName,popNum,popStr) : PopupMenuControl
 	SetDataFolder savedDF
 End
 
-Function AcquireTrial()
+Function SweeperControllerAcquireTrial()
 	// Acquire a single trial, which is composed of n sweeps
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Sweeper
@@ -160,12 +149,11 @@ Function AcquireTrial()
 	String temp_comments, doit
 	NVAR nSweepsPerTrial
 	NVAR sweepInterval
-	//NVAR error
 	String comment
 	Variable iSweepWithinTrial
 	for (iSweepWithinTrial=0;iSweepWithinTrial<nSweepsPerTrial; iSweepWithinTrial+=1)	
 		if (iSweepWithinTrial<1)
-			start_time = DateTime
+			start_time = DateTime		// "Unlike most Igor functions, DateTime is used without parentheses."
 		else
 			start_time = last_time + sweepInterval
 		endif
@@ -176,30 +164,13 @@ Function AcquireTrial()
 		endif
 		sprintf doit, "Sleep /A %s", Secs2Time(start_time,3)
 		Execute doit
-		AcquireSweep(comment)  // this calls DoUpdate() inside
-		//if (error>0)
-		//	error=0
-		//	Abort 
-		//endif
+		SweeperControllerAcquireSweep(comment)
 		last_time = start_time
-		//SaveStimHistory()
 	endfor
-	//comment=""
 	SetDataFolder savedDF
 End
 
-Function AnnotateADCWaveBang(w,stepAsString,comment)
-	Wave w
-	String stepAsString,comment
-
-	Note /K w
-	ReplaceStringByKeyInWaveNote(w,"COMMENTS",comment)	
-	ReplaceStringByKeyInWaveNote(w,"WAVETYPE","adc")
-	ReplaceStringByKeyInWaveNote(w,"TIME",time())
-	ReplaceStringByKeyInWaveNote(w,"STEP",stepAsString)	
-End
-
-Function AcquireSweep(comment)
+Function SweeperControllerAcquireSweep(comment)
 	// Acquire a single sweep, which consists of n traces, each trace corresponding to a single 
 	// ADC channel.  Add the supplied comment to the acquired waves.
 	String comment
@@ -223,22 +194,23 @@ Function AcquireSweep(comment)
 	DoWindow /F SweepControl	
 	SweeperUpdateStepPulseWave()
 	SweeperUpdateSynPulseWave()
-	Wave FIFOout=GetFIFOout()
+	Wave FIFOout=SweeperGetFIFOout()
+	// This shouldn't happen anymore, b/c the interface no longer allows it, but I'll leave it in
 	if (numpnts(FIFOout)==0)
 		Abort "There must be at least one valid DAC or TTL output wave"
 	endif
 	
 	// Get the ADC and DAC sequences from the model
-	String daSequence=GetDACSequence()
-	String adSequence=GetADCSequence()
-	Variable seqLength=GetSequenceLength()
+	String daSequence=SweeperGetDACSequence()
+	String adSequence=SweeperGetADCSequence()
+	//Variable seqLength=strlen(daSequence)		// both should be same length
 
 	// Actually acquire the data for this sweep
-	Wave FIFOin=SamplerSampleData(adSequence,daSequence,seqLength,FIFOout) 
+	Wave FIFOin=SamplerSampleData(adSequence,daSequence,FIFOout) 
 	// raw acquired data is now in root:DP_Sweeper:FIFOin wave
 		
 	// Get the number of ADC channels in use
-	Variable nADCInUse=GetNumADCChannelsInUse()
+	Variable nADCInUse=SweeperGetNumADCsOn()
 	
 	// Extract individual traces from FIFOin, store them in the appropriate waves
 	//String nameOfVarHoldingADCWaveBaseName
@@ -255,7 +227,7 @@ Function AcquireSweep(comment)
 		String thisWaveNameAbs="root:"+thisWaveNameRel
 		Make /O /N=(nSamplesPerTrace) $thisWaveNameAbs
 		WAVE thisWave=$thisWaveNameAbs
-		AnnotateADCWaveBang(thisWave,stepAsString,comment)
+		annotateADCWaveBang(thisWave,stepAsString,comment)
 		ingain=GetADCNativeUnitsPerPoint(iADCChannel)
 		thisWave=FIFOin[nADCInUse*p+iTrace]*ingain
 			// copy this trace out of the FIFO, and scale it by the gain
@@ -309,15 +281,25 @@ Function SweeperControllerAddTTLWave(w,waveNameString)
 	OVControllerSweeperWavesChanged()
 End
 
-//Function SweepContAddDACOrTTLWave(w,waveNameString)
-//	Wave w
-//	String waveNameString
-//	SweeperAddDACOrTTLWave(w,waveNameString)
-//	SweeperViewSweeperChanged()
-//	OVControllerSweeperWavesChanged()
-//End
-
 Function SweepControllerDigitizerChanged()
 	// Used to notify the SweeperController that the Digitizer model has changed.
 	SweeperViewDigitizerChanged()
 End
+
+
+
+//
+// "Class methods" below here
+//
+
+Function annotateADCWaveBang(w,stepAsString,comment)
+	Wave w
+	String stepAsString,comment
+
+	Note /K w
+	ReplaceStringByKeyInWaveNote(w,"COMMENTS",comment)	
+	ReplaceStringByKeyInWaveNote(w,"WAVETYPE","adc")
+	ReplaceStringByKeyInWaveNote(w,"TIME",time())
+	ReplaceStringByKeyInWaveNote(w,"STEP",stepAsString)	
+End
+
