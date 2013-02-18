@@ -1191,7 +1191,7 @@ Function ComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom,iTo
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 
 	// Figure the destination wave name
-	String destWaveName = sprintf2sd("root:%s_%d", waveBaseName, destSweepIndex)
+	String destWaveName = sprintf2sv("root:%s_%d", waveBaseName, destSweepIndex)
 	
 	// Handle possible renaming of the dest wave
 	NVAR renameAverages
@@ -1237,7 +1237,7 @@ Function ComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom,iTo
 	Variable i, nWavesSummedSoFar=0
 	Variable include
 	for (i=iFrom; i<=iTo; i+=1)
-		String thisWaveName=sprintf2sd("root:%s_%d", waveBaseName, i)
+		String thisWaveName=sprintf2sv("root:%s_%d", waveBaseName, i)
 		WAVE thisWave=$thisWaveName
 		include=IncludeInAverage(thisWaveName,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
 		if (include)

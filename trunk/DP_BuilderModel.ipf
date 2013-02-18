@@ -7,8 +7,8 @@ Function BuilderModelConstructor(builderTypeLocal)
 	String savedDF=GetDataFolder(1)
 	
 	// Create a new DF
-	String dfString=sprintf1s("root:DP_%sBuilder",builderTypeLocal)
-	NewDataFolder /O /S $dfString
+	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderTypeLocal)
+	NewDataFolder /O /S $dataFolderName
 	
 	// Parameters of sine wave stimulus
 	String /G builderType=builderTypeLocal
@@ -44,8 +44,8 @@ Function BuilderModelSetParameter(builderType,parameterName,value)
 	Variable value
 
 	String savedDF=GetDataFolder(1)
-	String dfString=sprintf1s("root:DP_%sBuilder",builderType)
-	SetDataFolder $dfString
+	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)
+	SetDataFolder $dataFolderName
 
 	WAVE parameters
 	WAVE /T parameterNames
@@ -71,8 +71,8 @@ Function BuilderModelUpdateWave(builderType)
 	String builderType
 	
 	String savedDF=GetDataFolder(1)
-	String dfString=sprintf1s("root:DP_%sBuilder",builderType)
-	SetDataFolder $dfString
+	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)
+	SetDataFolder $dataFolderName
 	
 	WAVE /T parameterNames
 	WAVE parameters
@@ -101,8 +101,8 @@ Function BuilderModelImportWave(builderType,fancyWaveNameString)
 	String fancyWaveNameString
 	
 	String savedDF=GetDataFolder(1)
-	String dfString=sprintf1s("root:DP_%sBuilder",builderType)
-	SetDataFolder $dfString
+	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)
+	SetDataFolder $dataFolderName
 	
 	WAVE /T parameterNames
 	WAVE parameters
@@ -132,8 +132,8 @@ Function BuilderModelSetParamsToDefault(builderType)
 	String builderType
 	
 	String savedDF=GetDataFolder(1)
-	String dfString=sprintf1s("root:DP_%sBuilder",builderType)
-	SetDataFolder $dfString
+	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)
+	SetDataFolder $dataFolderName
 	
 	WAVE parameters
 	WAVE parametersDefault
@@ -155,8 +155,8 @@ Function resampleBang(builderType,w,dt,totalDuration)
 	Variable dt, totalDuration
 	
 	String savedDF=GetDataFolder(1)
-	String dfString=sprintf1s("root:DP_%sBuilder",builderType)
-	SetDataFolder $dfString
+	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)
+	SetDataFolder $dataFolderName
 	
 	WAVE /T parameterNames
 	
@@ -177,14 +177,14 @@ Function BuilderModelSweeperDtOrTChanged(builderType)
 	String builderType
 	
 	// If no builder of the given type currently exists, do nothing
-	String dfString=sprintf1s("root:DP_%sBuilder",builderType)
-	if (!DataFolderExists(dfString))
+	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)
+	if (!DataFolderExists(dataFolderName))
 		return 0
 	endif
 	
 	// Save, set the DF
 	String savedDF=GetDataFolder(1)
-	SetDataFolder $dfString
+	SetDataFolder $dataFolderName
 	
 	NVAR dt, totalDuration
 	

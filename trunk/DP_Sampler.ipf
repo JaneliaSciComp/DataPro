@@ -17,11 +17,33 @@ Function SamplerConstructor()
 	SetDataFolder savedDF
 End
 
-Function /WAVE SamplerSampleData(adseq,daseq,seqLength,FIFOoutFree)
+Function SamplerGetNearestPossibleDt(dtWanted,sequenceLength)
+	// Get the closest dt to the given one that can be performed by the hardware,
+	// given the other sampling parameters
+	Variable dtWanted		// the desired sampling interval, in ms
+	Variable sequenceLength	// The common length of the AD and DA sequences, after reconciliation
+
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sampler
+
+	NVAR usPerDigitizerClockTick
+	
+	// Calculate the number of digitizer clock ticks per FIFO sampling interval
+	// This has to be an integer, and has to be >=4
+	Variable dtFIFOWanted=dtWanted/sequenceLength
+	Variable usPerFIFODtWanted=1000*dtFIFOWanted	// us
+	Variable nDigitizerClockTicksPerDtWanted=usPerFIFODtWanted/usPerDigitizerClockTick
+	// The FIFO dt has to be an integer multiple of the digitizer dt, and that integer has to be >=4.
+	// Find the closest possible nDigitizerClockTicksPerDt
+	Variable nDigitizerClockTicksPerDtDoable=max(4,round(nDigitizerClockTicksPerDtWanted))
+	Variable dtDoable=nDigitizerClockTicksPerDtDoable*usPerDigitizerClockTick*sequenceLength/1000;		// ms
+	return dtDoable
+End
+
+Function /WAVE SamplerSampleData(adSequence,daSequence,FIFOoutFree)
 	// The heart of the data acquisition.
-	String adseq
-	String daseq
-	Variable seqLength
+	String adSequence
+	String daSequence
 	Wave FIFOoutFree
 	
 	String savedDF=GetDataFolder(1)
@@ -41,24 +63,11 @@ Function /WAVE SamplerSampleData(adseq,daseq,seqLength,FIFOoutFree)
 	SetScale /P x, 0, dtFIFO, "ms", FIFOin
 
 	// Calculate the number of digitizer clock ticks per FIFO sampling interval
-	// If this is not an integer, that is a problem
+	// This must be an integer, and must be >=4, or problems will ensue
 	Variable usPerFIFODt=1000*dtFIFO	// us
-	Variable nDigitizerClockTicksPerDtWant=usPerFIFODt/usPerDigitizerClockTick
-	Variable nDigitizerClockTicksPerDt=round(nDigitizerClockTicksPerDtWant)	
-	if (abs(nDigitizerClockTicksPerDtWant-nDigitizerClockTicksPerDt)>0.001)
-		// Can't sample at that rate, given the digitizer settings.
-		// The FIFO dt has to be an integer multiple of the digitizer dt, and that integer has to be >=4.
-		// Abort, but suggest a sampling rate to the user that will work.
-		Variable dtRecommended
-		if (nDigitizerClockTicksPerDt>=4)
-			dtRecommended=nDigitizerClockTicksPerDt*usPerDigitizerClockTick*seqLength/1000;		// ms
-		else
-			dtRecommended=4*usPerDigitizerClockTick*seqLength/1000;		// ms
-		endif
-		Abort sprintf3fff("The FIFO sampling interval, %0.2f us, is not an integer multiple of the digitizer clock interval, %0.2f us.  Setting the sampling interval to %0.5f ms will fix this.",usPerFIFODt,usPerDigitizerClockTick,dtRecommended)
-	endif
+	Variable nDigitizerClockTicksPerDt=round(usPerFIFODt/usPerDigitizerClockTick)
 	if (nDigitizerClockTicksPerDt<4)
-		Abort sprintf2ff("Cannot sample that fast.  The given sampling parameters result in a FIFO sampling interval of %0.2f us, and the shortest possible FIFO sampling interval is %0.2f.  Increase the sampling interval, or use fewer channels.",usPerFIFODt,4*usPerDigitizerClockTick)
+		Abort "Requested sampling rate is faster than the hardware can achieve.."
 	endif
 	
 	String commandLine
@@ -67,8 +76,8 @@ Function /WAVE SamplerSampleData(adseq,daseq,seqLength,FIFOoutFree)
 		FIFOin=sin(0.05*x)+gnoise(0.1)+stepPulse+5
 	elseif (itc==16)
 		Execute "ITC16StimClear 0"
-		//Execute "ITC16Seq daseq, adseq"
-		sprintf commandLine "ITC16Seq \"%s\", \"%s\"", daseq, adseq
+		//Execute "ITC16Seq daSequence, adSequence"
+		sprintf commandLine "ITC16Seq \"%s\", \"%s\"", daSequence, adSequence
 		Execute commandLine
 		sprintf commandLine, "ITC16StimAndSample FIFOout, FIFOin, %d, 14", nDigitizerClockTicksPerDt
 		Execute commandLine
@@ -76,8 +85,8 @@ Function /WAVE SamplerSampleData(adseq,daseq,seqLength,FIFOoutFree)
 	elseif (itc==18)
 		// might need to change acqflags to 14 to make this work
 		//Execute "ITC18StimClear 0"  // ALT, 2012/05/23
-		//Execute "ITC18Seq daseq, adseq"
-		sprintf commandLine "ITC18Seq \"%s\", \"%s\"", daseq, adseq
+		//Execute "ITC18Seq daSequence, adSequence"
+		sprintf commandLine "ITC18Seq \"%s\", \"%s\"", daSequence, adSequence
 		Execute commandLine
 		Execute "ITC18Stim FIFOout"
 		sprintf commandLine, "ITC18StartAcq %d,2,0", nDigitizerClockTicksPerDt
