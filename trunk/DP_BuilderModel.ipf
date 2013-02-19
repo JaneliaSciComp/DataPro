@@ -3,11 +3,16 @@
 Function BuilderModelConstructor(builderTypeLocal)
 	String builderTypeLocal
 	
+	// if the DF already exists, nothing to do
+	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderTypeLocal)
+	if (DataFolderExists(dataFolderName))
+		return 0		// have to return something
+	endif
+
 	// Save the current DF
 	String savedDF=GetDataFolder(1)
 	
 	// Create a new DF
-	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderTypeLocal)
 	NewDataFolder /O /S $dataFolderName
 	
 	// Parameters of sine wave stimulus

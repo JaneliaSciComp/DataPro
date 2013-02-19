@@ -1,14 +1,26 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 Function BuilderViewConstructor(builderType)
-	// Synthesize the name of the true view constructor from the builderType
 	String builderType
+
+	// Synthesize the name of the view from the builderType
+	String windowName=builderType+"BuilderView"
+	
+	// If the window already exists, just raise it
+	if (GraphExists(windowName))
+		DoWindow /F $windowName
+		return 0
+	endif
+
+	// Synthesize the name of the true view constructor from the builderType
 	String viewConstructorName=builderType+"BuilderViewConstructor"
-	Funcref BuilderViewConstructorSig viewConstructor=$viewConstructorName
+	
+	// Invoke the custom view constructor
+	Funcref BuilderViewConstructorFallback viewConstructor=$viewConstructorName
 	viewConstructor()
 End
 
-Function BuilderViewConstructorSig()
+Function BuilderViewConstructorFallback()
 	Abort "Internal Error: Attempt to call a function that doesn't exist"
 End
 
