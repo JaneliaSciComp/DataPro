@@ -87,7 +87,7 @@ Function BrowserContToolsPanelHook(s)
 	return 0		// If non-zero, we handled event and Igor will ignore it.
 End
 
-Function BrowserContBrowserModelSetNextSweepIndex(browserNumber,iSweep)
+Function BrowserContSetNextSweepIndex(browserNumber,iSweep)
 	// Just what it says on the tin.  Called by the data acquisition loop when a sweep is acquired.
 	// Set the sweep in the model
 	Variable browserNumber, iSweep
@@ -123,7 +123,7 @@ Function BrowserContCommentsSV(svStruct) : SetVariableControl
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	String commentsInControl=svStruct.sval
 	// Set the wave comment for the top wave to commentInControl
-	String topTraceWaveNameAbs=BrowserModelGetTopTraceWaveNameAbs(browserNumber)
+	String topTraceWaveNameAbs=BrowserModelGetTopWaveNameAbs(browserNumber)
 	if ( strlen(topTraceWaveNameAbs)>0 )
 		ReplaceStringByKeyInWaveNote($topTraceWaveNameAbs,"COMMENTS",commentsInControl)
 	endif
@@ -168,7 +168,7 @@ Function BrowserContShowTraceCB(cbStruct) : CheckBoxControl
 	BrowserModelUpdateMeasurements(browserNumber)
 	// Shouldn't need to mess with the fit: The view should realize that the fit is for a wave
 	// other than the one showing, and act accordingly.
-	//String topTraceWaveNameAbs=BrowserModelGetTopTraceWaveNameAbs()
+	//String topTraceWaveNameAbs=BrowserModelGetTopWaveNameAbs()
 	//if (!AreStringsEqual(waveNameAbsOfFitTrace,topTraceWaveNameAbs)
 	//	InvalidateFit(browserNumber)  // model method
 	//end
@@ -205,7 +205,7 @@ Function BrowserContHandleRejectACB(cbStruct) : CheckBoxControl
 		return 0							// we only handle mouse up in control
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
-	String traceAWaveNameAbs=BrowserModelGetTraceAWaveNameAbs(browserNumber)
+	String traceAWaveNameAbs=BrowserModelGetAWaveNameAbs(browserNumber)
 	ReplaceStringByKeyInWaveNote($traceAWaveNameAbs,"REJECT",num2str(cbStruct.checked))
 End
 
@@ -215,7 +215,7 @@ Function BrowserContHandleRejectBCB(cbStruct) : CheckBoxControl
 		return 0							// we only handle mouse up in control
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
-	String traceBWaveNameAbs=BrowserModelGetTraceBWaveNameAbs(browserNumber)
+	String traceBWaveNameAbs=BrowserModelGetBWaveNameAbs(browserNumber)
 	ReplaceStringByKeyInWaveNote($traceBWaveNameAbs,"REJECT",num2str(cbStruct.checked))
 End
 
