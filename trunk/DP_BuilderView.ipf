@@ -2,6 +2,7 @@
 
 Function BuilderViewConstructor(builderType)
 	// Synthesize the name of the true view constructor from the builderType
+	String builderType
 	String viewConstructorName=builderType+"BuilderViewConstructor"
 	Funcref BuilderViewConstructorSig viewConstructor=$viewConstructorName
 	viewConstructor()

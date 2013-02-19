@@ -424,8 +424,8 @@ Function BrowserViewModelChanged(browserNumber)
 	PopupMenu traceBColorPopupMenu,win=$browserName,popmatch=colorNameB
 
 	// If either wave exists, do baseline subtraction
-	String traceAWaveNameAbs=BrowserModelGetTraceAWaveNameAbs(browserNumber)
-	String traceBWaveNameAbs=BrowserModelGetTraceBWaveNameAbs(browserNumber)
+	String traceAWaveNameAbs=BrowserModelGetAWaveNameAbs(browserNumber)
+	String traceBWaveNameAbs=BrowserModelGetBWaveNameAbs(browserNumber)
 	Variable waveAExists=WaveExists($traceAWaveNameAbs)
 	Variable waveBExists=WaveExists($traceBWaveNameAbs)
 	if (waveAExists || waveBExists)
@@ -454,7 +454,7 @@ Function BrowserViewModelChanged(browserNumber)
 	SetVariable commentsSetVariable, win=$browserName, value=_STR:comments
 	
 	// Put the cursors back
-	String topTraceWaveNameRel=BrowserModelGetTopTraceWaveNameRel(browserNumber)
+	String topTraceWaveNameRel=BrowserModelGetTopWaveNameRel(browserNumber)
 	if (strlen(topTraceWaveNameRel)>0 && IsFinite(tCursorA))
 		Cursor /W=$browserName A $topTraceWaveNameRel tCursorA
 	endif
@@ -515,7 +515,7 @@ Function BrowserViewModelChanged(browserNumber)
 	
 	// If there is one or more trace in the graph, make sure the axes of the graph are
 	// consistent with the autoscaling checkboxes, and turn on horizontal grid lines.
-	String topTraceWaveNameAbs=BrowserModelGetTopTraceWaveNameAbs(browserNumber)
+	String topTraceWaveNameAbs=BrowserModelGetTopWaveNameAbs(browserNumber)
 	if (ItemsInList(TraceNameList(browserName,";",1))>0)
 		BrowserViewRescaleAxes(browserNumber)  // Scale the axes properly, based on the model state
 		if (cmpstr(topTraceWaveNameAbs,traceAWaveNameAbs)==0)
@@ -565,10 +565,10 @@ Function BrowserViewModelChanged(browserNumber)
 	endif
 	
 	// Update the view of the measurements
-	BrowserViewBrowserModelUpdateMeasurements(browserNumber)
+	BrowserViewUpdateMeasurements(browserNumber)
 	
 	// Update the visibility of the fit
-	BrowserViewBrowserModelUpdateFitDisplay(browserNumber)
+	BrowserViewUpdateFitDisplay(browserNumber)
 
 	// Update the visibility of stuff in the averaging pane
 	BrowserViewUpdateAveraging(browserNumber)
@@ -587,7 +587,7 @@ Function BrowserViewUpdateRejectCBs(browserNumber)
 	String browserName=BrowserNameFromNumber(browserNumber)
 	
 	// Update the traceAWaveName reject checkbox
-	String traceAWaveName=BrowserModelGetTraceAWaveNameAbs(browserNumber)
+	String traceAWaveName=BrowserModelGetAWaveNameAbs(browserNumber)
 	Variable reject
 	if ( WaveExists($traceAWaveName) )
 		reject=NumberByKeyInWaveNote($traceAWaveName,"REJECT")
@@ -596,7 +596,7 @@ Function BrowserViewUpdateRejectCBs(browserNumber)
 	endif
 	
 	// Update the traceBWaveName reject checkbox
-	String traceBWaveName=BrowserModelGetTraceBWaveNameAbs(browserNumber)
+	String traceBWaveName=BrowserModelGetBWaveNameAbs(browserNumber)
 	if ( WaveExists($traceBWaveName) )
 		reject=NumberByKeyInWaveNote($traceBWaveName,"REJECT")
 		reject = IsNan(reject)?0:reject;
@@ -669,7 +669,7 @@ Function BrowserViewAddCursorLineToGraph(graphName,cursorWaveName,tCursor,r,g,b)
 	cursorWaveList=AddListItem(cursorWaveName,cursorWaveList)
 End
 
-Function BrowserViewBrowserModelUpdateFitDisplay(browserNumber)
+Function BrowserViewUpdateFitDisplay(browserNumber)
 	Variable browserNumber
 	
 	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
@@ -683,7 +683,7 @@ Function BrowserViewBrowserModelUpdateFitDisplay(browserNumber)
 
 	// Add or remove yFit to the browserWindow, as needed
 	// Also show/hide the fit coefficients, depending on many factors
-	String topTraceWaveNameAbs=BrowserModelGetTopTraceWaveNameAbs(browserNumber)
+	String topTraceWaveNameAbs=BrowserModelGetTopWaveNameAbs(browserNumber)
 	String browserName=BrowserNameFromNumber(browserNumber)
 	String windowSpec=sprintf1s("WIN:%s",browserName)
 	if (showToolsChecked)
@@ -701,7 +701,7 @@ Function BrowserViewBrowserModelUpdateFitDisplay(browserNumber)
 						AppendToGraph /W=$browserName yFit
 					endif
 					// show the fit parameters
-					BrowserViewSetFitCoeffVisibility(browserNumber,1)					
+					BrowserViewSetFitCoeffVis(browserNumber,1)					
 				else
 					// the fit sub-panel is showing, there is a trace showing, the current fit
 					// coefficients are valid, but
@@ -710,7 +710,7 @@ Function BrowserViewBrowserModelUpdateFitDisplay(browserNumber)
 						RemoveFromGraph /W=$browserName yFit  // remove yFit if already present
 					endif
 					// blank the fit parameters
-					BrowserViewSetFitCoeffVisibility(browserNumber,0)
+					BrowserViewSetFitCoeffVis(browserNumber,0)
 				endif
 			else
 				// the fit sub-panel is showing, there is a trace showing in the browser, but 
@@ -719,7 +719,7 @@ Function BrowserViewBrowserModelUpdateFitDisplay(browserNumber)
 					RemoveFromGraph /W=$browserName yFit  // remove yFit if already present
 				endif
 				// blank the fit parameters
-				BrowserViewSetFitCoeffVisibility(browserNumber,0)
+				BrowserViewSetFitCoeffVis(browserNumber,0)
 			endif
 		else
 			// the tools panel is showing, but no trace is showing in the browser
@@ -727,7 +727,7 @@ Function BrowserViewBrowserModelUpdateFitDisplay(browserNumber)
 				RemoveFromGraph /W=$browserName yFit  // remove if already present
 			endif
 			// blank the fit parameters
-			BrowserViewSetFitCoeffVisibility(browserNumber,0)		
+			BrowserViewSetFitCoeffVis(browserNumber,0)		
 		endif
 		// make sure the hold y offset SetVariable is enabled
 		NVAR holdYOffset, yOffsetHeldValue
@@ -748,7 +748,8 @@ Function BrowserViewBrowserModelUpdateFitDisplay(browserNumber)
 	endif
 End
 
-Function BrowserViewSetFitCoeffVisibility(browserNumber,visible)
+Function BrowserViewSetFitCoeffVis(browserNumber,visible)
+	// Set the visibility of the fit coefficients
 	Variable browserNumber
 	Variable visible  // boolean
 	
@@ -780,7 +781,7 @@ Function BrowserViewSetFitCoeffVisibility(browserNumber,visible)
 	endif
 End
 
-Function BrowserViewBrowserModelUpdateMeasurements(browserNumber)
+Function BrowserViewUpdateMeasurements(browserNumber)
 	Variable browserNumber
 	
 	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance

@@ -140,7 +140,7 @@ Function BrowserModelSetNextSweepIndex(browserNumber,sweepIndexNew)
 	SetDataFolder savedDFName	
 End
 
-Function /S BrowserModelGetTopTraceWaveNameAbs(browserNumber)
+Function /S BrowserModelGetTopWaveNameAbs(browserNumber)
 	// Returns the absolute wave name of the "top" trace, or the emprty string if no trace is showing.
 	// If trace A is showing, it is the top trace.  Otherwise, if trace B is showing, it is the top trace.
 	// Otherwise, there is no top trace.
@@ -155,8 +155,8 @@ Function /S BrowserModelGetTopTraceWaveNameAbs(browserNumber)
 	NVAR traceBChecked=traceBChecked	
 	SVAR baseNameA=baseNameA, baseNameB=baseNameB
 
-	String traceAWaveName=BrowserModelGetTraceAWaveNameAbs(browserNumber)
-	String traceBWaveName=BrowserModelGetTraceBWaveNameAbs(browserNumber)
+	String traceAWaveName=BrowserModelGetAWaveNameAbs(browserNumber)
+	String traceBWaveName=BrowserModelGetBWaveNameAbs(browserNumber)
 	Variable waveAExists=WaveExists($traceAWaveName)
 	Variable waveBExists=WaveExists($traceBWaveName)
 
@@ -175,7 +175,7 @@ Function /S BrowserModelGetTopTraceWaveNameAbs(browserNumber)
 	return retval
 End
 
-Function /S BrowserModelGetTopTraceWaveNameRel(browserNumber)
+Function /S BrowserModelGetTopWaveNameRel(browserNumber)
 	// Returns the wave name of the "top" trace, relative to the data folder containing it, or the empty 
 	// string if no 
 	// trace is showing.
@@ -192,10 +192,10 @@ Function /S BrowserModelGetTopTraceWaveNameRel(browserNumber)
 	NVAR traceBChecked=traceBChecked	
 	SVAR baseNameA=baseNameA, baseNameB=baseNameB
 
-	String traceAWaveNameRel=BrowserModelGetTraceAWaveNameRel(browserNumber)
-	String traceBWaveNameRel=BrowserModelGetTraceBWaveNameRel(browserNumber)
-	String traceAWaveNameAbs=BrowserModelGetTraceAWaveNameAbs(browserNumber)
-	String traceBWaveNameAbs=BrowserModelGetTraceBWaveNameAbs(browserNumber)
+	String traceAWaveNameRel=BrowserModelGetAWaveNameRel(browserNumber)
+	String traceBWaveNameRel=BrowserModelGetBWaveNameRel(browserNumber)
+	String traceAWaveNameAbs=BrowserModelGetAWaveNameAbs(browserNumber)
+	String traceBWaveNameAbs=BrowserModelGetBWaveNameAbs(browserNumber)
 	Variable waveAExists=WaveExists($traceAWaveNameAbs)
 	Variable waveBExists=WaveExists($traceBWaveNameAbs)
 
@@ -214,21 +214,21 @@ Function /S BrowserModelGetTopTraceWaveNameRel(browserNumber)
 	return retval
 End
 
-Function /S BrowserModelGetTraceAWaveNameAbs(browserNumber)
+Function /S BrowserModelGetAWaveNameAbs(browserNumber)
 	// Construct the absolute wave name of trace A in the given browser number.  Note that this wave may or
 	// may not exist.
 	Variable browserNumber
-	return "root:"+BrowserModelGetTraceAWaveNameRel(browserNumber)
+	return "root:"+BrowserModelGetAWaveNameRel(browserNumber)
 End
 
-Function /S BrowserModelGetTraceBWaveNameAbs(browserNumber)
+Function /S BrowserModelGetBWaveNameAbs(browserNumber)
 	// Construct the absolute wave name of trace B in the given browser number.  Note that this wave may 
 	// or may not exist.
 	Variable browserNumber
-	return "root:"+BrowserModelGetTraceBWaveNameRel(browserNumber)
+	return "root:"+BrowserModelGetBWaveNameRel(browserNumber)
 End
 
-Function /S BrowserModelGetTraceAWaveNameRel(browserNumber)
+Function /S BrowserModelGetAWaveNameRel(browserNumber)
 	// Construct the wave name of trace A in the given browser number, relative to the data folder containing it.  
 	// Note that this wave may or may not exist.
 	Variable browserNumber
@@ -240,7 +240,7 @@ Function /S BrowserModelGetTraceAWaveNameRel(browserNumber)
 	return retval
 End
 
-Function /S BrowserModelGetTraceBWaveNameRel(browserNumber)
+Function /S BrowserModelGetBWaveNameRel(browserNumber)
 	// Construct the wave name of trace B in the given browser number, relative to the data folder containing it.  
 	// Note that this wave may or may not exist.
 	Variable browserNumber
@@ -252,7 +252,8 @@ Function /S BrowserModelGetTraceBWaveNameRel(browserNumber)
 	return retval
 End
 
-Function BrowserModelRemoveBaseNamedWaves(base)
+Function BrowserModelRemoveWaves(base)
+	// Removes waves with the given base name
 	String base
 	String savedDF, targetWindow, allwaves, thisWaveName
 	Variable i
@@ -288,7 +289,7 @@ Function BrowserModelDoBaseSub(browserNumber)
 	// Get DF vars we need
 	NVAR traceAChecked=traceAChecked
 	
-	String traceAWaveName=BrowserModelGetTraceAWaveNameAbs(browserNumber)
+	String traceAWaveName=BrowserModelGetAWaveNameAbs(browserNumber)
 	WAVE theWave=$traceAWaveName
 	Variable basesubtracted, baseline
 	if ( traceAChecked && WaveExists($traceAWaveName) )
@@ -296,7 +297,7 @@ Function BrowserModelDoBaseSub(browserNumber)
 		basesubtracted=NumberByKeyInWaveNote(theWave,"BASESUBTRACTED")
 	endif
 
-	String traceBWaveName=BrowserModelGetTraceBWaveNameAbs(browserNumber)
+	String traceBWaveName=BrowserModelGetBWaveNameAbs(browserNumber)
 	ControlInfo basesub1
 	if ( (V_value>0) && WaveExists(traceBWaveName) )			// if baseline subtract is checked
 		 if (basesubtracted<1)							// but the baseline isn't subtracted
@@ -362,7 +363,7 @@ Function BrowserModelUpdateMeasurements(browserNumber)
 	NVAR nCrossings1
 	
 	// If there's a top wave, calculate features of it
-	String topTraceWaveName=BrowserModelGetTopTraceWaveNameAbs(browserNumber)
+	String topTraceWaveName=BrowserModelGetTopWaveNameAbs(browserNumber)
 	if (strlen(topTraceWaveName)>0)
 		// Calculate the baseline
 		WAVE thisWave=$topTraceWaveName
@@ -473,7 +474,7 @@ Function BrowserModelUpdateFit(browserNumber)
 	NVAR yOffset, amp1, tau1, amp2, tau2
 
 	// See if everything is set up to do a fit.  If not, return.
-	String topTraceWaveName=BrowserModelGetTopTraceWaveNameAbs(browserNumber)
+	String topTraceWaveName=BrowserModelGetTopWaveNameAbs(browserNumber)
 	if ( strlen(topTraceWaveName)==0 || IsNan(tFitZero) || IsNan(tFitLeft) || IsNan(tFitRight) )
 		isFitValid=0
 		return nan
@@ -562,7 +563,7 @@ Function BrowserModelUpdateFit(browserNumber)
 	SetDataFolder savedDFName
 End
 
-Function BrowserModelMarkWaveForAveraging(thisWaveName,filterOnHold,holdCenter,holdTol,filterOnStep,stepCenter)
+Function BrowserModelMarkWaveForAvg(thisWaveName,filterOnHold,holdCenter,holdTol,filterOnStep,stepCenter)
 	// Set the DONTAVG wave note on the named wave, based on whether if satisfies the conditions
 	// as specified by checkHold, holdCenter, etc.
 	// We assume that thisWaveName is in the current DF, or is an absolute wave name.
