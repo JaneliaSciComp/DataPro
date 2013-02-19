@@ -37,6 +37,7 @@ Function SamplerGetNearestPossibleDt(dtWanted,sequenceLength)
 	// Find the closest possible nDigitizerClockTicksPerDt
 	Variable nDigitizerClockTicksPerDtDoable=max(4,round(nDigitizerClockTicksPerDtWanted))
 	Variable dtDoable=nDigitizerClockTicksPerDtDoable*usPerDigitizerClockTick*sequenceLength/1000;		// ms
+	SetDataFolder savedDF
 	return dtDoable
 End
 
