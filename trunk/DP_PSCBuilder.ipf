@@ -1,7 +1,7 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
-Function PSCBViewConstructor() : Graph
-	BuilderModelConstructor("PSC")
+Function PSCBuilderViewConstructor() : Graph
+	//BuilderModelConstructor("PSC")
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_PSCBuilder
 	WAVE theWave

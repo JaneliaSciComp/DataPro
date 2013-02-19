@@ -4,7 +4,7 @@ Function RaiseOrCreateDataProBrowser()
 	String DPBrowserList=WinList("DataProBrowser*",";","WIN:1")		// 1 means graphs
 	Variable nDPBrowsers=ItemsInList(DPBrowserList)
 	if (nDPBrowsers==0)
-		BrowserControllerConstructor()
+		BrowserContConstructor()
 	else
 		Variable browserNumber=LargestBrowserNumber()
 		String browserName=BrowserNameFromNumber(browserNumber)
@@ -12,247 +12,12 @@ Function RaiseOrCreateDataProBrowser()
 	endif
 End
 
-Function BrowserControllerConstructor()
+Function BrowserContConstructor()
 	Variable browserNumber=BrowserModelConstructor();
 	BrowserViewConstructor(browserNumber)
 End
 
-Function NewToolsPanel(browserNumber) : Panel
-	Variable browserNumber // the number of the DataProBrowser we belong to
-	
-	// Save the current data folder, change to this browser's DF
-	String savedDF=ChangeToBrowserDF(browserNumber)
-	
-	// From the browser number, derive the measure panel window name and title
-	String browserWindowName=BrowserNameFromNumber(browserNumber)
-	String browserDFName=BrowserDFNameFromNumber(browserNumber)
-	
-	// Create the panel, draw all the controls
-	Variable toolsPanelWidth=250  // pels
-	Variable measureAreaHeight=278  // pels
-	Variable fitAreaHeight=155+30  // pels
-	Variable averageAreaHeight=110-28  // pels
-	Variable toolsPanelHeight=measureAreaHeight+fitAreaHeight+averageAreaHeight
-	NewPanel /HOST=$browserWindowName /EXT=0 /W=(0,0,toolsPanelWidth,toolsPanelHeight) /N=ToolsPanel /K=1 as "Tools"
-	SetWindow $browserWindowName#ToolsPanel, hook(TPHook)=ToolsPanelHook  // register a callback function for if the panel is closed
-	
-	// Measure controls
-	
-	// Baseline controls
-	SetDrawEnv linethick= 3,linefgc= (65535,0,0)
-	DrawRect 6-3,6-3,6+100+3,6+20+3
-	Button setbase,pos={6,6},size={100,20},proc=HandleSetBaselineButton,title="Set Baseline"
-	Button clearBaselineButton,pos={6,6+28-1},size={100,18},proc=ClearBaseline,title="Clear Baseline"
-
-	String absVarName=AbsoluteVarName(browserDFName,"baseline")
-	ValDisplay baselineValDisplay,pos={139,8},size={82,17},title="Mean",format="%4.2f"
-	ValDisplay baselineValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
-
-	// Window 1 controls
-	Variable yOffset=70
-	SetDrawEnv linethick= 3,linefgc= (3,52428,1)
-	DrawRect 3,yOffset-3,109,yOffset+20+3
-	Button setwin_1,pos={6,yOffset},size={100,20},proc=SetWindow1,title="Set Window 1"
-	Button clearWindow1Button,pos={6,yOffset+27},size={100,18},proc=ClearWindow1,title="Clear Window 1"
-
-	absVarName=AbsoluteVarName(browserDFName,"mean1")
-	ValDisplay mean1ValDisplay,pos={138,yOffset-5},size={82,17},title="Mean",format="%4.2f"
-	ValDisplay mean1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
-
-	absVarName=AbsoluteVarName(browserDFName,"peak1")
-	ValDisplay peak1ValDisplay,pos={140,yOffset+17},size={79,17},title="Peak",format="%4.2f"
-	ValDisplay peak1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
-
-	absVarName=AbsoluteVarName(browserDFName,"rise1")
-	ValDisplay rise1ValDisplay,pos={115,yOffset+38},size={105,17},title="Transit Time"
-	ValDisplay rise1ValDisplay,format="%4.2f",limits={0,0,0},barmisc={0,1000}
-	ValDisplay rise1ValDisplay,value= #absVarName
-	TitleBox rise1UnitsTitleBox,pos={224,yOffset+38+1},frame=0, title="ms"
-
-	absVarName=AbsoluteVarName(browserDFName,"from1")
-	SetVariable from_disp1,pos={54,yOffset+61},size={80,17},proc=HandleMeasurementSetVariable,title="From"
-	SetVariable from_disp1,limits={0,100,10},value=$absVarName
-	TitleBox fromUnitsTitleBox,pos={137,yOffset+61+2},frame=0, title="%"
-
-	absVarName=AbsoluteVarName(browserDFName,"to1")
-	SetVariable to_disp1,pos={154,yOffset+61},size={66,17},proc=HandleMeasurementSetVariable,title="To"
-	SetVariable to_disp1,limits={0,100,10},value=$absVarName
-	TitleBox toUnitsTitleBox,pos={223,yOffset+61+2},frame=0, title="%"
-	
-	absVarName=AbsoluteVarName(browserDFName,"lev1")
-	SetVariable levelSetVariable,pos={18,yOffset-61+145},size={80,17}
-	SetVariable levelSetVariable,proc=HandleMeasurementSetVariable,title="Level"
-	SetVariable levelSetVariable,limits={-100,100,10},format="%4.2f",value=$absVarName
-	
-	absVarName=AbsoluteVarName(browserDFName,"nCrossings1")
-	ValDisplay cross1ValDisplay,pos={110,yOffset-61+145},size={110,17},title="No. Crossings"
-	ValDisplay cross1ValDisplay,limits={0,0,0},barmisc={0,1000},format="%4.0f",value= #absVarName
-	
-	// Window 2 controls
-	yOffset=190
-	SetDrawEnv linethick= 3,linefgc= (0,0,65535)
-	DrawRect 3,yOffset-3,109,yOffset+20+3
-	Button setwin_2,pos={6,yOffset},size={100,20},proc=SetWindow2,title="Set Window 2"
-	Button clearWindow2Button,pos={6,yOffset+27},size={100,18},proc=ClearWindow2,title="Clear Window 2"
-
-	absVarName=AbsoluteVarName(browserDFName,"mean2")
-	ValDisplay mean2ValDisplay,pos={138,yOffset-5},size={82,17},title="Mean",format="%4.2f"
-	ValDisplay mean2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
-	
-	absVarName=AbsoluteVarName(browserDFName,"peak2")
-	ValDisplay peak2ValDisplay,pos={140,yOffset+17},size={79,17},title="Peak",format="%4.2f"
-	ValDisplay peak2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
-	
-	absVarName=AbsoluteVarName(browserDFName,"rise2")
-	ValDisplay rise2ValDisplay,pos={115,yOffset+38},size={105,17},title="Transit Time"
-	ValDisplay rise2ValDisplay,format="%4.2f",limits={0,0,0},barmisc={0,1000}
-	ValDisplay rise2ValDisplay,value= #absVarName
-	TitleBox rise2UnitsTitleBox,pos={224,yOffset+38+1},frame=0, title="ms"
-	
-//	absVarName=AbsoluteVarName(browserDFName,"from2")
-//	SetVariable from_disp2,pos={49,253},size={80,17},proc=HandleMeasurementSetVariable,title="From"
-//	SetVariable from_disp2,limits={0,100,10},value= $absVarName
-//	DrawText 228,268,"%"
-//	
-//	absVarName=AbsoluteVarName(browserDFName,"to2")
-//	SetVariable to_disp2,pos={155,254},size={66,17},proc=HandleMeasurementSetVariable,title="To"
-//	SetVariable to_disp2,limits={0,100,10},value= $absVarName
-//	DrawText 137,268,"%"
-
-	absVarName=AbsoluteVarName(browserDFName,"from2")
-	SetVariable from_disp2,pos={54,yOffset+61},size={80,17},proc=HandleMeasurementSetVariable,title="From"
-	SetVariable from_disp2,limits={0,100,10},value=$absVarName
-	TitleBox fromUnitsTitleBox,pos={137,yOffset+61+2},frame=0, title="%"
-
-	absVarName=AbsoluteVarName(browserDFName,"to2")
-	SetVariable to_disp2,pos={154,yOffset+61},size={66,17},proc=HandleMeasurementSetVariable,title="To"
-	SetVariable to_disp2,limits={0,100,10},value=$absVarName
-	TitleBox toUnitsTitleBox,pos={223,yOffset+61+2},frame=0, title="%"
-
-
-	// Horizontal rule
-	DrawLine 8,measureAreaHeight,245,measureAreaHeight
-
-	// Fitting controls
-	yOffset=measureAreaHeight
-	//SetDrawLayer UserBack
-	DrawText 84,yOffset+79,"ms"
-	DrawText 199,yOffset+78,"ms"
-	Button fitButton,pos={123,yOffset+10},size={100,20},proc=HandleFitButton,title="Fit"
-
-	SetDrawEnv linethick= 3,linefgc= (26411,0,52428)	// purple
-	DrawRect 8-3,yOffset+36-3+2,8+100+2,yOffset+36+20+2+2
-	Button set_tFitZero,pos={8,yOffset+36+2},size={100,20},proc=SetFitZero,title="Set Zero"
-
-	SetDrawEnv linethick= 3,linefgc= (0,65535,65535)	// cyan
-	DrawRect 123-3,yOffset+36-3+2,123+100+2,yOffset+36+20+2+2
-	Button set_fit_range,pos={123,yOffset+36+2},size={100,20},proc=SetFitRange,title="Set Range"
-
-	Button clearTFitZero,pos={8,yOffset+36+28},size={100,18},proc=HandleClearFitZeroButton,title="Clear Zero"
-
-	Button clearTFitRange,pos={123,yOffset+36+28},size={100,18},proc=HandleClearFitRangeButton,title="Clear Range"
-
-	PopupMenu fitTypePopupMenu,pos={8,yOffset+10},size={90,19}
-	PopupMenu fitTypePopupMenu,mode=1,value= #"\"single exp;double exp\""	
-	PopupMenu fitTypePopupMenu,proc=HandleFitTypePopupMenu
-	
-	absVarName=AbsoluteVarName(browserDFName,"tau1")
-	ValDisplay tau1ValDisplay, pos={6,yOffset+64+28},size={75,17},title="tau 1  ",format="%4.2f"
-	ValDisplay tau1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
-	
-	absVarName=AbsoluteVarName(browserDFName,"amp1")
-	ValDisplay amp1ValDisplay,pos={5,yOffset+82+28},size={75,17},title="amp 1",format="%4.2f"
-	ValDisplay amp1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
-	
-	absVarName=AbsoluteVarName(browserDFName,"tau2")
-	ValDisplay tau2ValDisplay,pos={119,yOffset+64+28},size={75,17},title="tau 2  ",format="%4.2f"
-	ValDisplay tau2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
-	
-	absVarName=AbsoluteVarName(browserDFName,"amp2")
-	ValDisplay amp2ValDisplay,pos={119,yOffset+81+28},size={75,17},title="amp 2",format="%4.2f"
-	ValDisplay amp2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
-	
-	absVarName=AbsoluteVarName(browserDFName,"dtFitExtend")
-	SetVariable dtFitExtendSetVariable,pos={7,yOffset+125+28},size={98,17},title="Show fit"
-	SetVariable dtFitExtendSetVariable,limits={0,10000,10},value=$absVarName
-	SetVariable dtFitExtendSetVariable,proc=HandleDtFitExtendSetVariable
-	TitleBox dtFitExtendUnitsTitleBox,pos={109,yOffset+125+28+2},frame=0, title="ms beyond range"
-	
-	absVarName=AbsoluteVarName(browserDFName,"yOffset")
-	ValDisplay yOffsetValDisplay,pos={7,yOffset+102+28},size={90,17},title="offset",format="%4.2f"
-	ValDisplay yOffsetValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
-	
-	// N.B.: This one doesn't use a binding, so the callback must handle updating the model
-	NVAR holdYOffset=holdYOffset
-	CheckBox holdYOffsetCheckbox,pos={110,yOffset+102+28},size={50,20},title="Hold",value=holdYOffset
-	CheckBox holdYOffsetCheckbox,proc=HandleHoldYOffsetCheckbox
-	
-	// N.B.: This one doesn't use a binding, so the callback must handle updating the model
-	NVAR yOffsetHeldValue
-	SetVariable yOffsetHeldValueSetVariable,pos={156,yOffset+101+28},size={70,17},title="at",format="%4.2f"
-	SetVariable yOffsetHeldValueSetVariable,limits={-Inf,Inf,1},value=_NUM:yOffsetHeldValue
-	SetVariable yOffsetHeldValueSetVariable,proc=HandleYOffsetHeldValueSetVar	
-
-	// Horizontal rule
-	DrawLine 8,measureAreaHeight+fitAreaHeight-3,245,measureAreaHeight+fitAreaHeight-3
-
-	// Averaging controls
-	yOffset=measureAreaHeight+fitAreaHeight
-
-	Button avgnow,pos={20,yOffset+5},size={100,20},proc=AverageSweepsButtonPressed,title="Average Sweeps"
-
-	NVAR renameAverages
-	CheckBox renameAveragesCheckBox,pos={150,yOffset+8},size={100,20},title="Rename",value=renameAverages
-	CheckBox renameAveragesCheckBox,proc=RenameAveragesCheckBoxTwiddled
-
-	//SetDrawEnv fsize= 10,textrgb= (0,0,65535)
-	//DrawText 48,yOffset+42,"Selected channels that meet the "
-	//SetDrawEnv fsize= 10,textrgb= (0,0,65535)
-	//DrawText 45,yOffset+55,"following criteria will be averaged."
-
-	// Controls for which sweeps to average
-	yOffset=yOffset+63-28
-	NVAR averageAllSweeps, iSweepFirstAverage, iSweepLastAverage
-	TitleBox sweepsTitleBox,pos={20,yOffset},frame=0,title="Sweeps:"
-	CheckBox allSweepsCheckBox,pos={70,yOffset},size={50,20},title="All",value=averageAllSweeps
-	CheckBox allSweepsCheckBox,proc=HandleAllSweepsCheckbox
-	
-	//absVarName=AbsoluteVarName(browserDFName,"iSweepFirstAverage")
-	SetVariable firstSweepSetVariable,pos={110,yOffset},size={53,17},title=" "
-	SetVariable firstSweepSetVariable,limits={1,2000,1},proc=FirstSweepSetVariableUsed
-	
-	SetVariable lastSweepSetVariable,pos={170,yOffset},size={66,17},title="to"
-	SetVariable lastSweepSetVariable,limits={1,2000,1},proc=LastSweepSetVariableUsed
-	
-//	absVarName=AbsoluteVarName(browserDFName,"avghold")
-//	SetVariable avghold_disp,pos={47,yOffset+89},size={75,17},title="Hold"
-//	SetVariable avghold_disp,limits={-120,120,1},value=$absVarName
-//
-//	absVarName=AbsoluteVarName(browserDFName,"holdtolerance")
-//	SetVariable holdtol_disp,pos={135,yOffset+88},size={60,17},title="±"
-//	SetVariable holdtol_disp,limits={-120,120,1},value=$absVarName
-//	CheckBox hold_all,pos={212,yOffset+88},size={50,20},title="All",value=1
-
-	// Controls for which steps to show:
-	yOffset=yOffset+88-63
-	NVAR averageAllSteps
-	TitleBox stepsTitleBox,pos={20,yOffset},frame=0,title="Steps:"
-	CheckBox allStepsCheckBox,pos={70,yOffset},size={50,20},title="All",value=averageAllSteps
-	CheckBox allStepsCheckBox,proc=HandleAllStepsCheckbox
-	SetVariable stepsSetVariable,pos={110,yOffset-1},size={85,17},title="Only:"
-	SetVariable stepsSetVariable,limits={-1000,1000,10},proc=StepsSetVariableUsed
-
-	// set the enablement of the averaging fields appropriately
-	UpdateAveragingDisplay(browserNumber)
-
-	// Sync the view with the "model"
-	//SyncFitPanelViewToDFState(browserNumber)
-	
-	// Restore original data folder
-	SetDataFolder savedDF	
-End
-
-Function DataProBrowserHook(s)
+Function BrowserContHook(s)
 	// Hook function on the browser window that allows us to detect certain events and 
 	// update the model and/or view appropriately
 	STRUCT WMWinHookStruct &s
@@ -305,7 +70,7 @@ Function DataProBrowserHook(s)
 	return 0		// If non-zero, we handled event and Igor will ignore it.
 End
 
-Function ToolsPanelHook(s)
+Function BrowserContToolsPanelHook(s)
 	// Hook function on the tool panel, allows us to catch certain events
 	// and maintain UI consistency when they happen.
 	STRUCT WMWinHookStruct &s
@@ -322,17 +87,17 @@ Function ToolsPanelHook(s)
 	return 0		// If non-zero, we handled event and Igor will ignore it.
 End
 
-Function BrowserContSetNextSweepIndex(browserNumber,iSweep)
+Function BrowserContBrowserModelSetNextSweepIndex(browserNumber,iSweep)
 	// Just what it says on the tin.  Called by the data acquisition loop when a sweep is acquired.
 	// Set the sweep in the model
 	Variable browserNumber, iSweep
 	
-	SetNextSweepIndex(browserNumber,iSweep)
+	BrowserModelSetNextSweepIndex(browserNumber,iSweep)
 	// Sync the view
 	BrowserViewModelChanged(browserNumber)
 End
 
-Function HandleSetSweepIndexControl(svStruct) : SetVariableControl
+Function BrowserContNextSweepIndexSV(svStruct) : SetVariableControl
 	// Called when the user changes the sweep number in the DPBrowser, 
 	// which first changes iCurrentSweep.
 	STRUCT WMSetVariableAction &svStruct	
@@ -343,12 +108,12 @@ Function HandleSetSweepIndexControl(svStruct) : SetVariableControl
 	Variable iSweepInView=svStruct.dval
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	// Set the sweep in the model
-	SetNextSweepIndex(browserNumber,iSweepInView)
+	BrowserModelSetNextSweepIndex(browserNumber,iSweepInView)
 	// Sync the view
 	BrowserViewModelChanged(browserNumber)
 End
 
-Function HandleCommentsSetVariable(svStruct) : SetVariableControl
+Function BrowserContCommentsSV(svStruct) : SetVariableControl
 	// Called when the user changes the comment in the DPBrowser
 	STRUCT WMSetVariableAction &svStruct	
 	if ( svStruct.eventCode==-1 ) 
@@ -358,7 +123,7 @@ Function HandleCommentsSetVariable(svStruct) : SetVariableControl
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	String commentsInControl=svStruct.sval
 	// Set the wave comment for the top wave to commentInControl
-	String topTraceWaveNameAbs=GetTopTraceWaveNameAbs(browserNumber)
+	String topTraceWaveNameAbs=BrowserModelGetTopTraceWaveNameAbs(browserNumber)
 	if ( strlen(topTraceWaveNameAbs)>0 )
 		ReplaceStringByKeyInWaveNote($topTraceWaveNameAbs,"COMMENTS",commentsInControl)
 	endif
@@ -366,7 +131,7 @@ Function HandleCommentsSetVariable(svStruct) : SetVariableControl
 	BrowserViewModelChanged(browserNumber)
 End
 
-Function HandleDtFitExtendSetVariable(svStruct) : SetVariableControl
+Function BrowserContDtFitExtendSV(svStruct) : SetVariableControl
 	STRUCT WMSetVariableAction &svStruct	
 	if ( svStruct.eventCode==-1 ) 
 		return 0
@@ -374,12 +139,12 @@ Function HandleDtFitExtendSetVariable(svStruct) : SetVariableControl
 	String browserName=svStruct.win
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	// changing this invalidates the fit, since now the fit trace doesn't match the fit parameters
-	//Printf "About to call UpdateFit() in HandleDtFitExtendSetVariable()\r"
-	UpdateFit(browserNumber)  // model method
+	//Printf "About to call BrowserModelUpdateFit() in BrowserContDtFitExtendSV()\r"
+	BrowserModelUpdateFit(browserNumber)  // model method
 	BrowserViewModelChanged(browserNumber)	
 End
 
-Function HandleBaseNameControl(svStruct) : SetVariableControl
+Function BrowserContBaseNameSV(svStruct) : SetVariableControl
 	// Called when the user changes the trace name in the control.
 	STRUCT WMSetVariableAction &svStruct	
 	if ( svStruct.eventCode!=2 && svStruct.eventCode!=3 && svStruct.eventCode!=6 ) 
@@ -387,12 +152,12 @@ Function HandleBaseNameControl(svStruct) : SetVariableControl
 	endif	
 	String browserName=svStruct.win
 	Variable browserNumber=BrowserNumberFromName(browserName)
-	UpdateMeasurements(browserNumber)
+	BrowserModelUpdateMeasurements(browserNumber)
 	//InvalidateFit(browserNumber)  // model method
 	BrowserViewModelChanged(browserNumber)
 End
 
-Function HandleShowTraceCheckbox(cbStruct) : CheckBoxControl
+Function BrowserContShowTraceCB(cbStruct) : CheckBoxControl
 	// This is called when the user checks/unchecks the "tr.A" or "tr.B" checkboxes in a
 	// DPBrowser window.  Currently, this automatically changes the DF state variables.
 	STRUCT WMCheckboxAction &cbStruct
@@ -400,75 +165,75 @@ Function HandleShowTraceCheckbox(cbStruct) : CheckBoxControl
 		return 0							// we only handle mouse up in control
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
-	UpdateMeasurements(browserNumber)
+	BrowserModelUpdateMeasurements(browserNumber)
 	// Shouldn't need to mess with the fit: The view should realize that the fit is for a wave
 	// other than the one showing, and act accordingly.
-	//String topTraceWaveNameAbs=GetTopTraceWaveNameAbs()
+	//String topTraceWaveNameAbs=BrowserModelGetTopTraceWaveNameAbs()
 	//if (!AreStringsEqual(waveNameAbsOfFitTrace,topTraceWaveNameAbs)
 	//	InvalidateFit(browserNumber)  // model method
 	//end
 	BrowserViewModelChanged(browserNumber)
 End
 
-Function SetTraceAChecked(browserNumber,checked)
-	// Called to check/uncheck the trace A checkbox programmatically
-	Variable browserNumber, checked
+//Function SetTraceAChecked(browserNumber,checked)
+//	// Called to check/uncheck the trace A checkbox programmatically
+//	Variable browserNumber, checked
+//
+//	String savedDF=ChangeToBrowserDF(browserNumber)
+//	NVAR traceAChecked
+//	traceAChecked=checked	
+//	BrowserModelUpdateMeasurements(browserNumber)
+//	BrowserViewModelChanged(browserNumber)
+//	SetDataFolder savedDF
+//End
 
-	String savedDF=ChangeToBrowserDF(browserNumber)
-	NVAR traceAChecked
-	traceAChecked=checked	
-	UpdateMeasurements(browserNumber)
-	BrowserViewModelChanged(browserNumber)
-	SetDataFolder savedDF
-End
+//Function SetTraceBChecked(browserNumber,checked)
+//	// Called to check/uncheck the trace B checkbox programmatically
+//	Variable browserNumber, checked
+//
+//	String savedDF=ChangeToBrowserDF(browserNumber)
+//	NVAR traceBChecked
+//	traceBChecked=checked	
+//	BrowserModelUpdateMeasurements(browserNumber)
+//	BrowserViewModelChanged(browserNumber)
+//	SetDataFolder savedDF
+//End
 
-Function SetTraceBChecked(browserNumber,checked)
-	// Called to check/uncheck the trace B checkbox programmatically
-	Variable browserNumber, checked
-
-	String savedDF=ChangeToBrowserDF(browserNumber)
-	NVAR traceBChecked
-	traceBChecked=checked	
-	UpdateMeasurements(browserNumber)
-	BrowserViewModelChanged(browserNumber)
-	SetDataFolder savedDF
-End
-
-Function HandleRejectACheckbox(cbStruct) : CheckBoxControl
+Function BrowserContHandleRejectACB(cbStruct) : CheckBoxControl
 	STRUCT WMCheckboxAction &cbStruct
 	if (cbStruct.eventCode!=2)
 		return 0							// we only handle mouse up in control
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
-	String traceAWaveNameAbs=GetTraceAWaveNameAbs(browserNumber)
+	String traceAWaveNameAbs=BrowserModelGetTraceAWaveNameAbs(browserNumber)
 	ReplaceStringByKeyInWaveNote($traceAWaveNameAbs,"REJECT",num2str(cbStruct.checked))
 End
 
-Function HandleRejectBCheckbox(cbStruct) : CheckBoxControl
+Function BrowserContHandleRejectBCB(cbStruct) : CheckBoxControl
 	STRUCT WMCheckboxAction &cbStruct
 	if (cbStruct.eventCode!=2)
 		return 0							// we only handle mouse up in control
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
-	String traceBWaveNameAbs=GetTraceBWaveNameAbs(browserNumber)
+	String traceBWaveNameAbs=BrowserModelGetTraceBWaveNameAbs(browserNumber)
 	ReplaceStringByKeyInWaveNote($traceBWaveNameAbs,"REJECT",num2str(cbStruct.checked))
 End
 
-Function BaseSub(cbStruct) : CheckBoxControl
-	// This is called when the user checks/unchecks one of the "Base Sub" checkboxes in a
-	// DPBrowser window.
-	STRUCT WMCheckboxAction &cbStruct
-	if (cbStruct.eventCode!=2)
-		return 0							// we only handle mouse up in control
-	endif	
-	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
-	UpdateMeasurements(browserNumber)
-	//Printf "About to call UpdateFit() in BaseSub()\r"
-	UpdateFit(browserNumber)  // model method
-	BrowserViewModelChanged(browserNumber)
-End
+//Function BaseSub(cbStruct) : CheckBoxControl
+//	// This is called when the user checks/unchecks one of the "Base Sub" checkboxes in a
+//	// DPBrowser window.
+//	STRUCT WMCheckboxAction &cbStruct
+//	if (cbStruct.eventCode!=2)
+//		return 0							// we only handle mouse up in control
+//	endif	
+//	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
+//	BrowserModelUpdateMeasurements(browserNumber)
+//	//Printf "About to call BrowserModelUpdateFit() in BaseSub()\r"
+//	BrowserModelUpdateFit(browserNumber)  // model method
+//	BrowserViewModelChanged(browserNumber)
+//End
 
-Function ShowHideToolsPanel(cbStruct) : CheckboxControl
+Function BrowserContShowToolsPanelCB(cbStruct) : CheckboxControl
 	// This is called when the user checks/unchecks the "Show tools" checkbox in a
 	// DPBrowser window.
 	STRUCT WMCheckboxAction &cbStruct
@@ -479,7 +244,7 @@ Function ShowHideToolsPanel(cbStruct) : CheckboxControl
 	BrowserViewModelChanged(browserNumber)
 End
 
-Function HandleSetBaselineButton(bStruct) : ButtonControl
+Function BrowserContSetBaselineButton(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
 	
 	// Check that this is really a button-up on the button
@@ -507,7 +272,7 @@ Function HandleSetBaselineButton(bStruct) : ButtonControl
 	tBaselineRight=xcsr(B,browserName)
 
 	// Update the measurements	
-	UpdateMeasurements(browserNumber)
+	BrowserModelUpdateMeasurements(browserNumber)
 
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
@@ -516,7 +281,7 @@ Function HandleSetBaselineButton(bStruct) : ButtonControl
 	SetDataFolder savedDF	
 End
 
-Function ClearBaseline(bStruct) : ButtonControl
+Function BrowserContClearBaselineButton(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
 	
 	// Check that this is really a button-up on the button
@@ -538,7 +303,7 @@ Function ClearBaseline(bStruct) : ButtonControl
 	tBaselineRight=nan
 
 	// Update the measurements	
-	UpdateMeasurements(browserNumber)
+	BrowserModelUpdateMeasurements(browserNumber)
 	
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
@@ -547,7 +312,7 @@ Function ClearBaseline(bStruct) : ButtonControl
 	SetDataFolder savedDF	
 End
 
-Function SetWindow1(bStruct) : ButtonControl
+Function BrowserContSetWindow1Button(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
 	
 	// Check that this is really a button-up on the button
@@ -576,7 +341,7 @@ Function SetWindow1(bStruct) : ButtonControl
 	tWindow1Right=xcsr(B,browserName)
 
 	// Update the meaurements
-	UpdateMeasurements(browserNumber)
+	BrowserModelUpdateMeasurements(browserNumber)
 
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
@@ -585,7 +350,7 @@ Function SetWindow1(bStruct) : ButtonControl
 	SetDataFolder savedDF	
 End
 
-Function ClearWindow1(bStruct) : ButtonControl
+Function BrowserContClearWindow1Button(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
 	
 	// Check that this is really a button-up on the button
@@ -607,7 +372,7 @@ Function ClearWindow1(bStruct) : ButtonControl
 	tWindow1Right=nan
 	
 	// Update the measurements
-	UpdateMeasurements(browserNumber)
+	BrowserModelUpdateMeasurements(browserNumber)
 	
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
@@ -616,7 +381,7 @@ Function ClearWindow1(bStruct) : ButtonControl
 	SetDataFolder savedDF	
 End
 
-Function HandleMeasurementSetVariable(svStruct) : SetVariableControl
+Function BrowserContMeasurementSV(svStruct) : SetVariableControl
 	// This is a generic handler for several of the measurement sub-panel
 	// SetVariables.  It simply updates the measurements in the model and
 	// syncs the view.
@@ -625,11 +390,11 @@ Function HandleMeasurementSetVariable(svStruct) : SetVariableControl
 		return 0
 	endif	
 	Variable browserNumber=BrowserNumberFromName(svStruct.win)
-	UpdateMeasurements(browserNumber)
+	BrowserModelUpdateMeasurements(browserNumber)
 	BrowserViewModelChanged(browserNumber)
 End
 
-Function SetWindow2(bStruct)
+Function BrowserContSetWindow2Button(bStruct)
 	STRUCT WMButtonAction &bStruct
 	
 	// Check that this is really a button-up on the button
@@ -658,7 +423,7 @@ Function SetWindow2(bStruct)
 	tWindow2Right=xcsr(B,browserName)
 
 	// Update the measurements
-	UpdateMeasurements(browserNumber)
+	BrowserModelUpdateMeasurements(browserNumber)
 
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
@@ -668,7 +433,7 @@ Function SetWindow2(bStruct)
 End
 
 
-Function ClearWindow2(bStruct) : ButtonControl
+Function BrowserContClearWindow2Button(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
 	
 	// Check that this is really a button-up on the button
@@ -690,7 +455,7 @@ Function ClearWindow2(bStruct) : ButtonControl
 	tWindow2Right=nan
 	
 	// Update the measurements
-	UpdateMeasurements(browserNumber)
+	BrowserModelUpdateMeasurements(browserNumber)
 	
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
@@ -699,7 +464,7 @@ Function ClearWindow2(bStruct) : ButtonControl
 	SetDataFolder savedDF	
 End
 
-Function SetFitZero(bStruct) : ButtonControl
+Function BrowserContSetFitZeroButton(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
 	
 	// Check that this is really a button-up on the button
@@ -723,12 +488,12 @@ Function SetFitZero(bStruct) : ButtonControl
 	NVAR tFitZero=tFitZero
 	tFitZero=xcsr(A,browserName)
 	//SVAR traceAWaveName=traceAWaveName  // actually the name of a wave, not the wave itself
-	//AddCursorLineToGraph(browserName,"fitLineZero",tFitZero)
+	//BrowserViewAddCursorLineToGraph(browserName,"fitLineZero",tFitZero)
 	//ModifyGraph rgb(fitLineZero)=(26411,1,52428)
 
 	// Update the fit
-	//Printf "About to call UpdateFit() in SetFitZero()\r"
-	UpdateFit(browserNumber)
+	//Printf "About to call BrowserModelUpdateFit() in BrowserContSetFitZeroButton()\r"
+	BrowserModelUpdateFit(browserNumber)
 	
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
@@ -737,7 +502,7 @@ Function SetFitZero(bStruct) : ButtonControl
 	SetDataFolder savedDFName
 End
 
-Function HandleClearFitZeroButton(bStruct) : ButtonControl
+Function BrowserContClearFitZeroButton(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
 	
 	// Check that this is really a button-up on the button
@@ -756,7 +521,7 @@ Function HandleClearFitZeroButton(bStruct) : ButtonControl
 	tFitZero=nan
 
 	// Update the fit
-	UpdateFit(browserNumber)
+	BrowserModelUpdateFit(browserNumber)
 	
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
@@ -765,7 +530,7 @@ Function HandleClearFitZeroButton(bStruct) : ButtonControl
 	SetDataFolder savedDFName
 End
 
-Function SetFitRange(bStruct) : ButtonControl
+Function BrowserContSetFitRangeButton(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
 	
 	// Check that this is really a button-up on the button
@@ -792,8 +557,8 @@ Function SetFitRange(bStruct) : ButtonControl
 	tFitRight=xcsr(B,browserName)
 
 	// Update the fit
-	//Printf "About to call UpdateFit() in SetFitRange()\r"
-	UpdateFit(browserNumber)
+	//Printf "About to call BrowserModelUpdateFit() in BrowserContSetFitRangeButton()\r"
+	BrowserModelUpdateFit(browserNumber)
 
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
@@ -802,7 +567,7 @@ Function SetFitRange(bStruct) : ButtonControl
 	SetDataFolder savedDFName
 End
 
-Function HandleClearFitRangeButton(bStruct) : ButtonControl
+Function BrowserContClearFitRangeButton(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
 	
 	// Check that this is really a button-up on the button
@@ -823,7 +588,7 @@ Function HandleClearFitRangeButton(bStruct) : ButtonControl
 	tFitRight=nan
 
 	// Update the fit
-	UpdateFit(browserNumber)
+	BrowserModelUpdateFit(browserNumber)
 
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
@@ -832,7 +597,7 @@ Function HandleClearFitRangeButton(bStruct) : ButtonControl
 	SetDataFolder savedDFName
 End
 
-Function HandleFitButton(bStruct) : ButtonControl
+Function BrowserContFitButton(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
 	
 	// Check that this is really a button-up on the button
@@ -844,14 +609,14 @@ Function HandleFitButton(bStruct) : ButtonControl
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
 	
 	// Update the fit trace and fit parameters in the model
-	//Printf "About to call UpdateFit() in HandleFitButton()\r"
-	UpdateFit(browserNumber)
+	//Printf "About to call BrowserModelUpdateFit() in BrowserContFitButton()\r"
+	BrowserModelUpdateFit(browserNumber)
 	
 	// Sync the view to the model
 	BrowserViewModelChanged(browserNumber)
 End
 
-Function HandleFitTypePopupMenu(pStruct) : PopupMenuControl
+Function BrowserContFitTypePopup(pStruct) : PopupMenuControl
 	STRUCT WMPopupAction &pStruct
 	
 	// Check that this is really a button-up on the menu
@@ -871,14 +636,14 @@ Function HandleFitTypePopupMenu(pStruct) : PopupMenuControl
 	endif
 
 	// Update the fit coeffs
-	//Printf "About to call UpdateFit() in HandleFitTypePopupMenu()\r"
-	UpdateFit(browserNumber)
+	//Printf "About to call BrowserModelUpdateFit() in BrowserContFitTypePopup()\r"
+	BrowserModelUpdateFit(browserNumber)
 	
 	// Sync the view to the model
 	BrowserViewModelChanged(browserNumber)
 End
 
-Function HandleHoldYOffsetCheckbox(cbStruct) : CheckBoxControl
+Function BrowserContHoldYOffsetCB(cbStruct) : CheckBoxControl
 	STRUCT WMCheckboxAction &cbStruct	
 
 	// If event is other than mouse up within control, do nothing
@@ -922,20 +687,20 @@ Function HandleHoldYOffsetCheckbox(cbStruct) : CheckBoxControl
 			if (yOffsetHeldValue==yOffset)
 				// no need to invalidate in this case!
 			else
-				//Printf "About to call UpdateFit() in HandleHoldYOffsetCheckbox() #1\r"
-				UpdateFit(browserNumber)
+				//Printf "About to call BrowserModelUpdateFit() in BrowserContHoldYOffsetCB() #1\r"
+				BrowserModelUpdateFit(browserNumber)
 			endif
 		else
 			// fit is already invalid
-			//Printf "About to call UpdateFit() in HandleHoldYOffsetCheckbox() #2\r"
-			UpdateFit(browserNumber)
+			//Printf "About to call BrowserModelUpdateFit() in BrowserContHoldYOffsetCB() #2\r"
+			BrowserModelUpdateFit(browserNumber)
 		endif			
 	else
 		// holdYOffset just turned false -- now the yOffset parameter is free, so a previously-valid fit 
 		// is now invalid
 		//yOffsetHeldValue=nan  // when made visible again, want it to get current yOffset
-		//Printf "About to call UpdateFit() in HandleHoldYOffsetCheckbox() #3\r"		
-		UpdateFit(browserNumber)
+		//Printf "About to call BrowserModelUpdateFit() in BrowserContHoldYOffsetCB() #3\r"		
+		BrowserModelUpdateFit(browserNumber)
 	endif
 
 	// Sync the the view with the current state
@@ -945,7 +710,7 @@ Function HandleHoldYOffsetCheckbox(cbStruct) : CheckBoxControl
 	SetDataFolder savedDFName
 End
 
-Function HandleYOffsetHeldValueSetVar(svStruct) : SetVariableControl
+Function BrowserContYOffsetHeldValueSV(svStruct) : SetVariableControl
 	STRUCT WMSetVariableAction &svStruct	
 	//Printf "eventcode: %d\r", svStruct.eventCode
 	if ( svStruct.eventCode==-1 ) 
@@ -957,8 +722,8 @@ Function HandleYOffsetHeldValueSetVar(svStruct) : SetVariableControl
 	NVAR yOffsetHeldValue
 	yOffsetHeldValue=svStruct.dval  // set the model variable to the value set in the view
 	// changing this invalidates the fit, since now the fit trace (if there is one) doesn't match the fit parameters
-	//Printf "About to call UpdateFit() in HandleYOffsetHeldValueSetVar()\r"		
-	UpdateFit(browserNumber)  // model method
+	//Printf "About to call BrowserModelUpdateFit() in BrowserContYOffsetHeldValueSV()\r"		
+	BrowserModelUpdateFit(browserNumber)  // model method
 	BrowserViewModelChanged(browserNumber)	
 	SetDataFolder savedDFName
 End
@@ -971,13 +736,13 @@ End
 //	String savedDFName=ChangeToBrowserDF(browserNumber)
 //	
 //	// Set the sweep in the "model"
-//	SetNextSweepIndex(browserNumber,sweepIndexInView)
+//	BrowserModelSetNextSweepIndex(browserNumber,sweepIndexInView)
 //	
 //	// Restore the original DF
 //	SetDataFolder savedDFName	
 //End
 
-Function RescaleCheckProc(cbStruct) : CheckBoxControl
+Function BrowserContRescaleCB(cbStruct) : CheckBoxControl
 	STRUCT WMCheckboxAction &cbStruct
 	if (cbStruct.eventCode!=2)
 		return 0							// we only handle mouse up in control
@@ -985,10 +750,10 @@ Function RescaleCheckProc(cbStruct) : CheckBoxControl
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
 	BrowserViewModelChanged(browserNumber)
 	//SyncDFAxesLimitsWithGraph(browserNumber)
-	//RescaleAxes(browserNumber)
+	//BrowserViewRescaleAxes(browserNumber)
 End
 
-Function HandleAllSweepsCheckbox(cbStruct) : CheckBoxControl
+Function BrowserContAllSweepsCB(cbStruct) : CheckBoxControl
 	STRUCT WMCheckboxAction &cbStruct
 	if (cbStruct.eventCode!=2)
 		return 0							// we only handle mouse up in control
@@ -997,23 +762,11 @@ Function HandleAllSweepsCheckbox(cbStruct) : CheckBoxControl
 	String savedDFName=ChangeToBrowserDF(browserNumber)	
 	NVAR averageAllSweeps
 	averageAllSweeps=cbStruct.checked
-//	NVAR iSweepFirstAverage,iSweepLastAverage
-//	if ( averageAllSweeps )
-//		iSweepFirstAverage=nan
-//		iSweepLastAverage=nan
-//	else
-//		SVAR baseNameA, baseNameB
-//		Variable nSweeps1=NTracesFromBaseName(baseNameA)
-//		Variable nSweeps2=NTracesFromBaseName(baseNameB)
-//		Variable nSweeps=max(nSweeps1,nSweeps2)
-//		iSweepFirstAverage=1
-//		iSweepLastAverage=nSweeps
-//	endif
 	BrowserViewModelChanged(browserNumber)
 	SetDataFolder savedDFName
 End
 
-Function FirstSweepSetVariableUsed(svStruct) : SetVariableControl
+Function BrowserContFirstSweepSV(svStruct) : SetVariableControl
 	STRUCT WMSetVariableAction &svStruct	
 	if ( svStruct.eventCode==-1 ) 
 		return 0
@@ -1026,7 +779,7 @@ Function FirstSweepSetVariableUsed(svStruct) : SetVariableControl
 	SetDataFolder savedDFName	
 End
 
-Function LastSweepSetVariableUsed(svStruct) : SetVariableControl
+Function BrowserContLastSweepSV(svStruct) : SetVariableControl
 	STRUCT WMSetVariableAction &svStruct	
 	if ( svStruct.eventCode==-1 ) 
 		return 0
@@ -1039,7 +792,7 @@ Function LastSweepSetVariableUsed(svStruct) : SetVariableControl
 	SetDataFolder savedDFName	
 End
 
-Function HandleAllStepsCheckbox(cbStruct) : CheckBoxControl
+Function BrowserContAllStepsCB(cbStruct) : CheckBoxControl
 	STRUCT WMCheckboxAction &cbStruct
 	if (cbStruct.eventCode!=2)
 		return 0							// we only handle mouse up in control
@@ -1052,7 +805,7 @@ Function HandleAllStepsCheckbox(cbStruct) : CheckBoxControl
 	SetDataFolder savedDFName
 End
 
-Function StepsSetVariableUsed(svStruct) : SetVariableControl
+Function BrowserContStepsSV(svStruct) : SetVariableControl
 	STRUCT WMSetVariableAction &svStruct	
 	if ( svStruct.eventCode==-1 ) 
 		return 0
@@ -1065,7 +818,7 @@ Function StepsSetVariableUsed(svStruct) : SetVariableControl
 	SetDataFolder savedDFName	
 End
 
-Function RenameAveragesCheckBoxTwiddled(cbStruct) : CheckBoxControl
+Function BrowserContRenameAveragesCB(cbStruct) : CheckBoxControl
 	STRUCT WMCheckboxAction &cbStruct
 	if (cbStruct.eventCode!=2)
 		return 0							// we only handle mouse up in control
@@ -1078,42 +831,7 @@ Function RenameAveragesCheckBoxTwiddled(cbStruct) : CheckBoxControl
 	SetDataFolder savedDFName
 End
 
-Function getNSweeps(browserNumber)
-	Variable browserNumber
-		
-	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
-	String savedDFName=ChangeToBrowserDF(browserNumber)
-	
-	// Determine the range of sweeps present
-	NVAR traceAChecked
-	NVAR traceBChecked	
-	SVAR baseNameA
-	SVAR baseNameB
-	Variable nSweepsA=NTracesFromBaseName(baseNameA)
-	Variable nSweepsB=NTracesFromBaseName(baseNameB)
-	Variable nSweeps
-	if (traceAChecked)
-		if (traceBChecked)
-			nSweeps=max(nSweepsA,nSweepsB)
-		else
-			nSweeps=nSweepsA
-		endif
-	else
-		if (traceBChecked)
-			nSweeps=nSweepsB
-		else
-			nSweeps=0
-		endif
-	endif
-
-	// Restore original DF
-	SetDataFolder savedDFName
-	
-	// Return
-	return nSweeps
-End
-
-Function AverageSweepsButtonPressed(bStruct) : ButtonControl
+Function BrowserContAverageSweepsButton(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
 	
 	// Check that this is really a button-up on the button
@@ -1129,7 +847,7 @@ Function AverageSweepsButtonPressed(bStruct) : ButtonControl
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 	
 	// Determine the range of sweeps present
-	Variable nSweeps=getNSweeps(browserNumber)
+	Variable nSweeps=BrowserModelGetNSweeps(browserNumber)
 	
 	// determine which sweeps we're going to average, of those present
 	NVAR averageAllSweeps
@@ -1159,10 +877,10 @@ Function AverageSweepsButtonPressed(bStruct) : ButtonControl
 	Variable filterOnStep=!averageAllSteps
 	NVAR stepToAverage
 	if (traceAChecked)
-		ComputeAverageWaves(browserNumber,destSweepIndex,baseNameA,iFrom,iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
+		BrowserContComputeAverageWaves(browserNumber,destSweepIndex,baseNameA,iFrom,iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
 	endif
 	if (traceBChecked)
-		ComputeAverageWaves(browserNumber,destSweepIndex,baseNameB,iFrom,iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
+		BrowserContComputeAverageWaves(browserNumber,destSweepIndex,baseNameB,iFrom,iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
 	endif			
 
 	// increment the next sweep index for acquisition	
@@ -1174,7 +892,7 @@ Function AverageSweepsButtonPressed(bStruct) : ButtonControl
 	SetDataFolder savedDFName
 End
 
-Function ComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom,iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
+Function BrowserContComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom,iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
 	Variable browserNumber
 	Variable destSweepIndex
 	String waveBaseName
@@ -1236,7 +954,7 @@ Function ComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom,iTo
 	for (i=iFrom; i<=iTo; i+=1)
 		String thisWaveName=sprintf2sv("root:%s_%d", waveBaseName, i)
 		WAVE thisWave=$thisWaveName
-		include=IncludeInAverage(thisWaveName,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
+		include=BrowserModelIncludeInAverage(thisWaveName,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
 		if (include)
 			if (nWavesSummedSoFar==0)
 				Duplicate /O thisWave $destWaveName
@@ -1268,7 +986,7 @@ Function ComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom,iTo
 	SetDataFolder savedDFName	
 End
 
-Function TraceAColorSelected(pStruct) : PopupMenuControl
+Function BrowserContTraceAColorPopup(pStruct) : PopupMenuControl
 	STRUCT WMPopupAction &pStruct
 	// Check that this is really a button-up on the button
 	if (pStruct.eventCode!=2)
@@ -1287,7 +1005,7 @@ Function TraceAColorSelected(pStruct) : PopupMenuControl
 	SetDataFolder savedDFName		
 End
 
-Function TraceBColorSelected(pStruct) : PopupMenuControl
+Function BrowserContTraceBColorPopup(pStruct) : PopupMenuControl
 	STRUCT WMPopupAction &pStruct
 	// Check that this is really a button-up on the button
 	if (pStruct.eventCode!=2)

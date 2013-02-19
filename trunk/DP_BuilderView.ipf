@@ -1,5 +1,16 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
+Function BuilderViewConstructor(builderType)
+	// Synthesize the name of the true view constructor from the builderType
+	String viewConstructorName=builderType+"BuilderViewConstructor"
+	Funcref BuilderViewConstructorSig viewConstructor=$viewConstructorName
+	viewConstructor()
+End
+
+Function BuilderViewConstructorSig()
+	Abort "Internal Error: Attempt to call a function that doesn't exist"
+End
+
 Function BuilderViewModelChanged(builderType)
 	String builderType
 	
@@ -18,7 +29,6 @@ Function BuilderViewModelChanged(builderType)
 
 	WAVE parameters
 	WAVE /T parameterNames
-
 
 	// Set each SetVariable to hold the current model value
 	Variable nParameters=numpnts(parameters)

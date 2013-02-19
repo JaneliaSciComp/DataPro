@@ -1,7 +1,7 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 Function StepBuilderViewConstructor() : Graph
-	BuilderModelConstructor("Step")
+	//BuilderModelConstructor("Step")
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_StepBuilder
 	WAVE theWave

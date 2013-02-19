@@ -1,7 +1,7 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 Function RampBuilderViewConstructor() : Graph
-	BuilderModelConstructor("Ramp")
+	//BuilderModelConstructor("Ramp")
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_RampBuilder
 	WAVE theWave
