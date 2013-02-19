@@ -41,9 +41,9 @@ Function BrowserContHook(s)
 		NVAR tCursorA
 		NVAR tCursorB
 		if ( AreStringsEqual(cursorName,"A") )
-			tCursorA=xcsr(A,browserName)
+			tCursorA=cursorXPosition("A",browserName)
 		elseif ( AreStringsEqual(cursorName,"B") )
-			tCursorB=xcsr(B,browserName)
+			tCursorB=cursorXPosition("B",browserName)
 		endif
 		SetDataFolder savedDFName
 	elseif (s.eventCode==8)			// graph modified
@@ -312,8 +312,8 @@ Function BrowserContSetWindow1Button(bStruct) : ButtonControl
 	NVAR tWindow1Left, tWindow1Right
 	
 	// Draw vertical lines to indicate the margins of the window time range
-	tWindow1Left=xcsr(A,browserName)  // times of left and right cursor that delineate the window region
-	tWindow1Right=xcsr(B,browserName)
+	tWindow1Left=cursorXPosition("A",browserName)  // times of left and right cursor that delineate the window region
+	tWindow1Right=cursorXPosition("B",browserName)
 
 	// Update the meaurements
 	BrowserModelUpdateMeasurements(browserNumber)
@@ -394,8 +394,8 @@ Function BrowserContSetWindow2Button(bStruct)
 	NVAR tWindow2Left, tWindow2Right
 	
 	// Draw vertical lines to indicate the margins of the window time range
-	tWindow2Left=xcsr(A,browserName)  // times of left and right cursor that delineate the window region
-	tWindow2Right=xcsr(B,browserName)
+	tWindow2Left=cursorXPosition("A",browserName)  // times of left and right cursor that delineate the window region
+	tWindow2Right=cursorXPosition("B",browserName)
 
 	// Update the measurements
 	BrowserModelUpdateMeasurements(browserNumber)
@@ -461,7 +461,7 @@ Function BrowserContSetFitZeroButton(bStruct) : ButtonControl
 
 	// Set the model state variable
 	NVAR tFitZero=tFitZero
-	tFitZero=xcsr(A,browserName)
+	tFitZero=cursorXPosition("A",browserName)
 	//SVAR traceAWaveName=traceAWaveName  // actually the name of a wave, not the wave itself
 	//BrowserViewAddCursorLineToGraph(browserName,"fitLineZero",tFitZero)
 	//ModifyGraph rgb(fitLineZero)=(26411,1,52428)
@@ -525,14 +525,13 @@ Function BrowserContSetFitRangeButton(bStruct) : ButtonControl
 	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 
-	// Set internal "cursors"
+	// Set fit bounds in model
 	NVAR tFitLeft=tFitLeft
-	tFitLeft=xcsr(A,browserName)
+	tFitLeft=cursorXPosition("A",browserName)
 	NVAR tFitRight=tFitRight
-	tFitRight=xcsr(B,browserName)
+	tFitRight=cursorXPosition("B",browserName)
 
 	// Update the fit
-	//Printf "About to call BrowserModelUpdateFit() in BrowserContSetFitRangeButton()\r"
 	BrowserModelUpdateFit(browserNumber)
 
 	// Update the view
@@ -556,7 +555,7 @@ Function BrowserContClearFitRangeButton(bStruct) : ButtonControl
 	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 
-	// Set internal "cursors"
+	// Set fit bounds in model
 	NVAR tFitLeft
 	NVAR tFitRight
 	tFitLeft=nan
