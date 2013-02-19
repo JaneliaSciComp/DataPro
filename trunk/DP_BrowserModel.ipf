@@ -124,7 +124,7 @@ Function BrowserModelConstructor()
 	return browserNumber
 End
 
-Function SetICurrentSweep(browserNumber,sweepIndexNew)
+Function SetNextSweepIndex(browserNumber,sweepIndexNew)
 	// Set the current sweep index to something, which is assumed to be valid.
 	Variable browserNumber, sweepIndexNew
 

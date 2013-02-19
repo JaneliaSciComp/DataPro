@@ -4,7 +4,7 @@ Function RaiseOrCreateDataProBrowser()
 	String DPBrowserList=WinList("DataProBrowser*",";","WIN:1")		// 1 means graphs
 	Variable nDPBrowsers=ItemsInList(DPBrowserList)
 	if (nDPBrowsers==0)
-		Execute "CreateDataProBrowser()"
+		BrowserControllerConstructor()
 	else
 		Variable browserNumber=LargestBrowserNumber()
 		String browserName=BrowserNameFromNumber(browserNumber)
@@ -12,7 +12,7 @@ Function RaiseOrCreateDataProBrowser()
 	endif
 End
 
-Function CreateDataProBrowser()
+Function BrowserControllerConstructor()
 	Variable browserNumber=BrowserModelConstructor();
 	BrowserViewConstructor(browserNumber)
 End
@@ -322,12 +322,12 @@ Function ToolsPanelHook(s)
 	return 0		// If non-zero, we handled event and Igor will ignore it.
 End
 
-Function SetICurrentSweepAndSyncView(browserNumber,iSweep)
+Function BrowserContSetNextSweepIndex(browserNumber,iSweep)
 	// Just what it says on the tin.  Called by the data acquisition loop when a sweep is acquired.
 	// Set the sweep in the model
 	Variable browserNumber, iSweep
 	
-	SetICurrentSweep(browserNumber,iSweep)
+	SetNextSweepIndex(browserNumber,iSweep)
 	// Sync the view
 	BrowserViewModelChanged(browserNumber)
 End
@@ -343,7 +343,7 @@ Function HandleSetSweepIndexControl(svStruct) : SetVariableControl
 	Variable iSweepInView=svStruct.dval
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	// Set the sweep in the model
-	SetICurrentSweep(browserNumber,iSweepInView)
+	SetNextSweepIndex(browserNumber,iSweepInView)
 	// Sync the view
 	BrowserViewModelChanged(browserNumber)
 End
@@ -971,7 +971,7 @@ End
 //	String savedDFName=ChangeToBrowserDF(browserNumber)
 //	
 //	// Set the sweep in the "model"
-//	SetICurrentSweep(browserNumber,sweepIndexInView)
+//	SetNextSweepIndex(browserNumber,sweepIndexInView)
 //	
 //	// Restore the original DF
 //	SetDataFolder savedDFName	
@@ -1145,8 +1145,7 @@ Function AverageSweepsButtonPressed(bStruct) : ButtonControl
 	endif
 	
 	// Figure the dest wave name
-	NVAR acqNextSweepIndex=root:DP_Digitizer:iSweep
-	Variable destSweepIndex=acqNextSweepIndex
+	Variable destSweepIndex=SweeperGetNextSweepIndex()
 	
 	// Do the average(s)
 	SVAR baseNameA
@@ -1168,7 +1167,7 @@ Function AverageSweepsButtonPressed(bStruct) : ButtonControl
 
 	// increment the next sweep index for acquisition	
 	if (traceAChecked || traceBChecked)
-		acqNextSweepIndex=destSweepIndex+1	
+		SweeperContIncrNextSweepIndex()
 	endif
 	
 	// Restore original DF
@@ -1264,17 +1263,7 @@ Function ComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom,iTo
 		Abort message
 	endif
 	Printf "%d sweeps of %s were averaged and stored in %s\r", nWavesToAvg, waveBaseName, destWaveName
-	
-//	// Save the average wave to disk, if called for
-//	NVAR renameAverages
-//	if (renameAverages)
-//		String outFileName=sprintf1s("%s.avg", destWaveName)
-//		Save /C/I outWave as outFileName
-//		Printf "%s: Average saved to disk as %s\r", waveBaseName, outFileName
-//	else
-//		//Printf "%s: Average not saved to disk\r", waveBaseName
-//	endif
-	
+		
 	// Restore original DF
 	SetDataFolder savedDFName	
 End
