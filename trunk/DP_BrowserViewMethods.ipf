@@ -45,9 +45,9 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	CheckBox autoscaleXCheckbox,value= 1, variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"iCurrentSweep")
-	SetVariable setsweep,pos={11,15},size={100,18},proc=HandleSetSweepIndexControl,title="Sweep"
-	SetVariable setsweep,fSize=12
-	SetVariable setsweep,limits={1,100000,1},value=_NUM:1
+	SetVariable setSweepIndexSV,pos={11,15},size={100,18},proc=HandleSetSweepIndexControl,title="Sweep"
+	SetVariable setSweepIndexSV,fSize=12
+	SetVariable setSweepIndexSV,limits={1,100000,1},value=_NUM:1
 	
 	Variable yBaselineForTraceA=7
 	Variable yBaselineForTraceB=30
@@ -170,15 +170,18 @@ Function BrowserViewModelChanged(browserNumber)
 	RemoveFromGraphAll(browserName)
 	
 	// Update the viable range for the current sweep control, and the current sweep
-	Variable nSweeps1=NTracesFromBaseName(baseNameA)
-	Variable nSweeps2=NTracesFromBaseName(baseNameB)
-	Variable nSweeps=max(nSweeps1,nSweeps2)
-	if (nSweeps>0)
-		SetVariable setsweep, win=$browserName, limits={1,nSweeps,1}
-		SetVariable setsweep, win=$browserName, value=_NUM:iCurrentSweep
+	Variable minSweepIndexA=minSweepIndexFromBaseName(baseNameA)
+	Variable minSweepIndexB=minSweepIndexFromBaseName(baseNameB)
+	Variable minSweepIndexOverall=min(minSweepIndexA,minSweepIndexB)
+	Variable maxSweepIndexA=maxSweepIndexFromBaseName(baseNameA)
+	Variable maxSweepIndexB=maxSweepIndexFromBaseName(baseNameB)
+	Variable maxSweepIndexOverall=max(maxSweepIndexA,maxSweepIndexB)
+	if ( maxSweepIndexOverall >=minSweepIndexOverall )
+		SetVariable setSweepIndexSV, win=$browserName, limits={minSweepIndexOverall,maxSweepIndexOverall,1}
+		SetVariable setSweepIndexSV, win=$browserName, value=_NUM:iCurrentSweep
 	else
-		SetVariable setsweep, win=$browserName, limits={1,nSweeps,0}
-		SetVariable setsweep, win=$browserName, value=_STR:"(none)"		
+		SetVariable setSweepIndexSV, win=$browserName, limits={minSweepIndexOverall,maxSweepIndexOverall,0}
+		SetVariable setSweepIndexSV, win=$browserName, value=_STR:"(none)"		
 	endif	
 
 	// If either wave exists, do baseline subtraction
