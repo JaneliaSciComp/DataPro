@@ -1,7 +1,7 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 Function SineBuilderViewConstructor() : Graph
-	BuilderModelConstructor("Sine")
+	//BuilderModelConstructor("Sine")
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_SineBuilder
 	WAVE theWave

@@ -85,7 +85,7 @@ Function BrowserModelConstructor()
 	
 	// Create the globals related to the averaging subpanel
 	// There are all user-specified parameters
-	//Variable nSweeps=getNSweeps(browserNumber)		// Safe to call even this early
+	//Variable nSweeps=BrowserModelGetNSweeps(browserNumber)		// Safe to call even this early
 	Variable /G renameAverages=0
 	Variable /G averageAllSweeps=1
 	Variable /G iSweepFirstAverage=1
@@ -124,7 +124,7 @@ Function BrowserModelConstructor()
 	return browserNumber
 End
 
-Function SetNextSweepIndex(browserNumber,sweepIndexNew)
+Function BrowserModelSetNextSweepIndex(browserNumber,sweepIndexNew)
 	// Set the current sweep index to something, which is assumed to be valid.
 	Variable browserNumber, sweepIndexNew
 
@@ -134,13 +134,13 @@ Function SetNextSweepIndex(browserNumber,sweepIndexNew)
 	// Set iCurrentSweep, then update the measurements
 	NVAR iCurrentSweep
 	iCurrentSweep=sweepIndexNew
-	UpdateMeasurements(browserNumber)
+	BrowserModelUpdateMeasurements(browserNumber)
 	
 	// Restore the original DF
 	SetDataFolder savedDFName	
 End
 
-Function /S GetTopTraceWaveNameAbs(browserNumber)
+Function /S BrowserModelGetTopTraceWaveNameAbs(browserNumber)
 	// Returns the absolute wave name of the "top" trace, or the emprty string if no trace is showing.
 	// If trace A is showing, it is the top trace.  Otherwise, if trace B is showing, it is the top trace.
 	// Otherwise, there is no top trace.
@@ -155,8 +155,8 @@ Function /S GetTopTraceWaveNameAbs(browserNumber)
 	NVAR traceBChecked=traceBChecked	
 	SVAR baseNameA=baseNameA, baseNameB=baseNameB
 
-	String traceAWaveName=GetTraceAWaveNameAbs(browserNumber)
-	String traceBWaveName=GetTraceBWaveNameAbs(browserNumber)
+	String traceAWaveName=BrowserModelGetTraceAWaveNameAbs(browserNumber)
+	String traceBWaveName=BrowserModelGetTraceBWaveNameAbs(browserNumber)
 	Variable waveAExists=WaveExists($traceAWaveName)
 	Variable waveBExists=WaveExists($traceBWaveName)
 
@@ -175,7 +175,7 @@ Function /S GetTopTraceWaveNameAbs(browserNumber)
 	return retval
 End
 
-Function /S GetTopTraceWaveNameRel(browserNumber)
+Function /S BrowserModelGetTopTraceWaveNameRel(browserNumber)
 	// Returns the wave name of the "top" trace, relative to the data folder containing it, or the empty 
 	// string if no 
 	// trace is showing.
@@ -192,10 +192,10 @@ Function /S GetTopTraceWaveNameRel(browserNumber)
 	NVAR traceBChecked=traceBChecked	
 	SVAR baseNameA=baseNameA, baseNameB=baseNameB
 
-	String traceAWaveNameRel=GetTraceAWaveNameRel(browserNumber)
-	String traceBWaveNameRel=GetTraceBWaveNameRel(browserNumber)
-	String traceAWaveNameAbs=GetTraceAWaveNameAbs(browserNumber)
-	String traceBWaveNameAbs=GetTraceBWaveNameAbs(browserNumber)
+	String traceAWaveNameRel=BrowserModelGetTraceAWaveNameRel(browserNumber)
+	String traceBWaveNameRel=BrowserModelGetTraceBWaveNameRel(browserNumber)
+	String traceAWaveNameAbs=BrowserModelGetTraceAWaveNameAbs(browserNumber)
+	String traceBWaveNameAbs=BrowserModelGetTraceBWaveNameAbs(browserNumber)
 	Variable waveAExists=WaveExists($traceAWaveNameAbs)
 	Variable waveBExists=WaveExists($traceBWaveNameAbs)
 
@@ -214,21 +214,21 @@ Function /S GetTopTraceWaveNameRel(browserNumber)
 	return retval
 End
 
-Function /S GetTraceAWaveNameAbs(browserNumber)
+Function /S BrowserModelGetTraceAWaveNameAbs(browserNumber)
 	// Construct the absolute wave name of trace A in the given browser number.  Note that this wave may or
 	// may not exist.
 	Variable browserNumber
-	return "root:"+GetTraceAWaveNameRel(browserNumber)
+	return "root:"+BrowserModelGetTraceAWaveNameRel(browserNumber)
 End
 
-Function /S GetTraceBWaveNameAbs(browserNumber)
+Function /S BrowserModelGetTraceBWaveNameAbs(browserNumber)
 	// Construct the absolute wave name of trace B in the given browser number.  Note that this wave may 
 	// or may not exist.
 	Variable browserNumber
-	return "root:"+GetTraceBWaveNameRel(browserNumber)
+	return "root:"+BrowserModelGetTraceBWaveNameRel(browserNumber)
 End
 
-Function /S GetTraceAWaveNameRel(browserNumber)
+Function /S BrowserModelGetTraceAWaveNameRel(browserNumber)
 	// Construct the wave name of trace A in the given browser number, relative to the data folder containing it.  
 	// Note that this wave may or may not exist.
 	Variable browserNumber
@@ -240,7 +240,7 @@ Function /S GetTraceAWaveNameRel(browserNumber)
 	return retval
 End
 
-Function /S GetTraceBWaveNameRel(browserNumber)
+Function /S BrowserModelGetTraceBWaveNameRel(browserNumber)
 	// Construct the wave name of trace B in the given browser number, relative to the data folder containing it.  
 	// Note that this wave may or may not exist.
 	Variable browserNumber
@@ -252,7 +252,7 @@ Function /S GetTraceBWaveNameRel(browserNumber)
 	return retval
 End
 
-Function RemoveBaseNamedWaves(base)
+Function BrowserModelRemoveBaseNamedWaves(base)
 	String base
 	String savedDF, targetWindow, allwaves, thisWaveName
 	Variable i
@@ -276,28 +276,7 @@ Function RemoveBaseNamedWaves(base)
 	SetDataFolder savedDF
 End
 
-//Function SyncCommentsToTopTrace(browserNumber)
-//	// Read the comments out of the currently-showing wave, and update the comments variable.
-//	// (This will update the view b/c of the binding.)
-//	Variable browserNumber
-//
-//	// Find name of top browser, switch the DF to its DF, note the former DF name
-//	String savedDF=ChangeToBrowserDF(browserNumber)
-//
-//	SVAR comments
-//	String topTraceWaveName=GetTopTraceWaveNameAbs(browserNumber)
-//	if (strlen(topTraceWaveName)==0)
-//		comments=""
-//	else
-//		String noteString=note($topTraceWaveName)
-//		comments=StringByKey("COMMENTS",noteString,"=","\r",1)
-//	endif
-//	
-//	// Restore the original DF
-//	SetDataFolder savedDF
-//End
-
-Function DoBaseSub(browserNumber)
+Function BrowserModelDoBaseSub(browserNumber)
 	// Perform baseline subtraction on $traceAWaveName and $traceBWaveName.
 	// Each wave's note says whether it has had the baseline subtracted, and also
 	// contains the baseline value for that wave.
@@ -309,7 +288,7 @@ Function DoBaseSub(browserNumber)
 	// Get DF vars we need
 	NVAR traceAChecked=traceAChecked
 	
-	String traceAWaveName=GetTraceAWaveNameAbs(browserNumber)
+	String traceAWaveName=BrowserModelGetTraceAWaveNameAbs(browserNumber)
 	WAVE theWave=$traceAWaveName
 	Variable basesubtracted, baseline
 	if ( traceAChecked && WaveExists($traceAWaveName) )
@@ -317,7 +296,7 @@ Function DoBaseSub(browserNumber)
 		basesubtracted=NumberByKeyInWaveNote(theWave,"BASESUBTRACTED")
 	endif
 
-	String traceBWaveName=GetTraceBWaveNameAbs(browserNumber)
+	String traceBWaveName=BrowserModelGetTraceBWaveNameAbs(browserNumber)
 	ControlInfo basesub1
 	if ( (V_value>0) && WaveExists(traceBWaveName) )			// if baseline subtract is checked
 		 if (basesubtracted<1)							// but the baseline isn't subtracted
@@ -355,7 +334,7 @@ Function DoBaseSub(browserNumber)
 	SetDataFolder savedDFName
 End
 
-Function UpdateMeasurements(browserNumber)
+Function BrowserModelUpdateMeasurements(browserNumber)
 	// Updates the values displayed in the Measure part of the Tools Panel to reflect the wave 
 	// currently displayed in
 	// the DP Browser, given the current measurement parameters in the DF.
@@ -383,7 +362,7 @@ Function UpdateMeasurements(browserNumber)
 	NVAR nCrossings1
 	
 	// If there's a top wave, calculate features of it
-	String topTraceWaveName=GetTopTraceWaveNameAbs(browserNumber)
+	String topTraceWaveName=BrowserModelGetTopTraceWaveNameAbs(browserNumber)
 	if (strlen(topTraceWaveName)>0)
 		// Calculate the baseline
 		WAVE thisWave=$topTraceWaveName
@@ -471,12 +450,12 @@ End
 //	// will never be seen
 //End
 
-Function UpdateFit(browserNumber)
+Function BrowserModelUpdateFit(browserNumber)
 	// A model method (in spirit), changes the yFit wave and the fit coefficient instance variables to reflect 
 	// the current fit window, trace, and fit parameters.
 	Variable browserNumber
 	
-	//Printf "In UpdateFit()\r"
+	//Printf "In BrowserModelUpdateFit()\r"
 	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 
@@ -494,7 +473,7 @@ Function UpdateFit(browserNumber)
 	NVAR yOffset, amp1, tau1, amp2, tau2
 
 	// See if everything is set up to do a fit.  If not, return.
-	String topTraceWaveName=GetTopTraceWaveNameAbs(browserNumber)
+	String topTraceWaveName=BrowserModelGetTopTraceWaveNameAbs(browserNumber)
 	if ( strlen(topTraceWaveName)==0 || IsNan(tFitZero) || IsNan(tFitLeft) || IsNan(tFitRight) )
 		isFitValid=0
 		return nan
@@ -583,7 +562,7 @@ Function UpdateFit(browserNumber)
 	SetDataFolder savedDFName
 End
 
-Function MarkWaveForAveraging(thisWaveName,filterOnHold,holdCenter,holdTol,filterOnStep,stepCenter)
+Function BrowserModelMarkWaveForAveraging(thisWaveName,filterOnHold,holdCenter,holdTol,filterOnStep,stepCenter)
 	// Set the DONTAVG wave note on the named wave, based on whether if satisfies the conditions
 	// as specified by checkHold, holdCenter, etc.
 	// We assume that thisWaveName is in the current DF, or is an absolute wave name.
@@ -619,7 +598,7 @@ Function MarkWaveForAveraging(thisWaveName,filterOnHold,holdCenter,holdTol,filte
 	ReplaceStringByKeyInWaveNote(thisWave,"DONTAVG",num2str(dontavg))
 End
 
-Function IncludeInAverage(thisWaveName,filterOnHold,holdCenter,holdTol,filterOnStep,stepCenter)
+Function BrowserModelIncludeInAverage(thisWaveName,filterOnHold,holdCenter,holdTol,filterOnStep,stepCenter)
 	// Determine whether to include thisWaveName in the average, based on whether if satisfies the 
 	// conditions as specified by checkHold, holdCenter, etc.
 	// We assume that thisWaveName is in the current DF, or is an absolute wave name.
@@ -657,3 +636,39 @@ Function IncludeInAverage(thisWaveName,filterOnHold,holdCenter,holdTol,filterOnS
 	endif
 	return 1
 End
+
+Function BrowserModelGetNSweeps(browserNumber)
+	Variable browserNumber
+		
+	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	
+	// Determine the range of sweeps present
+	NVAR traceAChecked
+	NVAR traceBChecked	
+	SVAR baseNameA
+	SVAR baseNameB
+	Variable nSweepsA=NTracesFromBaseName(baseNameA)
+	Variable nSweepsB=NTracesFromBaseName(baseNameB)
+	Variable nSweeps
+	if (traceAChecked)
+		if (traceBChecked)
+			nSweeps=max(nSweepsA,nSweepsB)
+		else
+			nSweeps=nSweepsA
+		endif
+	else
+		if (traceBChecked)
+			nSweeps=nSweepsB
+		else
+			nSweeps=0
+		endif
+	endif
+
+	// Restore original DF
+	SetDataFolder savedDFName
+	
+	// Return
+	return nSweeps
+End
+

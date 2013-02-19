@@ -1,5 +1,11 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
+Function BuilderContConstructor(builderType)
+	String builderType
+	BuilderModelConstructor(builderType);
+	BuilderViewConstructor(builderType)
+End
+
 Function BuilderContSVTwiddled(svStruct) : SetVariableControl
 	STRUCT WMSetVariableAction &svStruct
 	if ( svStruct.eventCode==-1 ) 

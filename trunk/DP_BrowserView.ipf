@@ -25,7 +25,7 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	Variable widthInPoints=pointsPerPixel*width
 	Variable heightInPoints=pointsPerPixel*height
 	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) /K=1 /N=$browserName as browserTitle
-	SetWindow $browserName, hook(DPHook)=DataProBrowserHook
+	SetWindow $browserName, hook(DPHook)=BrowserContHook
 	ShowInfo
 	
 	// Draw the top "panel" and associated controls 
@@ -33,19 +33,19 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	
 	String browserDFName=BrowserDFNameFromNumber(browserNumber)
 	String absVarName=AbsoluteVarName(browserDFName,"yAAutoscaling")
-	CheckBox autoscaleYACheckbox,win=$browserName,pos={106,80},size={102,14},proc=RescaleCheckProc,title="Autoscale y for trace A"
+	CheckBox autoscaleYACheckbox,win=$browserName,pos={106,80},size={102,14},proc=BrowserContRescaleCB,title="Autoscale y for trace A"
 	CheckBox autoscaleYACheckbox,win=$browserName,value= 1, variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"yBAutoscaling")
-	CheckBox autoscaleYBCheckbox,win=$browserName,pos={246,80},size={102,14},proc=RescaleCheckProc,title="Autoscale y for trace B"
+	CheckBox autoscaleYBCheckbox,win=$browserName,pos={246,80},size={102,14},proc=BrowserContRescaleCB,title="Autoscale y for trace B"
 	CheckBox autoscaleYBCheckbox,win=$browserName,value= 1, variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"xAutoscaling")
-	CheckBox autoscaleXCheckbox,win=$browserName,pos={386,80},size={72,14},proc=RescaleCheckProc,title="Autoscale x"
+	CheckBox autoscaleXCheckbox,win=$browserName,pos={386,80},size={72,14},proc=BrowserContRescaleCB,title="Autoscale x"
 	CheckBox autoscaleXCheckbox,win=$browserName,value= 1, variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"iCurrentSweep")
-	SetVariable setSweepIndexSV,win=$browserName,pos={11,15},size={100,18},proc=HandleSetSweepIndexControl,title="Sweep"
+	SetVariable setSweepIndexSV,win=$browserName,pos={11,15},size={100,18},proc=BrowserContNextSweepIndexSV,title="Sweep"
 	SetVariable setSweepIndexSV,win=$browserName,fSize=12
 	SetVariable setSweepIndexSV,win=$browserName,limits={1,100000,1},value=_NUM:1
 	
@@ -53,20 +53,20 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	Variable yBaselineForTraceB=30
 	absVarName=AbsoluteVarName(browserDFName,"traceAChecked")
 	CheckBox showTraceACheckbox,win=$browserName,pos={125,yBaselineForTraceA},size={39,14}
-	CheckBox showTraceACheckbox,win=$browserName,proc=HandleShowTraceCheckbox,title="tr.A",value= 1
+	CheckBox showTraceACheckbox,win=$browserName,proc=BrowserContShowTraceCB,title="tr.A",value= 1
 	CheckBox showTraceACheckbox,win=$browserName,variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"traceBChecked")
 	CheckBox showTraceBCheckbox,win=$browserName,pos={125,yBaselineForTraceB},size={39,14}
-	CheckBox showTraceBCheckbox,win=$browserName,proc=HandleShowTraceCheckbox,title="tr.B",value= 0
+	CheckBox showTraceBCheckbox,win=$browserName,proc=BrowserContShowTraceCB,title="tr.B",value= 0
 	CheckBox showTraceBCheckbox,win=$browserName,variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"baseNameA")
-	SetVariable bnameset_1,win=$browserName,pos={176,yBaselineForTraceA},size={80,14},proc=HandleBaseNameControl,title="name"
+	SetVariable bnameset_1,win=$browserName,pos={176,yBaselineForTraceA},size={80,14},proc=BrowserContBaseNameSV,title="name"
 	SetVariable bnameset_1,win=$browserName,value=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"baseNameB")
-	SetVariable bnameset_2,win=$browserName,pos={176,yBaselineForTraceB},size={80,14},proc=HandleBaseNameControl,title="name"
+	SetVariable bnameset_2,win=$browserName,pos={176,yBaselineForTraceB},size={80,14},proc=BrowserContBaseNameSV,title="name"
 	SetVariable bnameset_2,win=$browserName,value=$absVarName
 		
 	// This kind of color popup doesn't work in a ControlBar, seemingly...
@@ -75,15 +75,15 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	
 	SVAR colorNameList
 	String colorNameListFU="\""+colorNameList+"\""
-	PopupMenu traceAColorPopupMenu,win=$browserName,pos={265,yBaselineForTraceA-2},size={96,14},bodyWidth=65,proc=TraceAColorSelected,title="color:"
+	PopupMenu traceAColorPopupMenu,win=$browserName,pos={265,yBaselineForTraceA-2},size={96,14},bodyWidth=65,proc=BrowserContTraceAColorPopup,title="color:"
 	PopupMenu traceAColorPopupMenu,win=$browserName,value=#colorNameListFU
-	PopupMenu traceBColorPopupMenu,win=$browserName,pos={265,yBaselineForTraceB-2},size={96,14},bodyWidth=65,proc=TraceBColorSelected,title="color:"
+	PopupMenu traceBColorPopupMenu,win=$browserName,pos={265,yBaselineForTraceB-2},size={96,14},bodyWidth=65,proc=BrowserContTraceBColorPopup,title="color:"
 	PopupMenu traceBColorPopupMenu,win=$browserName,value=#colorNameListFU
 		
 	xOffset=370		// pixels
-	CheckBox rejectACheckbox,win=$browserName,pos={xOffset,yBaselineForTraceA},size={49,14},proc=HandleRejectACheckbox,title="Reject"
+	CheckBox rejectACheckbox,win=$browserName,pos={xOffset,yBaselineForTraceA},size={49,14},proc=BrowserContHandleRejectACB,title="Reject"
 	CheckBox rejectACheckbox,win=$browserName,value= 0
-	CheckBox rejectBCheckbox,win=$browserName,pos={xOffset,yBaselineForTraceB},size={49,14},proc=HandleRejectBCheckbox,title="Reject"
+	CheckBox rejectBCheckbox,win=$browserName,pos={xOffset,yBaselineForTraceB},size={49,14},proc=BrowserContHandleRejectBCB,title="Reject"
 	CheckBox rejectBCheckbox,win=$browserName,value= 0
 	
 	xOffset=xOffset+65
@@ -94,10 +94,10 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	ValDisplay stepBValDisplay,win=$browserName,limits={0,0,0},value=_NUM:nan
 	
 	SetVariable commentsSetVariable,win=$browserName,pos={20,55},size={260,15},title="comments"
-	SetVariable commentsSetVariable,win=$browserName,proc=HandleCommentsSetVariable,value=_STR:""
+	SetVariable commentsSetVariable,win=$browserName,proc=BrowserContCommentsSV,value=_STR:""
 
 	absVarName=AbsoluteVarName(browserDFName,"showToolsChecked")
-	CheckBox showToolsCheckbox,win=$browserName,pos={610,yBaselineForTraceA+1},size={70,18},proc=ShowHideToolsPanel, value=0
+	CheckBox showToolsCheckbox,win=$browserName,pos={610,yBaselineForTraceA+1},size={70,18},proc=BrowserContShowToolsPanelCB, value=0
 	CheckBox showToolsCheckbox,win=$browserName,title="Show Tools",variable=$absVarName
 	
 	// Sync the view with the "model"
@@ -105,6 +105,241 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	
 	// Restore old data folder
 	SetDataFolder savedDFName	
+End
+
+Function BrowserViewDrawToolsPanel(browserNumber) : Panel
+	Variable browserNumber // the number of the DataProBrowser we belong to
+	
+	// Save the current data folder, change to this browser's DF
+	String savedDF=ChangeToBrowserDF(browserNumber)
+	
+	// From the browser number, derive the measure panel window name and title
+	String browserWindowName=BrowserNameFromNumber(browserNumber)
+	String browserDFName=BrowserDFNameFromNumber(browserNumber)
+	
+	// Create the panel, draw all the controls
+	Variable toolsPanelWidth=250  // pels
+	Variable measureAreaHeight=278  // pels
+	Variable fitAreaHeight=155+30  // pels
+	Variable averageAreaHeight=110-28  // pels
+	Variable toolsPanelHeight=measureAreaHeight+fitAreaHeight+averageAreaHeight
+	NewPanel /HOST=$browserWindowName /EXT=0 /W=(0,0,toolsPanelWidth,toolsPanelHeight) /N=ToolsPanel /K=1 as "Tools"
+	SetWindow $browserWindowName#ToolsPanel, hook(TPHook)=BrowserContToolsPanelHook  // register a callback function for if the panel is closed
+	
+	// Measure controls
+	
+	// Baseline controls
+	SetDrawEnv linethick= 3,linefgc= (65535,0,0)
+	DrawRect 6-3,6-3,6+100+3,6+20+3
+	Button setbase,pos={6,6},size={100,20},proc=BrowserContSetBaselineButton,title="Set Baseline"
+	Button clearBaselineButton,pos={6,6+28-1},size={100,18},proc=BrowserContClearBaselineButton,title="Clear Baseline"
+
+	String absVarName=AbsoluteVarName(browserDFName,"baseline")
+	ValDisplay baselineValDisplay,pos={139,8},size={82,17},title="Mean",format="%4.2f"
+	ValDisplay baselineValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+
+	// Window 1 controls
+	Variable yOffset=70
+	SetDrawEnv linethick= 3,linefgc= (3,52428,1)
+	DrawRect 3,yOffset-3,109,yOffset+20+3
+	Button setwin_1,pos={6,yOffset},size={100,20},proc=BrowserContSetWindow1Button,title="Set Window 1"
+	Button clearWindow1Button,pos={6,yOffset+27},size={100,18},proc=BrowserContClearWindow1Button,title="Clear Window 1"
+
+	absVarName=AbsoluteVarName(browserDFName,"mean1")
+	ValDisplay mean1ValDisplay,pos={138,yOffset-5},size={82,17},title="Mean",format="%4.2f"
+	ValDisplay mean1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+
+	absVarName=AbsoluteVarName(browserDFName,"peak1")
+	ValDisplay peak1ValDisplay,pos={140,yOffset+17},size={79,17},title="Peak",format="%4.2f"
+	ValDisplay peak1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+
+	absVarName=AbsoluteVarName(browserDFName,"rise1")
+	ValDisplay rise1ValDisplay,pos={115,yOffset+38},size={105,17},title="Transit Time"
+	ValDisplay rise1ValDisplay,format="%4.2f",limits={0,0,0},barmisc={0,1000}
+	ValDisplay rise1ValDisplay,value= #absVarName
+	TitleBox rise1UnitsTitleBox,pos={224,yOffset+38+1},frame=0, title="ms"
+
+	absVarName=AbsoluteVarName(browserDFName,"from1")
+	SetVariable from_disp1,pos={54,yOffset+61},size={80,17},proc=BrowserContMeasurementSV,title="From"
+	SetVariable from_disp1,limits={0,100,10},value=$absVarName
+	TitleBox fromUnitsTitleBox,pos={137,yOffset+61+2},frame=0, title="%"
+
+	absVarName=AbsoluteVarName(browserDFName,"to1")
+	SetVariable to_disp1,pos={154,yOffset+61},size={66,17},proc=BrowserContMeasurementSV,title="To"
+	SetVariable to_disp1,limits={0,100,10},value=$absVarName
+	TitleBox toUnitsTitleBox,pos={223,yOffset+61+2},frame=0, title="%"
+	
+	absVarName=AbsoluteVarName(browserDFName,"lev1")
+	SetVariable levelSetVariable,pos={18,yOffset-61+145},size={80,17}
+	SetVariable levelSetVariable,proc=BrowserContMeasurementSV,title="Level"
+	SetVariable levelSetVariable,limits={-100,100,10},format="%4.2f",value=$absVarName
+	
+	absVarName=AbsoluteVarName(browserDFName,"nCrossings1")
+	ValDisplay cross1ValDisplay,pos={110,yOffset-61+145},size={110,17},title="No. Crossings"
+	ValDisplay cross1ValDisplay,limits={0,0,0},barmisc={0,1000},format="%4.0f",value= #absVarName
+	
+	// Window 2 controls
+	yOffset=190
+	SetDrawEnv linethick= 3,linefgc= (0,0,65535)
+	DrawRect 3,yOffset-3,109,yOffset+20+3
+	Button setwin_2,pos={6,yOffset},size={100,20},proc=BrowserContSetWindow2Button,title="Set Window 2"
+	Button clearWindow2Button,pos={6,yOffset+27},size={100,18},proc=BrowserContClearWindow2Button,title="Clear Window 2"
+
+	absVarName=AbsoluteVarName(browserDFName,"mean2")
+	ValDisplay mean2ValDisplay,pos={138,yOffset-5},size={82,17},title="Mean",format="%4.2f"
+	ValDisplay mean2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	
+	absVarName=AbsoluteVarName(browserDFName,"peak2")
+	ValDisplay peak2ValDisplay,pos={140,yOffset+17},size={79,17},title="Peak",format="%4.2f"
+	ValDisplay peak2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	
+	absVarName=AbsoluteVarName(browserDFName,"rise2")
+	ValDisplay rise2ValDisplay,pos={115,yOffset+38},size={105,17},title="Transit Time"
+	ValDisplay rise2ValDisplay,format="%4.2f",limits={0,0,0},barmisc={0,1000}
+	ValDisplay rise2ValDisplay,value= #absVarName
+	TitleBox rise2UnitsTitleBox,pos={224,yOffset+38+1},frame=0, title="ms"
+	
+//	absVarName=AbsoluteVarName(browserDFName,"from2")
+//	SetVariable from_disp2,pos={49,253},size={80,17},proc=BrowserContMeasurementSV,title="From"
+//	SetVariable from_disp2,limits={0,100,10},value= $absVarName
+//	DrawText 228,268,"%"
+//	
+//	absVarName=AbsoluteVarName(browserDFName,"to2")
+//	SetVariable to_disp2,pos={155,254},size={66,17},proc=BrowserContMeasurementSV,title="To"
+//	SetVariable to_disp2,limits={0,100,10},value= $absVarName
+//	DrawText 137,268,"%"
+
+	absVarName=AbsoluteVarName(browserDFName,"from2")
+	SetVariable from_disp2,pos={54,yOffset+61},size={80,17},proc=BrowserContMeasurementSV,title="From"
+	SetVariable from_disp2,limits={0,100,10},value=$absVarName
+	TitleBox fromUnitsTitleBox,pos={137,yOffset+61+2},frame=0, title="%"
+
+	absVarName=AbsoluteVarName(browserDFName,"to2")
+	SetVariable to_disp2,pos={154,yOffset+61},size={66,17},proc=BrowserContMeasurementSV,title="To"
+	SetVariable to_disp2,limits={0,100,10},value=$absVarName
+	TitleBox toUnitsTitleBox,pos={223,yOffset+61+2},frame=0, title="%"
+
+
+	// Horizontal rule
+	DrawLine 8,measureAreaHeight,245,measureAreaHeight
+
+	// Fitting controls
+	yOffset=measureAreaHeight
+	//SetDrawLayer UserBack
+	DrawText 84,yOffset+79,"ms"
+	DrawText 199,yOffset+78,"ms"
+	Button fitButton,pos={123,yOffset+10},size={100,20},proc=BrowserContFitButton,title="Fit"
+
+	SetDrawEnv linethick= 3,linefgc= (26411,0,52428)	// purple
+	DrawRect 8-3,yOffset+36-3+2,8+100+2,yOffset+36+20+2+2
+	Button set_tFitZero,pos={8,yOffset+36+2},size={100,20},proc=BrowserContSetFitZeroButton,title="Set Zero"
+
+	SetDrawEnv linethick= 3,linefgc= (0,65535,65535)	// cyan
+	DrawRect 123-3,yOffset+36-3+2,123+100+2,yOffset+36+20+2+2
+	Button set_fit_range,pos={123,yOffset+36+2},size={100,20},proc=BrowserContSetFitRangeButton,title="Set Range"
+
+	Button clearTFitZero,pos={8,yOffset+36+28},size={100,18},proc=BrowserContClearFitZeroButton,title="Clear Zero"
+
+	Button clearTFitRange,pos={123,yOffset+36+28},size={100,18},proc=BrowserContClearFitRangeButton,title="Clear Range"
+
+	PopupMenu fitTypePopupMenu,pos={8,yOffset+10},size={90,19}
+	PopupMenu fitTypePopupMenu,mode=1,value= #"\"single exp;double exp\""	
+	PopupMenu fitTypePopupMenu,proc=BrowserContFitTypePopup
+	
+	absVarName=AbsoluteVarName(browserDFName,"tau1")
+	ValDisplay tau1ValDisplay, pos={6,yOffset+64+28},size={75,17},title="tau 1  ",format="%4.2f"
+	ValDisplay tau1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	
+	absVarName=AbsoluteVarName(browserDFName,"amp1")
+	ValDisplay amp1ValDisplay,pos={5,yOffset+82+28},size={75,17},title="amp 1",format="%4.2f"
+	ValDisplay amp1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	
+	absVarName=AbsoluteVarName(browserDFName,"tau2")
+	ValDisplay tau2ValDisplay,pos={119,yOffset+64+28},size={75,17},title="tau 2  ",format="%4.2f"
+	ValDisplay tau2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	
+	absVarName=AbsoluteVarName(browserDFName,"amp2")
+	ValDisplay amp2ValDisplay,pos={119,yOffset+81+28},size={75,17},title="amp 2",format="%4.2f"
+	ValDisplay amp2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	
+	absVarName=AbsoluteVarName(browserDFName,"dtFitExtend")
+	SetVariable dtFitExtendSetVariable,pos={7,yOffset+125+28},size={98,17},title="Show fit"
+	SetVariable dtFitExtendSetVariable,limits={0,10000,10},value=$absVarName
+	SetVariable dtFitExtendSetVariable,proc=BrowserContDtFitExtendSV
+	TitleBox dtFitExtendUnitsTitleBox,pos={109,yOffset+125+28+2},frame=0, title="ms beyond range"
+	
+	absVarName=AbsoluteVarName(browserDFName,"yOffset")
+	ValDisplay yOffsetValDisplay,pos={7,yOffset+102+28},size={90,17},title="offset",format="%4.2f"
+	ValDisplay yOffsetValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	
+	// N.B.: This one doesn't use a binding, so the callback must handle updating the model
+	NVAR holdYOffset=holdYOffset
+	CheckBox holdYOffsetCheckbox,pos={110,yOffset+102+28},size={50,20},title="Hold",value=holdYOffset
+	CheckBox holdYOffsetCheckbox,proc=BrowserContHoldYOffsetCB
+	
+	// N.B.: This one doesn't use a binding, so the callback must handle updating the model
+	NVAR yOffsetHeldValue
+	SetVariable yOffsetHeldValueSetVariable,pos={156,yOffset+101+28},size={70,17},title="at",format="%4.2f"
+	SetVariable yOffsetHeldValueSetVariable,limits={-Inf,Inf,1},value=_NUM:yOffsetHeldValue
+	SetVariable yOffsetHeldValueSetVariable,proc=BrowserContYOffsetHeldValueSV	
+
+	// Horizontal rule
+	DrawLine 8,measureAreaHeight+fitAreaHeight-3,245,measureAreaHeight+fitAreaHeight-3
+
+	// Averaging controls
+	yOffset=measureAreaHeight+fitAreaHeight
+
+	Button avgnow,pos={20,yOffset+5},size={100,20},proc=BrowserContAverageSweepsButton,title="Average Sweeps"
+
+	NVAR renameAverages
+	CheckBox renameAveragesCheckBox,pos={150,yOffset+8},size={100,20},title="Rename",value=renameAverages
+	CheckBox renameAveragesCheckBox,proc=BrowserContRenameAveragesCB
+
+	//SetDrawEnv fsize= 10,textrgb= (0,0,65535)
+	//DrawText 48,yOffset+42,"Selected channels that meet the "
+	//SetDrawEnv fsize= 10,textrgb= (0,0,65535)
+	//DrawText 45,yOffset+55,"following criteria will be averaged."
+
+	// Controls for which sweeps to average
+	yOffset=yOffset+63-28
+	NVAR averageAllSweeps, iSweepFirstAverage, iSweepLastAverage
+	TitleBox sweepsTitleBox,pos={20,yOffset},frame=0,title="Sweeps:"
+	CheckBox allSweepsCheckBox,pos={70,yOffset},size={50,20},title="All",value=averageAllSweeps
+	CheckBox allSweepsCheckBox,proc=BrowserContAllSweepsCB
+	
+	//absVarName=AbsoluteVarName(browserDFName,"iSweepFirstAverage")
+	SetVariable firstSweepSetVariable,pos={110,yOffset},size={53,17},title=" "
+	SetVariable firstSweepSetVariable,limits={1,2000,1},proc=BrowserContFirstSweepSV
+	
+	SetVariable lastSweepSetVariable,pos={170,yOffset},size={66,17},title="to"
+	SetVariable lastSweepSetVariable,limits={1,2000,1},proc=BrowserContLastSweepSV
+	
+//	absVarName=AbsoluteVarName(browserDFName,"avghold")
+//	SetVariable avghold_disp,pos={47,yOffset+89},size={75,17},title="Hold"
+//	SetVariable avghold_disp,limits={-120,120,1},value=$absVarName
+//
+//	absVarName=AbsoluteVarName(browserDFName,"holdtolerance")
+//	SetVariable holdtol_disp,pos={135,yOffset+88},size={60,17},title="±"
+//	SetVariable holdtol_disp,limits={-120,120,1},value=$absVarName
+//	CheckBox hold_all,pos={212,yOffset+88},size={50,20},title="All",value=1
+
+	// Controls for which steps to show:
+	yOffset=yOffset+88-63
+	NVAR averageAllSteps
+	TitleBox stepsTitleBox,pos={20,yOffset},frame=0,title="Steps:"
+	CheckBox allStepsCheckBox,pos={70,yOffset},size={50,20},title="All",value=averageAllSteps
+	CheckBox allStepsCheckBox,proc=BrowserContAllStepsCB
+	SetVariable stepsSetVariable,pos={110,yOffset-1},size={85,17},title="Only:"
+	SetVariable stepsSetVariable,limits={-1000,1000,10},proc=BrowserContStepsSV
+
+	// set the enablement of the averaging fields appropriately
+	BrowserViewUpdateAveraging(browserNumber)
+
+	// Sync the view with the "model"
+	//SyncFitPanelViewToDFState(browserNumber)
+	
+	// Restore original data folder
+	SetDataFolder savedDF	
 End
 
 Function BrowserViewModelChanged(browserNumber)
@@ -189,12 +424,12 @@ Function BrowserViewModelChanged(browserNumber)
 	PopupMenu traceBColorPopupMenu,win=$browserName,popmatch=colorNameB
 
 	// If either wave exists, do baseline subtraction
-	String traceAWaveNameAbs=GetTraceAWaveNameAbs(browserNumber)
-	String traceBWaveNameAbs=GetTraceBWaveNameAbs(browserNumber)
+	String traceAWaveNameAbs=BrowserModelGetTraceAWaveNameAbs(browserNumber)
+	String traceBWaveNameAbs=BrowserModelGetTraceBWaveNameAbs(browserNumber)
 	Variable waveAExists=WaveExists($traceAWaveNameAbs)
 	Variable waveBExists=WaveExists($traceBWaveNameAbs)
 	if (waveAExists || waveBExists)
-		DoBaseSub(browserNumber)
+		BrowserModelDoBaseSub(browserNumber)
 	endif
 
 	// topTraceWaveName should be empty if no traces are showing
@@ -219,7 +454,7 @@ Function BrowserViewModelChanged(browserNumber)
 	SetVariable commentsSetVariable, win=$browserName, value=_STR:comments
 	
 	// Put the cursors back
-	String topTraceWaveNameRel=GetTopTraceWaveNameRel(browserNumber)
+	String topTraceWaveNameRel=BrowserModelGetTopTraceWaveNameRel(browserNumber)
 	if (strlen(topTraceWaveNameRel)>0 && IsFinite(tCursorA))
 		Cursor /W=$browserName A $topTraceWaveNameRel tCursorA
 	endif
@@ -230,36 +465,36 @@ Function BrowserViewModelChanged(browserNumber)
 	// Draw the vertical lines
 	if (showToolsChecked && ( (traceAChecked && waveAExists) || (traceBChecked && waveBExists) ) )
 		if (IsFinite(tBaselineLeft))
-	 		AddCursorLineToGraph(browserName,"baselineMarkerLeft",tBaselineLeft,65535,0,0)
+	 		BrowserViewAddCursorLineToGraph(browserName,"baselineMarkerLeft",tBaselineLeft,65535,0,0)
 	 	endif
 		if (IsFinite(tBaselineRight))  // true if non-nan
-			AddCursorLineToGraph(browserName,"baselineMarkerRight",tBaselineRight,65535,0,0)
+			BrowserViewAddCursorLineToGraph(browserName,"baselineMarkerRight",tBaselineRight,65535,0,0)
 		endif
 		if (IsFinite(tWindow1Left))  // true if non-nan
-			AddCursorLineToGraph(browserName,"window1MarkerLeft",tWindow1Left,3,52428,1)
+			BrowserViewAddCursorLineToGraph(browserName,"window1MarkerLeft",tWindow1Left,3,52428,1)
 		endif
 		if (IsFinite(tWindow1Right))  // true if non-nan
-			AddCursorLineToGraph(browserName,"window1MarkerRight",tWindow1Right,3,52428,1)
+			BrowserViewAddCursorLineToGraph(browserName,"window1MarkerRight",tWindow1Right,3,52428,1)
 		endif
 		if (IsFinite(tWindow2Left))  // true if non-nan
-			AddCursorLineToGraph(browserName,"window2MarkerLeft",tWindow2Left,0,0,65535)
+			BrowserViewAddCursorLineToGraph(browserName,"window2MarkerLeft",tWindow2Left,0,0,65535)
 		endif
 		if (IsFinite(tWindow2Right))  // true if non-nan
-			AddCursorLineToGraph(browserName,"window2MarkerRight",tWindow2Right,0,0,65535)
+			BrowserViewAddCursorLineToGraph(browserName,"window2MarkerRight",tWindow2Right,0,0,65535)
 		endif
 		if (IsFinite(tFitZero))
-			AddCursorLineToGraph(browserName,"fitLineZero",tFitZero,26411,1,52428)
+			BrowserViewAddCursorLineToGraph(browserName,"fitLineZero",tFitZero,26411,1,52428)
 		endif
 		if (IsFinite(tFitLeft))
-			AddCursorLineToGraph(browserName,"fitLineLeft",tFitLeft,0,65535,65535)
+			BrowserViewAddCursorLineToGraph(browserName,"fitLineLeft",tFitLeft,0,65535,65535)
 		endif
 		if (IsFinite(tFitRight))
-			AddCursorLineToGraph(browserName,"fitLineRight",tFitRight,0,65535,65535)
+			BrowserViewAddCursorLineToGraph(browserName,"fitLineRight",tFitRight,0,65535,65535)
 		endif
 	endif
 	
 	// Update the rejection box to reflect the reject-status of each wave 
-	UpdateRejectCheckboxes(browserNumber)
+	BrowserViewUpdateRejectCBs(browserNumber)
 	
 	// Update the "Step" ValDisplays
 	Variable step
@@ -280,9 +515,9 @@ Function BrowserViewModelChanged(browserNumber)
 	
 	// If there is one or more trace in the graph, make sure the axes of the graph are
 	// consistent with the autoscaling checkboxes, and turn on horizontal grid lines.
-	String topTraceWaveNameAbs=GetTopTraceWaveNameAbs(browserNumber)
+	String topTraceWaveNameAbs=BrowserModelGetTopTraceWaveNameAbs(browserNumber)
 	if (ItemsInList(TraceNameList(browserName,";",1))>0)
-		RescaleAxes(browserNumber)  // Scale the axes properly, based on the model state
+		BrowserViewRescaleAxes(browserNumber)  // Scale the axes properly, based on the model state
 		if (cmpstr(topTraceWaveNameAbs,traceAWaveNameAbs)==0)
 			ModifyGraph /W=$browserName /Z grid(left)=1
 			ModifyGraph /W=$browserName /Z gridRGB(left)=(0,0,0)
@@ -318,7 +553,7 @@ Function BrowserViewModelChanged(browserNumber)
 			//DoWindow /F $toolsPanelName
 		else
 			String createPanel
-			sprintf createPanel "NewToolsPanel(%d)" browserNumber
+			sprintf createPanel "BrowserViewDrawToolsPanel(%d)" browserNumber
 			Execute createPanel
 		endif
 	else
@@ -330,19 +565,19 @@ Function BrowserViewModelChanged(browserNumber)
 	endif
 	
 	// Update the view of the measurements
-	UpdateMeasurementsView(browserNumber)
+	BrowserViewBrowserModelUpdateMeasurements(browserNumber)
 	
 	// Update the visibility of the fit
-	UpdateFitDisplay(browserNumber)
+	BrowserViewBrowserModelUpdateFitDisplay(browserNumber)
 
 	// Update the visibility of stuff in the averaging pane
-	UpdateAveragingDisplay(browserNumber)
+	BrowserViewUpdateAveraging(browserNumber)
 	
 	// Restore old data folder
 	SetDataFolder savedDFName
 End
 
-Function UpdateRejectCheckboxes(browserNumber)
+Function BrowserViewUpdateRejectCBs(browserNumber)
 	// Look at the wave notes for $traceAWaveName and $traceBWaveName, and update the
 	// Reject checkboxes to reflect their rejection-status 
 	Variable browserNumber
@@ -352,7 +587,7 @@ Function UpdateRejectCheckboxes(browserNumber)
 	String browserName=BrowserNameFromNumber(browserNumber)
 	
 	// Update the traceAWaveName reject checkbox
-	String traceAWaveName=GetTraceAWaveNameAbs(browserNumber)
+	String traceAWaveName=BrowserModelGetTraceAWaveNameAbs(browserNumber)
 	Variable reject
 	if ( WaveExists($traceAWaveName) )
 		reject=NumberByKeyInWaveNote($traceAWaveName,"REJECT")
@@ -361,7 +596,7 @@ Function UpdateRejectCheckboxes(browserNumber)
 	endif
 	
 	// Update the traceBWaveName reject checkbox
-	String traceBWaveName=GetTraceBWaveNameAbs(browserNumber)
+	String traceBWaveName=BrowserModelGetTraceBWaveNameAbs(browserNumber)
 	if ( WaveExists($traceBWaveName) )
 		reject=NumberByKeyInWaveNote($traceBWaveName,"REJECT")
 		reject = IsNan(reject)?0:reject;
@@ -372,7 +607,7 @@ Function UpdateRejectCheckboxes(browserNumber)
 	SetDataFolder savedDF
 End
 
-Function AddCursorLineToGraph(graphName,cursorWaveName,tCursor,r,g,b)
+Function BrowserViewAddCursorLineToGraph(graphName,cursorWaveName,tCursor,r,g,b)
 	// Adds a wave to the named graph that represents a cursor position.
 	String graphName  // the name of the graph to add the cursor line to
 	String cursorWaveName  // what to name the wave that is the cursor
@@ -434,7 +669,7 @@ Function AddCursorLineToGraph(graphName,cursorWaveName,tCursor,r,g,b)
 	cursorWaveList=AddListItem(cursorWaveName,cursorWaveList)
 End
 
-Function UpdateFitDisplay(browserNumber)
+Function BrowserViewBrowserModelUpdateFitDisplay(browserNumber)
 	Variable browserNumber
 	
 	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
@@ -448,7 +683,7 @@ Function UpdateFitDisplay(browserNumber)
 
 	// Add or remove yFit to the browserWindow, as needed
 	// Also show/hide the fit coefficients, depending on many factors
-	String topTraceWaveNameAbs=GetTopTraceWaveNameAbs(browserNumber)
+	String topTraceWaveNameAbs=BrowserModelGetTopTraceWaveNameAbs(browserNumber)
 	String browserName=BrowserNameFromNumber(browserNumber)
 	String windowSpec=sprintf1s("WIN:%s",browserName)
 	if (showToolsChecked)
@@ -466,7 +701,7 @@ Function UpdateFitDisplay(browserNumber)
 						AppendToGraph /W=$browserName yFit
 					endif
 					// show the fit parameters
-					SetFitCoefficientVisibility(browserNumber,1)					
+					BrowserViewSetFitCoeffVisibility(browserNumber,1)					
 				else
 					// the fit sub-panel is showing, there is a trace showing, the current fit
 					// coefficients are valid, but
@@ -475,7 +710,7 @@ Function UpdateFitDisplay(browserNumber)
 						RemoveFromGraph /W=$browserName yFit  // remove yFit if already present
 					endif
 					// blank the fit parameters
-					SetFitCoefficientVisibility(browserNumber,0)
+					BrowserViewSetFitCoeffVisibility(browserNumber,0)
 				endif
 			else
 				// the fit sub-panel is showing, there is a trace showing in the browser, but 
@@ -484,7 +719,7 @@ Function UpdateFitDisplay(browserNumber)
 					RemoveFromGraph /W=$browserName yFit  // remove yFit if already present
 				endif
 				// blank the fit parameters
-				SetFitCoefficientVisibility(browserNumber,0)
+				BrowserViewSetFitCoeffVisibility(browserNumber,0)
 			endif
 		else
 			// the tools panel is showing, but no trace is showing in the browser
@@ -492,7 +727,7 @@ Function UpdateFitDisplay(browserNumber)
 				RemoveFromGraph /W=$browserName yFit  // remove if already present
 			endif
 			// blank the fit parameters
-			SetFitCoefficientVisibility(browserNumber,0)		
+			BrowserViewSetFitCoeffVisibility(browserNumber,0)		
 		endif
 		// make sure the hold y offset SetVariable is enabled
 		NVAR holdYOffset, yOffsetHeldValue
@@ -513,7 +748,7 @@ Function UpdateFitDisplay(browserNumber)
 	endif
 End
 
-Function SetFitCoefficientVisibility(browserNumber,visible)
+Function BrowserViewSetFitCoeffVisibility(browserNumber,visible)
 	Variable browserNumber
 	Variable visible  // boolean
 	
@@ -545,7 +780,7 @@ Function SetFitCoefficientVisibility(browserNumber,visible)
 	endif
 End
 
-Function UpdateMeasurementsView(browserNumber)
+Function BrowserViewBrowserModelUpdateMeasurements(browserNumber)
 	Variable browserNumber
 	
 	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
@@ -573,7 +808,7 @@ Function UpdateMeasurementsView(browserNumber)
 	
 End
 
-Function RescaleAxes(browserNumber)
+Function BrowserViewRescaleAxes(browserNumber)
 	// In the indicated DPBrowser, configures the scaling of the graph axes based on 
 	// the autoscale settings (as reflected in the model), and the axis limits
 	Variable browserNumber
@@ -628,32 +863,7 @@ Function RescaleAxes(browserNumber)
 	SetDataFolder savedDF
 End
 
-//Function SyncFitPanelViewToDFState(browserNumber)
-//	// This syncs the indicated FitPanel view to the values of the state variables in the browser's DF,
-//	// which are assumed to be self-consistent.
-//	Variable browserNumber
-//
-//	// Turn off window updates, and output to console
-//	PauseUpdate; Silent 1
-//	
-//	// Find name of top browser, switch the DF to its DF, note the former DF name
-//	//Variable browserNumber=GetTopBrowserNumber()
-//	String savedDFName=ChangeToBrowserDF(browserNumber)
-//
-//	// Enable/disable the yOffset hold thing
-//	NVAR holdYOffset=holdYOffset
-//	String fitPanelName=FitPanelNameFromNumber(browserNumber)
-//	if (holdYOffset)
-//		SetVariable yOffsetHeldValueSetVariable,win=$fitPanelName,disable=0
-//	else
-//		SetVariable yOffsetHeldValueSetVariable,win=$fitPanelName,disable=2
-//	endif
-//	
-//	// Restore old data folder
-//	SetDataFolder savedDFName
-//End
-
-Function UpdateAveragingDisplay(browserNumber)
+Function BrowserViewUpdateAveraging(browserNumber)
 	Variable browserNumber
 	
 	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance

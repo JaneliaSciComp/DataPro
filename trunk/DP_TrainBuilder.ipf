@@ -1,7 +1,7 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 Function TrainBuilderViewConstructor() : Graph
-	BuilderModelConstructor("Train")
+	//BuilderModelConstructor("Train")
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_TrainBuilder
 	WAVE theWave
