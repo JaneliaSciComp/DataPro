@@ -223,7 +223,7 @@ Function SweeperControllerAcquireSweep(comment)
 	String units
 	for (iTrace=0; iTrace<nADCInUse; iTrace+=1)
 		iADCChannel=str2num(adSequence[iTrace])
-		sprintf thisWaveNameRel "%s_%d", adcBaseName[iTrace], iSweep
+		sprintf thisWaveNameRel "%s_%d", adcBaseName[iADCChannel], iSweep
 		String thisWaveNameAbs="root:"+thisWaveNameRel
 		Make /O /N=(nSamplesPerTrace) $thisWaveNameAbs
 		WAVE thisWave=$thisWaveNameAbs
