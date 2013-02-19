@@ -33,41 +33,41 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	
 	String browserDFName=BrowserDFNameFromNumber(browserNumber)
 	String absVarName=AbsoluteVarName(browserDFName,"yAAutoscaling")
-	CheckBox autoscaleYACheckbox,pos={106,80},size={102,14},proc=RescaleCheckProc,title="Autoscale y for trace A"
-	CheckBox autoscaleYACheckbox,value= 1, variable=$absVarName
+	CheckBox autoscaleYACheckbox,win=$browserName,pos={106,80},size={102,14},proc=RescaleCheckProc,title="Autoscale y for trace A"
+	CheckBox autoscaleYACheckbox,win=$browserName,value= 1, variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"yBAutoscaling")
-	CheckBox autoscaleYBCheckbox,pos={246,80},size={102,14},proc=RescaleCheckProc,title="Autoscale y for trace B"
-	CheckBox autoscaleYBCheckbox,value= 1, variable=$absVarName
+	CheckBox autoscaleYBCheckbox,win=$browserName,pos={246,80},size={102,14},proc=RescaleCheckProc,title="Autoscale y for trace B"
+	CheckBox autoscaleYBCheckbox,win=$browserName,value= 1, variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"xAutoscaling")
-	CheckBox autoscaleXCheckbox,pos={386,80},size={72,14},proc=RescaleCheckProc,title="Autoscale x"
-	CheckBox autoscaleXCheckbox,value= 1, variable=$absVarName
+	CheckBox autoscaleXCheckbox,win=$browserName,pos={386,80},size={72,14},proc=RescaleCheckProc,title="Autoscale x"
+	CheckBox autoscaleXCheckbox,win=$browserName,value= 1, variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"iCurrentSweep")
-	SetVariable setSweepIndexSV,pos={11,15},size={100,18},proc=HandleSetSweepIndexControl,title="Sweep"
-	SetVariable setSweepIndexSV,fSize=12
-	SetVariable setSweepIndexSV,limits={1,100000,1},value=_NUM:1
+	SetVariable setSweepIndexSV,win=$browserName,pos={11,15},size={100,18},proc=HandleSetSweepIndexControl,title="Sweep"
+	SetVariable setSweepIndexSV,win=$browserName,fSize=12
+	SetVariable setSweepIndexSV,win=$browserName,limits={1,100000,1},value=_NUM:1
 	
 	Variable yBaselineForTraceA=7
 	Variable yBaselineForTraceB=30
 	absVarName=AbsoluteVarName(browserDFName,"traceAChecked")
-	CheckBox showTraceACheckbox,pos={125,yBaselineForTraceA},size={39,14}
-	CheckBox showTraceACheckbox,proc=HandleShowTraceCheckbox,title="tr.A",value= 1
-	CheckBox showTraceACheckbox,variable=$absVarName
+	CheckBox showTraceACheckbox,win=$browserName,pos={125,yBaselineForTraceA},size={39,14}
+	CheckBox showTraceACheckbox,win=$browserName,proc=HandleShowTraceCheckbox,title="tr.A",value= 1
+	CheckBox showTraceACheckbox,win=$browserName,variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"traceBChecked")
-	CheckBox showTraceBCheckbox,pos={125,yBaselineForTraceB},size={39,14}
-	CheckBox showTraceBCheckbox,proc=HandleShowTraceCheckbox,title="tr.B",value= 0
-	CheckBox showTraceBCheckbox,variable=$absVarName
+	CheckBox showTraceBCheckbox,win=$browserName,pos={125,yBaselineForTraceB},size={39,14}
+	CheckBox showTraceBCheckbox,win=$browserName,proc=HandleShowTraceCheckbox,title="tr.B",value= 0
+	CheckBox showTraceBCheckbox,win=$browserName,variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"baseNameA")
-	SetVariable bnameset_1,pos={176,yBaselineForTraceA},size={80,14},proc=HandleBaseNameControl,title="name"
-	SetVariable bnameset_1,value=$absVarName
+	SetVariable bnameset_1,win=$browserName,pos={176,yBaselineForTraceA},size={80,14},proc=HandleBaseNameControl,title="name"
+	SetVariable bnameset_1,win=$browserName,value=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"baseNameB")
-	SetVariable bnameset_2,pos={176,yBaselineForTraceB},size={80,14},proc=HandleBaseNameControl,title="name"
-	SetVariable bnameset_2,value=$absVarName
+	SetVariable bnameset_2,win=$browserName,pos={176,yBaselineForTraceB},size={80,14},proc=HandleBaseNameControl,title="name"
+	SetVariable bnameset_2,win=$browserName,value=$absVarName
 		
 	// This kind of color popup doesn't work in a ControlBar, seemingly...
 	//PopupMenu traceAColorPopupMenu,pos={262,yBaselineForTraceA},size={96,20},proc=ColorPopMenuProc,title="color:"
@@ -75,30 +75,30 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	
 	SVAR colorNameList
 	String colorNameListFU="\""+colorNameList+"\""
-	PopupMenu traceAColorPopupMenu,pos={265,yBaselineForTraceA-2},size={96,14},bodyWidth=65,proc=TraceAColorSelected,title="color:"
-	PopupMenu traceAColorPopupMenu,mode=1,value=#colorNameListFU
-	PopupMenu traceBColorPopupMenu,pos={265,yBaselineForTraceB-2},size={96,14},bodyWidth=65,proc=TraceBColorSelected,title="color:"
-	PopupMenu traceBColorPopupMenu,mode=2,value=#colorNameListFU
+	PopupMenu traceAColorPopupMenu,win=$browserName,pos={265,yBaselineForTraceA-2},size={96,14},bodyWidth=65,proc=TraceAColorSelected,title="color:"
+	PopupMenu traceAColorPopupMenu,win=$browserName,value=#colorNameListFU
+	PopupMenu traceBColorPopupMenu,win=$browserName,pos={265,yBaselineForTraceB-2},size={96,14},bodyWidth=65,proc=TraceBColorSelected,title="color:"
+	PopupMenu traceBColorPopupMenu,win=$browserName,value=#colorNameListFU
 		
 	xOffset=370		// pixels
-	CheckBox rejectACheckbox,pos={xOffset,yBaselineForTraceA},size={49,14},proc=HandleRejectACheckbox,title="Reject"
-	CheckBox rejectACheckbox,value= 0
-	CheckBox rejectBCheckbox,pos={xOffset,yBaselineForTraceB},size={49,14},proc=HandleRejectBCheckbox,title="Reject"
-	CheckBox rejectBCheckbox,value= 0
+	CheckBox rejectACheckbox,win=$browserName,pos={xOffset,yBaselineForTraceA},size={49,14},proc=HandleRejectACheckbox,title="Reject"
+	CheckBox rejectACheckbox,win=$browserName,value= 0
+	CheckBox rejectBCheckbox,win=$browserName,pos={xOffset,yBaselineForTraceB},size={49,14},proc=HandleRejectBCheckbox,title="Reject"
+	CheckBox rejectBCheckbox,win=$browserName,value= 0
 	
 	xOffset=xOffset+65
-	ValDisplay stepAValDisplay,pos={xOffset,yBaselineForTraceA},size={70,14},title="Step",format="%3.3g"
-	ValDisplay stepAValDisplay,limits={0,0,0},value=_NUM:nan
+	ValDisplay stepAValDisplay,win=$browserName,pos={xOffset,yBaselineForTraceA},size={70,14},title="Step",format="%3.3g"
+	ValDisplay stepAValDisplay,win=$browserName,limits={0,0,0},value=_NUM:nan
 	
-	ValDisplay stepBValDisplay,pos={xOffset,yBaselineForTraceB},size={70,14},title="Step",format="%3.3g"
-	ValDisplay stepBValDisplay,limits={0,0,0},value=_NUM:nan
+	ValDisplay stepBValDisplay,win=$browserName,pos={xOffset,yBaselineForTraceB},size={70,14},title="Step",format="%3.3g"
+	ValDisplay stepBValDisplay,win=$browserName,limits={0,0,0},value=_NUM:nan
 	
-	SetVariable commentsSetVariable,pos={20,55},size={260,15},title="comments"
-	SetVariable commentsSetVariable,proc=HandleCommentsSetVariable,value=_STR:""
+	SetVariable commentsSetVariable,win=$browserName,pos={20,55},size={260,15},title="comments"
+	SetVariable commentsSetVariable,win=$browserName,proc=HandleCommentsSetVariable,value=_STR:""
 
 	absVarName=AbsoluteVarName(browserDFName,"showToolsChecked")
-	CheckBox showToolsCheckbox,pos={610,yBaselineForTraceA+1},size={70,18},proc=ShowHideToolsPanel, value=0
-	CheckBox showToolsCheckbox,title="Show Tools",variable=$absVarName
+	CheckBox showToolsCheckbox,win=$browserName,pos={610,yBaselineForTraceA+1},size={70,18},proc=ShowHideToolsPanel, value=0
+	CheckBox showToolsCheckbox,win=$browserName,title="Show Tools",variable=$absVarName
 	
 	// Sync the view with the "model"
 	BrowserViewModelChanged(browserNumber)
@@ -184,6 +184,10 @@ Function BrowserViewModelChanged(browserNumber)
 		SetVariable setSweepIndexSV, win=$browserName, value=_STR:"(none)"		
 	endif	
 
+	// Update the color selector popups
+	PopupMenu traceAColorPopupMenu,win=$browserName,popmatch=colorNameA
+	PopupMenu traceBColorPopupMenu,win=$browserName,popmatch=colorNameB
+
 	// If either wave exists, do baseline subtraction
 	String traceAWaveNameAbs=GetTraceAWaveNameAbs(browserNumber)
 	String traceBWaveNameAbs=GetTraceBWaveNameAbs(browserNumber)
@@ -256,20 +260,6 @@ Function BrowserViewModelChanged(browserNumber)
 	
 	// Update the rejection box to reflect the reject-status of each wave 
 	UpdateRejectCheckboxes(browserNumber)
-	
-//	// Get the metadata associated with each wave, put relevant values in DF variables
-//	NVAR baselineA
-//	if (waveAExists && traceAChecked)
-//		baselineA=NumberByKeyInWaveNote($traceAWaveNameAbs,"BASELINE")
-//	else
-//		baselineA=NaN;
-//	endif
-//	NVAR baselineB
-//	if (waveBExists && traceBChecked)
-//		baselineB=NumberByKeyInWaveNote($traceBWaveNameAbs,"BASELINE")
-//	else
-//		baselineB=NaN;
-//	endif
 	
 	// Update the "Step" ValDisplays
 	Variable step

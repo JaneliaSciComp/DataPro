@@ -182,7 +182,7 @@ Function SweeperControllerAcquireSweep(comment)
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Sweeper
 	
-	NVAR iSweep
+	NVAR nextSweepIndex
 	WAVE /T adcBaseName
 	NVAR autoAnalyzeChecked
 
@@ -223,7 +223,7 @@ Function SweeperControllerAcquireSweep(comment)
 	String units
 	for (iTrace=0; iTrace<nADCInUse; iTrace+=1)
 		iADCChannel=str2num(adSequence[iTrace])
-		sprintf thisWaveNameRel "%s_%d", adcBaseName[iADCChannel], iSweep
+		sprintf thisWaveNameRel "%s_%d", adcBaseName[iADCChannel], nextSweepIndex
 		String thisWaveNameAbs="root:"+thisWaveNameRel
 		Make /O /N=(nSamplesPerTrace) $thisWaveNameAbs
 		WAVE thisWave=$thisWaveNameAbs
@@ -240,11 +240,11 @@ Function SweeperControllerAcquireSweep(comment)
 	Variable nBrowsers=numpnts(browserNumbers)
 	Variable i
 	for (i=0;i<nBrowsers;i+=1)
-		SetICurrentSweepAndSyncView(browserNumbers[i],iSweep)
+		BrowserContSetNextSweepIndex(browserNumbers[i],nextSweepIndex)
 	endfor
 	
 	// Update some of the acquisition counters
-	iSweep+=1
+	nextSweepIndex+=1
 	
 	// Update the windows, so user can see the new sweep
 	DoUpdate
@@ -286,6 +286,10 @@ Function SweepControllerDigitizerChanged()
 	SweeperViewDigitizerChanged()
 End
 
+Function SweeperContIncrNextSweepIndex()
+	SweeperIncrementNextSweepIndex()
+	SweeperViewSweeperChanged()
+End
 
 
 //
