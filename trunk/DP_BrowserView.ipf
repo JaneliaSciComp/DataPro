@@ -81,9 +81,9 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	PopupMenu traceBColorPopupMenu,win=$browserName,value=#colorNameListFU
 		
 	xOffset=370		// pixels
-	CheckBox rejectACheckbox,win=$browserName,pos={xOffset,yBaselineForTraceA},size={49,14},proc=BrowserContHandleRejectACB,title="Reject"
+	CheckBox rejectACheckbox,win=$browserName,pos={xOffset,yBaselineForTraceA},size={49,14},proc=BrowserContRejectTraceACB,title="Reject"
 	CheckBox rejectACheckbox,win=$browserName,value= 0
-	CheckBox rejectBCheckbox,win=$browserName,pos={xOffset,yBaselineForTraceB},size={49,14},proc=BrowserContHandleRejectBCB,title="Reject"
+	CheckBox rejectBCheckbox,win=$browserName,pos={xOffset,yBaselineForTraceB},size={49,14},proc=BrowserContRejectTraceBCB,title="Reject"
 	CheckBox rejectBCheckbox,win=$browserName,value= 0
 	
 	xOffset=xOffset+65
