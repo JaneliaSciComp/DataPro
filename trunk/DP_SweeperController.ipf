@@ -1,5 +1,10 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
+Function SweeperContConstructor()
+	SweeperConstructor()
+	SweeperViewConstructor()
+End
+
 Function SweeperControllerSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
 	// Callback for SetVariables that don't require any bounds checking or other special treatment
 	String ctrlName

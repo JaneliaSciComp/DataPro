@@ -1,20 +1,23 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
-Function RaiseOrCreateDataProBrowser()
-	String DPBrowserList=WinList("DataProBrowser*",";","WIN:1")		// 1 means graphs
-	Variable nDPBrowsers=ItemsInList(DPBrowserList)
-	if (nDPBrowsers==0)
-		BrowserContConstructor()
-	else
-		Variable browserNumber=LargestBrowserNumber()
-		String browserName=BrowserNameFromNumber(browserNumber)
-		DoWindow /F $browserName
+Function BrowserContConstructor(whatToDo)
+	String whatToDo
+	Variable browserNumber
+	if (AreStringsEqual(whatToDo,"New"))
+		browserNumber=BrowserModelConstructor();
+		BrowserViewConstructor(browserNumber)
+	elseif (AreStringsEqual(whatToDo,"NewOnlyIfNone"))
+		String DPBrowserList=WinList("DataProBrowser*",";","WIN:1")		// 1 means graphs
+		Variable nDPBrowsers=ItemsInList(DPBrowserList)
+		if (nDPBrowsers==0)
+			browserNumber=BrowserContConstructor("New")
+		else
+			browserNumber=LargestBrowserNumber()
+			String browserName=BrowserNameFromNumber(browserNumber)
+			DoWindow /F $browserName
+		endif
 	endif
-End
-
-Function BrowserContConstructor()
-	Variable browserNumber=BrowserModelConstructor();
-	BrowserViewConstructor(browserNumber)
+	return browserNumber
 End
 
 Function BrowserContHook(s)
