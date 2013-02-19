@@ -30,22 +30,25 @@ Function BrowserContHook(s)
 	String browserDFName=BrowserDFNameFromNumber(browserNumber)
 	
 	String satelliteWindowName
+	String savedDFName
 	if (s.eventCode==2)					// window being killed
 		//Print "Arghhh..."
 		// Kill the data folder
 		KillDataFolder /Z $browserDFName
 	elseif (s.eventCode==7)			// cursor moved (or placed)
+		savedDFName=ChangeToBrowserDF(browserNumber)	
 		String cursorName=s.cursorName
 		NVAR tCursorA
 		NVAR tCursorB
 		if ( AreStringsEqual(cursorName,"A") )
 			tCursorA=xcsr(A,browserName)
 		elseif ( AreStringsEqual(cursorName,"B") )
-			tCursorB=xcsr(B,browserName)		
+			tCursorB=xcsr(B,browserName)
 		endif
+		SetDataFolder savedDFName
 	elseif (s.eventCode==8)			// graph modified
 		// We catch this b/c we need to know if the y axis limits change
-		String savedDF=ChangeToBrowserDF(browserNumber)
+		savedDFName=ChangeToBrowserDF(browserNumber)
 		NVAR yAMin
 		NVAR yAMax
 		NVAR yBMin
@@ -67,7 +70,7 @@ Function BrowserContHook(s)
 			xMin=V_min
 			xMax=V_max
 		endif
-		SetDataFolder savedDF
+		SetDataFolder savedDFName
 	endif
 
 	return 0		// If non-zero, we handled event and Igor will ignore it.
@@ -156,7 +159,6 @@ Function BrowserContBaseNameSV(svStruct) : SetVariableControl
 	String browserName=svStruct.win
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	BrowserModelUpdateMeasurements(browserNumber)
-	//InvalidateFit(browserNumber)  // model method
 	BrowserViewModelChanged(browserNumber)
 End
 
@@ -169,12 +171,6 @@ Function BrowserContShowTraceCB(cbStruct) : CheckBoxControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
 	BrowserModelUpdateMeasurements(browserNumber)
-	// Shouldn't need to mess with the fit: The view should realize that the fit is for a wave
-	// other than the one showing, and act accordingly.
-	//String topTraceWaveNameAbs=BrowserModelGetTopWaveNameAbs()
-	//if (!AreStringsEqual(waveNameAbsOfFitTrace,topTraceWaveNameAbs)
-	//	InvalidateFit(browserNumber)  // model method
-	//end
 	BrowserViewModelChanged(browserNumber)
 End
 
@@ -202,7 +198,7 @@ End
 //	SetDataFolder savedDF
 //End
 
-Function BrowserContHandleRejectACB(cbStruct) : CheckBoxControl
+Function BrowserContRejectTraceACB(cbStruct) : CheckBoxControl
 	STRUCT WMCheckboxAction &cbStruct
 	if (cbStruct.eventCode!=2)
 		return 0							// we only handle mouse up in control
@@ -212,7 +208,7 @@ Function BrowserContHandleRejectACB(cbStruct) : CheckBoxControl
 	ReplaceStringByKeyInWaveNote($traceAWaveNameAbs,"REJECT",num2str(cbStruct.checked))
 End
 
-Function BrowserContHandleRejectBCB(cbStruct) : CheckBoxControl
+Function BrowserContRejectTraceBCB(cbStruct) : CheckBoxControl
 	STRUCT WMCheckboxAction &cbStruct
 	if (cbStruct.eventCode!=2)
 		return 0							// we only handle mouse up in control
@@ -265,23 +261,11 @@ Function BrowserContSetBaselineButton(bStruct) : ButtonControl
 		return nan
 	endif
 	
-	// Save the current data folder, change to this browser's DF
-	String savedDF=ChangeToBrowserDF(browserNumber)
-
-	// Set limits of the baseline window
-	NVAR tBaselineLeft=tBaselineLeft	
-	tBaselineLeft=xcsr(A,browserName)  // times of left and right cursor that delineate the baseline region
-	NVAR tBaselineRight=tBaselineRight
-	tBaselineRight=xcsr(B,browserName)
-
-	// Update the measurements	
-	BrowserModelUpdateMeasurements(browserNumber)
+	// Notify the model
+	BrowserModelSetBaseline(browserNumber)
 
 	// Update the view
-	BrowserViewModelChanged(browserNumber)
-	
-	// Restore the orignal DF
-	SetDataFolder savedDF	
+	BrowserViewModelChanged(browserNumber)	
 End
 
 Function BrowserContClearBaselineButton(bStruct) : ButtonControl
@@ -296,23 +280,11 @@ Function BrowserContClearBaselineButton(bStruct) : ButtonControl
 	String measurePanelName=bStruct.win;
 	Variable browserNumber=BrowserNumberFromName(measurePanelName);
 	
-	// Save the current data folder, change to this browser's DF
-	String savedDF=ChangeToBrowserDF(browserNumber)
-
-	// Clear limits of the baseline window
-	NVAR tBaselineLeft
-	NVAR tBaselineRight
-	tBaselineLeft=nan
-	tBaselineRight=nan
-
-	// Update the measurements	
-	BrowserModelUpdateMeasurements(browserNumber)
+	// Clear the baseline limits in the model
+	BrowserModelClearBaseline(browserNumber)
 	
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
-	
-	// Restore the orignal DF
-	SetDataFolder savedDF	
 End
 
 Function BrowserContSetWindow1Button(bStruct) : ButtonControl

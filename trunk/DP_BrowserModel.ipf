@@ -673,3 +673,46 @@ Function BrowserModelGetNSweeps(browserNumber)
 	return nSweeps
 End
 
+Function BrowserModelSetBaseline(browserNumber)
+	Variable browserNumber
+	
+	// Save the current data folder, change to this browser's DF
+	String savedDF=ChangeToBrowserDF(browserNumber)
+
+	// Declare the instance vars we'll need
+	NVAR tCursorA
+	NVAR tCursorB
+	NVAR tBaselineLeft
+	NVAR tBaselineRight
+
+	// Set the instance vars
+	tBaselineLeft=tCursorA
+	tBaselineRight=tCursorB
+
+	// Update the measurements	
+	BrowserModelUpdateMeasurements(browserNumber)
+
+	// Restore the orignal DF
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelClearBaseline(browserNumber)
+	Variable browserNumber
+	
+	// Save the current data folder, change to this browser's DF
+	String savedDF=ChangeToBrowserDF(browserNumber)
+
+	// Declare the instance vars we'll need
+	NVAR tBaselineLeft
+	NVAR tBaselineRight
+
+	// Set the instance vars
+	tBaselineLeft=nan
+	tBaselineRight=nan
+
+	// Update the measurements	
+	BrowserModelUpdateMeasurements(browserNumber)
+
+	// Restore the orignal DF
+	SetDataFolder savedDF	
+End
