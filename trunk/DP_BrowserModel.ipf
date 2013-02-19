@@ -21,10 +21,10 @@ Function BrowserModelConstructor()
 	String /G baseNameA="ad0"
 	String /G baseNameB="ad1"
 	Variable /G iCurrentSweep=1
-	Variable /G tCursorA=nan
-	Variable /G tCursorB=nan	
-	Variable /G baselineA, baselineB
-	//Variable /G step1, step2
+	Variable /G tCursorA=nan		// the current time position of cursor A, or nan if that's not set
+	Variable /G tCursorB=nan		// the current time position of cursor B, or nan if that's not set
+		// Note that Cursor A is not associated with trace A, per se
+		// Note that Cursor B is not associated with trace B, per se
 	Variable /G showToolsChecked=0  // boolean, "ShowTools" is a built-in, so can't use that
 	Variable /G traceAChecked=1, traceBChecked=0
 	Variable /G xAutoscaling=1, yAAutoscaling=1, yBAutoscaling=1
@@ -41,10 +41,10 @@ Function BrowserModelConstructor()
 	// If they have never been shown, they are set to the defaults below.
 	// If auto-scaling of an axis is turned off, then the axis limits get set to these values when it is 
 	// shown.
-	Variable /G yAMin=-3
-	Variable /G yAMax=3
-	Variable /G yBMin=-3
-	Variable /G yBMax=3
+	Variable /G yAMin=-10
+	Variable /G yAMax=10
+	Variable /G yBMin=-10
+	Variable /G yBMax=10
 	Variable /G xMin=0
 	Variable /G xMax=100
 
@@ -61,7 +61,7 @@ Function BrowserModelConstructor()
 	Variable /G from1=10, to1=90	// these are parameters
 	Variable /G from2=90, to2=10
 	Variable /G lev1=0  // this is a param
-	Variable /G baseline=nan, mean1=nan, peak1=nan, rise1=nan  // these are statistics
+	Variable /G baseline=nan, mean1=nan, peak1=nan, rise1=nan  	// these are statistics
 	Variable /G nCrossings1=nan
 	Variable /G mean2=nan, peak2=nan, rise2=nan
 	
@@ -349,7 +349,6 @@ Function BrowserModelUpdateMeasurements(browserNumber)
 	String savedDF=ChangeToBrowserDF(browserNumber)
 	
 	// Get references to all the variables that we need in this data folder
-	//NVAR baselineA, step1, baselineB, step2
 	// inputs to the measurement process
 	NVAR tBaselineLeft, tBaselineRight
 	NVAR tWindow1Left, tWindow1Right
