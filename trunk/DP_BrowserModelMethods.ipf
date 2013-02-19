@@ -114,8 +114,8 @@ Function BrowserModelConstructor()
 
 	// More color stuff
 	String /G colorNameList="Black;Gray;Red;Green;Blue;Orange;Purple"
-	String /G colorNameA="Black"
-	String /G colorNameB="Gray"
+	String /G colorNameA="Blue"
+	String /G colorNameB="Red"
 
 	// Restore the original DF
 	SetDataFolder savedDF	

@@ -13,7 +13,6 @@ Function RaiseOrCreateDataProBrowser()
 End
 
 Function CreateDataProBrowser()
-	// This is essentially the controller constructor.
 	Variable browserNumber=BrowserModelConstructor();
 	BrowserViewConstructor(browserNumber)
 End
@@ -341,8 +340,7 @@ Function HandleSetSweepIndexControl(svStruct) : SetVariableControl
 		return 0
 	endif	
 	String browserName=svStruct.win
-	ControlInfo /W=$browserName setsweep
-	Variable iSweepInView=V_Value
+	Variable iSweepInView=svStruct.dval
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	// Set the sweep in the model
 	SetICurrentSweep(browserNumber,iSweepInView)
