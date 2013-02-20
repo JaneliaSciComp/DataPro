@@ -165,7 +165,7 @@ Function SweeperControllerAcquireTrial()
 		if (nSweepsPerTrial==1)
 			sprintf comment "stim %d of %d",iSweepWithinTrial+1,nSweepsPerTrial
 		else
-			sprintf comment "stim %d of %d, with inter-stim-interval of %d",iSweepWithinTrial+1,nSweepsPerTrial,sweepInterval
+			sprintf comment "stim %d of %d, with inter-stim-interval of %g s",iSweepWithinTrial+1,nSweepsPerTrial,sweepInterval
 		endif
 		sprintf doit, "Sleep /A %s", Secs2Time(start_time,3)
 		Execute doit

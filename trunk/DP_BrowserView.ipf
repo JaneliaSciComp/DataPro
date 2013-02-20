@@ -53,12 +53,12 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	Variable yBaselineForTraceB=30
 	absVarName=AbsoluteVarName(browserDFName,"traceAChecked")
 	CheckBox showTraceACheckbox,win=$browserName,pos={125,yBaselineForTraceA},size={39,14}
-	CheckBox showTraceACheckbox,win=$browserName,proc=BrowserContShowTraceCB,title="Tr. A",value= 1
+	CheckBox showTraceACheckbox,win=$browserName,proc=BrowserContShowTraceCB,title="Tr.A",value= 1
 	CheckBox showTraceACheckbox,win=$browserName,variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"traceBChecked")
 	CheckBox showTraceBCheckbox,win=$browserName,pos={125,yBaselineForTraceB},size={39,14}
-	CheckBox showTraceBCheckbox,win=$browserName,proc=BrowserContShowTraceCB,title="Tr. B",value= 0
+	CheckBox showTraceBCheckbox,win=$browserName,proc=BrowserContShowTraceCB,title="Tr.B",value= 0
 	CheckBox showTraceBCheckbox,win=$browserName,variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"baseNameA")
