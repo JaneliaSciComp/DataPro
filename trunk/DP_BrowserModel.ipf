@@ -66,10 +66,14 @@ Function BrowserModelConstructor()
 	Variable /G mean2=nan, peak2=nan, rise2=nan
 	
 	// Create the globals related to the fit subpanel
+	// The UI is designed so that if the user has done a fit, changing any of the fit params causes the fit to update.
+	// We keep track of what wave the fit applies to.
+	// If the user changes the current sweep, the fit does not automatically get done on the new sweep.  The user has to hit
+	// the Fit button to make that happen.  All of this is by design.
 	Variable /G isFitValid=0  	// true iff the current fit coefficients represent the output of a valid fit
 							// to waveNameAbsOfFitTrace, with the current fit parameters
 	String /G waveNameAbsOfFitTrace=""
-	String /G fitType="Single" 
+	String /G fitType="Exponential" 
 	Variable /G tFitZero=nan
 	Variable /G tFitLeft=nan
 	Variable /G tFitRight=nan
@@ -451,8 +455,8 @@ End
 //End
 
 Function BrowserModelUpdateFit(browserNumber)
-	// A model method (in spirit), changes the yFit wave and the fit coefficient instance variables to reflect 
-	// the current fit window, trace, and fit parameters.
+	// A private model method, changes the yFit wave and the fit coefficient instance variables to reflect 
+	// the current fit window, trace, and fit parameters.  If a fit cannot be done, sets isValidFit to false.
 	Variable browserNumber
 	
 	//Printf "In BrowserModelUpdateFit()\r"
@@ -491,7 +495,7 @@ Function BrowserModelUpdateFit(browserNumber)
 
 	// Are we doing single or double exponential fit?
 	SVAR fitType
-	Variable singleExp=AreStringsEqual(fitType,"Single")
+	Variable singleExp=AreStringsEqual(fitType,"Exponential")
 
 	// Build up the command to do the fit, keeping it in the string commandString
 	String commandString="CurveFit /N "
@@ -1218,3 +1222,18 @@ Function BrowserModelIncludeInAverage(thisWaveName,filterOnHold,holdCenter,holdT
 	return 1
 End
 
+Function BrowserModelDoFit(browserNumber)
+	// A public method that re-does the fit, doing it on the currently-showing sweep.
+	Variable browserNumber
+	BrowserModelUpdateFit(browserNumber)	// this is a private method
+End
+
+Function BrowserModelSetDtFitExtend(browserNumber,newValue)
+	Variable browserNumber
+	Variable newValue
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	NVAR dtFitExtend
+	dtFitExtend=newValue
+	BrowserModelUpdateFit(browserNumber)  // model method
+	SetDataFolder savedDFName
+End

@@ -53,20 +53,20 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	Variable yBaselineForTraceB=30
 	absVarName=AbsoluteVarName(browserDFName,"traceAChecked")
 	CheckBox showTraceACheckbox,win=$browserName,pos={125,yBaselineForTraceA},size={39,14}
-	CheckBox showTraceACheckbox,win=$browserName,proc=BrowserContShowTraceCB,title="tr.A",value= 1
+	CheckBox showTraceACheckbox,win=$browserName,proc=BrowserContShowTraceCB,title="Tr.A",value= 1
 	CheckBox showTraceACheckbox,win=$browserName,variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"traceBChecked")
 	CheckBox showTraceBCheckbox,win=$browserName,pos={125,yBaselineForTraceB},size={39,14}
-	CheckBox showTraceBCheckbox,win=$browserName,proc=BrowserContShowTraceCB,title="tr.B",value= 0
+	CheckBox showTraceBCheckbox,win=$browserName,proc=BrowserContShowTraceCB,title="Tr.B",value= 0
 	CheckBox showTraceBCheckbox,win=$browserName,variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"baseNameA")
-	SetVariable bnameset_1,win=$browserName,pos={176,yBaselineForTraceA},size={80,14},proc=BrowserContBaseNameSV,title="name"
+	SetVariable bnameset_1,win=$browserName,pos={176,yBaselineForTraceA},size={80,14},proc=BrowserContBaseNameSV,title="Name"
 	SetVariable bnameset_1,win=$browserName,value=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"baseNameB")
-	SetVariable bnameset_2,win=$browserName,pos={176,yBaselineForTraceB},size={80,14},proc=BrowserContBaseNameSV,title="name"
+	SetVariable bnameset_2,win=$browserName,pos={176,yBaselineForTraceB},size={80,14},proc=BrowserContBaseNameSV,title="Name"
 	SetVariable bnameset_2,win=$browserName,value=$absVarName
 		
 	// This kind of color popup doesn't work in a ControlBar, seemingly...
@@ -75,9 +75,9 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	
 	SVAR colorNameList
 	String colorNameListFU="\""+colorNameList+"\""
-	PopupMenu traceAColorPopupMenu,win=$browserName,pos={265,yBaselineForTraceA-2},size={96,14},bodyWidth=65,proc=BrowserContTraceAColorPopup,title="color:"
+	PopupMenu traceAColorPopupMenu,win=$browserName,pos={265,yBaselineForTraceA-2},size={96,14},bodyWidth=65,proc=BrowserContTraceAColorPopup,title="Color"
 	PopupMenu traceAColorPopupMenu,win=$browserName,value=#colorNameListFU
-	PopupMenu traceBColorPopupMenu,win=$browserName,pos={265,yBaselineForTraceB-2},size={96,14},bodyWidth=65,proc=BrowserContTraceBColorPopup,title="color:"
+	PopupMenu traceBColorPopupMenu,win=$browserName,pos={265,yBaselineForTraceB-2},size={96,14},bodyWidth=65,proc=BrowserContTraceBColorPopup,title="Color"
 	PopupMenu traceBColorPopupMenu,win=$browserName,value=#colorNameListFU
 		
 	xOffset=370		// pixels
@@ -87,10 +87,10 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	CheckBox rejectBCheckbox,win=$browserName,value= 0
 	
 	xOffset=xOffset+65
-	ValDisplay stepAValDisplay,win=$browserName,pos={xOffset,yBaselineForTraceA},size={70,14},title="Step",format="%3.3g"
+	ValDisplay stepAValDisplay,win=$browserName,pos={xOffset,yBaselineForTraceA},size={70,14},title="Step:",format="%3.3g"
 	ValDisplay stepAValDisplay,win=$browserName,limits={0,0,0},value=_NUM:nan
 	
-	ValDisplay stepBValDisplay,win=$browserName,pos={xOffset,yBaselineForTraceB},size={70,14},title="Step",format="%3.3g"
+	ValDisplay stepBValDisplay,win=$browserName,pos={xOffset,yBaselineForTraceB},size={70,14},title="Step:",format="%3.3g"
 	ValDisplay stepBValDisplay,win=$browserName,limits={0,0,0},value=_NUM:nan
 	
 	SetVariable commentsSetVariable,win=$browserName,pos={20,55},size={260,15},title="comments"
@@ -146,15 +146,15 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	Button clearWindow1Button,pos={6,yOffset+27},size={100,18},proc=BrowserContClearWindow1Button,title="Clear Window 1"
 
 	absVarName=AbsoluteVarName(browserDFName,"mean1")
-	ValDisplay mean1ValDisplay,pos={138,yOffset-5},size={82,17},title="Mean",format="%4.2f"
+	ValDisplay mean1ValDisplay,pos={138,yOffset-5},size={82,17},title="Mean:",format="%4.2f"
 	ValDisplay mean1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
 
 	absVarName=AbsoluteVarName(browserDFName,"peak1")
-	ValDisplay peak1ValDisplay,pos={140,yOffset+17},size={79,17},title="Peak",format="%4.2f"
+	ValDisplay peak1ValDisplay,pos={140,yOffset+17},size={79,17},title="Peak:",format="%4.2f"
 	ValDisplay peak1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
 
 	absVarName=AbsoluteVarName(browserDFName,"rise1")
-	ValDisplay rise1ValDisplay,pos={115,yOffset+38},size={105,17},title="Transit Time"
+	ValDisplay rise1ValDisplay,pos={115,yOffset+38},size={105,17},title="Transit Time:"
 	ValDisplay rise1ValDisplay,format="%4.2f",limits={0,0,0},barmisc={0,1000}
 	ValDisplay rise1ValDisplay,value= #absVarName
 	TitleBox rise1UnitsTitleBox,pos={224,yOffset+38+1},frame=0, title="ms"
@@ -162,12 +162,12 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	absVarName=AbsoluteVarName(browserDFName,"from1")
 	SetVariable from_disp1,pos={54,yOffset+61},size={80,17},proc=BrowserContMeasurementSV,title="From"
 	SetVariable from_disp1,limits={0,100,10},value=$absVarName
-	TitleBox fromUnitsTitleBox,pos={137,yOffset+61+2},frame=0, title="%"
+	TitleBox from1UnitsTitleBox,pos={137,yOffset+61+2},frame=0, title="%"
 
 	absVarName=AbsoluteVarName(browserDFName,"to1")
 	SetVariable to_disp1,pos={154,yOffset+61},size={66,17},proc=BrowserContMeasurementSV,title="To"
 	SetVariable to_disp1,limits={0,100,10},value=$absVarName
-	TitleBox toUnitsTitleBox,pos={223,yOffset+61+2},frame=0, title="%"
+	TitleBox to1UnitsTitleBox,pos={223,yOffset+61+2},frame=0, title="%"
 	
 	absVarName=AbsoluteVarName(browserDFName,"lev1")
 	SetVariable levelSetVariable,pos={18,yOffset-61+145},size={80,17}
@@ -175,7 +175,7 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	SetVariable levelSetVariable,limits={-100,100,10},format="%4.2f",value=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"nCrossings1")
-	ValDisplay cross1ValDisplay,pos={110,yOffset-61+145},size={110,17},title="No. Crossings"
+	ValDisplay cross1ValDisplay,pos={110,yOffset-61+145},size={110,17},title="No. Crossings:"
 	ValDisplay cross1ValDisplay,limits={0,0,0},barmisc={0,1000},format="%4.0f",value= #absVarName
 	
 	// Window 2 controls
@@ -186,90 +186,80 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	Button clearWindow2Button,pos={6,yOffset+27},size={100,18},proc=BrowserContClearWindow2Button,title="Clear Window 2"
 
 	absVarName=AbsoluteVarName(browserDFName,"mean2")
-	ValDisplay mean2ValDisplay,pos={138,yOffset-5},size={82,17},title="Mean",format="%4.2f"
+	ValDisplay mean2ValDisplay,pos={138,yOffset-5},size={82,17},title="Mean:",format="%4.2f"
 	ValDisplay mean2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"peak2")
-	ValDisplay peak2ValDisplay,pos={140,yOffset+17},size={79,17},title="Peak",format="%4.2f"
+	ValDisplay peak2ValDisplay,pos={140,yOffset+17},size={79,17},title="Peak:",format="%4.2f"
 	ValDisplay peak2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"rise2")
-	ValDisplay rise2ValDisplay,pos={115,yOffset+38},size={105,17},title="Transit Time"
+	ValDisplay rise2ValDisplay,pos={115,yOffset+38},size={105,17},title="Transit Time:"
 	ValDisplay rise2ValDisplay,format="%4.2f",limits={0,0,0},barmisc={0,1000}
 	ValDisplay rise2ValDisplay,value= #absVarName
 	TitleBox rise2UnitsTitleBox,pos={224,yOffset+38+1},frame=0, title="ms"
 	
-//	absVarName=AbsoluteVarName(browserDFName,"from2")
-//	SetVariable from_disp2,pos={49,253},size={80,17},proc=BrowserContMeasurementSV,title="From"
-//	SetVariable from_disp2,limits={0,100,10},value= $absVarName
-//	DrawText 228,268,"%"
-//	
-//	absVarName=AbsoluteVarName(browserDFName,"to2")
-//	SetVariable to_disp2,pos={155,254},size={66,17},proc=BrowserContMeasurementSV,title="To"
-//	SetVariable to_disp2,limits={0,100,10},value= $absVarName
-//	DrawText 137,268,"%"
-
 	absVarName=AbsoluteVarName(browserDFName,"from2")
 	SetVariable from_disp2,pos={54,yOffset+61},size={80,17},proc=BrowserContMeasurementSV,title="From"
 	SetVariable from_disp2,limits={0,100,10},value=$absVarName
-	TitleBox fromUnitsTitleBox,pos={137,yOffset+61+2},frame=0, title="%"
+	TitleBox from2UnitsTitleBox,pos={137,yOffset+61+2},frame=0, title="%"
 
 	absVarName=AbsoluteVarName(browserDFName,"to2")
 	SetVariable to_disp2,pos={154,yOffset+61},size={66,17},proc=BrowserContMeasurementSV,title="To"
 	SetVariable to_disp2,limits={0,100,10},value=$absVarName
-	TitleBox toUnitsTitleBox,pos={223,yOffset+61+2},frame=0, title="%"
-
+	TitleBox to2UnitsTitleBox,pos={223,yOffset+61+2},frame=0, title="%"
 
 	// Horizontal rule
 	DrawLine 8,measureAreaHeight,245,measureAreaHeight
 
 	// Fitting controls
 	yOffset=measureAreaHeight
-	//SetDrawLayer UserBack
-	DrawText 84,yOffset+79,"ms"
-	DrawText 199,yOffset+78,"ms"
-	Button fitButton,pos={123,yOffset+10},size={100,20},proc=BrowserContFitButton,title="Fit"
-
+	
 	SetDrawEnv linethick= 3,linefgc= (26411,0,52428)	// purple
-	DrawRect 8-3,yOffset+36-3+2,8+100+2,yOffset+36+20+2+2
-	Button set_tFitZero,pos={8,yOffset+36+2},size={100,20},proc=BrowserContSetFitZeroButton,title="Set Zero"
+	DrawRect 16-3,yOffset+36-3+2,16+100+2,yOffset+36+20+2+2
+	Button set_tFitZero,pos={16,yOffset+36+2},size={100,20},proc=BrowserContSetFitZeroButton,title="Set Zero"
+	Button clearTFitZero,pos={16,yOffset+36+28},size={100,18},proc=BrowserContClearFitZeroButton,title="Clear Zero"
+
+	Button fitButton,pos={140,yOffset+10},size={100,20},proc=BrowserContFitButton,title="Fit"
 
 	SetDrawEnv linethick= 3,linefgc= (0,65535,65535)	// cyan
-	DrawRect 123-3,yOffset+36-3+2,123+100+2,yOffset+36+20+2+2
-	Button set_fit_range,pos={123,yOffset+36+2},size={100,20},proc=BrowserContSetFitRangeButton,title="Set Range"
+	DrawRect 140-3,yOffset+36-3+2,140+100+2,yOffset+36+20+2+2
+	Button set_fit_range,pos={140,yOffset+36+2},size={100,20},proc=BrowserContSetFitRangeButton,title="Set Range"
 
-	Button clearTFitZero,pos={8,yOffset+36+28},size={100,18},proc=BrowserContClearFitZeroButton,title="Clear Zero"
+	Button clearTFitRange,pos={140,yOffset+36+28},size={100,18},proc=BrowserContClearFitRangeButton,title="Clear Range"
 
-	Button clearTFitRange,pos={123,yOffset+36+28},size={100,18},proc=BrowserContClearFitRangeButton,title="Clear Range"
-
-	PopupMenu fitTypePopupMenu,pos={8,yOffset+10},size={90,19}
-	PopupMenu fitTypePopupMenu,mode=1,value= #"\"Single;Double\""	
+	PopupMenu fitTypePopupMenu,pos={6,yOffset+10},size={120,19},bodyWidth=120
+	PopupMenu fitTypePopupMenu,mode=1,value= #"\"Exponential;Double Exponential\""	
 	PopupMenu fitTypePopupMenu,proc=BrowserContFitTypePopup
 	
 	absVarName=AbsoluteVarName(browserDFName,"tau1")
-	ValDisplay tau1ValDisplay, pos={6,yOffset+64+28},size={75,17},title="tau 1  ",format="%4.2f"
+	ValDisplay tau1ValDisplay, pos={6,yOffset+64+28},size={75,17},title="Tau 1:",format="%4.2f"
 	ValDisplay tau1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
-	
+	TitleBox tau1UnitsTitleBox,pos={6+75+3,yOffset+64+28+2},frame=0, title="ms"
+		
 	absVarName=AbsoluteVarName(browserDFName,"amp1")
-	ValDisplay amp1ValDisplay,pos={5,yOffset+82+28},size={75,17},title="amp 1",format="%4.2f"
+	ValDisplay amp1ValDisplay,pos={6,yOffset+82+28},size={75,17},title="Amp 1:",format="%4.2f"
 	ValDisplay amp1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"tau2")
-	ValDisplay tau2ValDisplay,pos={119,yOffset+64+28},size={75,17},title="tau 2  ",format="%4.2f"
+	ValDisplay tau2ValDisplay,pos={119,yOffset+64+28},size={75,17},title="Tau 2:",format="%4.2f"
 	ValDisplay tau2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	TitleBox tau2UnitsTitleBox,pos={119+75+3,yOffset+64+28+2},frame=0, title="ms"
 	
 	absVarName=AbsoluteVarName(browserDFName,"amp2")
-	ValDisplay amp2ValDisplay,pos={119,yOffset+81+28},size={75,17},title="amp 2",format="%4.2f"
+	ValDisplay amp2ValDisplay,pos={119,yOffset+81+28},size={75,17},title="Amp 2:",format="%4.2f"
 	ValDisplay amp2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
 	
+	// N.B.: This one doesn't use a binding, so the callback must handle updating the model
+	NVAR dtFitExtend
 	absVarName=AbsoluteVarName(browserDFName,"dtFitExtend")
 	SetVariable dtFitExtendSetVariable,pos={7,yOffset+125+28},size={98,17},title="Show fit"
-	SetVariable dtFitExtendSetVariable,limits={0,10000,10},value=$absVarName
+	SetVariable dtFitExtendSetVariable,limits={0,10000,10},value= _NUM:dtFitExtend
 	SetVariable dtFitExtendSetVariable,proc=BrowserContDtFitExtendSV
 	TitleBox dtFitExtendUnitsTitleBox,pos={109,yOffset+125+28+2},frame=0, title="ms beyond range"
 	
 	absVarName=AbsoluteVarName(browserDFName,"yOffset")
-	ValDisplay yOffsetValDisplay,pos={7,yOffset+102+28},size={90,17},title="offset",format="%4.2f"
+	ValDisplay yOffsetValDisplay,pos={7,yOffset+102+28},size={90,17},title="Offset:",format="%4.2f"
 	ValDisplay yOffsetValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
 	
 	// N.B.: This one doesn't use a binding, so the callback must handle updating the model
@@ -764,7 +754,7 @@ Function BrowserViewSetFitCoeffVis(browserNumber,visible)
 		ValDisplay yOffsetValDisplay, win=$browserName#ToolsPanel, valueColor=(0,0,0)
 		ValDisplay tau1ValDisplay, win=$browserName#ToolsPanel, valueColor=(0,0,0)
 		ValDisplay amp1ValDisplay, win=$browserName#ToolsPanel, valueColor=(0,0,0)
-		if ( AreStringsEqual(fitType,"Single") )
+		if ( AreStringsEqual(fitType,"Exponential") )
 			ValDisplay tau2ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
 			ValDisplay amp2ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
 		else

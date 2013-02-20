@@ -141,9 +141,7 @@ Function BrowserContDtFitExtendSV(svStruct) : SetVariableControl
 	endif	
 	String browserName=svStruct.win
 	Variable browserNumber=BrowserNumberFromName(browserName)
-	// changing this invalidates the fit, since now the fit trace doesn't match the fit parameters
-	//Printf "About to call BrowserModelUpdateFit() in BrowserContDtFitExtendSV()\r"
-	BrowserModelUpdateFit(browserNumber)  // model method
+	BrowserModelSetDtFitExtend(browserNumber,svStruct.dval)
 	BrowserViewModelChanged(browserNumber)	
 End
 
@@ -214,20 +212,6 @@ Function BrowserContRejectTraceBCB(cbStruct) : CheckBoxControl
 	String traceBWaveNameAbs=BrowserModelGetBWaveNameAbs(browserNumber)
 	ReplaceStringByKeyInWaveNote($traceBWaveNameAbs,"REJECT",num2str(cbStruct.checked))
 End
-
-//Function BaseSub(cbStruct) : CheckBoxControl
-//	// This is called when the user checks/unchecks one of the "Base Sub" checkboxes in a
-//	// DPBrowser window.
-//	STRUCT WMCheckboxAction &cbStruct
-//	if (cbStruct.eventCode!=2)
-//		return 0							// we only handle mouse up in control
-//	endif	
-//	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
-//	BrowserModelUpdateMeasurements(browserNumber)
-//	//Printf "About to call BrowserModelUpdateFit() in BaseSub()\r"
-//	BrowserModelUpdateFit(browserNumber)  // model method
-//	BrowserViewModelChanged(browserNumber)
-//End
 
 Function BrowserContShowToolsPanelCB(cbStruct) : CheckboxControl
 	// This is called when the user checks/unchecks the "Show tools" checkbox in a
@@ -314,9 +298,6 @@ Function BrowserContClearWindow1Button(bStruct) : ButtonControl
 
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
-	
-	// Restore the orignal DF
-	SetDataFolder savedDF	
 End
 
 Function BrowserContMeasurementSV(svStruct) : SetVariableControl
@@ -368,93 +349,50 @@ Function BrowserContClearWindow2Button(bStruct) : ButtonControl
 
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
-	
-	// Restore the orignal DF
-	SetDataFolder savedDF	
 End
+
+
+
+// Fitting UI
 
 Function BrowserContSetFitZeroButton(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
-	
-	// Check that this is really a button-up on the button
 	if (bStruct.eventCode!=2)
 		return 0							// we only handle mouse up in control
 	endif
-	
-	// Get the browser number from the bStruct
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
-	
-	// Set the model state variable
 	BrowserModelSetFitZero(browserNumber)
-	
-	// Update the view
 	BrowserViewModelChanged(browserNumber)
-	
-	// Restore original DF
-	SetDataFolder savedDFName
 End
 
 Function BrowserContClearFitZeroButton(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
-	
-	// Check that this is really a button-up on the button
 	if (bStruct.eventCode!=2)
 		return 0							// we only handle mouse up in control
 	endif
-	
-	// Get the browser number from the bStruct
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
-	
-	// Clear the model state variable
 	BrowserModelClearFitZero(browserNumber)
-
-	// Update the view
 	BrowserViewModelChanged(browserNumber)
-	
-	// Restore original DF
-	SetDataFolder savedDFName
 End
 
 Function BrowserContSetFitRangeButton(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
-	
-	// Check that this is really a button-up on the button
 	if (bStruct.eventCode!=2)
 		return 0							// we only handle mouse up in control
 	endif
-	
-	// Get the browser number from the bStruct
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
-	
-	// Set fit bounds in model
 	BrowserModelSetFitRange(browserNumber)
-
-	// Update the view
 	BrowserViewModelChanged(browserNumber)
-	
-	// Restore original DF
-	SetDataFolder savedDFName
 End
 
 Function BrowserContClearFitRangeButton(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
-	
-	// Check that this is really a button-up on the button
 	if (bStruct.eventCode!=2)
 		return 0							// we only handle mouse up in control
 	endif
-	
-	// Get the browser number from the bStruct
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
-	
-	// Set fit bounds in model
 	BrowserModelClearFitRange(browserNumber)
-
-	// Update the view
 	BrowserViewModelChanged(browserNumber)
-	
-	// Restore original DF
-	SetDataFolder savedDFName
 End
 
 Function BrowserContFitButton(bStruct) : ButtonControl
@@ -463,7 +401,7 @@ Function BrowserContFitButton(bStruct) : ButtonControl
 		return 0							// we only handle mouse up in control
 	endif
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
-	BrowserModelUpdateFit(browserNumber)
+	BrowserModelDoFit(browserNumber)
 	BrowserViewModelChanged(browserNumber)
 End
 
@@ -578,11 +516,8 @@ Function BrowserContRenameAveragesCB(cbStruct) : CheckBoxControl
 		return 0							// we only handle mouse up in control
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
-	String savedDFName=ChangeToBrowserDF(browserNumber)	
-	NVAR renameAverages
-	renameAverages=cbStruct.checked
+	BrowserModelSetRenameAverages(browserNumber,cbStruct.checked)
 	BrowserViewModelChanged(browserNumber)
-	SetDataFolder savedDFName
 End
 
 Function BrowserContTraceAColorPopup(pStruct) : PopupMenuControl
