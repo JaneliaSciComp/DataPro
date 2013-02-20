@@ -53,12 +53,12 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	Variable yBaselineForTraceB=30
 	absVarName=AbsoluteVarName(browserDFName,"traceAChecked")
 	CheckBox showTraceACheckbox,win=$browserName,pos={125,yBaselineForTraceA},size={39,14}
-	CheckBox showTraceACheckbox,win=$browserName,proc=BrowserContShowTraceCB,title="Tr.A",value= 1
+	CheckBox showTraceACheckbox,win=$browserName,proc=BrowserContShowTraceCB,title="Tr. A",value= 1
 	CheckBox showTraceACheckbox,win=$browserName,variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"traceBChecked")
 	CheckBox showTraceBCheckbox,win=$browserName,pos={125,yBaselineForTraceB},size={39,14}
-	CheckBox showTraceBCheckbox,win=$browserName,proc=BrowserContShowTraceCB,title="Tr.B",value= 0
+	CheckBox showTraceBCheckbox,win=$browserName,proc=BrowserContShowTraceCB,title="Tr. B",value= 0
 	CheckBox showTraceBCheckbox,win=$browserName,variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"baseNameA")
@@ -116,6 +116,7 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	// From the browser number, derive the measure panel window name and title
 	String browserWindowName=BrowserNameFromNumber(browserNumber)
 	String browserDFName=BrowserDFNameFromNumber(browserNumber)
+	String panelName=browserWindowName+"#ToolsPanel"
 	
 	// Create the panel, draw all the controls
 	Variable toolsPanelWidth=250  // pels
@@ -125,89 +126,97 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	Variable toolsPanelHeight=measureAreaHeight+fitAreaHeight+averageAreaHeight
 	NewPanel /HOST=$browserWindowName /EXT=0 /W=(0,0,toolsPanelWidth,toolsPanelHeight) /N=ToolsPanel /K=1 as "Tools"
 	SetWindow $browserWindowName#ToolsPanel, hook(TPHook)=BrowserContToolsPanelHook  // register a callback function for if the panel is closed
-	
+
 	// Measure controls
+
+	// Some dimensions and such
 	
 	// Baseline controls
+	Variable yOffset=6
 	SetDrawEnv linethick= 3,linefgc= (65535,0,0)
-	DrawRect 6-3,6-3,6+100+3,6+20+3
-	Button setbase,pos={6,6},size={100,20},proc=BrowserContSetBaselineButton,title="Set Baseline"
-	Button clearBaselineButton,pos={6,6+28-1},size={100,18},proc=BrowserContClearBaselineButton,title="Clear Baseline"
+	DrawRect 6-3,yOffset-3,6+100+3,yOffset+20+3
+	Button setbase,pos={6,yOffset},size={100,20},proc=BrowserContSetBaselineButton,title="Set Baseline"
+	Button clearBaselineButton,pos={6,yOffset+27},size={100,18},proc=BrowserContClearBaselineButton,title="Clear Baseline"
 
 	String absVarName=AbsoluteVarName(browserDFName,"baseline")
-	ValDisplay baselineValDisplay,pos={139,8},size={82,17},title="Mean:",format="%4.2f"
-	ValDisplay baselineValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	ValDisplay baselineValDisplay,win=$panelName,pos={138,8},size={82,17},title="Mean:",format="%4.2f"
+	ValDisplay baselineValDisplay,win=$panelName,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	TitleBox baselineMeanUnitsTitleBox, win=$panelName, pos={138+82+3,8+2},frame=0
 
 	// Window 1 controls
-	Variable yOffset=70
+	yOffset=70
 	SetDrawEnv linethick= 3,linefgc= (3,52428,1)
 	DrawRect 3,yOffset-3,109,yOffset+20+3
-	Button setwin_1,pos={6,yOffset},size={100,20},proc=BrowserContSetWindow1Button,title="Set Window 1"
-	Button clearWindow1Button,pos={6,yOffset+27},size={100,18},proc=BrowserContClearWindow1Button,title="Clear Window 1"
+	Button setwin_1,win=$panelName,pos={6,yOffset},size={100,20},proc=BrowserContSetWindow1Button,title="Set Window 1"
+	Button clearWindow1Button,win=$panelName,pos={6,yOffset+27},size={100,18},proc=BrowserContClearWindow1Button,title="Clear Window 1"
 
 	absVarName=AbsoluteVarName(browserDFName,"mean1")
-	ValDisplay mean1ValDisplay,pos={138,yOffset-5},size={82,17},title="Mean:",format="%4.2f"
-	ValDisplay mean1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	ValDisplay mean1ValDisplay,win=$panelName,pos={138,yOffset-5},size={82,17},title="Mean:",format="%4.2f"
+	ValDisplay mean1ValDisplay,win=$panelName,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	TitleBox window1MeanUnitsTitleBox, win=$panelName, pos={138+82+3,yOffset-5+2},frame=0
 
 	absVarName=AbsoluteVarName(browserDFName,"peak1")
-	ValDisplay peak1ValDisplay,pos={140,yOffset+17},size={79,17},title="Peak:",format="%4.2f"
-	ValDisplay peak1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	ValDisplay peak1ValDisplay,win=$panelName,pos={138,yOffset+17},size={82,17},title="Peak:",format="%4.2f"
+	ValDisplay peak1ValDisplay,win=$panelName,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	TitleBox window1PeakUnitsTitleBox, win=$panelName, pos={138+82+3,yOffset+17+2},frame=0
 
 	absVarName=AbsoluteVarName(browserDFName,"rise1")
-	ValDisplay rise1ValDisplay,pos={115,yOffset+38},size={105,17},title="Transit Time:"
-	ValDisplay rise1ValDisplay,format="%4.2f",limits={0,0,0},barmisc={0,1000}
-	ValDisplay rise1ValDisplay,value= #absVarName
-	TitleBox rise1UnitsTitleBox,pos={224,yOffset+38+1},frame=0, title="ms"
+	ValDisplay rise1ValDisplay,win=$panelName,pos={115,yOffset+38},size={105,17},title="Transit Time:"
+	ValDisplay rise1ValDisplay,win=$panelName,format="%4.2f",limits={0,0,0},barmisc={0,1000}
+	ValDisplay rise1ValDisplay,win=$panelName,value= #absVarName
+	TitleBox rise1UnitsTitleBox,win=$panelName,pos={115+105+3,yOffset+38+2},frame=0, title="ms"
 
 	absVarName=AbsoluteVarName(browserDFName,"from1")
-	SetVariable from_disp1,pos={54,yOffset+61},size={80,17},proc=BrowserContMeasurementSV,title="From"
-	SetVariable from_disp1,limits={0,100,10},value=$absVarName
-	TitleBox from1UnitsTitleBox,pos={137,yOffset+61+2},frame=0, title="%"
+	SetVariable from_disp1,win=$panelName,pos={54,yOffset+61},size={80,17},proc=BrowserContMeasurementSV,title="From"
+	SetVariable from_disp1,win=$panelName,limits={0,100,10},value=$absVarName
+	TitleBox from1UnitsTitleBox,win=$panelName,pos={137,yOffset+61+2},frame=0, title="%"
 
 	absVarName=AbsoluteVarName(browserDFName,"to1")
-	SetVariable to_disp1,pos={154,yOffset+61},size={66,17},proc=BrowserContMeasurementSV,title="To"
-	SetVariable to_disp1,limits={0,100,10},value=$absVarName
-	TitleBox to1UnitsTitleBox,pos={223,yOffset+61+2},frame=0, title="%"
+	SetVariable to_disp1,win=$panelName,pos={154,yOffset+61},size={66,17},proc=BrowserContMeasurementSV,title="To"
+	SetVariable to_disp1,win=$panelName,limits={0,100,10},value=$absVarName
+	TitleBox to1UnitsTitleBox,win=$panelName,pos={223,yOffset+61+2},frame=0, title="%"
 	
 	absVarName=AbsoluteVarName(browserDFName,"lev1")
-	SetVariable levelSetVariable,pos={18,yOffset-61+145},size={80,17}
-	SetVariable levelSetVariable,proc=BrowserContMeasurementSV,title="Level"
-	SetVariable levelSetVariable,limits={-100,100,10},format="%4.2f",value=$absVarName
+	SetVariable levelSetVariable,win=$panelName,pos={18,yOffset-61+145},size={80,17}
+	SetVariable levelSetVariable,win=$panelName,proc=BrowserContMeasurementSV,title="Level"
+	SetVariable levelSetVariable,win=$panelName,limits={-100,100,10},format="%4.2f",value=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"nCrossings1")
-	ValDisplay cross1ValDisplay,pos={110,yOffset-61+145},size={110,17},title="No. Crossings:"
-	ValDisplay cross1ValDisplay,limits={0,0,0},barmisc={0,1000},format="%4.0f",value= #absVarName
+	ValDisplay cross1ValDisplay,win=$panelName,pos={110,yOffset-61+145},size={110,17},title="No. Crossings:"
+	ValDisplay cross1ValDisplay,win=$panelName,limits={0,0,0},barmisc={0,1000},format="%4.0f",value= #absVarName
 	
 	// Window 2 controls
 	yOffset=190
 	SetDrawEnv linethick= 3,linefgc= (0,0,65535)
 	DrawRect 3,yOffset-3,109,yOffset+20+3
-	Button setwin_2,pos={6,yOffset},size={100,20},proc=BrowserContSetWindow2Button,title="Set Window 2"
-	Button clearWindow2Button,pos={6,yOffset+27},size={100,18},proc=BrowserContClearWindow2Button,title="Clear Window 2"
+	Button setwin_2,win=$panelName,pos={6,yOffset},size={100,20},proc=BrowserContSetWindow2Button,title="Set Window 2"
+	Button clearWindow2Button,win=$panelName,pos={6,yOffset+27},size={100,18},proc=BrowserContClearWindow2Button,title="Clear Window 2"
 
 	absVarName=AbsoluteVarName(browserDFName,"mean2")
-	ValDisplay mean2ValDisplay,pos={138,yOffset-5},size={82,17},title="Mean:",format="%4.2f"
-	ValDisplay mean2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	ValDisplay mean2ValDisplay,win=$panelName,pos={138,yOffset-5},size={82,17},title="Mean:",format="%4.2f"
+	ValDisplay mean2ValDisplay,win=$panelName,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	TitleBox window2MeanUnitsTitleBox, win=$panelName, pos={138+82+3,yOffset-5+2},frame=0
 	
 	absVarName=AbsoluteVarName(browserDFName,"peak2")
-	ValDisplay peak2ValDisplay,pos={140,yOffset+17},size={79,17},title="Peak:",format="%4.2f"
-	ValDisplay peak2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
-	
+	ValDisplay peak2ValDisplay,win=$panelName,pos={138,yOffset+17},size={82,17},title="Peak:",format="%4.2f"
+	ValDisplay peak2ValDisplay,win=$panelName,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	TitleBox window2PeakUnitsTitleBox, win=$panelName, pos={138+82+3,yOffset+17+2},frame=0
+
 	absVarName=AbsoluteVarName(browserDFName,"rise2")
-	ValDisplay rise2ValDisplay,pos={115,yOffset+38},size={105,17},title="Transit Time:"
-	ValDisplay rise2ValDisplay,format="%4.2f",limits={0,0,0},barmisc={0,1000}
-	ValDisplay rise2ValDisplay,value= #absVarName
-	TitleBox rise2UnitsTitleBox,pos={224,yOffset+38+1},frame=0, title="ms"
+	ValDisplay rise2ValDisplay,win=$panelName,pos={115,yOffset+38},size={105,17},title="Transit Time:"
+	ValDisplay rise2ValDisplay,win=$panelName,format="%4.2f",limits={0,0,0},barmisc={0,1000}
+	ValDisplay rise2ValDisplay,win=$panelName,value= #absVarName
+	TitleBox rise2UnitsTitleBox,win=$panelName,pos={115+105+3,yOffset+38+2},frame=0, title="ms"
 	
 	absVarName=AbsoluteVarName(browserDFName,"from2")
-	SetVariable from_disp2,pos={54,yOffset+61},size={80,17},proc=BrowserContMeasurementSV,title="From"
-	SetVariable from_disp2,limits={0,100,10},value=$absVarName
-	TitleBox from2UnitsTitleBox,pos={137,yOffset+61+2},frame=0, title="%"
+	SetVariable from_disp2,win=$panelName,pos={54,yOffset+61},size={80,17},proc=BrowserContMeasurementSV,title="From"
+	SetVariable from_disp2,win=$panelName,limits={0,100,10},value=$absVarName
+	TitleBox from2UnitsTitleBox,win=$panelName,pos={137,yOffset+61+2},frame=0, title="%"
 
 	absVarName=AbsoluteVarName(browserDFName,"to2")
-	SetVariable to_disp2,pos={154,yOffset+61},size={66,17},proc=BrowserContMeasurementSV,title="To"
-	SetVariable to_disp2,limits={0,100,10},value=$absVarName
-	TitleBox to2UnitsTitleBox,pos={223,yOffset+61+2},frame=0, title="%"
+	SetVariable to_disp2,win=$panelName,pos={154,yOffset+61},size={66,17},proc=BrowserContMeasurementSV,title="To"
+	SetVariable to_disp2,win=$panelName,limits={0,100,10},value=$absVarName
+	TitleBox to2UnitsTitleBox,win=$panelName,pos={223,yOffset+61+2},frame=0, title="%"
 
 	// Horizontal rule
 	DrawLine 8,measureAreaHeight,245,measureAreaHeight
@@ -217,61 +226,65 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	
 	SetDrawEnv linethick= 3,linefgc= (26411,0,52428)	// purple
 	DrawRect 16-3,yOffset+36-3+2,16+100+2,yOffset+36+20+2+2
-	Button set_tFitZero,pos={16,yOffset+36+2},size={100,20},proc=BrowserContSetFitZeroButton,title="Set Zero"
-	Button clearTFitZero,pos={16,yOffset+36+28},size={100,18},proc=BrowserContClearFitZeroButton,title="Clear Zero"
+	Button set_tFitZero,win=$panelName,pos={16,yOffset+36+2},size={100,20},proc=BrowserContSetFitZeroButton,title="Set Zero"
+	Button clearTFitZero,win=$panelName,pos={16,yOffset+36+28},size={100,18},proc=BrowserContClearFitZeroButton,title="Clear Zero"
 
-	Button fitButton,pos={140,yOffset+10},size={100,20},proc=BrowserContFitButton,title="Fit"
+	Button fitButton,win=$panelName,pos={140,yOffset+10},size={100,20},proc=BrowserContFitButton,title="Fit"
 
 	SetDrawEnv linethick= 3,linefgc= (0,65535,65535)	// cyan
 	DrawRect 140-3,yOffset+36-3+2,140+100+2,yOffset+36+20+2+2
-	Button set_fit_range,pos={140,yOffset+36+2},size={100,20},proc=BrowserContSetFitRangeButton,title="Set Range"
+	Button set_fit_range,win=$panelName,pos={140,yOffset+36+2},size={100,20},proc=BrowserContSetFitRangeButton,title="Set Range"
 
-	Button clearTFitRange,pos={140,yOffset+36+28},size={100,18},proc=BrowserContClearFitRangeButton,title="Clear Range"
+	Button clearTFitRange,win=$panelName,pos={140,yOffset+36+28},size={100,18},proc=BrowserContClearFitRangeButton,title="Clear Range"
 
-	PopupMenu fitTypePopupMenu,pos={6,yOffset+10},size={120,19},bodyWidth=120
-	PopupMenu fitTypePopupMenu,mode=1,value= #"\"Exponential;Double Exponential\""	
-	PopupMenu fitTypePopupMenu,proc=BrowserContFitTypePopup
+	PopupMenu fitTypePopupMenu,win=$panelName,pos={6,yOffset+10},size={120,19},bodyWidth=120
+	PopupMenu fitTypePopupMenu,win=$panelName,mode=1,value= #"\"Exponential;Double Exponential\""	
+	PopupMenu fitTypePopupMenu,win=$panelName,proc=BrowserContFitTypePopup
 	
 	absVarName=AbsoluteVarName(browserDFName,"tau1")
-	ValDisplay tau1ValDisplay, pos={6,yOffset+64+28},size={75,17},title="Tau 1:",format="%4.2f"
-	ValDisplay tau1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
-	TitleBox tau1UnitsTitleBox,pos={6+75+3,yOffset+64+28+2},frame=0, title="ms"
+	ValDisplay tau1ValDisplay,win=$panelName,pos={6,yOffset+64+28},size={75,17},title="Tau 1:",format="%4.2f"
+	ValDisplay tau1ValDisplay,win=$panelName,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	TitleBox tau1UnitsTitleBox,win=$panelName,pos={6+75+3,yOffset+64+28+2},frame=0, title="ms"
 		
 	absVarName=AbsoluteVarName(browserDFName,"amp1")
-	ValDisplay amp1ValDisplay,pos={6,yOffset+82+28},size={75,17},title="Amp 1:",format="%4.2f"
-	ValDisplay amp1ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	ValDisplay amp1ValDisplay,win=$panelName,pos={6,yOffset+82+28},size={75,17},title="Amp 1:",format="%4.2f"
+	ValDisplay amp1ValDisplay,win=$panelName,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	TitleBox amp1UnitsTitleBox, win=$panelName, pos={6+75+3,yOffset+82+28+2},frame=0
 	
 	absVarName=AbsoluteVarName(browserDFName,"tau2")
-	ValDisplay tau2ValDisplay,pos={119,yOffset+64+28},size={75,17},title="Tau 2:",format="%4.2f"
-	ValDisplay tau2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
-	TitleBox tau2UnitsTitleBox,pos={119+75+3,yOffset+64+28+2},frame=0, title="ms"
+	ValDisplay tau2ValDisplay,win=$panelName,pos={119,yOffset+64+28},size={75,17},title="Tau 2:",format="%4.2f"
+	ValDisplay tau2ValDisplay,win=$panelName,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	TitleBox tau2UnitsTitleBox,win=$panelName,pos={119+75+3,yOffset+64+28+2},frame=0, title="ms"
 	
 	absVarName=AbsoluteVarName(browserDFName,"amp2")
-	ValDisplay amp2ValDisplay,pos={119,yOffset+81+28},size={75,17},title="Amp 2:",format="%4.2f"
-	ValDisplay amp2ValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	ValDisplay amp2ValDisplay,win=$panelName,pos={119,yOffset+82+28},size={75,17},title="Amp 2:",format="%4.2f"
+	ValDisplay amp2ValDisplay,win=$panelName,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	TitleBox amp2UnitsTitleBox, win=$panelName, pos={119+75+3,yOffset+82+28+2},frame=0
 	
 	// N.B.: This one doesn't use a binding, so the callback must handle updating the model
 	NVAR dtFitExtend
 	absVarName=AbsoluteVarName(browserDFName,"dtFitExtend")
-	SetVariable dtFitExtendSetVariable,pos={7,yOffset+125+28},size={98,17},title="Show fit"
-	SetVariable dtFitExtendSetVariable,limits={0,10000,10},value= _NUM:dtFitExtend
-	SetVariable dtFitExtendSetVariable,proc=BrowserContDtFitExtendSV
-	TitleBox dtFitExtendUnitsTitleBox,pos={109,yOffset+125+28+2},frame=0, title="ms beyond range"
+	SetVariable dtFitExtendSetVariable,win=$panelName,pos={7,yOffset+125+28},size={98,17},title="Show fit"
+	SetVariable dtFitExtendSetVariable,win=$panelName,limits={0,10000,10},value= _NUM:dtFitExtend
+	SetVariable dtFitExtendSetVariable,win=$panelName,proc=BrowserContDtFitExtendSV
+	TitleBox dtFitExtendUnitsTitleBox,win=$panelName,pos={109,yOffset+125+28+2},frame=0, title="ms beyond range"
 	
 	absVarName=AbsoluteVarName(browserDFName,"yOffset")
-	ValDisplay yOffsetValDisplay,pos={7,yOffset+102+28},size={90,17},title="Offset:",format="%4.2f"
-	ValDisplay yOffsetValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	ValDisplay yOffsetValDisplay,win=$panelName,pos={7,yOffset+102+28},size={90,17},title="Offset:",format="%4.2f"
+	ValDisplay yOffsetValDisplay,win=$panelName,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	TitleBox yOffsetUnitsTitleBox, win=$panelName, pos={7+90+3,yOffset+102+28+2},frame=0
 	
 	// N.B.: This one doesn't use a binding, so the callback must handle updating the model
-	NVAR holdYOffset=holdYOffset
-	CheckBox holdYOffsetCheckbox,pos={110,yOffset+102+28},size={50,20},title="Hold",value=holdYOffset
-	CheckBox holdYOffsetCheckbox,proc=BrowserContHoldYOffsetCB
+	NVAR holdYOffset
+	CheckBox holdYOffsetCheckbox,win=$panelName,pos={128,yOffset+102+28+1},size={50,20},title="Hold",value=holdYOffset
+	CheckBox holdYOffsetCheckbox,win=$panelName,proc=BrowserContHoldYOffsetCB
 	
 	// N.B.: This one doesn't use a binding, so the callback must handle updating the model
 	NVAR yOffsetHeldValue
-	SetVariable yOffsetHeldValueSetVariable,pos={156,yOffset+101+28},size={70,17},title="at",format="%4.2f"
-	SetVariable yOffsetHeldValueSetVariable,limits={-Inf,Inf,1},value=_NUM:yOffsetHeldValue
-	SetVariable yOffsetHeldValueSetVariable,proc=BrowserContYOffsetHeldValueSV	
+	SetVariable yOffsetHeldValueSetVariable,win=$panelName,pos={128+46,yOffset+102+28},size={70,17},title="at",format="%4.2f"
+	SetVariable yOffsetHeldValueSetVariable,win=$panelName,limits={-Inf,Inf,1},value=_NUM:yOffsetHeldValue
+	SetVariable yOffsetHeldValueSetVariable,win=$panelName,proc=BrowserContYOffsetHeldValueSV	
+	//TitleBox yOffsetHeldValueUnitsTitleBox, win=$panelName, pos={120+46+70+3,yOffset+102+28+2},frame=0
 
 	// Horizontal rule
 	DrawLine 8,measureAreaHeight+fitAreaHeight-3,245,measureAreaHeight+fitAreaHeight-3
@@ -279,55 +292,38 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	// Averaging controls
 	yOffset=measureAreaHeight+fitAreaHeight
 
-	Button avgnow,pos={20,yOffset+5},size={100,20},proc=BrowserContAverageSweepsButton,title="Average Sweeps"
+	Button avgnow,win=$panelName,pos={20,yOffset+5},size={100,20},proc=BrowserContAverageSweepsButton,title="Average Sweeps"
 
 	NVAR renameAverages
-	CheckBox renameAveragesCheckBox,pos={150,yOffset+8},size={100,20},title="Rename",value=renameAverages
-	CheckBox renameAveragesCheckBox,proc=BrowserContRenameAveragesCB
-
-	//SetDrawEnv fsize= 10,textrgb= (0,0,65535)
-	//DrawText 48,yOffset+42,"Selected channels that meet the "
-	//SetDrawEnv fsize= 10,textrgb= (0,0,65535)
-	//DrawText 45,yOffset+55,"following criteria will be averaged."
+	CheckBox renameAveragesCheckBox,win=$panelName,pos={150,yOffset+8},size={100,20},title="Rename",value=renameAverages
+	CheckBox renameAveragesCheckBox,win=$panelName,proc=BrowserContRenameAveragesCB
 
 	// Controls for which sweeps to average
 	yOffset=yOffset+63-28
 	NVAR averageAllSweeps, iSweepFirstAverage, iSweepLastAverage
-	TitleBox sweepsTitleBox,pos={20,yOffset},frame=0,title="Sweeps:"
-	CheckBox allSweepsCheckBox,pos={70,yOffset},size={50,20},title="All",value=averageAllSweeps
-	CheckBox allSweepsCheckBox,proc=BrowserContAllSweepsCB
+	TitleBox sweepsTitleBox,win=$panelName,pos={20,yOffset},frame=0,title="Sweeps:"
+	CheckBox allSweepsCheckBox,win=$panelName,pos={70,yOffset},size={50,20},title="All",value=averageAllSweeps
+	CheckBox allSweepsCheckBox,win=$panelName,proc=BrowserContAllSweepsCB
 	
 	//absVarName=AbsoluteVarName(browserDFName,"iSweepFirstAverage")
-	SetVariable firstSweepSetVariable,pos={110,yOffset},size={53,17},title=" "
-	SetVariable firstSweepSetVariable,limits={1,2000,1},proc=BrowserContFirstSweepSV
+	SetVariable firstSweepSetVariable,win=$panelName,pos={110,yOffset},size={53,17},title=" "
+	SetVariable firstSweepSetVariable,win=$panelName,limits={1,2000,1},proc=BrowserContFirstSweepSV
 	
-	SetVariable lastSweepSetVariable,pos={170,yOffset},size={66,17},title="to"
-	SetVariable lastSweepSetVariable,limits={1,2000,1},proc=BrowserContLastSweepSV
+	SetVariable lastSweepSetVariable,win=$panelName,pos={170,yOffset},size={66,17},title="to"
+	SetVariable lastSweepSetVariable,win=$panelName,limits={1,2000,1},proc=BrowserContLastSweepSV
 	
-//	absVarName=AbsoluteVarName(browserDFName,"avghold")
-//	SetVariable avghold_disp,pos={47,yOffset+89},size={75,17},title="Hold"
-//	SetVariable avghold_disp,limits={-120,120,1},value=$absVarName
-//
-//	absVarName=AbsoluteVarName(browserDFName,"holdtolerance")
-//	SetVariable holdtol_disp,pos={135,yOffset+88},size={60,17},title="±"
-//	SetVariable holdtol_disp,limits={-120,120,1},value=$absVarName
-//	CheckBox hold_all,pos={212,yOffset+88},size={50,20},title="All",value=1
-
 	// Controls for which steps to show:
 	yOffset=yOffset+88-63
 	NVAR averageAllSteps
-	TitleBox stepsTitleBox,pos={20,yOffset},frame=0,title="Steps:"
-	CheckBox allStepsCheckBox,pos={70,yOffset},size={50,20},title="All",value=averageAllSteps
-	CheckBox allStepsCheckBox,proc=BrowserContAllStepsCB
-	SetVariable stepsSetVariable,pos={110,yOffset-1},size={85,17},title="Only:"
-	SetVariable stepsSetVariable,limits={-1000,1000,10},proc=BrowserContStepsSV
+	TitleBox stepsTitleBox,win=$panelName,pos={20,yOffset},frame=0,title="Steps:"
+	CheckBox allStepsCheckBox,win=$panelName,pos={70,yOffset},size={50,20},title="All",value=averageAllSteps
+	CheckBox allStepsCheckBox,win=$panelName,proc=BrowserContAllStepsCB
+	SetVariable stepsSetVariable,win=$panelName,pos={110,yOffset-1},size={85,17},title="Only:"
+	SetVariable stepsSetVariable,win=$panelName,limits={-1000,1000,10},proc=BrowserContStepsSV
 
 	// set the enablement of the averaging fields appropriately
 	BrowserViewUpdateAveraging(browserNumber)
 
-	// Sync the view with the "model"
-	//SyncFitPanelViewToDFState(browserNumber)
-	
 	// Restore original data folder
 	SetDataFolder savedDF	
 End
@@ -540,17 +536,13 @@ Function BrowserViewModelChanged(browserNumber)
 	// Show/hide the tools panel, as appropriate to the state	
 	if (showToolsChecked) 
 		if (ToolsPanelExists(browserNumber))
-			//DoWindow /F $toolsPanelName
+			BrowserViewUpdateToolsPanel(browserNumber)
 		else
-			String createPanel
-			sprintf createPanel "BrowserViewDrawToolsPanel(%d)" browserNumber
-			Execute createPanel
+			BrowserViewDrawToolsPanel(browserNumber)
 		endif
 	else
 		if (ToolsPanelExists(browserNumber))
-			String toDo
-			sprintf toDo "KillToolsPanel(%d)" browserNumber
-			Execute toDo
+			KillToolsPanel(browserNumber)
 		endif
 	endif
 	
@@ -659,6 +651,155 @@ Function BrowserViewAddCursorLineToGraph(graphName,cursorWaveName,tCursor,r,g,b)
 	cursorWaveList=AddListItem(cursorWaveName,cursorWaveList)
 End
 
+Function BrowserViewSetFitCoeffVis(browserNumber,visible)
+	// Set the visibility of the fit coefficients
+	Variable browserNumber
+	Variable visible  // boolean
+	
+	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	String browserName=BrowserNameFromNumber(browserNumber)
+	
+	// Get instance vars we'll need
+	SVAR fitType
+	if (visible)
+		// show the fit parameters, at least those relevant to the current fit type
+		ValDisplay yOffsetValDisplay, win=$browserName#ToolsPanel, valueColor=(0,0,0)
+		ValDisplay tau1ValDisplay, win=$browserName#ToolsPanel, valueColor=(0,0,0)
+		ValDisplay amp1ValDisplay, win=$browserName#ToolsPanel, valueColor=(0,0,0)
+		if ( AreStringsEqual(fitType,"Exponential") )
+			ValDisplay tau2ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
+			ValDisplay amp2ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
+		else
+			ValDisplay tau2ValDisplay, win=$browserName#ToolsPanel, valueColor=(0,0,0)
+			ValDisplay amp2ValDisplay, win=$browserName#ToolsPanel, valueColor=(0,0,0)
+		endif
+	else
+		// blank the fit parameters
+		ValDisplay yOffsetValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
+		ValDisplay tau1ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
+		ValDisplay amp1ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
+		ValDisplay tau2ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
+		ValDisplay amp2ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
+	endif
+End
+
+Function BrowserViewRescaleAxes(browserNumber)
+	// In the indicated DPBrowser, configures the scaling of the graph axes based on 
+	// the autoscale settings (as reflected in the model), and the axis limits
+	Variable browserNumber
+
+	// Set up access to the DF vars we need
+	NVAR traceAChecked=traceAChecked
+	NVAR traceBChecked=traceBChecked	
+	NVAR yAMin=yAMin
+	NVAR yAMax=yAMax
+	NVAR yBMin=yBMin
+	NVAR yBMax=yBMax	
+	NVAR xMin=xMin
+	NVAR xMax=xMax
+	NVAR xAutoscaling=xAutoscaling
+	NVAR yAAutoscaling=yAAutoscaling
+	NVAR yBAutoscaling=yBAutoscaling
+	
+	// Change to the DF of the indicated DPBrowser
+	String savedDF=ChangeToBrowserDF(browserNumber)
+	
+	// Get the window name of the DPBrowser
+	String browserName=BrowserNameFromNumber(browserNumber)
+	
+	// Scale the y axis for trace A
+	if (traceAChecked)
+		if (yAAutoscaling)
+			Setaxis /W=$browserName /Z /A left  // autoscale the left y axis
+		else
+			Setaxis /W=$browserName /Z left yAMin, yAMax  // set the y axis to have the limits it currently has
+		endif
+	endif
+	
+	// Scale the y axis for trace B
+	if (traceBChecked)
+		if (yBAutoscaling)
+			Setaxis /W=$browserName /Z /A right  // autoscale the right y axis
+		else
+			Setaxis /W=$browserName /Z right yBMin, yBMax  // set the y axis to have the limits it currently has
+		endif
+	endif
+	
+	// Scale the x axis
+	if ( traceAChecked || traceBChecked )
+		if (xAutoscaling)
+			Setaxis /W=$browserName /Z /A bottom    // autoscale the bottom (x) axis
+		else
+			Setaxis /W=$browserName /Z bottom xMin, xMax  // set the x axis to have the limits it currently has
+		endif
+	endif
+	
+	// Restore the original DF
+	SetDataFolder savedDF
+End
+
+Function BrowserViewUpdateToolsPanel(browserNumber)
+	Variable browserNumber
+
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	String toolsPanelName=ToolsPanelNameFromNumber(browserNumber)
+	NVAR showToolsChecked
+	if (showToolsChecked)
+		BrowserViewUpdateMeasurements(browserNumber)
+		BrowserViewUpdateFitDisplay(browserNumber)
+		BrowserViewUpdateAveraging(browserNumber)
+	endif
+	SetDataFolder savedDFName
+End
+
+Function BrowserViewUpdateMeasurements(browserNumber)
+	Variable browserNumber
+	
+	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	String browserName=BrowserNameFromNumber(browserNumber)
+	
+	// Get instance vars we'll need
+	NVAR showToolsChecked
+	NVAR baseline, mean1, peak1, rise1
+	NVAR mean2, peak2, rise2
+	NVAR nCrossings1
+
+	// Set the units strings appropriately	
+	String windowName=browserName+"#ToolsPanel"
+	String topWaveNameAbs=BrowserModelGetTopWaveNameAbs(browserNumber)
+	String yUnitsString
+	if ( IsEmptyString(topWaveNameAbs) )
+		yUnitsString=""
+	else
+		String dict=WaveInfo($topWaveNameAbs,0)		// zero required for some reason
+		yUnitsString=StringByKey("DUNITS",dict)
+	endif
+
+	// white them out if they're nan
+	if (showToolsChecked)
+		TitleBox baselineMeanUnitsTitleBox, win=$windowName, title=yUnitsString
+		TitleBox window1MeanUnitsTitleBox, win=$windowName, title=yUnitsString 
+		TitleBox window1PeakUnitsTitleBox, win=$windowName, title=yUnitsString 
+		TitleBox window2MeanUnitsTitleBox, win=$windowName, title=yUnitsString 
+		TitleBox window2PeakUnitsTitleBox, win=$windowName, title=yUnitsString 
+		TitleBox amp1UnitsTitleBox, win=$windowName, title=yUnitsString  
+		TitleBox amp2UnitsTitleBox, win=$windowName, title=yUnitsString  
+		TitleBox yOffsetUnitsTitleBox, win=$windowName, title=yUnitsString  
+		//TitleBox yOffsetHeldValueUnitsTitleBox, win=$windowName, title=yUnitsString  
+		WhiteOutIffNan("baselineValDisplay",windowName,baseline)
+		WhiteOutIffNan("mean1ValDisplay",windowName,mean1)
+		WhiteOutIffNan("peak1ValDisplay",windowName,peak1)
+		WhiteOutIffNan("rise1ValDisplay",windowName,rise1)
+		WhiteOutIffNan("mean2ValDisplay",windowName,mean2)
+		WhiteOutIffNan("peak2ValDisplay",windowName,peak2)
+		WhiteOutIffNan("rise2ValDisplay",windowName,rise2)
+		WhiteOutIffNan("cross1ValDisplay",windowName,nCrossings1)
+	endif
+	
+End
+
 Function BrowserViewUpdateFitDisplay(browserNumber)
 	Variable browserNumber
 	
@@ -738,122 +879,6 @@ Function BrowserViewUpdateFitDisplay(browserNumber)
 	endif
 End
 
-Function BrowserViewSetFitCoeffVis(browserNumber,visible)
-	// Set the visibility of the fit coefficients
-	Variable browserNumber
-	Variable visible  // boolean
-	
-	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
-	String savedDFName=ChangeToBrowserDF(browserNumber)
-	String browserName=BrowserNameFromNumber(browserNumber)
-	
-	// Get instance vars we'll need
-	SVAR fitType
-	if (visible)
-		// show the fit parameters, at least those relevant to the current fit type
-		ValDisplay yOffsetValDisplay, win=$browserName#ToolsPanel, valueColor=(0,0,0)
-		ValDisplay tau1ValDisplay, win=$browserName#ToolsPanel, valueColor=(0,0,0)
-		ValDisplay amp1ValDisplay, win=$browserName#ToolsPanel, valueColor=(0,0,0)
-		if ( AreStringsEqual(fitType,"Exponential") )
-			ValDisplay tau2ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
-			ValDisplay amp2ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
-		else
-			ValDisplay tau2ValDisplay, win=$browserName#ToolsPanel, valueColor=(0,0,0)
-			ValDisplay amp2ValDisplay, win=$browserName#ToolsPanel, valueColor=(0,0,0)
-		endif
-	else
-		// blank the fit parameters
-		ValDisplay yOffsetValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
-		ValDisplay tau1ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
-		ValDisplay amp1ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
-		ValDisplay tau2ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
-		ValDisplay amp2ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
-	endif
-End
-
-Function BrowserViewUpdateMeasurements(browserNumber)
-	Variable browserNumber
-	
-	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
-	String savedDFName=ChangeToBrowserDF(browserNumber)
-	String browserName=BrowserNameFromNumber(browserNumber)
-	
-	// Get instance vars we'll need
-	NVAR showToolsChecked
-	NVAR baseline, mean1, peak1, rise1
-	NVAR mean2, peak2, rise2
-	NVAR nCrossings1
-
-	// white them out if they're nan
-	String windowName=browserName+"#ToolsPanel"
-	if (showToolsChecked)
-		WhiteOutIffNan("baselineValDisplay",windowName,baseline)
-		WhiteOutIffNan("mean1ValDisplay",windowName,mean1)
-		WhiteOutIffNan("peak1ValDisplay",windowName,peak1)
-		WhiteOutIffNan("rise1ValDisplay",windowName,rise1)
-		WhiteOutIffNan("mean2ValDisplay",windowName,mean2)
-		WhiteOutIffNan("peak2ValDisplay",windowName,peak2)
-		WhiteOutIffNan("rise2ValDisplay",windowName,rise2)
-		WhiteOutIffNan("cross1ValDisplay",windowName,nCrossings1)
-	endif
-	
-End
-
-Function BrowserViewRescaleAxes(browserNumber)
-	// In the indicated DPBrowser, configures the scaling of the graph axes based on 
-	// the autoscale settings (as reflected in the model), and the axis limits
-	Variable browserNumber
-
-	// Set up access to the DF vars we need
-	NVAR traceAChecked=traceAChecked
-	NVAR traceBChecked=traceBChecked	
-	NVAR yAMin=yAMin
-	NVAR yAMax=yAMax
-	NVAR yBMin=yBMin
-	NVAR yBMax=yBMax	
-	NVAR xMin=xMin
-	NVAR xMax=xMax
-	NVAR xAutoscaling=xAutoscaling
-	NVAR yAAutoscaling=yAAutoscaling
-	NVAR yBAutoscaling=yBAutoscaling
-	
-	// Change to the DF of the indicated DPBrowser
-	String savedDF=ChangeToBrowserDF(browserNumber)
-	
-	// Get the window name of the DPBrowser
-	String browserName=BrowserNameFromNumber(browserNumber)
-	
-	// Scale the y axis for trace A
-	if (traceAChecked)
-		if (yAAutoscaling)
-			Setaxis /W=$browserName /Z /A left  // autoscale the left y axis
-		else
-			Setaxis /W=$browserName /Z left yAMin, yAMax  // set the y axis to have the limits it currently has
-		endif
-	endif
-	
-	// Scale the y axis for trace B
-	if (traceBChecked)
-		if (yBAutoscaling)
-			Setaxis /W=$browserName /Z /A right  // autoscale the right y axis
-		else
-			Setaxis /W=$browserName /Z right yBMin, yBMax  // set the y axis to have the limits it currently has
-		endif
-	endif
-	
-	// Scale the x axis
-	if ( traceAChecked || traceBChecked )
-		if (xAutoscaling)
-			Setaxis /W=$browserName /Z /A bottom    // autoscale the bottom (x) axis
-		else
-			Setaxis /W=$browserName /Z bottom xMin, xMax  // set the x axis to have the limits it currently has
-		endif
-	endif
-	
-	// Restore the original DF
-	SetDataFolder savedDF
-End
-
 Function BrowserViewUpdateAveraging(browserNumber)
 	Variable browserNumber
 	
@@ -885,3 +910,4 @@ Function BrowserViewUpdateAveraging(browserNumber)
 	endif
 	SetDataFolder savedDFName
 End
+
