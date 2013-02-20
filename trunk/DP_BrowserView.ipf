@@ -164,7 +164,7 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	ValDisplay rise1ValDisplay,win=$panelName,pos={115,yOffset+38},size={105,17},title="Transit Time:"
 	ValDisplay rise1ValDisplay,win=$panelName,format="%4.2f",limits={0,0,0},barmisc={0,1000}
 	ValDisplay rise1ValDisplay,win=$panelName,value= #absVarName
-	TitleBox rise1UnitsTitleBox,win=$panelName,pos={115+105+3,yOffset+38+2},frame=0, title="ms"
+	TitleBox rise1UnitsTitleBox,win=$panelName,pos={115+105+3,yOffset+38+2},frame=0
 
 	absVarName=AbsoluteVarName(browserDFName,"from1")
 	SetVariable from_disp1,win=$panelName,pos={54,yOffset+61},size={80,17},proc=BrowserContMeasurementSV,title="From"
@@ -206,7 +206,7 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	ValDisplay rise2ValDisplay,win=$panelName,pos={115,yOffset+38},size={105,17},title="Transit Time:"
 	ValDisplay rise2ValDisplay,win=$panelName,format="%4.2f",limits={0,0,0},barmisc={0,1000}
 	ValDisplay rise2ValDisplay,win=$panelName,value= #absVarName
-	TitleBox rise2UnitsTitleBox,win=$panelName,pos={115+105+3,yOffset+38+2},frame=0, title="ms"
+	TitleBox rise2UnitsTitleBox,win=$panelName,pos={115+105+3,yOffset+38+2},frame=0
 	
 	absVarName=AbsoluteVarName(browserDFName,"from2")
 	SetVariable from_disp2,win=$panelName,pos={54,yOffset+61},size={80,17},proc=BrowserContMeasurementSV,title="From"
@@ -244,7 +244,7 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	absVarName=AbsoluteVarName(browserDFName,"tau1")
 	ValDisplay tau1ValDisplay,win=$panelName,pos={6,yOffset+64+28},size={75,17},title="Tau 1:",format="%4.2f"
 	ValDisplay tau1ValDisplay,win=$panelName,limits={0,0,0},barmisc={0,1000},value= #absVarName
-	TitleBox tau1UnitsTitleBox,win=$panelName,pos={6+75+3,yOffset+64+28+2},frame=0, title="ms"
+	TitleBox tau1UnitsTitleBox,win=$panelName,pos={6+75+3,yOffset+64+28+2},frame=0
 		
 	absVarName=AbsoluteVarName(browserDFName,"amp1")
 	ValDisplay amp1ValDisplay,win=$panelName,pos={6,yOffset+82+28},size={75,17},title="Amp 1:",format="%4.2f"
@@ -254,7 +254,7 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	absVarName=AbsoluteVarName(browserDFName,"tau2")
 	ValDisplay tau2ValDisplay,win=$panelName,pos={119,yOffset+64+28},size={75,17},title="Tau 2:",format="%4.2f"
 	ValDisplay tau2ValDisplay,win=$panelName,limits={0,0,0},barmisc={0,1000},value= #absVarName
-	TitleBox tau2UnitsTitleBox,win=$panelName,pos={119+75+3,yOffset+64+28+2},frame=0, title="ms"
+	TitleBox tau2UnitsTitleBox,win=$panelName,pos={119+75+3,yOffset+64+28+2},frame=0
 	
 	absVarName=AbsoluteVarName(browserDFName,"amp2")
 	ValDisplay amp2ValDisplay,win=$panelName,pos={119,yOffset+82+28},size={75,17},title="Amp 2:",format="%4.2f"
@@ -770,11 +770,14 @@ Function BrowserViewUpdateMeasurements(browserNumber)
 	String windowName=browserName+"#ToolsPanel"
 	String topWaveNameAbs=BrowserModelGetTopWaveNameAbs(browserNumber)
 	String yUnitsString
+	String xUnitsString
 	if ( IsEmptyString(topWaveNameAbs) )
 		yUnitsString=""
+		xUnitsString=""
 	else
 		String dict=WaveInfo($topWaveNameAbs,0)		// zero required for some reason
 		yUnitsString=StringByKey("DUNITS",dict)
+		xUnitsString="ms"
 	endif
 
 	// white them out if they're nan
@@ -788,6 +791,10 @@ Function BrowserViewUpdateMeasurements(browserNumber)
 		TitleBox amp2UnitsTitleBox, win=$windowName, title=yUnitsString  
 		TitleBox yOffsetUnitsTitleBox, win=$windowName, title=yUnitsString  
 		//TitleBox yOffsetHeldValueUnitsTitleBox, win=$windowName, title=yUnitsString  
+		TitleBox rise1UnitsTitleBox,win=$windowName, title=xUnitsString
+		TitleBox rise2UnitsTitleBox,win=$windowName, title=xUnitsString
+		TitleBox tau1UnitsTitleBox,win=$windowName, title=xUnitsString
+		TitleBox tau2UnitsTitleBox,win=$windowName, title=xUnitsString
 		WhiteOutIffNan("baselineValDisplay",windowName,baseline)
 		WhiteOutIffNan("mean1ValDisplay",windowName,mean1)
 		WhiteOutIffNan("peak1ValDisplay",windowName,peak1)
