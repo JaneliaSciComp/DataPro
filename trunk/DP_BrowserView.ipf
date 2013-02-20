@@ -135,7 +135,7 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	Button clearBaselineButton,pos={6,6+28-1},size={100,18},proc=BrowserContClearBaselineButton,title="Clear Baseline"
 
 	String absVarName=AbsoluteVarName(browserDFName,"baseline")
-	ValDisplay baselineValDisplay,pos={139,8},size={82,17},title="Mean",format="%4.2f"
+	ValDisplay baselineValDisplay,pos={139,8},size={82,17},title="Mean:",format="%4.2f"
 	ValDisplay baselineValDisplay,limits={0,0,0},barmisc={0,1000},value= #absVarName
 
 	// Window 1 controls
