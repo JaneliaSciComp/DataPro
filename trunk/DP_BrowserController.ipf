@@ -255,12 +255,6 @@ Function BrowserContSetBaselineButton(bStruct) : ButtonControl
 	String measurePanelName=bStruct.win;
 	Variable browserNumber=BrowserNumberFromName(measurePanelName);
 
-	// Check that the cursors are actually set, otherwise return
-	String browserName=BrowserNameFromNumber(browserNumber)
-	if (!AreCursorsAAndBSet(browserName))
-		return nan
-	endif
-	
 	// Notify the model
 	BrowserModelSetBaseline(browserNumber)
 
@@ -299,30 +293,11 @@ Function BrowserContSetWindow1Button(bStruct) : ButtonControl
 	String measurePanelName=bStruct.win;
 	Variable browserNumber=BrowserNumberFromName(measurePanelName)
 
-	// Check that the cursors are actually set, otherwise return
-	String browserName=BrowserNameFromNumber(browserNumber)
-	if (!AreCursorsAAndBSet(browserName))
-		return nan
-	endif
-
-	// Save the current data folder, change to this browser's DF
-	String savedDF=ChangeToBrowserDF(browserNumber)
-
-	// Declare DF vars we need	
-	NVAR tWindow1Left, tWindow1Right
-	
-	// Draw vertical lines to indicate the margins of the window time range
-	tWindow1Left=cursorXPosition("A",browserName)  // times of left and right cursor that delineate the window region
-	tWindow1Right=cursorXPosition("B",browserName)
-
-	// Update the meaurements
-	BrowserModelUpdateMeasurements(browserNumber)
+	// Set the window in the model
+	BrowserModelSetWindow1(browserNumber)
 
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
-
-	// Restore the orignal DF
-	SetDataFolder savedDF	
 End
 
 Function BrowserContClearWindow1Button(bStruct) : ButtonControl
@@ -337,18 +312,9 @@ Function BrowserContClearWindow1Button(bStruct) : ButtonControl
 	String measurePanelName=bStruct.win;
 	Variable browserNumber=BrowserNumberFromName(measurePanelName);
 	
-	// Save the current data folder, change to this browser's DF
-	String savedDF=ChangeToBrowserDF(browserNumber)
-
 	// Clear limits of the window
-	NVAR tWindow1Left
-	NVAR tWindow1Right
-	tWindow1Left=nan
-	tWindow1Right=nan
-	
-	// Update the measurements
-	BrowserModelUpdateMeasurements(browserNumber)
-	
+	BrowserModelClearWindow1(browserNumber)
+
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
 	
@@ -369,7 +335,7 @@ Function BrowserContMeasurementSV(svStruct) : SetVariableControl
 	BrowserViewModelChanged(browserNumber)
 End
 
-Function BrowserContSetWindow2Button(bStruct)
+Function BrowserContSetWindow2Button(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
 	
 	// Check that this is really a button-up on the button
@@ -381,32 +347,12 @@ Function BrowserContSetWindow2Button(bStruct)
 	String measurePanelName=bStruct.win;
 	Variable browserNumber=BrowserNumberFromName(measurePanelName)
 
-	// Check that the cursors are actually set, otherwise return
-	String browserName=BrowserNameFromNumber(browserNumber)
-	if (!AreCursorsAAndBSet(browserName))
-		return nan
-	endif
-
-	// Save the current data folder, change to this browser's DF
-	String savedDF=ChangeToBrowserDF(browserNumber)
-
-	// Set up aliases depending on nDataWindow	
-	NVAR tWindow2Left, tWindow2Right
-	
-	// Draw vertical lines to indicate the margins of the window time range
-	tWindow2Left=cursorXPosition("A",browserName)  // times of left and right cursor that delineate the window region
-	tWindow2Right=cursorXPosition("B",browserName)
-
-	// Update the measurements
-	BrowserModelUpdateMeasurements(browserNumber)
+	// Set the window in the model
+	BrowserModelSetWindow2(browserNumber)
 
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
-
-	// Restore the orignal DF
-	SetDataFolder savedDF	
 End
-
 
 Function BrowserContClearWindow2Button(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
@@ -420,18 +366,9 @@ Function BrowserContClearWindow2Button(bStruct) : ButtonControl
 	String measurePanelName=bStruct.win;
 	Variable browserNumber=BrowserNumberFromName(measurePanelName);
 	
-	// Save the current data folder, change to this browser's DF
-	String savedDF=ChangeToBrowserDF(browserNumber)
-
 	// Clear limits of the window
-	NVAR tWindow2Left
-	NVAR tWindow2Right
-	tWindow2Left=nan
-	tWindow2Right=nan
-	
-	// Update the measurements
-	BrowserModelUpdateMeasurements(browserNumber)
-	
+	BrowserModelClearWindow2(browserNumber)
+
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
 	
@@ -450,25 +387,8 @@ Function BrowserContSetFitZeroButton(bStruct) : ButtonControl
 	// Get the browser number from the bStruct
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
 	
-	// Check that the cursors are actually set, otherwise return
-	String browserName=BrowserNameFromNumber(browserNumber)
-	if (!IsCursorASet(browserName))
-		return nan
-	endif
-	
-	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
-	String savedDFName=ChangeToBrowserDF(browserNumber)
-
 	// Set the model state variable
-	NVAR tFitZero=tFitZero
-	tFitZero=cursorXPosition("A",browserName)
-	//SVAR traceAWaveName=traceAWaveName  // actually the name of a wave, not the wave itself
-	//BrowserViewAddCursorLineToGraph(browserName,"fitLineZero",tFitZero)
-	//ModifyGraph rgb(fitLineZero)=(26411,1,52428)
-
-	// Update the fit
-	//Printf "About to call BrowserModelUpdateFit() in BrowserContSetFitZeroButton()\r"
-	BrowserModelUpdateFit(browserNumber)
+	BrowserModelSetFitZero(browserNumber)
 	
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
@@ -488,16 +408,9 @@ Function BrowserContClearFitZeroButton(bStruct) : ButtonControl
 	// Get the browser number from the bStruct
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
 	
-	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
-	String savedDFName=ChangeToBrowserDF(browserNumber)
-
 	// Clear the model state variable
-	NVAR tFitZero
-	tFitZero=nan
+	BrowserModelClearFitZero(browserNumber)
 
-	// Update the fit
-	BrowserModelUpdateFit(browserNumber)
-	
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
 	
@@ -516,23 +429,8 @@ Function BrowserContSetFitRangeButton(bStruct) : ButtonControl
 	// Get the browser number from the bStruct
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
 	
-	// Check that the cursors are actually set, otherwise return
-	String browserName=BrowserNameFromNumber(browserNumber)
-	if (!AreCursorsAAndBSet(browserName))
-		return nan
-	endif
-	
-	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
-	String savedDFName=ChangeToBrowserDF(browserNumber)
-
 	// Set fit bounds in model
-	NVAR tFitLeft=tFitLeft
-	tFitLeft=cursorXPosition("A",browserName)
-	NVAR tFitRight=tFitRight
-	tFitRight=cursorXPosition("B",browserName)
-
-	// Update the fit
-	BrowserModelUpdateFit(browserNumber)
+	BrowserModelSetFitRange(browserNumber)
 
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
@@ -552,17 +450,8 @@ Function BrowserContClearFitRangeButton(bStruct) : ButtonControl
 	// Get the browser number from the bStruct
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
 	
-	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
-	String savedDFName=ChangeToBrowserDF(browserNumber)
-
 	// Set fit bounds in model
-	NVAR tFitLeft
-	NVAR tFitRight
-	tFitLeft=nan
-	tFitRight=nan
-
-	// Update the fit
-	BrowserModelUpdateFit(browserNumber)
+	BrowserModelClearFitRange(browserNumber)
 
 	// Update the view
 	BrowserViewModelChanged(browserNumber)
@@ -583,12 +472,20 @@ Function BrowserContFitButton(bStruct) : ButtonControl
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
 	
 	// Update the fit trace and fit parameters in the model
-	//Printf "About to call BrowserModelUpdateFit() in BrowserContFitButton()\r"
 	BrowserModelUpdateFit(browserNumber)
 	
 	// Sync the view to the model
 	BrowserViewModelChanged(browserNumber)
 End
+
+
+
+
+// Stopped editing here
+
+
+
+
 
 Function BrowserContFitTypePopup(pStruct) : PopupMenuControl
 	STRUCT WMPopupAction &pStruct
@@ -723,8 +620,6 @@ Function BrowserContRescaleCB(cbStruct) : CheckBoxControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
 	BrowserViewModelChanged(browserNumber)
-	//SyncDFAxesLimitsWithGraph(browserNumber)
-	//BrowserViewRescaleAxes(browserNumber)
 End
 
 Function BrowserContAllSweepsCB(cbStruct) : CheckBoxControl
@@ -772,11 +667,8 @@ Function BrowserContAllStepsCB(cbStruct) : CheckBoxControl
 		return 0							// we only handle mouse up in control
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
-	String savedDFName=ChangeToBrowserDF(browserNumber)	
-	NVAR averageAllSteps
-	averageAllSteps=cbStruct.checked
+	BrowserModelSetAverageAllSteps(browserNumber,cbStruct.checked)
 	BrowserViewModelChanged(browserNumber)
-	SetDataFolder savedDFName
 End
 
 Function BrowserContStepsSV(svStruct) : SetVariableControl
@@ -786,10 +678,8 @@ Function BrowserContStepsSV(svStruct) : SetVariableControl
 	endif	
 	String browserName=svStruct.win
 	Variable browserNumber=BrowserNumberFromName(browserName)
-	String savedDFName=ChangeToBrowserDF(browserNumber)
-	NVAR stepToAverage
-	stepToAverage=svStruct.dval  // set the model variable to the value set in the view
-	SetDataFolder savedDFName	
+	BrowserModelSetStepToAverage(browserNumber,svStruct.dval)
+	BrowserViewModelChanged(browserNumber)
 End
 
 Function BrowserContRenameAveragesCB(cbStruct) : CheckBoxControl
@@ -968,15 +858,10 @@ Function BrowserContTraceAColorPopup(pStruct) : PopupMenuControl
 	endif
 	// Get the browser number from the pStruct
 	Variable browserNumber=BrowserNumberFromName(pStruct.win);		
-	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
-	String savedDFName=ChangeToBrowserDF(browserNumber)
 	// Notify the model
-	SVAR colorNameA
-	colorNameA=pStruct.popStr
+	BrowserModelSetColorNameA(browserNumber,pStruct.popStr)
 	// Notify the view
 	BrowserViewModelChanged(browserNumber)
-	// Restore original DF
-	SetDataFolder savedDFName		
 End
 
 Function BrowserContTraceBColorPopup(pStruct) : PopupMenuControl
@@ -987,15 +872,10 @@ Function BrowserContTraceBColorPopup(pStruct) : PopupMenuControl
 	endif
 	// Get the browser number from the pStruct
 	Variable browserNumber=BrowserNumberFromName(pStruct.win);		
-	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
-	String savedDFName=ChangeToBrowserDF(browserNumber)
 	// Notify the model
-	SVAR colorNameB
-	colorNameB=pStruct.popStr
+	BrowserModelSetColorNameB(browserNumber,pStruct.popStr)
 	// Notify the view
 	BrowserViewModelChanged(browserNumber)
-	// Restore original DF
-	SetDataFolder savedDFName		
 End
 
 
