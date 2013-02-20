@@ -243,7 +243,7 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	Button clearTFitRange,pos={123,yOffset+36+28},size={100,18},proc=BrowserContClearFitRangeButton,title="Clear Range"
 
 	PopupMenu fitTypePopupMenu,pos={8,yOffset+10},size={90,19}
-	PopupMenu fitTypePopupMenu,mode=1,value= #"\"single exp;double exp\""	
+	PopupMenu fitTypePopupMenu,mode=1,value= #"\"Single;Double\""	
 	PopupMenu fitTypePopupMenu,proc=BrowserContFitTypePopup
 	
 	absVarName=AbsoluteVarName(browserDFName,"tau1")
@@ -764,7 +764,7 @@ Function BrowserViewSetFitCoeffVis(browserNumber,visible)
 		ValDisplay yOffsetValDisplay, win=$browserName#ToolsPanel, valueColor=(0,0,0)
 		ValDisplay tau1ValDisplay, win=$browserName#ToolsPanel, valueColor=(0,0,0)
 		ValDisplay amp1ValDisplay, win=$browserName#ToolsPanel, valueColor=(0,0,0)
-		if ( AreStringsEqual(fitType,"single exp") )
+		if ( AreStringsEqual(fitType,"Single") )
 			ValDisplay tau2ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
 			ValDisplay amp2ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
 		else

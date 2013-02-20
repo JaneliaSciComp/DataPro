@@ -69,7 +69,7 @@ Function BrowserModelConstructor()
 	Variable /G isFitValid=0  	// true iff the current fit coefficients represent the output of a valid fit
 							// to waveNameAbsOfFitTrace, with the current fit parameters
 	String /G waveNameAbsOfFitTrace=""
-	String /G fitType="single exp" 
+	String /G fitType="Single" 
 	Variable /G tFitZero=nan
 	Variable /G tFitLeft=nan
 	Variable /G tFitRight=nan
@@ -491,7 +491,7 @@ Function BrowserModelUpdateFit(browserNumber)
 
 	// Are we doing single or double exponential fit?
 	SVAR fitType
-	Variable singleExp=AreStringsEqual(fitType,"single exp")
+	Variable singleExp=AreStringsEqual(fitType,"Single")
 
 	// Build up the command to do the fit, keeping it in the string commandString
 	String commandString="CurveFit /N "
@@ -598,45 +598,6 @@ Function BrowserModelMarkWaveForAvg(thisWaveName,filterOnHold,holdCenter,holdTol
 	ReplaceStringByKeyInWaveNote(thisWave,"DONTAVG",num2str(dontavg))
 End
 
-Function BrowserModelIncludeInAverage(thisWaveName,filterOnHold,holdCenter,holdTol,filterOnStep,stepCenter)
-	// Determine whether to include thisWaveName in the average, based on whether if satisfies the 
-	// conditions as specified by checkHold, holdCenter, etc.
-	// We assume that thisWaveName is in the current DF, or is an absolute wave name.
-	// Returns 1 is wave should be included in average, zero otherwise.
-	String thisWaveName
-	Variable filterOnHold	// boolean
-	Variable holdCenter, holdTol
-	Variable filterOnStep	// boolean
-	Variable stepCenter
-
-	// The default is to include the wave in the average, then we check for a bunch of possible
-	// reasons to exclude it
-	WAVE thisWave=$thisWaveName
-	if ( !WaveExists(thisWave) )
-		return 0
-	endif
-	String waveTypeStr=StringByKeyInWaveNote(thisWave, "WAVETYPE")
-	if (AreStringsEqual(waveTypeStr,"average"))
-		return 0
-	endif
-	if ( NumberByKeyInWaveNote(thisWave, "REJECT") )
-		return 0
-	endif
-	if (filterOnHold)
-		Variable hold=NumberByKeyInWaveNote(thisWave, "HOLD")
-		if ( abs(hold-holdCenter)>holdTol )
-			return 0
-		endif
-	endif
-	if (filterOnStep)
-		Variable step=NumberByKeyInWaveNote(thisWave, "STEP")
-		if (abs(step-stepCenter)>0.1)  // tolerance is hard-coded
-			return 0
-		endif
-	endif
-	return 1
-End
-
 Function BrowserModelGetNSweeps(browserNumber)
 	Variable browserNumber
 		
@@ -691,7 +652,7 @@ Function BrowserModelAreCursorsAAndBSet(browserNumber)
 	return result
 End
 
-Function BrowserModelIsCursorsASet(browserNumber)
+Function BrowserModelIsCursorASet(browserNumber)
 	Variable browserNumber
 
 	// Save the current data folder, change to this browser's DF
@@ -709,7 +670,7 @@ Function BrowserModelIsCursorsASet(browserNumber)
 	return result
 End
 
-Function BrowserModelIsCursorsBSet(browserNumber)
+Function BrowserModelIsCursorBSet(browserNumber)
 	Variable browserNumber
 
 	// Save the current data folder, change to this browser's DF
@@ -1009,7 +970,7 @@ Function BrowserModelSetAverageAllSteps(browserNumber,newValue)
 	Variable newValue
 	String savedDF=ChangeToBrowserDF(browserNumber)
 	NVAR averageAllSteps
-	averageAllStepse=newValue
+	averageAllSteps=newValue
 	SetDataFolder savedDF	
 End
 
@@ -1018,11 +979,11 @@ Function BrowserModelSetAverageAllSweeps(browserNumber,newValue)
 	Variable newValue
 	String savedDF=ChangeToBrowserDF(browserNumber)
 	NVAR averageAllSweeps
-	averageAllSweepse=newValue
+	averageAllSweeps=newValue
 	SetDataFolder savedDF	
 End
 
-Function BrowserModelSetISweepFirstAverage(browserNumber,newValue)
+Function BrowserModelSetISweepFirstAvg(browserNumber,newValue)
 	Variable browserNumber
 	Variable newValue
 	String savedDF=ChangeToBrowserDF(browserNumber)
@@ -1031,12 +992,229 @@ Function BrowserModelSetISweepFirstAverage(browserNumber,newValue)
 	SetDataFolder savedDF	
 End
 
-Function BrowserModelSetISweepLastAverage(browserNumber,newValue)
+Function BrowserModelSetISweepLastAvg(browserNumber,newValue)
 	Variable browserNumber
 	Variable newValue
 	String savedDF=ChangeToBrowserDF(browserNumber)
 	NVAR iSweepLastAverage
 	iSweepLastAverage=newValue
 	SetDataFolder savedDF	
+End
+
+Function BrowserModelSetFitType(browserNumber,newValue)
+	Variable browserNumber
+	String newValue
+	String savedDF=ChangeToBrowserDF(browserNumber)
+	SVAR fitType
+	fitType=newValue
+	BrowserModelUpdateFit(browserNumber)
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelSetHoldYOffset(browserNumber,newValue)
+	Variable browserNumber
+	Variable newValue
+
+	// Switch the DF, note the former DF name
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+
+	// Get the old value
+	NVAR holdYOffset  	// boolean, whether or not hold the y offset at the given value
+	Variable holdYOffsetOld=holdYOffset
+
+	// Update the model variable
+	holdYOffset=newValue
+	
+	// If the value has not changed (however that might have happened), just return
+	if ( holdYOffset==holdYOffsetOld )
+		// Restore old data folder
+		SetDataFolder savedDFName
+		return nan;
+	endif
+	
+	// If the checkbox has just been checked, and if the curent hold value is nan, 
+	// and the current y offset is _not_ nan, copy the y offset into the hold value
+	NVAR yOffsetHeldValue  // the value at which to hold the y offset
+	NVAR yOffset  // the current y offset fit coefficient
+	NVAR isFitValid
+	if ( holdYOffset )
+		// holdYOffset just turned true
+		if ( IsNan(yOffsetHeldValue) )
+			if ( IsNan(yOffset) )
+				yOffsetHeldValue=0
+			else
+				yOffsetHeldValue=yOffset
+			endif
+		endif
+		if ( isFitValid )
+			if (yOffsetHeldValue==yOffset)
+				// no need to invalidate in this case!
+			else
+				//Printf "About to call BrowserModelUpdateFit() in BrowserContHoldYOffsetCB() #1\r"
+				BrowserModelUpdateFit(browserNumber)
+			endif
+		else
+			// fit is already invalid
+			//Printf "About to call BrowserModelUpdateFit() in BrowserContHoldYOffsetCB() #2\r"
+			BrowserModelUpdateFit(browserNumber)
+		endif			
+	else
+		// holdYOffset just turned false -- now the yOffset parameter is free, so a previously-valid fit 
+		// is now invalid
+		//yOffsetHeldValue=nan  // when made visible again, want it to get current yOffset
+		//Printf "About to call BrowserModelUpdateFit() in BrowserContHoldYOffsetCB() #3\r"		
+		BrowserModelUpdateFit(browserNumber)
+	endif
+
+	// Restore old data folder
+	SetDataFolder savedDFName
+End
+
+Function BrowserModelSetYOffsetHeldValue(browserNumber,newValue)
+	Variable browserNumber
+	Variable newValue
+
+	// Switch the DF, note the former DF name
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+
+	// Set the instance variable
+	NVAR yOffsetHeldValue
+	yOffsetHeldValue=newValue
+
+	// changing this invalidates the fit, since now the fit trace (if there is one) doesn't match the fit parameters
+	BrowserModelUpdateFit(browserNumber)  // model method
+
+	// Restore old data folder
+	SetDataFolder savedDFName
+End
+
+Function BrowserModelGetRenameAverages(browserNumber)
+	Variable browserNumber
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	NVAR renameAverages
+	Variable result=renameAverages
+	SetDataFolder savedDFName
+	return result
+End
+
+Function BrowserModelGetAverageAllSweeps(browserNumber)
+	Variable browserNumber
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	NVAR averageAllSweeps
+	Variable result=averageAllSweeps
+	SetDataFolder savedDFName
+	return result
+End
+
+Function BrowserModelGetAverageAllSteps(browserNumber)
+	Variable browserNumber
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	NVAR averageAllSteps
+	Variable result=averageAllSteps
+	SetDataFolder savedDFName
+	return result
+End
+
+Function BrowserModelGetISweepFirstAvg(browserNumber)
+	Variable browserNumber
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	NVAR iSweepFirstAverage
+	Variable result=iSweepFirstAverage
+	SetDataFolder savedDFName
+	return result
+End
+
+Function BrowserModelGetISweepLastAvg(browserNumber)
+	Variable browserNumber
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	NVAR iSweepLastAverage
+	Variable result=iSweepLastAverage
+	SetDataFolder savedDFName
+	return result
+End
+
+Function BrowserModelGetTraceAChecked(browserNumber)
+	Variable browserNumber
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	NVAR traceAChecked
+	Variable result=traceAChecked
+	SetDataFolder savedDFName
+	return result
+End
+
+Function BrowserModelGetTraceBChecked(browserNumber)
+	Variable browserNumber
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	NVAR traceBChecked
+	Variable result=traceBChecked
+	SetDataFolder savedDFName
+	return result
+End
+
+Function /S BrowserModelGetBaseNameA(browserNumber)
+	Variable browserNumber
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	SVAR baseNameA
+	String result=baseNameA
+	SetDataFolder savedDFName
+	return result
+End
+
+Function /S BrowserModelGetBaseNameB(browserNumber)
+	Variable browserNumber
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	SVAR baseNameB
+	String result=baseNameB
+	SetDataFolder savedDFName
+	return result
+End
+
+Function BrowserModelGetStepToAverage(browserNumber)
+	Variable browserNumber
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	NVAR stepToAverage
+	Variable result=stepToAverage
+	SetDataFolder savedDFName
+	return result
+End
+
+Function BrowserModelIncludeInAverage(thisWaveName,filterOnHold,holdCenter,holdTol,filterOnStep,stepCenter)
+	// Determine whether to include thisWaveName in the average, based on whether if satisfies the 
+	// conditions as specified by checkHold, holdCenter, etc.
+	// We assume that thisWaveName is in the current DF, or is an absolute wave name.
+	// Returns 1 is wave should be included in average, zero otherwise.
+	// Note that this is a class method.
+	String thisWaveName
+	Variable filterOnHold	// boolean
+	Variable holdCenter, holdTol
+	Variable filterOnStep	// boolean
+	Variable stepCenter
+
+	// The default is to include the wave in the average, then we check for a bunch of possible
+	// reasons to exclude it
+	WAVE thisWave=$thisWaveName
+	if ( !WaveExists(thisWave) )
+		return 0
+	endif
+	String waveTypeStr=StringByKeyInWaveNote(thisWave, "WAVETYPE")
+	if (AreStringsEqual(waveTypeStr,"average"))
+		return 0
+	endif
+	if ( NumberByKeyInWaveNote(thisWave, "REJECT") )
+		return 0
+	endif
+	if (filterOnHold)
+		Variable hold=NumberByKeyInWaveNote(thisWave, "HOLD")
+		if ( abs(hold-holdCenter)>holdTol )
+			return 0
+		endif
+	endif
+	if (filterOnStep)
+		Variable step=NumberByKeyInWaveNote(thisWave, "STEP")
+		if (abs(step-stepCenter)>0.1)  // tolerance is hard-coded
+			return 0
+		endif
+	endif
+	return 1
 End
 

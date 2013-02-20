@@ -85,7 +85,6 @@ Function BrowserContToolsPanelHook(s)
 	String browserName=RootWindowName(panelName)
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	if (s.eventCode==2)					// window being killed
-		//Print "The Tools Panel says: Arghhh..."
 		// Need to uncheck the "Show Tools" checkbox
 		CheckBox showToolsCheckbox, win=$browserName, value=0
 	endif	
@@ -97,9 +96,7 @@ Function BrowserContSetNextSweepIndex(browserNumber,iSweep)
 	// Just what it says on the tin.  Called by the data acquisition loop when a sweep is acquired.
 	// Set the sweep in the model
 	Variable browserNumber, iSweep
-	
 	BrowserModelSetNextSweepIndex(browserNumber,iSweep)
-	// Sync the view
 	BrowserViewModelChanged(browserNumber)
 End
 
@@ -462,141 +459,43 @@ End
 
 Function BrowserContFitButton(bStruct) : ButtonControl
 	STRUCT WMButtonAction &bStruct
-	
-	// Check that this is really a button-up on the button
 	if (bStruct.eventCode!=2)
 		return 0							// we only handle mouse up in control
 	endif
-	
-	// Get the browser number from the bStruct
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
-	
-	// Update the fit trace and fit parameters in the model
 	BrowserModelUpdateFit(browserNumber)
-	
-	// Sync the view to the model
 	BrowserViewModelChanged(browserNumber)
 End
 
-
-
-
-// Stopped editing here
-
-
-
-
-
 Function BrowserContFitTypePopup(pStruct) : PopupMenuControl
 	STRUCT WMPopupAction &pStruct
-	
-	// Check that this is really a button-up on the menu
 	if (pStruct.eventCode!=2)
 		return 0							// we only handle mouse up in control
 	endif
-	
-	// Get the browser number from the bStruct
 	Variable browserNumber=BrowserNumberFromName(pStruct.win);
-	
-	// Update the fit trace and fit parameters in the model
-	SVAR fitType
-	if (pStruct.popNum==1)
-		fitType="single exp";
-	else
-		fitType="double exp";
-	endif
-
-	// Update the fit coeffs
-	//Printf "About to call BrowserModelUpdateFit() in BrowserContFitTypePopup()\r"
-	BrowserModelUpdateFit(browserNumber)
-	
-	// Sync the view to the model
+	BrowserModelSetFitType(browserNumber,pStruct.popstr)
 	BrowserViewModelChanged(browserNumber)
 End
 
 Function BrowserContHoldYOffsetCB(cbStruct) : CheckBoxControl
 	STRUCT WMCheckboxAction &cbStruct	
-
-	// If event is other than mouse up within control, do nothing
 	if (cbStruct.eventCode!=2)
 		return 0
 	endif
-
-	// Find name of browser, switch the DF to its DF, note the former DF name
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
-	String savedDFName=ChangeToBrowserDF(browserNumber)
-
-	// Get the old value
-	NVAR holdYOffset  // boolean, whether or not hold the y offset at the given value
-	Variable holdYOffsetOld=holdYOffset
-
-	// Update the model variable
-	holdYOffset=cbStruct.checked
-	
-	// If the value has not changed (however that might have happened), just return
-	if ( holdYOffset==holdYOffsetOld )
-		// Restore old data folder
-		SetDataFolder savedDFName
-		return nan;
-	endif
-	
-	// If the checkbox has just been checked, and if the curent hold value is nan, 
-	// and the current y offset is _not_ nan, copy the y offset into the hold value
-	NVAR yOffsetHeldValue  // the value at which to hold the y offset
-	NVAR yOffset  // the current y offset fit coefficient
-	NVAR isFitValid
-	if ( holdYOffset )
-		// holdYOffset just turned true
-		if ( IsNan(yOffsetHeldValue) )
-			if ( IsNan(yOffset) )
-				yOffsetHeldValue=0
-			else
-				yOffsetHeldValue=yOffset
-			endif
-		endif
-		if ( isFitValid )
-			if (yOffsetHeldValue==yOffset)
-				// no need to invalidate in this case!
-			else
-				//Printf "About to call BrowserModelUpdateFit() in BrowserContHoldYOffsetCB() #1\r"
-				BrowserModelUpdateFit(browserNumber)
-			endif
-		else
-			// fit is already invalid
-			//Printf "About to call BrowserModelUpdateFit() in BrowserContHoldYOffsetCB() #2\r"
-			BrowserModelUpdateFit(browserNumber)
-		endif			
-	else
-		// holdYOffset just turned false -- now the yOffset parameter is free, so a previously-valid fit 
-		// is now invalid
-		//yOffsetHeldValue=nan  // when made visible again, want it to get current yOffset
-		//Printf "About to call BrowserModelUpdateFit() in BrowserContHoldYOffsetCB() #3\r"		
-		BrowserModelUpdateFit(browserNumber)
-	endif
-
-	// Sync the the view with the current state
+	BrowserModelSetHoldYOffset(browserNumber,cbStruct.checked)
 	BrowserViewModelChanged(browserNumber)
-
-	// Restore old data folder
-	SetDataFolder savedDFName
 End
 
 Function BrowserContYOffsetHeldValueSV(svStruct) : SetVariableControl
 	STRUCT WMSetVariableAction &svStruct	
-	//Printf "eventcode: %d\r", svStruct.eventCode
 	if ( svStruct.eventCode==-1 ) 
 		return 0
 	endif	
 	String browserName=svStruct.win
 	Variable browserNumber=BrowserNumberFromName(browserName)
-	String savedDFName=ChangeToBrowserDF(browserNumber)
-	NVAR yOffsetHeldValue
-	yOffsetHeldValue=svStruct.dval  // set the model variable to the value set in the view
-	// changing this invalidates the fit, since now the fit trace (if there is one) doesn't match the fit parameters
-	//Printf "About to call BrowserModelUpdateFit() in BrowserContYOffsetHeldValueSV()\r"		
-	BrowserModelUpdateFit(browserNumber)  // model method
+	BrowserModelSetYOffsetHeldValue(browserNumber,svStruct.dval)
 	BrowserViewModelChanged(browserNumber)	
-	SetDataFolder savedDFName
 End
 
 //Function SweepIndexChangedInView(browserNumber,sweepIndexInView)
@@ -628,11 +527,8 @@ Function BrowserContAllSweepsCB(cbStruct) : CheckBoxControl
 		return 0							// we only handle mouse up in control
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
-	String savedDFName=ChangeToBrowserDF(browserNumber)	
-	NVAR averageAllSweeps
-	averageAllSweeps=cbStruct.checked
+	BrowserModelSetAverageAllSweeps(browserNumber,cbStruct.checked)
 	BrowserViewModelChanged(browserNumber)
-	SetDataFolder savedDFName
 End
 
 Function BrowserContFirstSweepSV(svStruct) : SetVariableControl
@@ -642,10 +538,7 @@ Function BrowserContFirstSweepSV(svStruct) : SetVariableControl
 	endif	
 	String browserName=svStruct.win
 	Variable browserNumber=BrowserNumberFromName(browserName)
-	String savedDFName=ChangeToBrowserDF(browserNumber)
-	NVAR iSweepFirstAverage
-	iSweepFirstAverage=svStruct.dval  // set the model variable to the value set in the view
-	SetDataFolder savedDFName	
+	BrowserModelSetISweepFirstAvg(browserNumber,svStruct.dval)
 End
 
 Function BrowserContLastSweepSV(svStruct) : SetVariableControl
@@ -655,10 +548,7 @@ Function BrowserContLastSweepSV(svStruct) : SetVariableControl
 	endif	
 	String browserName=svStruct.win
 	Variable browserNumber=BrowserNumberFromName(browserName)
-	String savedDFName=ChangeToBrowserDF(browserNumber)
-	NVAR iSweepLastAverage
-	iSweepLastAverage=svStruct.dval  // set the model variable to the value set in the view
-	SetDataFolder savedDFName	
+	BrowserModelSetISweepLastAvg(browserNumber,svStruct.dval)
 End
 
 Function BrowserContAllStepsCB(cbStruct) : CheckBoxControl
@@ -695,7 +585,28 @@ Function BrowserContRenameAveragesCB(cbStruct) : CheckBoxControl
 	SetDataFolder savedDFName
 End
 
+Function BrowserContTraceAColorPopup(pStruct) : PopupMenuControl
+	STRUCT WMPopupAction &pStruct
+	if (pStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif
+	Variable browserNumber=BrowserNumberFromName(pStruct.win);		
+	BrowserModelSetColorNameA(browserNumber,pStruct.popStr)
+	BrowserViewModelChanged(browserNumber)
+End
+
+Function BrowserContTraceBColorPopup(pStruct) : PopupMenuControl
+	STRUCT WMPopupAction &pStruct
+	if (pStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif
+	Variable browserNumber=BrowserNumberFromName(pStruct.win);		
+	BrowserModelSetColorNameB(browserNumber,pStruct.popStr)
+	BrowserViewModelChanged(browserNumber)
+End
+
 Function BrowserContAverageSweepsButton(bStruct) : ButtonControl
+	// Calculate the average of the appropriate sweeps
 	STRUCT WMButtonAction &bStruct
 	
 	// Check that this is really a button-up on the button
@@ -707,16 +618,13 @@ Function BrowserContAverageSweepsButton(bStruct) : ButtonControl
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);		
 	//String browserName=BrowserNameFromNumber(browserNumber)
 	
-	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
-	String savedDFName=ChangeToBrowserDF(browserNumber)
-	
 	// Determine the range of sweeps present
 	Variable nSweeps=BrowserModelGetNSweeps(browserNumber)
 	
-	// determine which sweeps we're going to average, of those present
-	NVAR averageAllSweeps
-	NVAR iSweepLastAverage
-	NVAR iSweepFirstAverage
+	// Determine which sweeps we're going to average, of those present
+	Variable averageAllSweeps=BrowserModelGetAverageAllSweeps(browserNumber)
+	Variable iSweepLastAverage=BrowserModelGetISweepLastAvg(browserNumber)
+	Variable iSweepFirstAverage=BrowserModelGetISweepFirstAvg(browserNumber)
 	Variable iFrom, iTo
 	if (averageAllSweeps)
 		iFrom=1
@@ -730,50 +638,55 @@ Function BrowserContAverageSweepsButton(bStruct) : ButtonControl
 	Variable destSweepIndex=SweeperGetNextSweepIndex()
 	
 	// Do the average(s)
-	SVAR baseNameA
-	SVAR baseNameB
-	NVAR averageAllSteps
-	NVAR traceAChecked
-	NVAR traceBChecked	
-	Variable filterOnHold=0	// there used to by UI to filter on the holding level
+	String baseNameA=BrowserModelGetBaseNameA(browserNumber)
+	String baseNameB=BrowserModelGetBaseNameB(browserNumber)
+	Variable averageAllSteps=BrowserModelGetAverageAllSteps(browserNumber)
+	Variable traceAChecked=BrowserModelGetTraceAChecked(browserNumber)
+	Variable traceBChecked=BrowserModelGetTraceBChecked(browserNumber)
+	Variable filterOnHold=0	// there used to be UI to filter on the holding level
 	Variable holdCenter=nan
 	Variable holdTol=nan
 	Variable filterOnStep=!averageAllSteps
-	NVAR stepToAverage
+	Variable stepToAverage=BrowserModelGetStepToAverage(browserNumber)
+	String destWaveName=""
+	Variable cancelled=0
 	if (traceAChecked)
-		BrowserContComputeAverageWaves(browserNumber,destSweepIndex,baseNameA,iFrom,iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
+		destWaveName=BrowserContFigureDestWaveName(browserNumber,destSweepIndex,baseNameA)
+		if (IsEmptyString(destWaveName))
+			cancelled=0
+		else
+			BrowserContComputeAverageWaves(destWaveName,baseNameA,iFrom,iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
+		endif
 	endif
-	if (traceBChecked)
-		BrowserContComputeAverageWaves(browserNumber,destSweepIndex,baseNameB,iFrom,iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
+	if (!cancelled && traceBChecked)
+		destWaveName=BrowserContFigureDestWaveName(browserNumber,destSweepIndex,baseNameB)
+		if (IsEmptyString(destWaveName))
+			cancelled=0
+		else
+			BrowserContComputeAverageWaves(destWaveName,baseNameB,iFrom,iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
+		endif
 	endif			
 
-	// increment the next sweep index for acquisition	
-	if (traceAChecked || traceBChecked)
+	// increment the next sweep index for acquisition, if appropriate
+	Variable renameAverages=BrowserModelGetRenameAverages(browserNumber)
+	if (!renameAverages && (traceAChecked || traceBChecked) )
 		SweeperContIncrNextSweepIndex()
 	endif
 	
-	// Restore original DF
-	SetDataFolder savedDFName
+	// Notify the view, mainly because the valid range of the sweep index SV may have changed
+	BrowserViewModelChanged(browserNumber)
 End
 
-Function BrowserContComputeAverageWaves(browserNumber,destSweepIndex,waveBaseName,iFrom,iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
+Function /S BrowserContFigureDestWaveName(browserNumber,destSweepIndex,waveBaseName)
 	Variable browserNumber
 	Variable destSweepIndex
 	String waveBaseName
-	Variable iFrom, iTo
-	Variable filterOnHold	// boolean
-	Variable holdCenter, holdTol
-	Variable filterOnStep	// boolean
-	Variable stepToAverage
-
-	// Save the current DF, set the data folder to the appropriate one for this DataProBrowser instance
-	String savedDFName=ChangeToBrowserDF(browserNumber)
 
 	// Figure the destination wave name
 	String destWaveName = sprintf2sv("root:%s_%d", waveBaseName, destSweepIndex)
 	
 	// Handle possible renaming of the dest wave
-	NVAR renameAverages
+	Variable renameAverages=BrowserModelGetRenameAverages(browserNumber)
 	if (renameAverages)
 		String waveBaseNameAlternate, waveNameAlternate
 		Variable haveValidWaveName=0
@@ -808,10 +721,24 @@ Function BrowserContComputeAverageWaves(browserNumber,destSweepIndex,waveBaseNam
 			destWaveName=waveNameAlternate
 		else
 			// Cancelled
-			return 0		// Have to return something
+			return ""		// Indicates cancellation
 		endif
 	endif
 	
+	return destWaveName
+End
+
+Function BrowserContComputeAverageWaves(destWaveName,waveBaseName,iFrom,iTo,filterOnHold,holdCenter,holdTol,filterOnStep,stepToAverage)
+	// Compute the average of waves.
+	// Note that this is a class method.
+	String destWaveName
+	String waveBaseName	
+	Variable iFrom, iTo
+	Variable filterOnHold	// boolean
+	Variable holdCenter, holdTol
+	Variable filterOnStep	// boolean
+	Variable stepToAverage
+
 	// Loop over waves to be averaged, forming the sum and counting the number of waves
 	Variable i, nWavesSummedSoFar=0
 	Variable include
@@ -837,7 +764,6 @@ Function BrowserContComputeAverageWaves(browserNumber,destSweepIndex,waveBaseNam
 	Variable nWavesToAvg=nWavesSummedSoFar
 	
 	// Actually compute the average from the sum
-	//String waveBaseNameShort=RemoveEnding(waveBaseName,"_")
 	if (nWavesToAvg>0)
 		outWave /= nWavesToAvg
 	else
@@ -845,37 +771,5 @@ Function BrowserContComputeAverageWaves(browserNumber,destSweepIndex,waveBaseNam
 		Abort message
 	endif
 	Printf "%d sweeps of %s were averaged and stored in %s\r", nWavesToAvg, waveBaseName, destWaveName
-		
-	// Restore original DF
-	SetDataFolder savedDFName	
 End
-
-Function BrowserContTraceAColorPopup(pStruct) : PopupMenuControl
-	STRUCT WMPopupAction &pStruct
-	// Check that this is really a button-up on the button
-	if (pStruct.eventCode!=2)
-		return 0							// we only handle mouse up in control
-	endif
-	// Get the browser number from the pStruct
-	Variable browserNumber=BrowserNumberFromName(pStruct.win);		
-	// Notify the model
-	BrowserModelSetColorNameA(browserNumber,pStruct.popStr)
-	// Notify the view
-	BrowserViewModelChanged(browserNumber)
-End
-
-Function BrowserContTraceBColorPopup(pStruct) : PopupMenuControl
-	STRUCT WMPopupAction &pStruct
-	// Check that this is really a button-up on the button
-	if (pStruct.eventCode!=2)
-		return 0							// we only handle mouse up in control
-	endif
-	// Get the browser number from the pStruct
-	Variable browserNumber=BrowserNumberFromName(pStruct.win);		
-	// Notify the model
-	BrowserModelSetColorNameB(browserNumber,pStruct.popStr)
-	// Notify the view
-	BrowserViewModelChanged(browserNumber)
-End
-
 
