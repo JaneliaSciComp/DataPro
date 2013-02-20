@@ -672,9 +672,70 @@ Function BrowserModelGetNSweeps(browserNumber)
 	return nSweeps
 End
 
+Function BrowserModelAreCursorsAAndBSet(browserNumber)
+	Variable browserNumber
+
+	// Save the current data folder, change to this browser's DF
+	String savedDF=ChangeToBrowserDF(browserNumber)
+
+	// Declare DF vars we need	
+	NVAR tCursorA
+	NVAR tCursorB
+	
+	// Set the vars that delineate the window region
+	Variable result=(!IsNan(tCursorA) && !IsNan(tCursorB))
+
+	// Restore the orignal DF
+	SetDataFolder savedDF	
+
+	return result
+End
+
+Function BrowserModelIsCursorsASet(browserNumber)
+	Variable browserNumber
+
+	// Save the current data folder, change to this browser's DF
+	String savedDF=ChangeToBrowserDF(browserNumber)
+
+	// Declare DF vars we need	
+	NVAR tCursorA
+	
+	// Set the vars that delineate the window region
+	Variable result=(!IsNan(tCursorA))
+
+	// Restore the orignal DF
+	SetDataFolder savedDF	
+
+	return result
+End
+
+Function BrowserModelIsCursorsBSet(browserNumber)
+	Variable browserNumber
+
+	// Save the current data folder, change to this browser's DF
+	String savedDF=ChangeToBrowserDF(browserNumber)
+
+	// Declare DF vars we need	
+	NVAR tCursorB
+	
+	// Set the vars that delineate the window region
+	Variable result=(!IsNan(tCursorB))
+
+	// Restore the orignal DF
+	SetDataFolder savedDF	
+
+	return result
+End
+
+
 Function BrowserModelSetBaseline(browserNumber)
 	Variable browserNumber
 	
+	// Return if the cursors are not set
+	if ( !BrowserModelAreCursorsAAndBSet(browserNumber) )
+		return 0
+	endif
+
 	// Save the current data folder, change to this browser's DF
 	String savedDF=ChangeToBrowserDF(browserNumber)
 
@@ -715,3 +776,267 @@ Function BrowserModelClearBaseline(browserNumber)
 	// Restore the orignal DF
 	SetDataFolder savedDF	
 End
+
+Function BrowserModelSetWindow1(browserNumber)
+	Variable browserNumber
+
+	// Return if the cursors are not set
+	if ( !BrowserModelAreCursorsAAndBSet(browserNumber) )
+		return 0
+	endif
+
+	// Save the current data folder, change to this browser's DF
+	String savedDF=ChangeToBrowserDF(browserNumber)
+
+	// Declare DF vars we need	
+	NVAR tCursorA
+	NVAR tCursorB
+	NVAR tWindow1Left
+	NVAR tWindow1Right
+	
+	// Set the vars that delineate the window region
+	tWindow1Left=tCursorA		// times of left and right cursor that delineate the window region
+	tWindow1Right=tCursorB
+
+	// Update the meaurements
+	BrowserModelUpdateMeasurements(browserNumber)
+
+	// Restore the orignal DF
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelClearWindow1(browserNumber)
+	Variable browserNumber
+	
+	// Save the current data folder, change to this browser's DF
+	String savedDF=ChangeToBrowserDF(browserNumber)
+
+	// Declare the instance vars we'll need
+	NVAR tWindow1Left
+	NVAR tWindow1Right
+
+	// Set the instance vars
+	tWindow1Left=nan
+	tWindow1Right=nan
+
+	// Update the measurements	
+	BrowserModelUpdateMeasurements(browserNumber)
+
+	// Restore the orignal DF
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelSetWindow2(browserNumber)
+	Variable browserNumber
+
+	// Return if the cursors are not set
+	if ( !BrowserModelAreCursorsAAndBSet(browserNumber) )
+		return 0
+	endif
+
+	// Save the current data folder, change to this browser's DF
+	String savedDF=ChangeToBrowserDF(browserNumber)
+
+	// Declare DF vars we need	
+	NVAR tCursorA
+	NVAR tCursorB
+	NVAR tWindow2Left
+	NVAR tWindow2Right
+	
+	// Set the vars that delineate the window region
+	tWindow2Left=tCursorA		// times of left and right cursor that delineate the window region
+	tWindow2Right=tCursorB
+
+	// Update the meaurements
+	BrowserModelUpdateMeasurements(browserNumber)
+
+	// Restore the orignal DF
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelClearWindow2(browserNumber)
+	Variable browserNumber
+	
+	// Save the current data folder, change to this browser's DF
+	String savedDF=ChangeToBrowserDF(browserNumber)
+
+	// Declare the instance vars we'll need
+	NVAR tWindow2Left
+	NVAR tWindow2Right
+
+	// Set the instance vars
+	tWindow2Left=nan
+	tWindow2Right=nan
+
+	// Update the measurements	
+	BrowserModelUpdateMeasurements(browserNumber)
+
+	// Restore the orignal DF
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelSetFitZero(browserNumber)
+	Variable browserNumber
+
+	// Return if the cursors are not set
+	if ( !BrowserModelIsCursorASet(browserNumber) )
+		return 0
+	endif
+
+	// Save the current data folder, change to this browser's DF
+	String savedDF=ChangeToBrowserDF(browserNumber)
+
+	// Declare DF vars we need	
+	NVAR tCursorA
+	NVAR tFitZero
+	
+	// Set the vars that delineate the window region
+	tFitZero=tCursorA
+
+	// Update the meaurements
+	BrowserModelUpdateFit(browserNumber)
+
+	// Restore the orignal DF
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelClearFitZero(browserNumber)
+	Variable browserNumber
+
+	// Save the current data folder, change to this browser's DF
+	String savedDF=ChangeToBrowserDF(browserNumber)
+
+	// Declare DF vars we need	
+	NVAR tFitZero
+	
+	// Set the vars that delineate the window region
+	tFitZero=nan
+
+	// Update the meaurements
+	BrowserModelUpdateFit(browserNumber)
+
+	// Restore the orignal DF
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelSetFitRange(browserNumber)
+	Variable browserNumber
+
+	// Return if the cursors are not set
+	if ( !BrowserModelAreCursorsAAndBSet(browserNumber) )
+		return 0
+	endif
+
+	// Save the current data folder, change to this browser's DF
+	String savedDF=ChangeToBrowserDF(browserNumber)
+
+	// Declare DF vars we need	
+	NVAR tCursorA
+	NVAR tCursorB
+	NVAR tFitLeft
+	NVAR tFitRight
+	
+	// Set the vars that delineate the window region
+	tFitLeft=tCursorA		// times of left and right cursor that delineate the window region
+	tFitRight=tCursorB
+
+	// Update the meaurements
+	BrowserModelUpdateFit(browserNumber)
+
+	// Restore the orignal DF
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelClearFitRange(browserNumber)
+	Variable browserNumber
+	
+	// Save the current data folder, change to this browser's DF
+	String savedDF=ChangeToBrowserDF(browserNumber)
+
+	// Declare the instance vars we'll need
+	NVAR tFitLeft
+	NVAR tFitRight
+
+	// Set the instance vars
+	tFitLeft=nan
+	tFitRight=nan
+
+	// Update the measurements	
+	BrowserModelUpdateFit(browserNumber)
+
+	// Restore the orignal DF
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelSetColorNameA(browserNumber,newColorName)
+	Variable browserNumber
+	String newColorName
+	String savedDF=ChangeToBrowserDF(browserNumber)
+	SVAR colorNameA
+	colorNameA=newColorName
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelSetColorNameB(browserNumber,newColorName)
+	Variable browserNumber
+	String newColorName
+	String savedDF=ChangeToBrowserDF(browserNumber)
+	SVAR colorNameB
+	colorNameB=newColorName
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelSetRenameAverages(browserNumber,newValue)
+	Variable browserNumber
+	Variable newValue
+	String savedDF=ChangeToBrowserDF(browserNumber)
+	NVAR renameAverages
+	renameAverages=newValue
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelSetStepToAverage(browserNumber,newValue)
+	Variable browserNumber
+	Variable newValue
+	String savedDF=ChangeToBrowserDF(browserNumber)
+	NVAR stepToAverage
+	stepToAverage=newValue
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelSetAverageAllSteps(browserNumber,newValue)
+	Variable browserNumber
+	Variable newValue
+	String savedDF=ChangeToBrowserDF(browserNumber)
+	NVAR averageAllSteps
+	averageAllStepse=newValue
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelSetAverageAllSweeps(browserNumber,newValue)
+	Variable browserNumber
+	Variable newValue
+	String savedDF=ChangeToBrowserDF(browserNumber)
+	NVAR averageAllSweeps
+	averageAllSweepse=newValue
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelSetISweepFirstAverage(browserNumber,newValue)
+	Variable browserNumber
+	Variable newValue
+	String savedDF=ChangeToBrowserDF(browserNumber)
+	NVAR iSweepFirstAverage
+	iSweepFirstAverage=newValue
+	SetDataFolder savedDF	
+End
+
+Function BrowserModelSetISweepLastAverage(browserNumber,newValue)
+	Variable browserNumber
+	Variable newValue
+	String savedDF=ChangeToBrowserDF(browserNumber)
+	NVAR iSweepLastAverage
+	iSweepLastAverage=newValue
+	SetDataFolder savedDF	
+End
+
