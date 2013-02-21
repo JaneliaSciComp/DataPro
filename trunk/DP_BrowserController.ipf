@@ -96,7 +96,7 @@ Function BrowserContSetNextSweepIndex(browserNumber,iSweep)
 	// Just what it says on the tin.  Called by the data acquisition loop when a sweep is acquired.
 	// Set the sweep in the model
 	Variable browserNumber, iSweep
-	BrowserModelSetNextSweepIndex(browserNumber,iSweep)
+	BrowserModelSetCurSweepIndex(browserNumber,iSweep)
 	BrowserViewModelChanged(browserNumber)
 End
 
@@ -107,12 +107,8 @@ Function BrowserContNextSweepIndexSV(svStruct) : SetVariableControl
 	if ( svStruct.eventCode==-1 ) 
 		return 0
 	endif	
-	String browserName=svStruct.win
-	Variable iSweepInView=svStruct.dval
-	Variable browserNumber=BrowserNumberFromName(browserName)
-	// Set the sweep in the model
-	BrowserModelSetNextSweepIndex(browserNumber,iSweepInView)
-	// Sync the view
+	Variable browserNumber=BrowserNumberFromName(svStruct.win)
+	BrowserModelSetCurSweepIndex(browserNumber,svStruct.dval)
 	BrowserViewModelChanged(browserNumber)
 End
 
@@ -178,7 +174,6 @@ Function BrowserContShowTraceACB(cbStruct) : CheckBoxControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
 	BrowserModelSetTraceAChecked(browserNumber,cbStruct.checked)
-	//BrowserModelUpdateMeasurements(browserNumber)
 	BrowserViewModelChanged(browserNumber)
 End
 
@@ -191,7 +186,6 @@ Function BrowserContShowTraceBCB(cbStruct) : CheckBoxControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
 	BrowserModelSetTraceBChecked(browserNumber,cbStruct.checked)
-	//BrowserModelUpdateMeasurements(browserNumber)
 	BrowserViewModelChanged(browserNumber)
 End
 
