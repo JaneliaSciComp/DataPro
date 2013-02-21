@@ -128,16 +128,16 @@ Function BrowserModelConstructor()
 	return browserNumber
 End
 
-Function BrowserModelSetNextSweepIndex(browserNumber,sweepIndexNew)
+Function BrowserModelSetCurSweepIndex(browserNumber,newValue)
 	// Set the current sweep index to something, which is assumed to be valid.
-	Variable browserNumber, sweepIndexNew
+	Variable browserNumber, newValue
 
 	// Change to the right DF
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 	
 	// Set iCurrentSweep, then update the measurements
 	NVAR iCurrentSweep
-	iCurrentSweep=sweepIndexNew
+	iCurrentSweep=newValue
 	BrowserModelUpdateMeasurements(browserNumber)
 	
 	// Restore the original DF
@@ -281,72 +281,71 @@ Function BrowserModelRemoveWaves(base)
 	SetDataFolder savedDF
 End
 
-Function BrowserModelDoBaseSub(browserNumber)
-	// Perform baseline subtraction on $traceAWaveName and $traceBWaveName.
-	// Each wave's note says whether it has had the baseline subtracted, and also
-	// contains the baseline value for that wave.
-	Variable browserNumber
-	
-	// Switch the DF, note the former DF name
-	String savedDFName=ChangeToBrowserDF(browserNumber)
-
-	// Get DF vars we need
-	NVAR traceAChecked=traceAChecked
-	
-	String traceAWaveName=BrowserModelGetAWaveNameAbs(browserNumber)
-	WAVE theWave=$traceAWaveName
-	Variable basesubtracted, baseline
-	if ( traceAChecked && WaveExists($traceAWaveName) )
-		baseline=NumberByKeyInWaveNote(theWave,"BASELINE")
-		basesubtracted=NumberByKeyInWaveNote(theWave,"BASESUBTRACTED")
-	endif
-
-	String traceBWaveName=BrowserModelGetBWaveNameAbs(browserNumber)
-	ControlInfo basesub1
-	if ( (V_value>0) && WaveExists(traceBWaveName) )			// if baseline subtract is checked
-		 if (basesubtracted<1)							// but the baseline isn't subtracted
-			theWave -=  baseline							// subtract baseline
-			ReplaceStringByKeyInWaveNote($traceAWaveName,"BASESUBTRACTED","1")	// and note baseline subtracted
-		endif
-	else												// if baseline subtract is not checked
-		 if (basesubtracted>0)							// but the baseline is subtracted
-			theWave +=  baseline							// add back the baseline
-			ReplaceStringByKeyInWaveNote($traceAWaveName,"BASESUBTRACTED","0")	// and note baseline not subtracted
-		endif
-	endif
-
-	NVAR traceBChecked=traceBChecked
-	if ( traceBChecked && WaveExists(traceBWaveName) )
-		WAVE theWave=$traceBWaveName
-		baseline=NumberByKeyInWaveNote(theWave,"BASELINE")
-		basesubtracted=NumberByKeyInWaveNote(theWave,"BASESUBTRACTED")
-	endif
-
-	ControlInfo basesub2
-	if ( (V_value>0) && WaveExists(traceBWaveName) )				// if baseline subtract is checked
-		 if (basesubtracted<1)							// but the baseline isn't subtracted
-			theWave -=  baseline							// subtract baseline
-			ReplaceStringByKeyInWaveNote(theWave,"BASESUBTRACTED","1")	// and note baseline subtracted
-		endif
-	else												// if baseline subtract is not checked
-		 if (basesubtracted>0)							// but the baseline is subtracted
-			theWave +=  baseline							// add back the baseline
-			ReplaceStringByKeyInWaveNote(theWave,"BASESUBTRACTED","0")	// and note baseline not subtracted
-		endif
-	endif
-	
-	// Restore the original DF.
-	SetDataFolder savedDFName
-End
+//Function BrowserModelDoBaseSub(browserNumber)
+//	// Perform baseline subtraction on $traceAWaveName and $traceBWaveName.
+//	// Each wave's note says whether it has had the baseline subtracted, and also
+//	// contains the baseline value for that wave.
+//	Variable browserNumber
+//	
+//	// Switch the DF, note the former DF name
+//	String savedDFName=ChangeToBrowserDF(browserNumber)
+//
+//	// Get DF vars we need
+//	NVAR traceAChecked=traceAChecked
+//	
+//	String traceAWaveName=BrowserModelGetAWaveNameAbs(browserNumber)
+//	WAVE theWave=$traceAWaveName
+//	Variable basesubtracted, baseline
+//	if ( traceAChecked && WaveExists($traceAWaveName) )
+//		baseline=NumberByKeyInWaveNote(theWave,"BASELINE")
+//		basesubtracted=NumberByKeyInWaveNote(theWave,"BASESUBTRACTED")
+//	endif
+//
+//	String traceBWaveName=BrowserModelGetBWaveNameAbs(browserNumber)
+//	ControlInfo basesub1
+//	if ( (V_value>0) && WaveExists(traceBWaveName) )			// if baseline subtract is checked
+//		 if (basesubtracted<1)							// but the baseline isn't subtracted
+//			theWave -=  baseline							// subtract baseline
+//			ReplaceStringByKeyInWaveNote($traceAWaveName,"BASESUBTRACTED","1")	// and note baseline subtracted
+//		endif
+//	else												// if baseline subtract is not checked
+//		 if (basesubtracted>0)							// but the baseline is subtracted
+//			theWave +=  baseline							// add back the baseline
+//			ReplaceStringByKeyInWaveNote($traceAWaveName,"BASESUBTRACTED","0")	// and note baseline not subtracted
+//		endif
+//	endif
+//
+//	NVAR traceBChecked=traceBChecked
+//	if ( traceBChecked && WaveExists(traceBWaveName) )
+//		WAVE theWave=$traceBWaveName
+//		baseline=NumberByKeyInWaveNote(theWave,"BASELINE")
+//		basesubtracted=NumberByKeyInWaveNote(theWave,"BASESUBTRACTED")
+//	endif
+//
+//	ControlInfo basesub2
+//	if ( (V_value>0) && WaveExists(traceBWaveName) )				// if baseline subtract is checked
+//		 if (basesubtracted<1)							// but the baseline isn't subtracted
+//			theWave -=  baseline							// subtract baseline
+//			ReplaceStringByKeyInWaveNote(theWave,"BASESUBTRACTED","1")	// and note baseline subtracted
+//		endif
+//	else												// if baseline subtract is not checked
+//		 if (basesubtracted>0)							// but the baseline is subtracted
+//			theWave +=  baseline							// add back the baseline
+//			ReplaceStringByKeyInWaveNote(theWave,"BASESUBTRACTED","0")	// and note baseline not subtracted
+//		endif
+//	endif
+//	
+//	// Restore the original DF.
+//	SetDataFolder savedDFName
+//End
 
 Function BrowserModelUpdateMeasurements(browserNumber)
-	// Updates the values displayed in the Measure part of the Tools Panel to reflect the wave 
+	// This is a private model method.
+	// It updates the values displayed in the Measure part of the Tools Panel to reflect the wave 
 	// currently displayed in
 	// the DP Browser, given the current measurement parameters in the DF.
 	// This is essentially syncing the measured values (part of the model) to the rest of the model 
-	// (containing the waves and the measurement cursor positions).  The bindings between the 
-	// measured values and the various controls in the Measure panel view take care of updating the
-	// view to reflect the altered model.
+	// (containing the waves and the measurement cursor positions).
 	Variable browserNumber  // the index of the DP browser instance
 	
 	// Save the current data folder, change to this browser's DF
@@ -1241,7 +1240,6 @@ End
 Function BrowserModelSetBaseNameA(browserNumber,newValue)
 	Variable browserNumber
 	String newValue
-	BrowserModelUpdateMeasurements(browserNumber)
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 	SVAR baseNameA
 	baseNameA=newValue
@@ -1252,7 +1250,6 @@ End
 Function BrowserModelSetBaseNameB(browserNumber,newValue)
 	Variable browserNumber
 	String newValue
-	BrowserModelUpdateMeasurements(browserNumber)
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 	SVAR baseNameB
 	baseNameB=newValue
@@ -1262,10 +1259,9 @@ End
 
 Function BrowserModelSetLevel1(browserNumber,newValue)
 	Variable browserNumber
-	String newValue
-	BrowserModelUpdateMeasurements(browserNumber)
+	Variable newValue
 	String savedDFName=ChangeToBrowserDF(browserNumber)
-	SVAR level1
+	NVAR level1
 	level1=newValue
 	BrowserModelUpdateMeasurements(browserNumber)  
 	SetDataFolder savedDFName
@@ -1273,10 +1269,9 @@ End
 
 Function BrowserModelSetTo1(browserNumber,newValue)
 	Variable browserNumber
-	String newValue
-	BrowserModelUpdateMeasurements(browserNumber)
+	Variable newValue
 	String savedDFName=ChangeToBrowserDF(browserNumber)
-	SVAR to1
+	NVAR to1
 	to1=newValue
 	BrowserModelUpdateMeasurements(browserNumber)  
 	SetDataFolder savedDFName
@@ -1284,10 +1279,9 @@ End
 
 Function BrowserModelSetFrom1(browserNumber,newValue)
 	Variable browserNumber
-	String newValue
-	BrowserModelUpdateMeasurements(browserNumber)
+	Variable newValue
 	String savedDFName=ChangeToBrowserDF(browserNumber)
-	SVAR from1
+	NVAR from1
 	from1=newValue
 	BrowserModelUpdateMeasurements(browserNumber)  
 	SetDataFolder savedDFName
@@ -1295,10 +1289,9 @@ End
 
 Function BrowserModelSetTo2(browserNumber,newValue)
 	Variable browserNumber
-	String newValue
-	BrowserModelUpdateMeasurements(browserNumber)
+	Variable newValue
 	String savedDFName=ChangeToBrowserDF(browserNumber)
-	SVAR to2
+	NVAR to2
 	to2=newValue
 	BrowserModelUpdateMeasurements(browserNumber)  
 	SetDataFolder savedDFName
@@ -1306,11 +1299,30 @@ End
 
 Function BrowserModelSetFrom2(browserNumber,newValue)
 	Variable browserNumber
-	String newValue
-	BrowserModelUpdateMeasurements(browserNumber)
+	Variable newValue
 	String savedDFName=ChangeToBrowserDF(browserNumber)
-	SVAR from2
+	NVAR from2
 	from2=newValue
+	BrowserModelUpdateMeasurements(browserNumber)  
+	SetDataFolder savedDFName
+End
+
+Function BrowserModelSetTraceAChecked(browserNumber,newValue)
+	Variable browserNumber
+	Variable newValue
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	NVAR traceAChecked
+	traceAChecked=newValue
+	BrowserModelUpdateMeasurements(browserNumber)  
+	SetDataFolder savedDFName
+End
+
+Function BrowserModelSetTraceBChecked(browserNumber,newValue)
+	Variable browserNumber
+	Variable newValue
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	NVAR traceBChecked
+	traceBChecked=newValue
 	BrowserModelUpdateMeasurements(browserNumber)  
 	SetDataFolder savedDFName
 End

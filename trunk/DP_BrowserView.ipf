@@ -409,21 +409,13 @@ Function BrowserViewModelChanged(browserNumber)
 	PopupMenu traceAColorPopupMenu,win=$browserName,popmatch=colorNameA
 	PopupMenu traceBColorPopupMenu,win=$browserName,popmatch=colorNameB
 
-	// If either wave exists, do baseline subtraction
-	String traceAWaveNameAbs=BrowserModelGetAWaveNameAbs(browserNumber)
-	String traceBWaveNameAbs=BrowserModelGetBWaveNameAbs(browserNumber)
-	Variable waveAExists=WaveExists($traceAWaveNameAbs)
-	Variable waveBExists=WaveExists($traceBWaveNameAbs)
-	if (waveAExists || waveBExists)
-		BrowserModelDoBaseSub(browserNumber)
-	endif
-
-	// topTraceWaveName should be empty if no traces are showing
-	// same for comments
+	// comments should be empty if no traces are showing
 	String comments=""
 
 	// If it exists, add $traceBWaveNameAbs to the graph
 	Variable iColorB=WhichListItem(colorNameB,colorNameList)
+	String traceBWaveNameAbs=BrowserModelGetBWaveNameAbs(browserNumber)
+	Variable waveBExists=WaveExists($traceBWaveNameAbs)
 	if (traceBChecked && waveBExists)
 		AppendToGraph /W=$browserName /R /C=(colors[0][iColorB],colors[1][iColorB],colors[2][iColorB]) $traceBWaveNameAbs
 		comments=StringByKeyInWaveNote($traceBWaveNameAbs,"COMMENTS")
@@ -431,6 +423,8 @@ Function BrowserViewModelChanged(browserNumber)
 	
 	// If it exists, add $traceAWaveNameAbs to the graph	
 	Variable iColorA=WhichListItem(colorNameA,colorNameList)
+	String traceAWaveNameAbs=BrowserModelGetAWaveNameAbs(browserNumber)
+	Variable waveAExists=WaveExists($traceAWaveNameAbs)
 	if (traceAChecked && waveAExists)
 		AppendToGraph /W=$browserName /C=(colors[0][iColorA],colors[1][iColorA],colors[2][iColorA]) $traceAWaveNameAbs
 		comments=StringByKeyInWaveNote($traceAWaveNameAbs,"COMMENTS")
@@ -448,6 +442,40 @@ Function BrowserViewModelChanged(browserNumber)
 		Cursor /W=$browserName B $topTraceWaveNameRel tCursorB
 	endif
 	
+	// Update the rejection box to reflect the reject-status of each wave 
+	BrowserViewUpdateRejectCBs(browserNumber)
+	
+	// Update the "Step" ValDisplays
+	Variable step
+	if (waveAExists && traceAChecked)
+		step=NumberByKeyInWaveNote($traceAWaveNameAbs,"STEP")
+	else
+		step=NaN;
+	endif
+	ValDisplay stepAValDisplay,win=$browserName,value=_NUM:step
+	WhiteOutIffNan("stepAValDisplay",browserName,step)
+	if (waveBExists && traceBChecked)
+		step=NumberByKeyInWaveNote($traceBWaveNameAbs,"STEP")
+	else
+		step=NaN;
+	endif
+	ValDisplay stepBValDisplay,win=$browserName,value=_NUM:step
+	WhiteOutIffNan("stepBValDisplay",browserName,step)
+	
+	// If there is one or more trace in the graph, make sure the axes of the graph are
+	// consistent with the autoscaling checkboxes, and turn on horizontal grid lines.
+	String topTraceWaveNameAbs=BrowserModelGetTopWaveNameAbs(browserNumber)
+	if (ItemsInList(TraceNameList(browserName,";",1))>0)
+		BrowserViewUpdateAxesLimits(browserNumber)  // Scale the axes properly, based on the model state
+		if (cmpstr(topTraceWaveNameAbs,traceAWaveNameAbs)==0)
+			ModifyGraph /W=$browserName /Z grid(left)=1
+			ModifyGraph /W=$browserName /Z gridRGB(left)=(0,0,0)
+		elseif (cmpstr(topTraceWaveNameAbs,traceBWaveNameAbs)==0)
+			ModifyGraph /W=$browserName /Z grid(right)=1
+			ModifyGraph /W=$browserName /Z gridRGB(right)=(0,0,0)
+		endif
+	endif
+
 	// Draw the vertical lines
 	if (showToolsChecked && ( (traceAChecked && waveAExists) || (traceBChecked && waveBExists) ) )
 		if (IsFinite(tBaselineLeft))
@@ -479,40 +507,6 @@ Function BrowserViewModelChanged(browserNumber)
 		endif
 	endif
 	
-	// Update the rejection box to reflect the reject-status of each wave 
-	BrowserViewUpdateRejectCBs(browserNumber)
-	
-	// Update the "Step" ValDisplays
-	Variable step
-	if (waveAExists && traceAChecked)
-		step=NumberByKeyInWaveNote($traceAWaveNameAbs,"STEP")
-	else
-		step=NaN;
-	endif
-	ValDisplay stepAValDisplay,win=$browserName,value=_NUM:step
-	WhiteOutIffNan("stepAValDisplay",browserName,step)
-	if (waveBExists && traceBChecked)
-		step=NumberByKeyInWaveNote($traceBWaveNameAbs,"STEP")
-	else
-		step=NaN;
-	endif
-	ValDisplay stepBValDisplay,win=$browserName,value=_NUM:step
-	WhiteOutIffNan("stepBValDisplay",browserName,step)
-	
-	// If there is one or more trace in the graph, make sure the axes of the graph are
-	// consistent with the autoscaling checkboxes, and turn on horizontal grid lines.
-	String topTraceWaveNameAbs=BrowserModelGetTopWaveNameAbs(browserNumber)
-	if (ItemsInList(TraceNameList(browserName,";",1))>0)
-		BrowserViewRescaleAxes(browserNumber)  // Scale the axes properly, based on the model state
-		if (cmpstr(topTraceWaveNameAbs,traceAWaveNameAbs)==0)
-			ModifyGraph /W=$browserName /Z grid(left)=1
-			ModifyGraph /W=$browserName /Z gridRGB(left)=(0,0,0)
-		elseif (cmpstr(topTraceWaveNameAbs,traceBWaveNameAbs)==0)
-			ModifyGraph /W=$browserName /Z grid(right)=1
-			ModifyGraph /W=$browserName /Z gridRGB(right)=(0,0,0)
-		endif
-	endif
-
 	// Set axis labels on the graph
 	Label /W=$browserName /Z bottom "\\F'Helvetica'\\Z12\\f01Time (ms)"
 	if (waveAExists)
@@ -760,23 +754,23 @@ Function BrowserViewSetFitCoeffVis(browserNumber,visible)
 	SetDataFolder savedDFName
 End
 
-Function BrowserViewRescaleAxes(browserNumber)
-	// In the indicated DPBrowser, configures the scaling of the graph axes based on 
-	// the autoscale settings (as reflected in the model), and the axis limits
+Function BrowserViewUpdateAxesLimits(browserNumber)
+	// Set the limits of the graph axes based on 
+	// the autoscale settings and the axis limits stored in the model.
 	Variable browserNumber
 
 	// Set up access to the DF vars we need
-	NVAR traceAChecked=traceAChecked
-	NVAR traceBChecked=traceBChecked	
-	NVAR yAMin=yAMin
-	NVAR yAMax=yAMax
-	NVAR yBMin=yBMin
-	NVAR yBMax=yBMax	
-	NVAR xMin=xMin
-	NVAR xMax=xMax
-	NVAR xAutoscaling=xAutoscaling
-	NVAR yAAutoscaling=yAAutoscaling
-	NVAR yBAutoscaling=yBAutoscaling
+	NVAR traceAChecked
+	NVAR traceBChecked	
+	NVAR yAMin
+	NVAR yAMax
+	NVAR yBMin
+	NVAR yBMax	
+	NVAR xMin
+	NVAR xMax
+	NVAR xAutoscaling
+	NVAR yAAutoscaling
+	NVAR yBAutoscaling
 	
 	// Change to the DF of the indicated DPBrowser
 	String savedDF=ChangeToBrowserDF(browserNumber)
@@ -788,6 +782,7 @@ Function BrowserViewRescaleAxes(browserNumber)
 	if (traceAChecked)
 		if (yAAutoscaling)
 			Setaxis /W=$browserName /Z /A left  // autoscale the left y axis
+			// Calling SetAxis calls the hook function to be invoked, which updates yAMin, yAMax
 		else
 			Setaxis /W=$browserName /Z left yAMin, yAMax  // set the y axis to have the limits it currently has
 		endif
@@ -797,6 +792,7 @@ Function BrowserViewRescaleAxes(browserNumber)
 	if (traceBChecked)
 		if (yBAutoscaling)
 			Setaxis /W=$browserName /Z /A right  // autoscale the right y axis
+			// Calling SetAxis calls the hook function to be invoked, which updates yBMin, yBMax
 		else
 			Setaxis /W=$browserName /Z right yBMin, yBMax  // set the y axis to have the limits it currently has
 		endif
