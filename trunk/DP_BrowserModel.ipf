@@ -1234,7 +1234,7 @@ Function BrowserModelSetDtFitExtend(browserNumber,newValue)
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 	NVAR dtFitExtend
 	dtFitExtend=newValue
-	BrowserModelUpdateFit(browserNumber)  // model method
+	BrowserModelUpdateFit(browserNumber)  
 	SetDataFolder savedDFName
 End
 
@@ -1245,7 +1245,7 @@ Function BrowserModelSetBaseNameA(browserNumber,newValue)
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 	SVAR baseNameA
 	baseNameA=newValue
-	BrowserModelUpdateMeasurements(browserNumber)  // model method
+	BrowserModelUpdateMeasurements(browserNumber)  
 	SetDataFolder savedDFName
 End
 
@@ -1256,6 +1256,64 @@ Function BrowserModelSetBaseNameB(browserNumber,newValue)
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 	SVAR baseNameB
 	baseNameB=newValue
-	BrowserModelUpdateMeasurements(browserNumber)  // model method
+	BrowserModelUpdateMeasurements(browserNumber)  
 	SetDataFolder savedDFName
 End
+
+Function BrowserModelSetLevel1(browserNumber,newValue)
+	Variable browserNumber
+	String newValue
+	BrowserModelUpdateMeasurements(browserNumber)
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	SVAR level1
+	level1=newValue
+	BrowserModelUpdateMeasurements(browserNumber)  
+	SetDataFolder savedDFName
+End
+
+Function BrowserModelSetTo1(browserNumber,newValue)
+	Variable browserNumber
+	String newValue
+	BrowserModelUpdateMeasurements(browserNumber)
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	SVAR to1
+	to1=newValue
+	BrowserModelUpdateMeasurements(browserNumber)  
+	SetDataFolder savedDFName
+End
+
+Function BrowserModelSetFrom1(browserNumber,newValue)
+	Variable browserNumber
+	String newValue
+	BrowserModelUpdateMeasurements(browserNumber)
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	SVAR from1
+	from1=newValue
+	BrowserModelUpdateMeasurements(browserNumber)  
+	SetDataFolder savedDFName
+End
+
+Function BrowserModelSetTo2(browserNumber,newValue)
+	Variable browserNumber
+	String newValue
+	BrowserModelUpdateMeasurements(browserNumber)
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	SVAR to2
+	to2=newValue
+	BrowserModelUpdateMeasurements(browserNumber)  
+	SetDataFolder savedDFName
+End
+
+Function BrowserModelSetFrom2(browserNumber,newValue)
+	Variable browserNumber
+	String newValue
+	BrowserModelUpdateMeasurements(browserNumber)
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	SVAR from2
+	from2=newValue
+	BrowserModelUpdateMeasurements(browserNumber)  
+	SetDataFolder savedDFName
+End
+
+
+
