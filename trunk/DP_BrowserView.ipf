@@ -51,23 +51,23 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	
 	Variable yBaselineForTraceA=7
 	Variable yBaselineForTraceB=30
-	absVarName=AbsoluteVarName(browserDFName,"traceAChecked")
+	NVAR traceAChecked
 	CheckBox showTraceACheckbox,win=$browserName,pos={125,yBaselineForTraceA},size={39,14}
-	CheckBox showTraceACheckbox,win=$browserName,proc=BrowserContShowTraceCB,title="Tr.A",value= 1
-	CheckBox showTraceACheckbox,win=$browserName,variable=$absVarName
+	CheckBox showTraceACheckbox,win=$browserName,proc=BrowserContShowTraceACB,title="Tr.A",value= 1
+	CheckBox showTraceACheckbox,win=$browserName,value=traceAChecked
 	
-	absVarName=AbsoluteVarName(browserDFName,"traceBChecked")
+	NVAR traceBChecked
 	CheckBox showTraceBCheckbox,win=$browserName,pos={125,yBaselineForTraceB},size={39,14}
-	CheckBox showTraceBCheckbox,win=$browserName,proc=BrowserContShowTraceCB,title="Tr.B",value= 0
-	CheckBox showTraceBCheckbox,win=$browserName,variable=$absVarName
+	CheckBox showTraceBCheckbox,win=$browserName,proc=BrowserContShowTraceBCB,title="Tr.B",value= 0
+	CheckBox showTraceBCheckbox,win=$browserName,value=traceBChecked
 	
-	absVarName=AbsoluteVarName(browserDFName,"baseNameA")
-	SetVariable bnameset_1,win=$browserName,pos={176,yBaselineForTraceA},size={80,14},proc=BrowserContBaseNameSV,title="Name"
-	SetVariable bnameset_1,win=$browserName,value=$absVarName
+	SVAR baseNameA
+	SetVariable bnameset_1,win=$browserName,pos={176,yBaselineForTraceA},size={80,14},proc=BrowserContBaseNameASV,title="Name"
+	SetVariable bnameset_1,win=$browserName,value= _STR:baseNameA
 	
-	absVarName=AbsoluteVarName(browserDFName,"baseNameB")
-	SetVariable bnameset_2,win=$browserName,pos={176,yBaselineForTraceB},size={80,14},proc=BrowserContBaseNameSV,title="Name"
-	SetVariable bnameset_2,win=$browserName,value=$absVarName
+	SVAR baseNameB
+	SetVariable bnameset_2,win=$browserName,pos={176,yBaselineForTraceB},size={80,14},proc=BrowserContBaseNameBSV,title="Name"
+	SetVariable bnameset_2,win=$browserName,value= _STR:baseNameB
 		
 	// This kind of color popup doesn't work in a ControlBar, seemingly...
 	//PopupMenu traceAColorPopupMenu,pos={262,yBaselineForTraceA},size={96,20},proc=ColorPopMenuProc,title="color:"
@@ -166,20 +166,17 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	ValDisplay rise1ValDisplay,win=$panelName,value= #absVarName
 	TitleBox rise1UnitsTitleBox,win=$panelName,pos={115+105+3,yOffset+38+2},frame=0
 
-	absVarName=AbsoluteVarName(browserDFName,"from1")
-	SetVariable from_disp1,win=$panelName,pos={54,yOffset+61},size={80,17},proc=BrowserContMeasurementSV,title="From"
-	SetVariable from_disp1,win=$panelName,limits={0,100,10},value=$absVarName
+	SetVariable from1SV,win=$panelName,pos={54,yOffset+61},size={80,17},proc=BrowserContMeasurementSV,title="From"
+	SetVariable from1SV,win=$panelName,limits={0,100,10},value= _NUM:from1
 	TitleBox from1UnitsTitleBox,win=$panelName,pos={137,yOffset+61+2},frame=0, title="%"
 
-	absVarName=AbsoluteVarName(browserDFName,"to1")
-	SetVariable to_disp1,win=$panelName,pos={154,yOffset+61},size={66,17},proc=BrowserContMeasurementSV,title="To"
-	SetVariable to_disp1,win=$panelName,limits={0,100,10},value=$absVarName
+	SetVariable to1SV,win=$panelName,pos={154,yOffset+61},size={66,17},proc=BrowserContMeasurementSV,title="To"
+	SetVariable to1SV,win=$panelName,limits={0,100,10},value= _NUM:to1
 	TitleBox to1UnitsTitleBox,win=$panelName,pos={223,yOffset+61+2},frame=0, title="%"
 	
-	absVarName=AbsoluteVarName(browserDFName,"lev1")
-	SetVariable levelSetVariable,win=$panelName,pos={18,yOffset-61+145},size={80,17}
-	SetVariable levelSetVariable,win=$panelName,proc=BrowserContMeasurementSV,title="Level"
-	SetVariable levelSetVariable,win=$panelName,limits={-100,100,10},format="%4.2f",value=$absVarName
+	SetVariable level1SV,win=$panelName,pos={18,yOffset-61+145},size={80,17}
+	SetVariable level1SV,win=$panelName,proc=BrowserContMeasurementSV,title="Level"
+	SetVariable level1SV,win=$panelName,limits={-100,100,10},format="%4.2f",value= _NUM:level1
 	
 	absVarName=AbsoluteVarName(browserDFName,"nCrossings1")
 	ValDisplay cross1ValDisplay,win=$panelName,pos={110,yOffset-61+145},size={110,17},title="No. Crossings:"
@@ -209,13 +206,13 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	TitleBox rise2UnitsTitleBox,win=$panelName,pos={115+105+3,yOffset+38+2},frame=0
 	
 	absVarName=AbsoluteVarName(browserDFName,"from2")
-	SetVariable from_disp2,win=$panelName,pos={54,yOffset+61},size={80,17},proc=BrowserContMeasurementSV,title="From"
-	SetVariable from_disp2,win=$panelName,limits={0,100,10},value=$absVarName
+	SetVariable from2SV,win=$panelName,pos={54,yOffset+61},size={80,17},proc=BrowserContMeasurementSV,title="From"
+	SetVariable from2SV,win=$panelName,limits={0,100,10},value= _NUM:from2
 	TitleBox from2UnitsTitleBox,win=$panelName,pos={137,yOffset+61+2},frame=0, title="%"
 
 	absVarName=AbsoluteVarName(browserDFName,"to2")
-	SetVariable to_disp2,win=$panelName,pos={154,yOffset+61},size={66,17},proc=BrowserContMeasurementSV,title="To"
-	SetVariable to_disp2,win=$panelName,limits={0,100,10},value=$absVarName
+	SetVariable to2SV,win=$panelName,pos={154,yOffset+61},size={66,17},proc=BrowserContMeasurementSV,title="To"
+	SetVariable to2SV,win=$panelName,limits={0,100,10},value= _NUM:to2
 	TitleBox to2UnitsTitleBox,win=$panelName,pos={223,yOffset+61+2},frame=0, title="%"
 
 	// Horizontal rule
@@ -535,25 +532,17 @@ Function BrowserViewModelChanged(browserNumber)
 
 	// Show/hide the tools panel, as appropriate to the state	
 	if (showToolsChecked) 
-		if (ToolsPanelExists(browserNumber))
-			BrowserViewUpdateToolsPanel(browserNumber)
-		else
+		if ( !ToolsPanelExists(browserNumber) )
 			BrowserViewDrawToolsPanel(browserNumber)
 		endif
 	else
-		if (ToolsPanelExists(browserNumber))
+		if ( ToolsPanelExists(browserNumber) )
 			KillToolsPanel(browserNumber)
 		endif
 	endif
 	
-	// Update the view of the measurements
-	BrowserViewUpdateMeasurements(browserNumber)
-	
-	// Update the visibility of the fit
-	BrowserViewUpdateFitDisplay(browserNumber)
-
-	// Update the visibility of stuff in the averaging pane
-	BrowserViewUpdateAveraging(browserNumber)
+	// Update the tools panel
+	BrowserViewUpdateToolsPanel(browserNumber)
 	
 	// Restore old data folder
 	SetDataFolder savedDFName
@@ -597,15 +586,17 @@ Function BrowserViewAddCursorLineToGraph(graphName,cursorWaveName,tCursor,r,g,b)
 	Variable r,g,b  // the color
 	
 	// Go through a lot of trouble to find the y span of the cursor	
-	SVAR baseNameA=baseNameA
-	SVAR baseNameB=baseNameB
-	NVAR iCurrentSweep=iCurrentSweep
+	SVAR baseNameA
+	SVAR baseNameB
+	NVAR iCurrentSweep
+	NVAR traceAChecked
+	NVAR traceBChecked
 		
 	// Get the max and min of wave A trace
 	String traceAWaveName=sprintf2sv("root:%s_%d", baseNameA, iCurrentSweep)
 	Variable waveAExists=WaveExists($traceAWaveName)
 	Variable yAMin, yAMax
-	if (waveAExists)
+	if (waveAExists && traceAChecked)
 		WaveStats /Q $traceAWaveName
 		yAMax=V_max
 		yAMin=V_min
@@ -618,7 +609,7 @@ Function BrowserViewAddCursorLineToGraph(graphName,cursorWaveName,tCursor,r,g,b)
 	String traceBWaveName=sprintf2sv("root:%s_%d", baseNameB, iCurrentSweep)
 	Variable waveBExists=WaveExists($traceBWaveName)		
 	Variable yBMin, yBMax
-	if (waveBExists)
+	if (waveBExists  && traceBChecked)
 		WaveStats /Q $traceBWaveName
 		yBMax=V_max
 		yBMin=V_min
@@ -630,25 +621,105 @@ Function BrowserViewAddCursorLineToGraph(graphName,cursorWaveName,tCursor,r,g,b)
 	// Get the overall yMin, yMax
 	Variable yMin=min(yAMin,yBMin)
 	Variable yMax=max(yAMax,yBMax)
-	
-	if (NumType(yMin)!=0)  // is yMin a normal number (non-inf)?
+	if ( !IsFinite(yMin) )  // is yMin a normal number (non-inf)?
 		yMin=-1
 	endif
-	if (NumType(yMax)!=0)  // is yMax a normal number (non-inf)?
+	if ( !IsFinite(yMax) )  // is yMax a normal number (non-inf)?
 		yMax=+1
 	endif
+
+	// Remove the wave from the graph if it's already present
+	SVAR cursorWaveList
+	RemoveFromGraph /Z /W=$graphName $cursorWaveName  // remove if already present
+	cursorWaveList=RemoveFromList(cursorWaveName,cursorWaveList)
+	KillWaves /Z $cursorWaveName
 	
-	// Now that yMin and yMax are determined, draw the cursors
-	Make /O /N=2 $cursorWaveName ={yMin,yMax}
-	Setscale /I x, tCursor, tCursor+1e-6, "ms", $cursorWaveName
-	String windowSpec=sprintf1s("WIN:%s",graphName)
-	SVAR cursorWaveList=cursorWaveList
-	if (ItemsInList(WaveList(cursorWaveName,";",windowSpec))>0)
-		RemoveFromGraph /W=$graphName $cursorWaveName  // remove if already present
-		cursorWaveList=RemoveFromList(cursorWaveName,cursorWaveList)
+	// Make the wave, if there's a place to put it, and add it to the cursor list
+	if (traceAChecked || traceBChecked)
+		// Make the wave
+		Make /O /N=2 $cursorWaveName ={yMin,yMax}
+		Setscale /I x, tCursor, tCursor+1e-6, "ms", $cursorWaveName
+		// Add the wave to the appropriate axis
+		if (traceAChecked)
+			AppendToGraph /W=$graphName /C=(r,g,b) /L $cursorWaveName
+		else
+			AppendToGraph /W=$graphName /C=(r,g,b) /R $cursorWaveName
+		endif
+		cursorWaveList=AddListItem(cursorWaveName,cursorWaveList)
 	endif
-	AppendToGraph /W=$graphName /C=(r,g,b) $cursorWaveName
-	cursorWaveList=AddListItem(cursorWaveName,cursorWaveList)
+End
+
+Function BrowserViewUpdateCursorLines(browserNumber)
+	Variable browserNumber
+
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+
+	SVAR baseNameA
+	SVAR baseNameB
+	NVAR iCurrentSweep
+	NVAR traceAChecked
+	NVAR traceBChecked
+		
+	// Get the graph name
+	String graphName=BrowserNameFromNumber(browserNumber)	
+		
+	// Get the max and min of wave A trace
+	String traceAWaveName=sprintf2sv("root:%s_%d", baseNameA, iCurrentSweep)
+	Variable waveAExists=WaveExists($traceAWaveName)
+	Variable yAMin, yAMax
+	if (waveAExists && traceAChecked)
+		WaveStats /Q $traceAWaveName
+		yAMax=V_max
+		yAMin=V_min
+	else
+		yAMin=+inf
+		yAMax=-inf
+	endif
+
+	// Get the max and min of wave B trace
+	String traceBWaveName=sprintf2sv("root:%s_%d", baseNameB, iCurrentSweep)
+	Variable waveBExists=WaveExists($traceBWaveName)		
+	Variable yBMin, yBMax
+	if (waveBExists  && traceBChecked)
+		WaveStats /Q $traceBWaveName
+		yBMax=V_max
+		yBMin=V_min
+	else
+		yBMin=+inf
+		yBMax=-inf
+	endif
+			
+	// Get the overall yMin, yMax
+	Variable yMin=min(yAMin,yBMin)
+	Variable yMax=max(yAMax,yBMax)
+	if ( !IsFinite(yMin) )  // is yMin a normal number (non-inf)?
+		yMin=-1
+	endif
+	if ( !IsFinite(yMax) )  // is yMax a normal number (non-inf)?
+		yMax=+1
+	endif
+
+	// For each cursor line, go through and update it
+	SVAR cursorWaveList
+	Variable nLines=ItemsInList(cursorWaveList)
+	Variable i
+	for (i=0; i<nLines; i+=1)
+		String thisWaveName=StringFromList(i,cursorWaveList)
+		Wave thisWave=$thisWaveName
+		RemoveFromGraph /Z /W=$graphName $thisWaveName  // remove if already present
+		thisWave[0]=yMin
+		thisWave[1]=yMax		
+		// Add the wave to the appropriate axis
+		if (traceAChecked)
+			//AppendToGraph /W=$graphName /C=(r,g,b) /L $thisWaveName
+			AppendToGraph /W=$graphName /L $thisWaveName
+		else
+			//AppendToGraph /W=$graphName /C=(r,g,b) /R $thisWaveName
+			AppendToGraph /W=$graphName /L $thisWaveName
+		endif
+	endfor
+	
+	SetDataFolder savedDFName
 End
 
 Function BrowserViewSetFitCoeffVis(browserNumber,visible)
@@ -682,6 +753,8 @@ Function BrowserViewSetFitCoeffVis(browserNumber,visible)
 		ValDisplay tau2ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
 		ValDisplay amp2ValDisplay, win=$browserName#ToolsPanel, valueColor=(65535,65535,65535)
 	endif
+	
+	SetDataFolder savedDFName
 End
 
 Function BrowserViewRescaleAxes(browserNumber)
@@ -818,6 +891,7 @@ Function BrowserViewUpdateFitDisplay(browserNumber)
 	NVAR isFitValid  // boolean
 	SVAR waveNameAbsOfFitTrace
 	NVAR yOffsetHeldValue
+	NVAR traceAChecked
 
 	// Add or remove yFit to the browserWindow, as needed
 	// Also show/hide the fit coefficients, depending on many factors
@@ -836,7 +910,11 @@ Function BrowserViewUpdateFitDisplay(browserNumber)
 					// the displayed trace is the one the fit applies to
 					// Ensure that yFit is displayed
 					if (ItemsInList(WaveList("yFit",";",windowSpec))==0)
-						AppendToGraph /W=$browserName yFit
+						if (traceAChecked)
+							AppendToGraph /W=$browserName /L yFit
+						else
+							AppendToGraph /W=$browserName /R yFit
+						endif
 					endif
 					// show the fit parameters
 					BrowserViewSetFitCoeffVis(browserNumber,1)					

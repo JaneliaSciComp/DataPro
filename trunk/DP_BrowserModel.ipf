@@ -60,7 +60,7 @@ Function BrowserModelConstructor()
 	Variable /G tWindow2Right=nan
 	Variable /G from1=10, to1=90	// these are parameters
 	Variable /G from2=90, to2=10
-	Variable /G lev1=0  // this is a param
+	Variable /G level1=0  // this is a param
 	Variable /G baseline=nan, mean1=nan, peak1=nan, rise1=nan  	// these are statistics
 	Variable /G nCrossings1=nan
 	Variable /G mean2=nan, peak2=nan, rise2=nan
@@ -359,7 +359,7 @@ Function BrowserModelUpdateMeasurements(browserNumber)
 	NVAR tWindow2Left, tWindow2Right
 	NVAR to1, from1
 	NVAR to2, from2
-	NVAR lev1
+	NVAR level1
 	// outputs of the measurement process
 	NVAR baseline, mean1, peak1, rise1
 	NVAR mean2, peak2, rise2
@@ -386,7 +386,7 @@ Function BrowserModelUpdateMeasurements(browserNumber)
 				peak1=V_max-baseline	
 			endif
 			rise1=RiseTime(thisWave,tWindow1Left,tWindow1Right,baseline,peak1,from1/100,to1/100)
-			nCrossings1=CountThresholdCrossings(topTraceWaveName, tWindow1Left, tWindow1Right, lev1)
+			nCrossings1=CountThresholdCrossings(topTraceWaveName, tWindow1Left, tWindow1Right, level1)
 		else
 			mean1=NaN
 			peak1=NaN
@@ -1235,5 +1235,27 @@ Function BrowserModelSetDtFitExtend(browserNumber,newValue)
 	NVAR dtFitExtend
 	dtFitExtend=newValue
 	BrowserModelUpdateFit(browserNumber)  // model method
+	SetDataFolder savedDFName
+End
+
+Function BrowserModelSetBaseNameA(browserNumber,newValue)
+	Variable browserNumber
+	String newValue
+	BrowserModelUpdateMeasurements(browserNumber)
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	SVAR baseNameA
+	baseNameA=newValue
+	BrowserModelUpdateMeasurements(browserNumber)  // model method
+	SetDataFolder savedDFName
+End
+
+Function BrowserModelSetBaseNameB(browserNumber,newValue)
+	Variable browserNumber
+	String newValue
+	BrowserModelUpdateMeasurements(browserNumber)
+	String savedDFName=ChangeToBrowserDF(browserNumber)
+	SVAR baseNameB
+	baseNameB=newValue
+	BrowserModelUpdateMeasurements(browserNumber)  // model method
 	SetDataFolder savedDFName
 End
