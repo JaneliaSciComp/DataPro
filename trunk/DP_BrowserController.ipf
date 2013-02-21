@@ -145,53 +145,55 @@ Function BrowserContDtFitExtendSV(svStruct) : SetVariableControl
 	BrowserViewModelChanged(browserNumber)	
 End
 
-Function BrowserContBaseNameSV(svStruct) : SetVariableControl
+Function BrowserContBaseNameASV(svStruct) : SetVariableControl
 	// Called when the user changes the trace name in the control.
 	STRUCT WMSetVariableAction &svStruct	
 	if ( svStruct.eventCode!=2 && svStruct.eventCode!=3 && svStruct.eventCode!=6 ) 
 		return 0
-	endif	
+	endif
 	String browserName=svStruct.win
 	Variable browserNumber=BrowserNumberFromName(browserName)
-	BrowserModelUpdateMeasurements(browserNumber)
+	BrowserModelSetBaseNameA(browserNumber,svStruct.sval)
 	BrowserViewModelChanged(browserNumber)
 End
 
-Function BrowserContShowTraceCB(cbStruct) : CheckBoxControl
-	// This is called when the user checks/unchecks the "tr.A" or "tr.B" checkboxes in a
-	// DPBrowser window.  Currently, this automatically changes the DF state variables.
+Function BrowserContBaseNameBSV(svStruct) : SetVariableControl
+	// Called when the user changes the trace name in the control.
+	STRUCT WMSetVariableAction &svStruct	
+	if ( svStruct.eventCode!=2 && svStruct.eventCode!=3 && svStruct.eventCode!=6 ) 
+		return 0
+	endif
+	String browserName=svStruct.win
+	Variable browserNumber=BrowserNumberFromName(browserName)
+	BrowserModelSetBaseNameB(browserNumber,svStruct.sval)
+	BrowserViewModelChanged(browserNumber)
+End
+
+Function BrowserContShowTraceACB(cbStruct) : CheckBoxControl
+	// This is called when the user checks/unchecks the "tr.A" checkbox in a
+	// DPBrowser window.
 	STRUCT WMCheckboxAction &cbStruct
 	if (cbStruct.eventCode!=2)
 		return 0							// we only handle mouse up in control
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
-	BrowserModelUpdateMeasurements(browserNumber)
+	BrowserModelSetTraceAChecked(browserNumber,cbStruct.checked)
+	//BrowserModelUpdateMeasurements(browserNumber)
 	BrowserViewModelChanged(browserNumber)
 End
 
-//Function SetTraceAChecked(browserNumber,checked)
-//	// Called to check/uncheck the trace A checkbox programmatically
-//	Variable browserNumber, checked
-//
-//	String savedDF=ChangeToBrowserDF(browserNumber)
-//	NVAR traceAChecked
-//	traceAChecked=checked	
-//	BrowserModelUpdateMeasurements(browserNumber)
-//	BrowserViewModelChanged(browserNumber)
-//	SetDataFolder savedDF
-//End
-
-//Function SetTraceBChecked(browserNumber,checked)
-//	// Called to check/uncheck the trace B checkbox programmatically
-//	Variable browserNumber, checked
-//
-//	String savedDF=ChangeToBrowserDF(browserNumber)
-//	NVAR traceBChecked
-//	traceBChecked=checked	
-//	BrowserModelUpdateMeasurements(browserNumber)
-//	BrowserViewModelChanged(browserNumber)
-//	SetDataFolder savedDF
-//End
+Function BrowserContShowTraceBCB(cbStruct) : CheckBoxControl
+	// This is called when the user checks/unchecks the "tr.B" checkbox in a
+	// DPBrowser window.
+	STRUCT WMCheckboxAction &cbStruct
+	if (cbStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif	
+	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
+	BrowserModelSetTraceBChecked(browserNumber,cbStruct.checked)
+	//BrowserModelUpdateMeasurements(browserNumber)
+	BrowserViewModelChanged(browserNumber)
+End
 
 Function BrowserContRejectTraceACB(cbStruct) : CheckBoxControl
 	STRUCT WMCheckboxAction &cbStruct
@@ -309,7 +311,9 @@ Function BrowserContMeasurementSV(svStruct) : SetVariableControl
 		return 0
 	endif	
 	Variable browserNumber=BrowserNumberFromName(svStruct.win)
-	BrowserModelUpdateMeasurements(browserNumber)
+	Variable controlName=svStruct.ctrlName
+	Variable variableName=controlName[0,strlen(controlName)-3]	// Chop off "SV"
+	BrowserModelSetMeasurementVariable(browserNumber,variableName,svStruct.dval)
 	BrowserViewModelChanged(browserNumber)
 End
 
