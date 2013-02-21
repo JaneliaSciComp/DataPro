@@ -302,18 +302,53 @@ Function BrowserContClearWindow1Button(bStruct) : ButtonControl
 	BrowserViewModelChanged(browserNumber)
 End
 
-Function BrowserContMeasurementSV(svStruct) : SetVariableControl
-	// This is a generic handler for several of the measurement sub-panel
-	// SetVariables.  It simply updates the measurements in the model and
-	// syncs the view.
+Function BrowserContLevel1SV(svStruct) : SetVariableControl
 	STRUCT WMSetVariableAction &svStruct	
 	if ( svStruct.eventCode==-1 ) 
 		return 0
 	endif	
 	Variable browserNumber=BrowserNumberFromName(svStruct.win)
-	Variable controlName=svStruct.ctrlName
-	Variable variableName=controlName[0,strlen(controlName)-3]	// Chop off "SV"
-	BrowserModelSetMeasurementVariable(browserNumber,variableName,svStruct.dval)
+	BrowserModelSetLevel1(browserNumber,svStruct.dval)
+	BrowserViewModelChanged(browserNumber)
+End
+
+Function BrowserContTo1SV(svStruct) : SetVariableControl
+	STRUCT WMSetVariableAction &svStruct	
+	if ( svStruct.eventCode==-1 ) 
+		return 0
+	endif	
+	Variable browserNumber=BrowserNumberFromName(svStruct.win)
+	BrowserModelSetTo1(browserNumber,svStruct.dval)
+	BrowserViewModelChanged(browserNumber)
+End
+
+Function BrowserContFrom1SV(svStruct) : SetVariableControl
+	STRUCT WMSetVariableAction &svStruct	
+	if ( svStruct.eventCode==-1 ) 
+		return 0
+	endif	
+	Variable browserNumber=BrowserNumberFromName(svStruct.win)
+	BrowserModelSetFrom1(browserNumber,svStruct.dval)
+	BrowserViewModelChanged(browserNumber)
+End
+
+Function BrowserContTo2SV(svStruct) : SetVariableControl
+	STRUCT WMSetVariableAction &svStruct	
+	if ( svStruct.eventCode==-1 ) 
+		return 0
+	endif	
+	Variable browserNumber=BrowserNumberFromName(svStruct.win)
+	BrowserModelSetTo2(browserNumber,svStruct.dval)
+	BrowserViewModelChanged(browserNumber)
+End
+
+Function BrowserContFrom2SV(svStruct) : SetVariableControl
+	STRUCT WMSetVariableAction &svStruct	
+	if ( svStruct.eventCode==-1 ) 
+		return 0
+	endif	
+	Variable browserNumber=BrowserNumberFromName(svStruct.win)
+	BrowserModelSetFrom2(browserNumber,svStruct.dval)
 	BrowserViewModelChanged(browserNumber)
 End
 
@@ -439,20 +474,6 @@ Function BrowserContYOffsetHeldValueSV(svStruct) : SetVariableControl
 	BrowserModelSetYOffsetHeldValue(browserNumber,svStruct.dval)
 	BrowserViewModelChanged(browserNumber)	
 End
-
-//Function SweepIndexChangedInView(browserNumber,sweepIndexInView)
-//	// Tell the controller that the sweep index has been changed in the view.
-//	Variable browserNumber, sweepIndexInView
-//
-//	// Change to the right DF
-//	String savedDFName=ChangeToBrowserDF(browserNumber)
-//	
-//	// Set the sweep in the "model"
-//	BrowserModelSetNextSweepIndex(browserNumber,sweepIndexInView)
-//	
-//	// Restore the original DF
-//	SetDataFolder savedDFName	
-//End
 
 Function BrowserContRescaleCB(cbStruct) : CheckBoxControl
 	STRUCT WMCheckboxAction &cbStruct

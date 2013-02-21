@@ -166,16 +166,19 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	ValDisplay rise1ValDisplay,win=$panelName,value= #absVarName
 	TitleBox rise1UnitsTitleBox,win=$panelName,pos={115+105+3,yOffset+38+2},frame=0
 
-	SetVariable from1SV,win=$panelName,pos={54,yOffset+61},size={80,17},proc=BrowserContMeasurementSV,title="From"
+	NVAR from1
+	SetVariable from1SV,win=$panelName,pos={54,yOffset+61},size={80,17},proc=BrowserContFrom1SV,title="From"
 	SetVariable from1SV,win=$panelName,limits={0,100,10},value= _NUM:from1
 	TitleBox from1UnitsTitleBox,win=$panelName,pos={137,yOffset+61+2},frame=0, title="%"
 
-	SetVariable to1SV,win=$panelName,pos={154,yOffset+61},size={66,17},proc=BrowserContMeasurementSV,title="To"
+	NVAR to1
+	SetVariable to1SV,win=$panelName,pos={154,yOffset+61},size={66,17},proc=BrowserContTo1SV,title="To"
 	SetVariable to1SV,win=$panelName,limits={0,100,10},value= _NUM:to1
 	TitleBox to1UnitsTitleBox,win=$panelName,pos={223,yOffset+61+2},frame=0, title="%"
 	
+	NVAR level1
 	SetVariable level1SV,win=$panelName,pos={18,yOffset-61+145},size={80,17}
-	SetVariable level1SV,win=$panelName,proc=BrowserContMeasurementSV,title="Level"
+	SetVariable level1SV,win=$panelName,proc=BrowserContLevel1SV,title="Level:"
 	SetVariable level1SV,win=$panelName,limits={-100,100,10},format="%4.2f",value= _NUM:level1
 	
 	absVarName=AbsoluteVarName(browserDFName,"nCrossings1")
@@ -204,14 +207,14 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	ValDisplay rise2ValDisplay,win=$panelName,format="%4.2f",limits={0,0,0},barmisc={0,1000}
 	ValDisplay rise2ValDisplay,win=$panelName,value= #absVarName
 	TitleBox rise2UnitsTitleBox,win=$panelName,pos={115+105+3,yOffset+38+2},frame=0
-	
-	absVarName=AbsoluteVarName(browserDFName,"from2")
-	SetVariable from2SV,win=$panelName,pos={54,yOffset+61},size={80,17},proc=BrowserContMeasurementSV,title="From"
+
+	NVAR from2	
+	SetVariable from2SV,win=$panelName,pos={54,yOffset+61},size={80,17},proc=BrowserContFrom2SV,title="From"
 	SetVariable from2SV,win=$panelName,limits={0,100,10},value= _NUM:from2
 	TitleBox from2UnitsTitleBox,win=$panelName,pos={137,yOffset+61+2},frame=0, title="%"
 
-	absVarName=AbsoluteVarName(browserDFName,"to2")
-	SetVariable to2SV,win=$panelName,pos={154,yOffset+61},size={66,17},proc=BrowserContMeasurementSV,title="To"
+	NVAR to2
+	SetVariable to2SV,win=$panelName,pos={154,yOffset+61},size={66,17},proc=BrowserContTo2SV,title="To"
 	SetVariable to2SV,win=$panelName,limits={0,100,10},value= _NUM:to2
 	TitleBox to2UnitsTitleBox,win=$panelName,pos={223,yOffset+61+2},frame=0, title="%"
 
