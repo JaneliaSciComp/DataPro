@@ -55,20 +55,50 @@ Function BrowserContHook(s)
 		NVAR yBMax
 		NVAR xMin
 		NVAR xMax
-		GetAxis /W=$browserName /Q left
-		if (V_flag==0)  // V_flag will be zero if the axis actually exists
-			yAMin=V_min
-			yAMax=V_max
-		endif
-		GetAxis /W=$browserName /Q right
-		if (V_flag==0)  // V_flag will be zero if the axis actually exists
-			yBMin=V_min
-			yBMax=V_max
-		endif
-		GetAxis /W=$browserName /Q bottom
-		if (V_flag==0)  // V_flag will be zero if the axis actually exists
-			xMin=V_min
-			xMax=V_max
+		NVAR currentlyUpdatingView
+		Variable somethingChanged=0
+		if (!currentlyUpdatingView)
+			GetAxis /W=$browserName /Q left
+			if (V_flag==0)  // V_flag will be zero if the axis actually exists
+				if (yAMin!=V_min)
+					yAMin=V_min
+					somethingChanged=1
+				endif
+				if (yAMax!=V_max)
+					yAMax=V_max
+					somethingChanged=1
+				endif
+			endif
+			GetAxis /W=$browserName /Q right
+			if (V_flag==0)  // V_flag will be zero if the axis actually exists
+				if (yBMin!=V_min)
+					yBMin=V_min
+					somethingChanged=1
+				endif
+				if (yBMax!=V_max)
+					yBMax=V_max
+					somethingChanged=1
+				endif
+			endif
+			GetAxis /W=$browserName /Q bottom
+			if (V_flag==0)  // V_flag will be zero if the axis actually exists
+				if (xMin!=V_min)
+					xMin=V_min
+					somethingChanged=1
+				endif
+				if (xMax!=V_max)
+					xMax=V_max
+					somethingChanged=1
+				endif
+			endif
+			if (somethingChanged)
+				BrowserViewUpdateAxesLimits(browserNumber)
+				BrowserViewUpdateMarkerLines(browserNumber)
+				//BrowserViewModelChanged(browserNumber)
+				// Calling BrowserViewModelChanged(browserNumber) here
+				// causes the browser window not be be refreshed 100% properly
+				// Not clear why that is. --- ALT; Feb 21, 2013
+			endif
 		endif
 		SetDataFolder savedDFName
 	endif
