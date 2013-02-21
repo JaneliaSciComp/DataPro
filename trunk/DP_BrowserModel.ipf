@@ -34,7 +34,7 @@ Function BrowserModelConstructor()
 	// topTraceWaveName==""
 	//String /G topTraceWaveName  
 	//String /G comments
-	String /G cursorWaveList=""
+	String /G markerWaveList=""
 
 	// These store the current y limits for the trace A and trace B axis, if they are showing, or
 	// what the values were the last time they were showing, if they are not showing.
@@ -120,6 +120,11 @@ Function BrowserModelConstructor()
 	String /G colorNameList="Black;Gray;Red;Green;Blue;Orange;Purple"
 	String /G colorNameA="Blue"
 	String /G colorNameB="Red"
+
+	// Really should be part of the view, but we don't want a separate DF just for this
+	Variable /G currentlyUpdatingView		// true iff the view is being updated (i.e. we are inside a function that updates the view)
+	// Used to prevent the hook function from messing with the view when the
+	// view is already being messed with
 
 	// Restore the original DF
 	SetDataFolder savedDF	

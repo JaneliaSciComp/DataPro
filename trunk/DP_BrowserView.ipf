@@ -372,20 +372,9 @@ Function BrowserViewModelChanged(browserNumber)
 	SVAR colorNameA
 	SVAR colorNameB
 	
-	// Note which axes currently exist
-	Variable leftAxisExists=0, rightAxisExists=0, bottomAxisExists=0		// boolean
-	GetAxis /W=$browserName /Q left
-	if (V_flag==0)  // V_flag will be zero if the axis actually exists
-		leftAxisExists=1;
-	endif
-	GetAxis /W=$browserName /Q right
-	if (V_flag==0)  // V_flag will be zero if the axis actually exists
-		rightAxisExists=1;
-	endif
-	GetAxis /W=$browserName /Q bottom
-	if (V_flag==0)  // V_flag will be zero if the axis actually exists
-		bottomAxisExists=1;
-	endif
+	// Note that the view is being updated
+	NVAR currentlyUpdatingView
+	currentlyUpdatingView=1
 	
 	// Remove the old waves from the graph
 	RemoveFromGraphAll(browserName)
@@ -416,7 +405,8 @@ Function BrowserViewModelChanged(browserNumber)
 	Variable iColorB=WhichListItem(colorNameB,colorNameList)
 	String traceBWaveNameAbs=BrowserModelGetBWaveNameAbs(browserNumber)
 	Variable waveBExists=WaveExists($traceBWaveNameAbs)
-	if (traceBChecked && waveBExists)
+	Variable traceBShowing=(traceBChecked && waveBExists)
+	if (traceBShowing)
 		AppendToGraph /W=$browserName /R /C=(colors[0][iColorB],colors[1][iColorB],colors[2][iColorB]) $traceBWaveNameAbs
 		comments=StringByKeyInWaveNote($traceBWaveNameAbs,"COMMENTS")
 	endif
@@ -425,7 +415,8 @@ Function BrowserViewModelChanged(browserNumber)
 	Variable iColorA=WhichListItem(colorNameA,colorNameList)
 	String traceAWaveNameAbs=BrowserModelGetAWaveNameAbs(browserNumber)
 	Variable waveAExists=WaveExists($traceAWaveNameAbs)
-	if (traceAChecked && waveAExists)
+	Variable traceAShowing=(traceAChecked && waveAExists)
+	if (traceAShowing)
 		AppendToGraph /W=$browserName /C=(colors[0][iColorA],colors[1][iColorA],colors[2][iColorA]) $traceAWaveNameAbs
 		comments=StringByKeyInWaveNote($traceAWaveNameAbs,"COMMENTS")
 	endif
@@ -447,14 +438,14 @@ Function BrowserViewModelChanged(browserNumber)
 	
 	// Update the "Step" ValDisplays
 	Variable step
-	if (waveAExists && traceAChecked)
+	if (traceAShowing)
 		step=NumberByKeyInWaveNote($traceAWaveNameAbs,"STEP")
 	else
 		step=NaN;
 	endif
 	ValDisplay stepAValDisplay,win=$browserName,value=_NUM:step
 	WhiteOutIffNan("stepAValDisplay",browserName,step)
-	if (waveBExists && traceBChecked)
+	if (traceBShowing)
 		step=NumberByKeyInWaveNote($traceBWaveNameAbs,"STEP")
 	else
 		step=NaN;
@@ -465,47 +456,21 @@ Function BrowserViewModelChanged(browserNumber)
 	// If there is one or more trace in the graph, make sure the axes of the graph are
 	// consistent with the autoscaling checkboxes, and turn on horizontal grid lines.
 	String topTraceWaveNameAbs=BrowserModelGetTopWaveNameAbs(browserNumber)
-	if (ItemsInList(TraceNameList(browserName,";",1))>0)
+	Variable someTraceShowing=(traceAShowing||traceBShowing)
+	//if (ItemsInList(TraceNameList(browserName,";",1))>0)
+	if (someTraceShowing)
 		BrowserViewUpdateAxesLimits(browserNumber)  // Scale the axes properly, based on the model state
-		if (cmpstr(topTraceWaveNameAbs,traceAWaveNameAbs)==0)
+		if (AreStringsEqual(topTraceWaveNameAbs,traceAWaveNameAbs))
 			ModifyGraph /W=$browserName /Z grid(left)=1
 			ModifyGraph /W=$browserName /Z gridRGB(left)=(0,0,0)
-		elseif (cmpstr(topTraceWaveNameAbs,traceBWaveNameAbs)==0)
+		elseif (AreStringsEqual(topTraceWaveNameAbs,traceBWaveNameAbs))
 			ModifyGraph /W=$browserName /Z grid(right)=1
 			ModifyGraph /W=$browserName /Z gridRGB(right)=(0,0,0)
 		endif
 	endif
 
 	// Draw the vertical lines
-	if (showToolsChecked && ( (traceAChecked && waveAExists) || (traceBChecked && waveBExists) ) )
-		if (IsFinite(tBaselineLeft))
-	 		BrowserViewAddCursorLineToGraph(browserName,"baselineMarkerLeft",tBaselineLeft,65535,0,0)
-	 	endif
-		if (IsFinite(tBaselineRight))  // true if non-nan
-			BrowserViewAddCursorLineToGraph(browserName,"baselineMarkerRight",tBaselineRight,65535,0,0)
-		endif
-		if (IsFinite(tWindow1Left))  // true if non-nan
-			BrowserViewAddCursorLineToGraph(browserName,"window1MarkerLeft",tWindow1Left,3,52428,1)
-		endif
-		if (IsFinite(tWindow1Right))  // true if non-nan
-			BrowserViewAddCursorLineToGraph(browserName,"window1MarkerRight",tWindow1Right,3,52428,1)
-		endif
-		if (IsFinite(tWindow2Left))  // true if non-nan
-			BrowserViewAddCursorLineToGraph(browserName,"window2MarkerLeft",tWindow2Left,0,0,65535)
-		endif
-		if (IsFinite(tWindow2Right))  // true if non-nan
-			BrowserViewAddCursorLineToGraph(browserName,"window2MarkerRight",tWindow2Right,0,0,65535)
-		endif
-		if (IsFinite(tFitZero))
-			BrowserViewAddCursorLineToGraph(browserName,"fitLineZero",tFitZero,26411,1,52428)
-		endif
-		if (IsFinite(tFitLeft))
-			BrowserViewAddCursorLineToGraph(browserName,"fitLineLeft",tFitLeft,0,65535,65535)
-		endif
-		if (IsFinite(tFitRight))
-			BrowserViewAddCursorLineToGraph(browserName,"fitLineRight",tFitRight,0,65535,65535)
-		endif
-	endif
+	BrowserViewUpdateMarkerLines(browserNumber)
 	
 	// Set axis labels on the graph
 	Label /W=$browserName /Z bottom "\\F'Helvetica'\\Z12\\f01Time (ms)"
@@ -541,6 +506,9 @@ Function BrowserViewModelChanged(browserNumber)
 	// Update the tools panel
 	BrowserViewUpdateToolsPanel(browserNumber)
 	
+	// Note that we are no longer updating the view
+	currentlyUpdatingView=0
+	
 	// Restore old data folder
 	SetDataFolder savedDFName
 End
@@ -575,12 +543,72 @@ Function BrowserViewUpdateRejectCBs(browserNumber)
 	SetDataFolder savedDF
 End
 
-Function BrowserViewAddCursorLineToGraph(graphName,cursorWaveName,tCursor,r,g,b)
+Function BrowserViewUpdateMarkerLines(browserNumber)
+	// Causes all the vertical "cursor" lines to be redrawn
+	Variable browserNumber
+	
+	// Switch the DF to its DF, note the former DF name
+	String savedDF=ChangeToBrowserDF(browserNumber)
+
+	NVAR tBaselineLeft
+	NVAR tBaselineRight
+	NVAR tWindow1Left
+	NVAR tWindow1Right
+	NVAR tWindow2Left
+	NVAR tWindow2Right
+	NVAR tFitZero
+	NVAR tFitLeft
+	NVAR tFitRight
+	NVAR currentlyUpdatingView
+
+	// Note that the view is currently being updated
+	Variable currentlyUpdatingViewSaved=currentlyUpdatingView
+	currentlyUpdatingView=1
+
+	// Update all the marker lines
+	BrowserViewUpdateMarkerLine(browserNumber,"baselineMarkerLeft",tBaselineLeft,65535,0,0)
+	BrowserViewUpdateMarkerLine(browserNumber,"baselineMarkerRight",tBaselineRight,65535,0,0)
+	BrowserViewUpdateMarkerLine(browserNumber,"window1MarkerLeft",tWindow1Left,3,52428,1)
+	BrowserViewUpdateMarkerLine(browserNumber,"window1MarkerRight",tWindow1Right,3,52428,1)
+	BrowserViewUpdateMarkerLine(browserNumber,"window2MarkerLeft",tWindow2Left,0,0,65535)
+	BrowserViewUpdateMarkerLine(browserNumber,"window2MarkerRight",tWindow2Right,0,0,65535)
+	BrowserViewUpdateMarkerLine(browserNumber,"fitLineZero",tFitZero,26411,1,52428)
+	BrowserViewUpdateMarkerLine(browserNumber,"fitLineLeft",tFitLeft,0,65535,65535)
+	BrowserViewUpdateMarkerLine(browserNumber,"fitLineRight",tFitRight,0,65535,65535)
+
+	// Note that the view is no longer being updated
+	currentlyUpdatingView=currentlyUpdatingViewSaved
+
+	// Restore the original DF
+	SetDataFolder savedDF
+End
+
+Function BrowserViewUpdateMarkerLine(browserNumber,cursorWaveName,tCursor,r,g,b)
 	// Adds a wave to the named graph that represents a cursor position.
-	String graphName  // the name of the graph to add the cursor line to
+	Variable browserNumber
 	String cursorWaveName  // what to name the wave that is the cursor
 	Variable tCursor // the time at which to place the cursor
 	Variable r,g,b  // the color
+
+	BrowserViewUpdateMarkerLineNew(browserNumber,cursorWaveName,tCursor,r,g,b)
+End
+
+Function BrowserViewUpdateMarkerLineOld(browserNumber,cursorWaveName,tCursor,r,g,b)
+	// Adds a wave to browser that represents a cursor position.
+	// This one makes the y span of the vertical lines match that of the traces.
+	Variable browserNumber
+	String cursorWaveName  // what to name the wave that is the cursor
+	Variable tCursor // the time at which to place the cursor
+	Variable r,g,b  // the color
+	
+	// Just return if tCursor is nan or inf
+	if (!IsFinite(tCursor))
+		return 0
+	endif
+	
+	// Switch the DF to its DF, note the former DF name
+	String savedDF=ChangeToBrowserDF(browserNumber)
+	String graphName=BrowserNameFromNumber(browserNumber)
 	
 	// Go through a lot of trouble to find the y span of the cursor	
 	SVAR baseNameA
@@ -626,9 +654,9 @@ Function BrowserViewAddCursorLineToGraph(graphName,cursorWaveName,tCursor,r,g,b)
 	endif
 
 	// Remove the wave from the graph if it's already present
-	SVAR cursorWaveList
+	SVAR markerWaveList
 	RemoveFromGraph /Z /W=$graphName $cursorWaveName  // remove if already present
-	cursorWaveList=RemoveFromList(cursorWaveName,cursorWaveList)
+	markerWaveList=RemoveFromList(cursorWaveName,markerWaveList)
 	KillWaves /Z $cursorWaveName
 	
 	// Make the wave, if there's a place to put it, and add it to the cursor list
@@ -642,81 +670,104 @@ Function BrowserViewAddCursorLineToGraph(graphName,cursorWaveName,tCursor,r,g,b)
 		else
 			AppendToGraph /W=$graphName /C=(r,g,b) /R $cursorWaveName
 		endif
-		cursorWaveList=AddListItem(cursorWaveName,cursorWaveList)
+		markerWaveList=AddListItem(cursorWaveName,markerWaveList)
 	endif
+	
+	// Restore the original DF
+	SetDataFolder savedDF
 End
 
-Function BrowserViewUpdateCursorLines(browserNumber)
+Function BrowserViewUpdateMarkerLineNew(browserNumber,markerWaveName,tMarker,r,g,b)
+	// Adds a wave to the browser that represents a cursor position.
+	// This one makes the y span of the vertical lines match that of the axes.	
 	Variable browserNumber
-
-	String savedDFName=ChangeToBrowserDF(browserNumber)
-
+	String markerWaveName  // what to name the wave that is the marker
+	Variable tMarker // the time at which to place the marker
+	Variable r,g,b  // the color
+	
+	// Switch the DF to its DF, note the former DF name
+	String savedDF=ChangeToBrowserDF(browserNumber)
+	
 	SVAR baseNameA
 	SVAR baseNameB
 	NVAR iCurrentSweep
 	NVAR traceAChecked
 	NVAR traceBChecked
+	NVAR yAMin
+	NVAR yAMax
+	NVAR yBMin
+	NVAR yBMax
+	SVAR markerWaveList
+	NVAR showToolsChecked
 		
-	// Get the graph name
-	String graphName=BrowserNameFromNumber(browserNumber)	
+	// Remove the wave from the graph if it's already present
+	String graphName=BrowserNameFromNumber(browserNumber)
+	RemoveFromGraph /Z /W=$graphName $markerWaveName  // remove the current one (if present)
+	markerWaveList=RemoveFromList(markerWaveName,markerWaveList)
+	KillWaves /Z $markerWaveName
+
+	// To proceed, tools must be showing, and tMarker must be finite
+	if ( !(showToolsChecked && IsFinite(tMarker)) )
+		SetDataFolder savedDF
+		return 0
+	endif
 		
-	// Get the max and min of wave A trace
+	// Figure out what traces are showing currently	
 	String traceAWaveName=sprintf2sv("root:%s_%d", baseNameA, iCurrentSweep)
 	Variable waveAExists=WaveExists($traceAWaveName)
-	Variable yAMin, yAMax
-	if (waveAExists && traceAChecked)
-		WaveStats /Q $traceAWaveName
-		yAMax=V_max
-		yAMin=V_min
+	Variable traceAShowing=(traceAChecked && waveAExists)
+	String traceBWaveName=sprintf2sv("root:%s_%d", baseNameB, iCurrentSweep)
+	Variable waveBExists=WaveExists($traceBWaveName)		
+	Variable traceBShowing=(traceBChecked && waveBExists)
+	Variable someTraceShowing=(traceAShowing || traceBShowing)
+			
+	// Get the max and min of wave A trace
+	Variable yAMinEffective, yAMaxEffective
+	if (traceAShowing)
+		yAMinEffective=yAMin
+		yAMaxEffective=yAMax
 	else
-		yAMin=+inf
-		yAMax=-inf
+		yAMinEffective=+inf
+		yAMaxEffective=-inf
 	endif
 
 	// Get the max and min of wave B trace
-	String traceBWaveName=sprintf2sv("root:%s_%d", baseNameB, iCurrentSweep)
-	Variable waveBExists=WaveExists($traceBWaveName)		
-	Variable yBMin, yBMax
-	if (waveBExists  && traceBChecked)
-		WaveStats /Q $traceBWaveName
-		yBMax=V_max
-		yBMin=V_min
+	Variable yBMinEffective, yBMaxEffective
+	if (traceBShowing)
+		yBMinEffective=yBMin
+		yBMaxEffective=yBMax
 	else
-		yBMin=+inf
-		yBMax=-inf
+		yBMinEffective=+inf
+		yBMaxEffective=-inf
 	endif
 			
 	// Get the overall yMin, yMax
-	Variable yMin=min(yAMin,yBMin)
-	Variable yMax=max(yAMax,yBMax)
-	if ( !IsFinite(yMin) )  // is yMin a normal number (non-inf)?
-		yMin=-1
+	Variable yMinEffective=min(yAMinEffective,yBMinEffective)
+	Variable yMaxEffective=max(yAMaxEffective,yBMaxEffective)
+	if ( !IsFinite(yMinEffective) )  	// is yMin a normal number (non-inf)?
+		yMinEffective=-10
 	endif
-	if ( !IsFinite(yMax) )  // is yMax a normal number (non-inf)?
-		yMax=+1
+	if ( !IsFinite(yMaxEffective) )  	// is yMax a normal number (non-inf)?
+		yMaxEffective=+10
 	endif
 
-	// For each cursor line, go through and update it
-	SVAR cursorWaveList
-	Variable nLines=ItemsInList(cursorWaveList)
-	Variable i
-	for (i=0; i<nLines; i+=1)
-		String thisWaveName=StringFromList(i,cursorWaveList)
-		Wave thisWave=$thisWaveName
-		RemoveFromGraph /Z /W=$graphName $thisWaveName  // remove if already present
-		thisWave[0]=yMin
-		thisWave[1]=yMax		
+	// Make the wave, if there's a place to put it, and add it to the cursor list
+	if (someTraceShowing)
+		// Make the wave
+		Make /O /N=2 $markerWaveName ={yMinEffective,yMaxEffective}
+		Setscale /I x, tMarker, tMarker+1e-6, "ms", $markerWaveName
+		// Add to the list of waves
+		markerWaveList=AddListItem(markerWaveName,markerWaveList)
 		// Add the wave to the appropriate axis
-		if (traceAChecked)
-			//AppendToGraph /W=$graphName /C=(r,g,b) /L $thisWaveName
-			AppendToGraph /W=$graphName /L $thisWaveName
+		if (traceAShowing)
+			AppendToGraph /W=$graphName /C=(r,g,b) /L $markerWaveName
 		else
-			//AppendToGraph /W=$graphName /C=(r,g,b) /R $thisWaveName
-			AppendToGraph /W=$graphName /L $thisWaveName
+			AppendToGraph /W=$graphName /C=(r,g,b) /R $markerWaveName
 		endif
-	endfor
-	
-	SetDataFolder savedDFName
+	endif
+
+	// Restore the original DF
+	SetDataFolder savedDF
 End
 
 Function BrowserViewSetFitCoeffVis(browserNumber,visible)
@@ -759,6 +810,9 @@ Function BrowserViewUpdateAxesLimits(browserNumber)
 	// the autoscale settings and the axis limits stored in the model.
 	Variable browserNumber
 
+	// Change to the DF of the indicated DPBrowser
+	String savedDF=ChangeToBrowserDF(browserNumber)
+
 	// Set up access to the DF vars we need
 	NVAR traceAChecked
 	NVAR traceBChecked	
@@ -771,41 +825,68 @@ Function BrowserViewUpdateAxesLimits(browserNumber)
 	NVAR xAutoscaling
 	NVAR yAAutoscaling
 	NVAR yBAutoscaling
+	SVAR baseNameA
+	SVAR baseNameB
+	NVAR iCurrentSweep
+	NVAR currentlyUpdatingView
 	
-	// Change to the DF of the indicated DPBrowser
-	String savedDF=ChangeToBrowserDF(browserNumber)
+	// Note that the view is currently being updated
+	Variable currentlyUpdatingViewSaved=currentlyUpdatingView
+	currentlyUpdatingView=1
 	
 	// Get the window name of the DPBrowser
 	String browserName=BrowserNameFromNumber(browserNumber)
 	
+	// Get the wave names, and see if they exist
+	String traceAWaveName=sprintf2sv("root:%s_%d", baseNameA, iCurrentSweep)
+	Variable waveAExists=WaveExists($traceAWaveName)
+	String traceBWaveName=sprintf2sv("root:%s_%d", baseNameB, iCurrentSweep)
+	Variable waveBExists=WaveExists($traceBWaveName)
+	
+	// Scale the x axis
+	if ( traceAChecked || traceBChecked )
+		if (xAutoscaling)
+			if (traceAChecked && waveAExists)
+				xMin=leftx($traceAWaveName)
+				xMax=rightx($traceAWaveName)
+			elseif (traceBChecked && waveBExists)
+				xMin=leftx($traceBWaveName)
+				xMax=rightx($traceBWaveName)
+			endif
+		endif
+		Setaxis /W=$browserName /Z bottom xMin, xMax
+	endif
+	
 	// Scale the y axis for trace A
 	if (traceAChecked)
 		if (yAAutoscaling)
-			Setaxis /W=$browserName /Z /A left  // autoscale the left y axis
-			// Calling SetAxis calls the hook function to be invoked, which updates yAMin, yAMax
-		else
-			Setaxis /W=$browserName /Z left yAMin, yAMax  // set the y axis to have the limits it currently has
+			// Manually determine what the axis range should be, b/c we don't want any
+			// vertical lines we've added to mess things up
+			if (waveAExists)
+				WaveStats /Q /R=(xMin,xMax) $traceAWaveName
+				yAMax=V_max
+				yAMin=V_min
+			endif
 		endif
+		Setaxis /W=$browserName /Z left yAMin, yAMax
 	endif
 	
 	// Scale the y axis for trace B
 	if (traceBChecked)
 		if (yBAutoscaling)
-			Setaxis /W=$browserName /Z /A right  // autoscale the right y axis
-			// Calling SetAxis calls the hook function to be invoked, which updates yBMin, yBMax
-		else
-			Setaxis /W=$browserName /Z right yBMin, yBMax  // set the y axis to have the limits it currently has
+			// Manually determine what the axis range should be, b/c we don't want any
+			// vertical lines we've added to mess things up
+			if (waveBExists)
+				WaveStats /Q /R=(xMin,xMax) $traceBWaveName
+				yBMax=V_max
+				yBMin=V_min
+			endif
 		endif
+		Setaxis /W=$browserName /Z right yBMin, yBMax 
 	endif
 	
-	// Scale the x axis
-	if ( traceAChecked || traceBChecked )
-		if (xAutoscaling)
-			Setaxis /W=$browserName /Z /A bottom    // autoscale the bottom (x) axis
-		else
-			Setaxis /W=$browserName /Z bottom xMin, xMax  // set the x axis to have the limits it currently has
-		endif
-	endif
+	// Note that the view is no longer being updated
+	currentlyUpdatingView=currentlyUpdatingViewSaved
 	
 	// Restore the original DF
 	SetDataFolder savedDF
