@@ -479,6 +479,7 @@ Function BrowserModelUpdateFit(browserNumber)
 	NVAR isFitValid
 	SVAR waveNameAbsOfFitTrace
 	NVAR yOffset, amp1, tau1, amp2, tau2
+	NVAR dtFitExtend
 
 	// See if everything is set up to do a fit.  If not, return.
 	String topTraceWaveName=BrowserModelGetTopWaveNameAbs(browserNumber)
@@ -492,10 +493,10 @@ Function BrowserModelUpdateFit(browserNumber)
 	
 	// Make a new wave, fitWave, that's a copy of $topTraceWaveName with the time base shifted 
 	// to put tFitZero at t==0
-	Duplicate /O $topTraceWaveName fitWave
-	Variable tLeftShifted=leftx($topTraceWaveName)-tFitZero
-	Variable tRightShifted=rightx($topTraceWaveName)-tFitZero
-	Setscale x, tLeftShifted,tRightShifted, "ms", fitWave
+	Duplicate /O /R=(tFitLeft,tFitRight) $topTraceWaveName fitWave
+	Variable t0=leftx(fitWave)-tFitZero
+	Variable tf=rightx(fitWave)-tFitZero
+	Setscale x, t0,tf, "ms", fitWave
 
 	// Are we doing single or double exponential fit?
 	SVAR fitType
@@ -522,9 +523,9 @@ Function BrowserModelUpdateFit(browserNumber)
 	// specify an explicit wave of coeffs, used both for reading values to be held fixed, and
 	// for outputing the final fit coeffs
 	if (singleExp)
- 		Make /O/N=3 coeffs
+ 		Make /D /O /N=3 coeffs
  	else
- 		Make /O/N=5 coeffs
+ 		Make /D /O /N=5 coeffs
  	endif
 	if (holdYOffset)
 		coeffs[0]=yOffsetHeldValue
@@ -546,9 +547,11 @@ Function BrowserModelUpdateFit(browserNumber)
 	endif
 	
 	// Make a wave, yFit, containing the fit curve
-	Make /O /N=500 yFit
-	NVAR dtFitExtend
-	Setscale /I x, tFitZero, tFitRight+dtFitExtend, "ms", yFit
+	Duplicate /O /R=(tFitLeft,tFitRight+dtFitExtend) $topTraceWaveName yFit
+	if (tFitRight+dtFitExtend>rightx($topTraceWaveName))
+		Variable nAfter=(tFitRight+dtFitExtend-tFitLeft)/deltax(yFit)
+		Redimension /N=(nAfter) yFit
+	endif
 	if (singleExp)
 		yFit= yOffset+amp1*exp(-(x-tFitZero)/tau1)
 	else
@@ -715,8 +718,13 @@ Function BrowserModelSetBaseline(browserNumber)
 	NVAR tBaselineRight
 
 	// Set the instance vars
-	tBaselineLeft=tCursorA
-	tBaselineRight=tCursorB
+	if (tCursorA<=tCursorB)
+		tBaselineLeft=tCursorA		// times of left and right cursor that delineate the window region
+		tBaselineRight=tCursorB
+	else
+		tBaselineLeft=tCursorB		// times of left and right cursor that delineate the window region
+		tBaselineRight=tCursorA
+	endif
 
 	// Update the measurements	
 	BrowserModelUpdateMeasurements(browserNumber)
@@ -764,8 +772,13 @@ Function BrowserModelSetWindow1(browserNumber)
 	NVAR tWindow1Right
 	
 	// Set the vars that delineate the window region
-	tWindow1Left=tCursorA		// times of left and right cursor that delineate the window region
-	tWindow1Right=tCursorB
+	if (tCursorA<=tCursorB)
+		tWindow1Left=tCursorA		// times of left and right cursor that delineate the window region
+		tWindow1Right=tCursorB
+	else
+		tWindow1Left=tCursorB		// times of left and right cursor that delineate the window region
+		tWindow1Right=tCursorA
+	endif
 
 	// Update the meaurements
 	BrowserModelUpdateMeasurements(browserNumber)
@@ -813,8 +826,13 @@ Function BrowserModelSetWindow2(browserNumber)
 	NVAR tWindow2Right
 	
 	// Set the vars that delineate the window region
-	tWindow2Left=tCursorA		// times of left and right cursor that delineate the window region
-	tWindow2Right=tCursorB
+	if (tCursorA<=tCursorB)
+		tWindow2Left=tCursorA		// times of left and right cursor that delineate the window region
+		tWindow2Right=tCursorB
+	else
+		tWindow2Left=tCursorB		// times of left and right cursor that delineate the window region
+		tWindow2Right=tCursorA
+	endif
 
 	// Update the meaurements
 	BrowserModelUpdateMeasurements(browserNumber)
@@ -906,8 +924,13 @@ Function BrowserModelSetFitRange(browserNumber)
 	NVAR tFitRight
 	
 	// Set the vars that delineate the window region
-	tFitLeft=tCursorA		// times of left and right cursor that delineate the window region
-	tFitRight=tCursorB
+	if (tCursorA<=tCursorB)
+		tFitLeft=tCursorA		// times of left and right cursor that delineate the window region
+		tFitRight=tCursorB
+	else
+		tFitLeft=tCursorB		// times of left and right cursor that delineate the window region
+		tFitRight=tCursorA
+	endif
 
 	// Update the meaurements
 	BrowserModelUpdateFit(browserNumber)
