@@ -58,7 +58,13 @@ Function SweeperControllerADCCheckbox(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 	Variable iChannel=str2num(ctrlName[3])
-	SweeperSetADCChannelOn(iChannel,checked)
+	SweeperContSetADCChannelOn(iChannel,checked)
+End
+
+Function SweeperContSetADCChannelOn(iChannel,on)
+	Variable iChannel
+	Variable on
+	SweeperSetADCChannelOn(iChannel,on)
 	SweeperViewADCEnablementChanged(iChannel)
 End
 
@@ -83,7 +89,13 @@ Function SweeperControllerDACCheckbox(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 	Variable iChannel=str2num(ctrlName[3])
-	SweeperSetDACChannelOn(iChannel,checked)
+	SweeperContSetDACChannelOn(iChannel,checked)
+End
+
+Function SweeperContSetDACChannelOn(iChannel,on)
+	Variable iChannel
+	Variable on
+	SweeperSetDACChannelOn(iChannel,on)
 	SweeperViewDACEnablementChanged(iChannel)
 End
 
