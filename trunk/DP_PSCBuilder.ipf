@@ -86,13 +86,13 @@ Function fillPSCFromParamsBang(w,dt,nScans,parameters,parameterNames)
 	Variable weightDecay2=parameters[5]		
 
 	// Set the delay portion
-	Variable nDelay=round(delay/dt)
+	Variable nDelay=floor(delay/dt)		// err on the side of making this too small, if anything
 	w[0,nDelay-1]=0
 	// Set the main portion
 	if (nDelay>=nScans)
 		return 0
 	endif
-	w[nDelay,nScans-1]= -exp(-(x-delay)/tauRise)+(1-weightDecay2)*exp(-(x-delay)/tauDecay1)+weightDecay2*exp(-(x-delay)/tauDecay2)
+	w[nDelay,nScans-1]= (x>=delay)*(-exp(-(x-delay)/tauRise)+(1-weightDecay2)*exp(-(x-delay)/tauDecay1)+weightDecay2*exp(-(x-delay)/tauDecay2))
 	// re-scale to have the proper amplitude
 	Wavestats /Q w
 	w=(amplitude/V_max)*w		// want the peak amplitude to be amplitude
