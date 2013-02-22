@@ -618,9 +618,6 @@ Function BrowserContAverageSweepsButton(bStruct) : ButtonControl
 		iTo=min(iSweepLastAverage,nSweeps)
 	endif
 	
-	// Figure the dest wave name
-	Variable destSweepIndex=SweeperGetNextSweepIndex()
-	
 	// Do the average(s)
 	String baseNameA=BrowserModelGetBaseNameA(browserNumber)
 	String baseNameB=BrowserModelGetBaseNameB(browserNumber)
@@ -632,6 +629,7 @@ Function BrowserContAverageSweepsButton(bStruct) : ButtonControl
 	Variable holdTol=nan
 	Variable filterOnStep=!averageAllSteps
 	Variable stepToAverage=BrowserModelGetStepToAverage(browserNumber)
+	Variable destSweepIndex=SweeperGetNextSweepIndex()		// will be used unless user clicked "Rename"
 	String destWaveName=""
 	Variable cancelled=0
 	if (traceAChecked)
@@ -724,6 +722,7 @@ Function BrowserContComputeAverageWaves(destWaveName,waveBaseName,iFrom,iTo,filt
 	Variable stepToAverage
 
 	// Loop over waves to be averaged, forming the sum and counting the number of waves
+	Variable nMin=Inf		// the number of points in the smallest wave included in the average
 	Variable i, nWavesSummedSoFar=0
 	Variable include
 	for (i=iFrom; i<=iTo; i+=1)
@@ -743,6 +742,7 @@ Function BrowserContComputeAverageWaves(destWaveName,waveBaseName,iFrom,iTo,filt
 			endif
 			outWave += thisWave
 			nWavesSummedSoFar += 1
+			nMin=min(nMin,numpnts(thisWave))
 		endif
 	endfor
 	Variable nWavesToAvg=nWavesSummedSoFar
@@ -750,6 +750,7 @@ Function BrowserContComputeAverageWaves(destWaveName,waveBaseName,iFrom,iTo,filt
 	// Actually compute the average from the sum
 	if (nWavesToAvg>0)
 		outWave /= nWavesToAvg
+		Redimension /N=(nMin) outWave	// trim to size of smallest wave included in average
 	else
 		String message=sprintf1s("%s: No waves met your criteria to be averaged.", waveBaseName)
 		Abort message
