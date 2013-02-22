@@ -233,11 +233,11 @@ Function SweeperControllerAcquireSweep(comment)
 		Make /O /N=(nSamplesPerTrace) $thisWaveNameAbs
 		WAVE thisWave=$thisWaveNameAbs
 		annotateADCWaveBang(thisWave,stepAsString,comment)
-		ingain=GetADCNativeUnitsPerPoint(iADCChannel)
+		ingain=DigitizerModelGetADCNtvsPerPnt(iADCChannel)
 		thisWave=FIFOin[nADCInUse*p+iTrace]*ingain
 			// copy this trace out of the FIFO, and scale it by the gain
 		Setscale /P x, 0, nADCInUse*dtFIFOin, "ms", thisWave
-		units=GetADCChannelUnitsString(iADCChannel)
+		units=DigitizerModelGetADCUnitsString(iADCChannel)
 		SetScale d 0, 0, units, thisWave
 	endfor
 	

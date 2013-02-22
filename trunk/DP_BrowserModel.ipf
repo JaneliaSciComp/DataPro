@@ -261,30 +261,20 @@ Function /S BrowserModelGetBWaveNameRel(browserNumber)
 	return retval
 End
 
-Function BrowserModelRemoveWaves(base)
-	// Removes waves with the given base name
-	String base
-	String savedDF, targetWindow, allwaves, thisWaveName
-	Variable i
-	savedDF=GetDataFolder(1)
-	SetDataFolder root:
-	base+="*"
-	sprintf targetWindow, "WIN:"
-	allwaves=WaveList(base,";", targetWindow)
-	if (strlen(allwaves)>0)
-		i=0
-		do
-			thisWaveName=GetStrFromList(allwaves,i,";")
-			if (strlen(thisWaveName)==0)
-				break
-			else
-				RemoveFromGraph $thisWaveName
-			endif
-			i+=1
-		while(1)
-	endif
-	SetDataFolder savedDF
-End
+//Function BrowserModelRemoveWaves(base)
+//	// Removes waves with the given base name
+//	String base
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:
+//	String allWaveNames=WaveList(base+"*",";", "WIN:")
+//	Variable nWaves=ItemsInList(allWaveNames)
+//	Variable i
+//	for (i=0; i<nWaves; i+=1)
+//		String thisWaveName=StringFromList(i,allWaveNames)
+//		RemoveFromGraph $thisWaveName
+//	endfor	
+//	SetDataFolder savedDF
+//End
 
 //Function BrowserModelDoBaseSub(browserNumber)
 //	// Perform baseline subtraction on $traceAWaveName and $traceBWaveName.
