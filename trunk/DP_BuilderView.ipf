@@ -24,7 +24,7 @@ Function BuilderViewConstructorFallback()
 	Abort "Internal Error: Attempt to call a function that doesn't exist"
 End
 
-Function BuilderViewModelChanged(builderType)
+Function BuilderViewUpdate(builderType)
 	String builderType
 	
 	// Synthesize the window name from the builderType

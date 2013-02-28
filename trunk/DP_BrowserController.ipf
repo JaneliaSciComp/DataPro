@@ -94,8 +94,8 @@ Function BrowserContHook(s)
 			if (somethingChanged)
 				BrowserViewUpdateAxesLimits(browserNumber)
 				BrowserViewUpdateMarkerLines(browserNumber)
-				//BrowserViewModelChanged(browserNumber)
-				// Calling BrowserViewModelChanged(browserNumber) here
+				//BrowserViewUpdate(browserNumber)
+				// Calling BrowserViewUpdate(browserNumber) here
 				// causes the browser window not be be refreshed 100% properly
 				// Not clear why that is. --- ALT; Feb 21, 2013
 			endif
@@ -127,7 +127,7 @@ Function BrowserContSetNextSweepIndex(browserNumber,iSweep)
 	// Set the sweep in the model
 	Variable browserNumber, iSweep
 	BrowserModelSetCurSweepIndex(browserNumber,iSweep)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContNextSweepIndexSV(svStruct) : SetVariableControl
@@ -139,7 +139,7 @@ Function BrowserContNextSweepIndexSV(svStruct) : SetVariableControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(svStruct.win)
 	BrowserModelSetCurSweepIndex(browserNumber,svStruct.dval)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContCommentsSV(svStruct) : SetVariableControl
@@ -157,7 +157,7 @@ Function BrowserContCommentsSV(svStruct) : SetVariableControl
 		ReplaceStringByKeyInWaveNote($topTraceWaveNameAbs,"COMMENTS",commentsInControl)
 	endif
 	// Sync the view -- necessary when no trace is selected, to clear the comment
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContDtFitExtendSV(svStruct) : SetVariableControl
@@ -168,7 +168,7 @@ Function BrowserContDtFitExtendSV(svStruct) : SetVariableControl
 	String browserName=svStruct.win
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	BrowserModelSetDtFitExtend(browserNumber,svStruct.dval)
-	BrowserViewModelChanged(browserNumber)	
+	BrowserViewUpdate(browserNumber)	
 End
 
 Function BrowserContBaseNameASV(svStruct) : SetVariableControl
@@ -180,7 +180,7 @@ Function BrowserContBaseNameASV(svStruct) : SetVariableControl
 	String browserName=svStruct.win
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	BrowserModelSetBaseNameA(browserNumber,svStruct.sval)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContBaseNameBSV(svStruct) : SetVariableControl
@@ -192,7 +192,7 @@ Function BrowserContBaseNameBSV(svStruct) : SetVariableControl
 	String browserName=svStruct.win
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	BrowserModelSetBaseNameB(browserNumber,svStruct.sval)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContShowTraceACB(cbStruct) : CheckBoxControl
@@ -204,7 +204,7 @@ Function BrowserContShowTraceACB(cbStruct) : CheckBoxControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
 	BrowserModelSetTraceAChecked(browserNumber,cbStruct.checked)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContShowTraceBCB(cbStruct) : CheckBoxControl
@@ -216,7 +216,7 @@ Function BrowserContShowTraceBCB(cbStruct) : CheckBoxControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)	
 	BrowserModelSetTraceBChecked(browserNumber,cbStruct.checked)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContRejectTraceACB(cbStruct) : CheckBoxControl
@@ -247,7 +247,7 @@ Function BrowserContShowToolsPanelCB(cbStruct) : CheckboxControl
 		return 0							// we only handle mouse up in control
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContSetBaselineButton(bStruct) : ButtonControl
@@ -266,7 +266,7 @@ Function BrowserContSetBaselineButton(bStruct) : ButtonControl
 	BrowserModelSetBaseline(browserNumber)
 
 	// Update the view
-	BrowserViewModelChanged(browserNumber)	
+	BrowserViewUpdate(browserNumber)	
 End
 
 Function BrowserContClearBaselineButton(bStruct) : ButtonControl
@@ -285,7 +285,7 @@ Function BrowserContClearBaselineButton(bStruct) : ButtonControl
 	BrowserModelClearBaseline(browserNumber)
 	
 	// Update the view
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContSetWindow1Button(bStruct) : ButtonControl
@@ -304,7 +304,7 @@ Function BrowserContSetWindow1Button(bStruct) : ButtonControl
 	BrowserModelSetWindow1(browserNumber)
 
 	// Update the view
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContClearWindow1Button(bStruct) : ButtonControl
@@ -323,7 +323,7 @@ Function BrowserContClearWindow1Button(bStruct) : ButtonControl
 	BrowserModelClearWindow1(browserNumber)
 
 	// Update the view
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContLevel1SV(svStruct) : SetVariableControl
@@ -333,7 +333,7 @@ Function BrowserContLevel1SV(svStruct) : SetVariableControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(svStruct.win)
 	BrowserModelSetLevel1(browserNumber,svStruct.dval)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContTo1SV(svStruct) : SetVariableControl
@@ -343,7 +343,7 @@ Function BrowserContTo1SV(svStruct) : SetVariableControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(svStruct.win)
 	BrowserModelSetTo1(browserNumber,svStruct.dval)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContFrom1SV(svStruct) : SetVariableControl
@@ -353,7 +353,7 @@ Function BrowserContFrom1SV(svStruct) : SetVariableControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(svStruct.win)
 	BrowserModelSetFrom1(browserNumber,svStruct.dval)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContTo2SV(svStruct) : SetVariableControl
@@ -363,7 +363,7 @@ Function BrowserContTo2SV(svStruct) : SetVariableControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(svStruct.win)
 	BrowserModelSetTo2(browserNumber,svStruct.dval)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContFrom2SV(svStruct) : SetVariableControl
@@ -373,7 +373,7 @@ Function BrowserContFrom2SV(svStruct) : SetVariableControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(svStruct.win)
 	BrowserModelSetFrom2(browserNumber,svStruct.dval)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContSetWindow2Button(bStruct) : ButtonControl
@@ -392,7 +392,7 @@ Function BrowserContSetWindow2Button(bStruct) : ButtonControl
 	BrowserModelSetWindow2(browserNumber)
 
 	// Update the view
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContClearWindow2Button(bStruct) : ButtonControl
@@ -411,7 +411,7 @@ Function BrowserContClearWindow2Button(bStruct) : ButtonControl
 	BrowserModelClearWindow2(browserNumber)
 
 	// Update the view
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 
@@ -425,7 +425,7 @@ Function BrowserContSetFitZeroButton(bStruct) : ButtonControl
 	endif
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
 	BrowserModelSetFitZero(browserNumber)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContClearFitZeroButton(bStruct) : ButtonControl
@@ -435,7 +435,7 @@ Function BrowserContClearFitZeroButton(bStruct) : ButtonControl
 	endif
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
 	BrowserModelClearFitZero(browserNumber)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContSetFitRangeButton(bStruct) : ButtonControl
@@ -445,7 +445,7 @@ Function BrowserContSetFitRangeButton(bStruct) : ButtonControl
 	endif
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
 	BrowserModelSetFitRange(browserNumber)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContClearFitRangeButton(bStruct) : ButtonControl
@@ -455,7 +455,7 @@ Function BrowserContClearFitRangeButton(bStruct) : ButtonControl
 	endif
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
 	BrowserModelClearFitRange(browserNumber)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContFitButton(bStruct) : ButtonControl
@@ -465,7 +465,7 @@ Function BrowserContFitButton(bStruct) : ButtonControl
 	endif
 	Variable browserNumber=BrowserNumberFromName(bStruct.win);
 	BrowserModelDoFit(browserNumber)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContFitTypePopup(pStruct) : PopupMenuControl
@@ -475,7 +475,7 @@ Function BrowserContFitTypePopup(pStruct) : PopupMenuControl
 	endif
 	Variable browserNumber=BrowserNumberFromName(pStruct.win);
 	BrowserModelSetFitType(browserNumber,pStruct.popstr)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContHoldYOffsetCB(cbStruct) : CheckBoxControl
@@ -485,7 +485,7 @@ Function BrowserContHoldYOffsetCB(cbStruct) : CheckBoxControl
 	endif
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
 	BrowserModelSetHoldYOffset(browserNumber,cbStruct.checked)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContYOffsetHeldValueSV(svStruct) : SetVariableControl
@@ -496,7 +496,7 @@ Function BrowserContYOffsetHeldValueSV(svStruct) : SetVariableControl
 	String browserName=svStruct.win
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	BrowserModelSetYOffsetHeldValue(browserNumber,svStruct.dval)
-	BrowserViewModelChanged(browserNumber)	
+	BrowserViewUpdate(browserNumber)	
 End
 
 Function BrowserContRescaleCB(cbStruct) : CheckBoxControl
@@ -505,7 +505,7 @@ Function BrowserContRescaleCB(cbStruct) : CheckBoxControl
 		return 0							// we only handle mouse up in control
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContAllSweepsCB(cbStruct) : CheckBoxControl
@@ -515,7 +515,7 @@ Function BrowserContAllSweepsCB(cbStruct) : CheckBoxControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
 	BrowserModelSetAverageAllSweeps(browserNumber,cbStruct.checked)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContFirstSweepSV(svStruct) : SetVariableControl
@@ -545,7 +545,7 @@ Function BrowserContAllStepsCB(cbStruct) : CheckBoxControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
 	BrowserModelSetAverageAllSteps(browserNumber,cbStruct.checked)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContStepsSV(svStruct) : SetVariableControl
@@ -556,7 +556,7 @@ Function BrowserContStepsSV(svStruct) : SetVariableControl
 	String browserName=svStruct.win
 	Variable browserNumber=BrowserNumberFromName(browserName)
 	BrowserModelSetStepToAverage(browserNumber,svStruct.dval)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContRenameAveragesCB(cbStruct) : CheckBoxControl
@@ -566,7 +566,7 @@ Function BrowserContRenameAveragesCB(cbStruct) : CheckBoxControl
 	endif	
 	Variable browserNumber=BrowserNumberFromName(cbStruct.win)
 	BrowserModelSetRenameAverages(browserNumber,cbStruct.checked)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContTraceAColorPopup(pStruct) : PopupMenuControl
@@ -576,7 +576,7 @@ Function BrowserContTraceAColorPopup(pStruct) : PopupMenuControl
 	endif
 	Variable browserNumber=BrowserNumberFromName(pStruct.win);		
 	BrowserModelSetColorNameA(browserNumber,pStruct.popStr)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContTraceBColorPopup(pStruct) : PopupMenuControl
@@ -586,7 +586,7 @@ Function BrowserContTraceBColorPopup(pStruct) : PopupMenuControl
 	endif
 	Variable browserNumber=BrowserNumberFromName(pStruct.win);		
 	BrowserModelSetColorNameB(browserNumber,pStruct.popStr)
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function BrowserContAverageSweepsButton(bStruct) : ButtonControl
@@ -656,7 +656,7 @@ Function BrowserContAverageSweepsButton(bStruct) : ButtonControl
 	endif
 	
 	// Notify the view, mainly because the valid range of the sweep index SV may have changed
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 End
 
 Function /S BrowserContFigureDestWaveName(browserNumber,destSweepIndex,waveBaseName)

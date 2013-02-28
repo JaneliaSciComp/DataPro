@@ -124,7 +124,7 @@ Function PSCBControllerRiseTauSVTwiddled(svStruct) : SetVariableControl
 		// valid value, set the instance var
 		BuilderModelSetParameter("PSC","tauRise",value)
 	endif
-	BuilderViewModelChanged("PSC")
+	BuilderViewUpdate("PSC")
 	
 	SetDataFolder savedDF
 End
@@ -152,7 +152,7 @@ Function PSCBControllerDecayTauSVTwid(svStruct) : SetVariableControl
 		// valid value, set the instance var
 		BuilderModelSetParameter("PSC",parameterName,value)
 	endif
-	BuilderViewModelChanged("PSC")
+	BuilderViewUpdate("PSC")
 	
 	SetDataFolder savedDF
 End

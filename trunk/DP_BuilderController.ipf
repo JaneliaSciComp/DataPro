@@ -26,7 +26,7 @@ Function BuilderContSVTwiddled(svStruct) : SetVariableControl
 	
 	// Tell the model, tell the view
 	BuilderModelSetParameter(builderType,parameterName,value)
-	BuilderViewModelChanged(builderType)
+	BuilderViewUpdate(builderType)
 End
 
 Function BuilderContSaveAsButtonPressed(bStruct) : ButtonControl
@@ -86,13 +86,13 @@ Function BuilderContImportButtonPressed(bStruct) : ButtonControl
 		return -1		// user hit Cancel
 	endif
 	BuilderModelImportWave(builderType,fancyWaveNameString)
-	BuilderViewModelChanged(builderType)
+	BuilderViewUpdate(builderType)
 End
 
 Function BuilderContSweepDtOrTChngd(builderType)
 	// Used to notify the Sine Builder of a change to dt or totalDuration in the Sweeper.
 	String builderType
 	BuilderModelSweeperDtOrTChanged(builderType)
-	BuilderViewModelChanged(builderType)
+	BuilderViewUpdate(builderType)
 End
 
