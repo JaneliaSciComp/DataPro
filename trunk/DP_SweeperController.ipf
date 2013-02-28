@@ -15,7 +15,7 @@ Function SweeperControllerSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariab
 	SweeperUpdateStepPulseWave()	// Update this wave
 	SweeperUpdateSynPulseWave()	// Update this wave
 	SweeperViewSweeperChanged()	// Tell the view that the model has changed	
-	OVControllerSweeperWavesChanged()	// Tell the OutputViewer that the sweeper waves were (possibly) changed
+	OutputViewerContSweprWavsChngd()	// Tell the OutputViewer that the sweeper waves were (possibly) changed
 End
 
 Function SweeperContDtWantedSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
@@ -46,7 +46,7 @@ Function SweepContDtOrTotalDurChanged()
 	BuilderContSweepDtOrTChngd("Ramp")
 	BuilderContSweepDtOrTChngd("Train")
 	BuilderContSweepDtOrTChngd("Step")
-	OVControllerSweeperWavesChanged()	// Tell the OutputViewer that the sweeper waves have changed	
+	OutputViewerContSweprWavsChngd()	// Tell the OutputViewer that the sweeper waves have changed	
 End
 
 Function SCGetDataButtonPressed(ctrlName) : ButtonControl
@@ -59,6 +59,7 @@ Function SweeperControllerADCCheckbox(ctrlName,checked) : CheckBoxControl
 	Variable checked
 	Variable iChannel=str2num(ctrlName[3])
 	SweeperContSetADCChannelOn(iChannel,checked)
+	SwitcherContDigitizerEtcChngd()
 End
 
 Function SweeperContSetADCChannelOn(iChannel,on)
@@ -90,6 +91,7 @@ Function SweeperControllerDACCheckbox(ctrlName,checked) : CheckBoxControl
 	Variable checked
 	Variable iChannel=str2num(ctrlName[3])
 	SweeperContSetDACChannelOn(iChannel,checked)
+	SwitcherContDigitizerEtcChngd()
 End
 
 Function SweeperContSetDACChannelOn(iChannel,on)
@@ -284,7 +286,7 @@ Function SweeperControllerAddDACWave(w,waveNameString)
 	endif
 	SweeperAddDACWave(w,waveNameString)
 	SweeperViewSweeperChanged()
-	OVControllerSweeperWavesChanged()
+	OutputViewerContSweprWavsChngd()
 End
 
 Function SweeperControllerAddTTLWave(w,waveNameString)
@@ -295,7 +297,7 @@ Function SweeperControllerAddTTLWave(w,waveNameString)
 	endif
 	SweeperAddTTLWave(w,waveNameString)
 	SweeperViewSweeperChanged()
-	OVControllerSweeperWavesChanged()
+	OutputViewerContSweprWavsChngd()
 End
 
 Function SweepControllerDigitizerChanged()
