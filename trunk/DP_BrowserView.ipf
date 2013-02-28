@@ -101,7 +101,7 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	CheckBox showToolsCheckbox,win=$browserName,title="Show Tools",variable=$absVarName
 	
 	// Sync the view with the "model"
-	BrowserViewModelChanged(browserNumber)
+	BrowserViewUpdate(browserNumber)
 	
 	// Restore old data folder
 	SetDataFolder savedDFName	
@@ -328,7 +328,7 @@ Function BrowserViewDrawToolsPanel(browserNumber) : Panel
 	SetDataFolder savedDF	
 End
 
-Function BrowserViewModelChanged(browserNumber)
+Function BrowserViewUpdate(browserNumber)
 	// This syncs the indicated DPBrowser view to the values of the model variables in the browser's DF,
 	// which are assumed to be self-consistent.
 	Variable browserNumber
