@@ -24,4 +24,13 @@ Mainly code refactoring.  Some minor user-facing changes.
 
 
 
+7.02 -> 7.03     (March 7, 2013)
+
+Improved in many, many ways.  This release marks the completion of 
+"Phase I" of the DataPro project at Janelia.
+
+
+
+
+
 

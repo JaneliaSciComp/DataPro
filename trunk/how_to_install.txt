@@ -33,7 +33,7 @@ If you _do_ need to also use older versions of DataPro:
 In either case, if DataPro is installed correctly, you should have a
 menu item called "DataPro" in the Igor Pro main menu.
 
-To start DataPro, select "Start DataPro" from the "DataPro" menu.
+To start DataPro, select "Start" from the "DataPro" menu.
 
 
 On a Mac, the installation procedure is similar, except that you have
