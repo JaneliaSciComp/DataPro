@@ -164,27 +164,26 @@ Function SweeperControllerAcquireTrial()
 	// Acquire a single trial, which is composed of n sweeps
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Sweeper
-	Variable start_time, last_time
+	Variable startTime, endTime, sweepDuration, sleepDuration 	// all in seconds
 	String temp_comments, doit
 	NVAR nSweepsPerTrial
 	NVAR sweepInterval
 	String comment
 	Variable iSweepWithinTrial
 	for (iSweepWithinTrial=0;iSweepWithinTrial<nSweepsPerTrial; iSweepWithinTrial+=1)	
-		if (iSweepWithinTrial<1)
-			start_time = DateTime		// "Unlike most Igor functions, DateTime is used without parentheses."
-		else
-			start_time = last_time + sweepInterval
-		endif
 		if (nSweepsPerTrial==1)
 			sprintf comment "stim %d of %d",iSweepWithinTrial+1,nSweepsPerTrial
 		else
 			sprintf comment "stim %d of %d, with inter-stim-interval of %g s",iSweepWithinTrial+1,nSweepsPerTrial,sweepInterval
 		endif
-		sprintf doit, "Sleep /A %s", Secs2Time(start_time,3)
-		Execute doit
+		startTime = DateTime		// "Unlike most Igor functions, DateTime is used without parentheses."
 		SweeperControllerAcquireSweep(comment)
-		last_time = start_time
+		endTime=DateTime
+		sweepDuration=endTime-startTime
+		sleepDuration=max(0,sweepInterval-sweepDuration)
+		if (iSweepWithinTrial<nSweepsPerTrial-1)	// Don't sleep after the last sweep
+ 			Sleep /S sleepDuration	// sleep for sleepDuration seconds
+ 		endif
 	endfor
 	SetDataFolder savedDF
 End
