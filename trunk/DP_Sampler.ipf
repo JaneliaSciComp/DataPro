@@ -1,6 +1,11 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 Function SamplerConstructor()
+	// if the DF already exists, nothing to do
+	if (DataFolderExists("root:DP_Sampler"))
+		return 0		// have to return something
+	endif
+
 	// Save the current DF
 	String savedDF=GetDataFolder(1)
 	
