@@ -12,7 +12,7 @@ If you don't need to also use older versions of DataPro:
 
 -----
 
-If you _do_ need to also use older versions of DataPro:
+If you _do_ need to also use old (pre-version-7) versions of DataPro :
 
 -----
 1. Copy the DataPro folder to the "User Procedures" (NOT "Igor
@@ -29,6 +29,10 @@ If you _do_ need to also use older versions of DataPro:
    have to do this for each experiment and/or template that you want
    to use this version of DataPro with.)
 -----
+
+If you want to use two post-version-7 versions of DataPro in parallel, 
+I'm afraid there is no particularly good way to do that right now.  I 
+suggest redoing your existing templates with the newer version of DataPro.
 
 In either case, if DataPro is installed correctly, you should have a
 menu item called "DataPro" in the Igor Pro main menu.
@@ -47,3 +51,4 @@ You do this by creating an alias of
 
 and putting the alias in your Igor Extensions folder under your home
 directory.  (You have to remove the " alias" from the name, also.)
+
