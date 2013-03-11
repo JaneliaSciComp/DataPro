@@ -33,4 +33,15 @@ Improved in many, many ways.  This release marks the completion of
 
 
 
+7.03 -> 7.04     (March 11, 2013)
+
+Added a Switcher to work with Axon Instruments computer-controlled amplifier.
+DataPro now gets initialized after a compile instead of on Igor Pro start up, 
+which is more generally appropriate.
+DataPro used to not allow you to turn of all input channels, or all output 
+channels, in the Sweeper.  It now allows you to do this, but disables the 
+Get Data until you turn on at least one input and one output channel.
+
+
+
 
