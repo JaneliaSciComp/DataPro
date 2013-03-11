@@ -60,6 +60,7 @@ Function SweeperControllerADCCheckbox(ctrlName,checked) : CheckBoxControl
 	Variable iChannel=str2num(ctrlName[3])
 	SweeperContSetADCChannelOn(iChannel,checked)
 	SwitcherViewUpdate()
+	ASwitcherViewUpdate()
 End
 
 Function SweeperContSetADCChannelOn(iChannel,on)
@@ -92,6 +93,7 @@ Function SweeperControllerDACCheckbox(ctrlName,checked) : CheckBoxControl
 	Variable iChannel=str2num(ctrlName[3])
 	SweeperContSetDACChannelOn(iChannel,checked)
 	SwitcherViewUpdate()
+	ASwitcherViewUpdate()
 End
 
 Function SweeperContSetDACChannelOn(iChannel,on)
