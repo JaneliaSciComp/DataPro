@@ -9,7 +9,9 @@ Initial release of DataPro at Janelia Farm.
 7.00 -> 7.01    (August 24, 2012)
 
 Aquiring a sweep now updates all DataPro browser windows.
+
 Reduced minimum y limits in Test Pulse Display from [-1,+1] to [-0.2,+0.2].
+
 Updated installation instructions.
 
 
@@ -38,10 +40,16 @@ Improved in many, many ways.  This release marks the completion of
 Added a Switcher to work with Axon Instruments computer-controlled amplifier.
 DataPro now gets initialized after a compile instead of on Igor Pro start up, 
 which is more generally appropriate.
+
 DataPro used to not allow you to turn of all input channels, or all output 
 channels, in the Sweeper.  It now allows you to do this, but disables the 
 Get Data until you turn on at least one input and one output channel.
 
 
 
+
+7.04 -> 7.05    (May 14, 2013)
+
+Made it easier for a single user to use different versions of DataPro
+without going insane.
 
