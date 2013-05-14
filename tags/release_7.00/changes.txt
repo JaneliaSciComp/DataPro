@@ -1,4 +1,0 @@
-7.00   (August 23, 2012)
-
-Initial release of DataPro at Janelia Farm.
-
