@@ -724,3 +724,19 @@ Function cursorXPosition(cursorName,graphName)
 	endif
 	return x		
 End
+
+Function squareWave(x,dutyCycle)
+	Variable x, dutyCycle
+	Variable f=x-floor(x)	// fractional part of x
+	return (x<dutyCycle)
+End
+
+Function unitStep(x)
+	Variable x
+	return (x>=0)
+End
+
+Function unitWindow(x,duration)
+	Variable x, duration
+	return ( (x>=0)&&(x<duration) )
+End
