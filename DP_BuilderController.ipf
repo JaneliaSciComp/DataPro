@@ -90,7 +90,7 @@ Function BuilderContImportButtonPressed(bStruct) : ButtonControl
 End
 
 Function BuilderContSweepDtOrTChngd(builderType)
-	// Used to notify the Sine Builder of a change to dt or totalDuration in the Sweeper.
+	// Used to notify the Builder of a change to dt or totalDuration in the Sweeper.
 	String builderType
 	BuilderModelSweeperDtOrTChanged(builderType)
 	BuilderViewUpdate(builderType)
