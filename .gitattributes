@@ -6,8 +6,9 @@
 
 # Declare files that will always have CRLF line endings on checkout.
 #*.sln text eol=crlf
-.ipf text eol=crlf
-.txt text eol=crlf
+.gitattributes text eol=crlf
+*.ipf text eol=crlf
+*.txt text eol=crlf
 # We do this b/c everyone does acquisition on Windows, and Igor on Mac
 # is smart enough to deal with CR/LF line endings.
 
