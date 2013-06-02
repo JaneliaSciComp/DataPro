@@ -62,9 +62,9 @@ Function StepBuilderViewConstructor() : Graph
 	SetVariable level5SV,win=StepBuilderView,pos={xOffset,15},size={100,15},proc=BuilderContSVTwiddled,title="Level 5"
 	SetVariable level5SV,win=StepBuilderView,limits={-10000,10000,10},value= _NUM:level5
 	
-	Button saveAsDACButton,win=StepBuilderView,pos={801,5},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As DAC..."
-	Button saveAsTTLButton,win=StepBuilderView,pos={801,30},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As TTL..."
-	Button importButton,win=StepBuilderView,pos={801,55},size={90,20},proc=BuilderContImportButtonPressed,title="Import..."
+	Button saveAsDACButton,win=StepBuilderView,pos={801,10},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As..."
+	//Button saveAsTTLButton,win=StepBuilderView,pos={801,30},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As TTL..."
+	Button importButton,win=StepBuilderView,pos={801,45},size={90,20},proc=BuilderContImportButtonPressed,title="Import..."
 
 	SetDataFolder savedDF
 End

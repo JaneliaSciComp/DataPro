@@ -6,12 +6,12 @@ Function TrainBuilderViewConstructor() : Graph
 	SetDataFolder root:DP_TrainBuilder
 	WAVE theWave
 	WAVE parameters
-	Variable baseLevel=parameters[0]
-	Variable delay=parameters[1]
-	Variable nPulses=parameters[2]
+	Variable delay=parameters[0]
+	Variable duration=parameters[1]
+	Variable pulseRate=parameters[2]				
 	Variable pulseDuration=parameters[3]			
-	Variable pulseAmplitude=parameters[4]			
-	Variable pulseFrequency=parameters[5]				
+	Variable baseLevel=parameters[4]
+	Variable amplitude=parameters[5]			
 	// These are all in pixels
 	Variable xOffset=105
 	Variable yOffset=200
@@ -31,27 +31,27 @@ Function TrainBuilderViewConstructor() : Graph
 	ModifyGraph /W=TrainBuilderView /Z tickUnit(left)=1
 	ControlBar 80
 
-	SetVariable baseLevelSV,win=TrainBuilderView,pos={15,15},size={110,15},proc=BuilderContSVTwiddled,title="Base Level"
-	SetVariable baseLevelSV,win=TrainBuilderView,limits={-10000,10000,1},value= _NUM:baseLevel
-
-	SetVariable delaySV,win=TrainBuilderView,pos={15,45},size={110,15},proc=BuilderContSVTwiddled,title="Delay (ms)"
+	SetVariable delaySV,win=TrainBuilderView,pos={15,15},size={110,15},proc=BuilderContSVTwiddled,title="Delay (ms)"
 	SetVariable delaySV,win=TrainBuilderView,limits={0,200000,1},value= _NUM:delay
 
-	SetVariable pulseAmplitudeSV,win=TrainBuilderView,pos={155,15},size={130,15},proc=BuilderContSVTwiddled,title="Pulse Amplitude"
-	SetVariable pulseAmplitudeSV,win=TrainBuilderView,limits={-10000,10000,10},value= _NUM:pulseAmplitude
+	SetVariable durationSV,win=TrainBuilderView,pos={15,45},size={125,15},proc=BuilderContSVTwiddled,title="Duration (ms)"
+	SetVariable durationSV,win=TrainBuilderView,limits={1,inf,1},value= _NUM:duration
+
+	SetVariable pulseRateSV,win=TrainBuilderView,pos={155,15},size={150,15},proc=BuilderContSVTwiddled,title="Pulse Rate (Hz)"
+	SetVariable pulseRateSV,win=TrainBuilderView,limits={0.001,inf,10},value= _NUM:pulseRate
 
 	SetVariable pulseDurationSV,win=TrainBuilderView,pos={155,45},size={140,15},proc=BuilderContSVTwiddled,title="Pulse Duration (ms)"
 	SetVariable pulseDurationSV,win=TrainBuilderView,limits={0.001,inf,1},value= _NUM:pulseDuration
 
-	SetVariable nPulsesSV,win=TrainBuilderView,pos={330,15},size={105,15},proc=BuilderContSVTwiddled,title="# of Pulses"
-	SetVariable nPulsesSV,win=TrainBuilderView,limits={1,inf,1},value= _NUM:nPulses
+	SetVariable baseLevelSV,win=TrainBuilderView,pos={330,15},size={110,15},proc=BuilderContSVTwiddled,title="Base Level"
+	SetVariable baseLevelSV,win=TrainBuilderView,limits={-10000,10000,1},value= _NUM:baseLevel
 
-	SetVariable pulseFrequencySV,win=TrainBuilderView,pos={330,45},size={150,15},proc=BuilderContSVTwiddled,title="Pulse Frequency (Hz)"
-	SetVariable pulseFrequencySV,win=TrainBuilderView,limits={0.001,inf,10},value= _NUM:pulseFrequency
+	SetVariable amplitudeSV,win=TrainBuilderView,pos={330,45},size={130,15},proc=BuilderContSVTwiddled,title="Amplitude"
+	SetVariable amplitudeSV,win=TrainBuilderView,limits={-10000,10000,10},value= _NUM:amplitude
 	
-	Button saveAsDACButton,win=TrainBuilderView,pos={601,5},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As DAC..."
-	Button saveAsTTLButton,win=TrainBuilderView,pos={601,30},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As TTL..."
-	Button importButton,win=TrainBuilderView,pos={601,55},size={90,20},proc=BuilderContImportButtonPressed,title="Import..."
+	Button saveAsDACButton,win=TrainBuilderView,pos={601,10},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As..."
+	//Button saveAsTTLButton,win=TrainBuilderView,pos={601,30},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As TTL..."
+	Button importButton,win=TrainBuilderView,pos={601,45},size={90,20},proc=BuilderContImportButtonPressed,title="Import..."
 	SetDataFolder savedDF
 End
 
@@ -62,19 +62,19 @@ Function TrainBuilderModelInitialize()
 	WAVE parametersDefault
 	WAVE parameters
 	Redimension /N=(nParameters) parameterNames
-	parameterNames[0]="baseLevel"
-	parameterNames[1]="delay"
-	parameterNames[2]="nPulses"
+	parameterNames[0]="delay"
+	parameterNames[1]="duration"
+	parameterNames[2]="pulseRate"
 	parameterNames[3]="pulseDuration"
-	parameterNames[4]="pulseAmplitude"
-	parameterNames[5]="pulseFrequency"
+	parameterNames[4]="baseLevel"
+	parameterNames[5]="amplitude"
 	Redimension /N=(nParameters) parametersDefault
-	parametersDefault[0]=0
-	parametersDefault[1]=20		// ms
-	parametersDefault[2]=10
+	parametersDefault[0]=20		// ms
+	parametersDefault[1]=100		// ms
+	parametersDefault[2]=100		// Hz
 	parametersDefault[3]=2		// ms
-	parametersDefault[4]=10
-	parametersDefault[5]=100		// Hz
+	parametersDefault[4]=0
+	parametersDefault[5]=10
 	Redimension /N=(nParameters) parameters
 	parameters=parametersDefault
 End
@@ -85,27 +85,13 @@ Function fillTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)
 	Wave parameters
 	Wave /T parameterNames
 
-	Variable baseLevel=parameters[0]
-	Variable delay=parameters[1]
-	Variable nPulses=parameters[2]
-	Variable pulseDuration=parameters[3]			
-	Variable pulseAmplitude=parameters[4]			
-	Variable pulseFrequency=parameters[5]				
+	Variable delay=parameters[0]
+	Variable duration=parameters[1]
+	Variable pulseRate=parameters[2]				
+	Variable pulseDuration=parameters[3]
+	Variable baseLevel=parameters[4]
+	Variable amplitude=parameters[5]			
 
-	Variable nDelay=round(delay/dt)
-	w=baseLevel		// set everything to baseLevel
-	Variable nPulse=round(pulseDuration/dt)
-	Variable pulsePeriod=1000/pulseFrequency		// ms
-	Variable nPeriod=round(pulsePeriod/dt)
-	Variable nInterPulse=nPeriod-nPulse
-	Variable jOffset=nDelay
-	Variable i
-	for (i=0; i<nPulses; i+=1)
-		if (jOffset>=nScans)
-			break
-		endif
-		w[jOffset,jOffset+nPulse-1]=baseLevel+pulseAmplitude
-		jOffset+=nPeriod;
-	endfor
+	Variable pulseDutyCycle=max(0,min((pulseDuration/1000)*pulseRate,1))		// pure
+	w=baseLevel+amplitude*unitWindow(x-delay,duration)*squareWave(pulseRate*(x-delay)/1000,pulseDutyCycle)
 End
-
