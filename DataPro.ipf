@@ -23,8 +23,10 @@
 #include ":datapro_rel_705:DP_PSCBuilder"
 #include ":datapro_rel_705:DP_RampBuilder"
 #include ":datapro_rel_705:DP_TrainBuilder"
+#include ":datapro_rel_705:DP_TTLTrainBuilder"
 #include ":datapro_rel_705:DP_MulTrainBuilder"
-#include ":datapro_rel_705:DP_StepBuilder"
+#include ":datapro_rel_705:DP_TTLMTrainBuilder"
+#include ":datapro_rel_705:DP_StairBuilder"
 #include ":datapro_rel_705:DP_OutputViewer"
 #include ":datapro_rel_705:DP_Utilities"
 #include ":datapro_rel_705:DP_MyProcedures"
@@ -52,9 +54,11 @@ Menu "DataPro"
 	"-"
 	"Test Pulser",TestPulserContConstructor()
 	"-"
-	"Step Builder",BuilderContConstructor("Step")
+	"Stair Builder",BuilderContConstructor("Stair")
 	"Train Builder",BuilderContConstructor("Train")
+	"TTL Train Builder",BuilderContConstructor("TTLTrain")
 	"Multiple Train Builder",BuilderContConstructor("MulTrain")
+	"Multiple TTL Train Builder",BuilderContConstructor("TTLMTrain")
 	"Ramp Builder",BuilderContConstructor("Ramp")
 	"PSC Builder",BuilderContConstructor("PSC")
 	"Sine Builder",BuilderContConstructor("Sine")

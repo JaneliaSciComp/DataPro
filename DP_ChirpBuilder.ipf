@@ -78,22 +78,24 @@ Function fillChirpFromParamsBang(w,dt,nScans,parameters,parameterNames)
 	Variable initialFrequency=parameters[3]
 	Variable finalFrequency=parameters[4]
 
-	Variable jFirst=0
-	Variable jLast=round(delay/dt)-1
-	if (jFirst>=nScans)
-		return 0
-	endif
-	w[jFirst,jLast]=0
-	jFirst=jLast+1
-	jLast=jFirst+round(duration/dt)-1
-	if (jFirst>=nScans)
-		return 0
-	endif
-	w[jFirst,jLast]=amplitude*sin(2*PI*(x-delay)/1000*(0.5*(finalFrequency-initialFrequency)/(duration/1000)*(x-delay)/1000+initialFrequency))
-	jFirst=jLast+1
-	jLast=nScans-1
-	if (jFirst>=nScans)
-		return 0
-	endif
-	w[jFirst,jLast]=0	
+//	Variable jFirst=0
+//	Variable jLast=round(delay/dt)-1
+//	if (jFirst>=nScans)
+//		return 0
+//	endif
+//	w[jFirst,jLast]=0
+//	jFirst=jLast+1
+//	jLast=jFirst+round(duration/dt)-1
+//	if (jFirst>=nScans)
+//		return 0
+//	endif
+//	w[jFirst,jLast]=amplitude*sin(2*PI*(x-delay)/1000*(0.5*(finalFrequency-initialFrequency)/(duration/1000)*(x-delay)/1000+initialFrequency))
+//	jFirst=jLast+1
+//	jLast=nScans-1
+//	if (jFirst>=nScans)
+//		return 0
+//	endif
+//	w[jFirst,jLast]=0	
+	
+	w=amplitude*unitPulse(x-delay,duration)*amplitude*sin(2*PI*(x-delay)/1000*(0.5*(finalFrequency-initialFrequency)/(duration/1000)*(x-delay)/1000+initialFrequency))
 End

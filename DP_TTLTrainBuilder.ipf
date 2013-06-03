@@ -10,8 +10,8 @@ Function TTLTrainBuilderViewConstructor() : Graph
 	Variable duration=parameters[1]
 	Variable pulseRate=parameters[2]				
 	Variable pulseDuration=parameters[3]			
-	Variable baseLevel=parameters[4]
-	Variable amplitude=parameters[5]			
+	//Variable baseLevel=parameters[4]
+	//Variable amplitude=parameters[5]			
 	// These are all in pixels
 	Variable xOffset=105
 	Variable yOffset=200
@@ -43,13 +43,13 @@ Function TTLTrainBuilderViewConstructor() : Graph
 	SetVariable pulseDurationSV,win=TTLTrainBuilderView,pos={155,45},size={140,15},proc=BuilderContSVTwiddled,title="Pulse Duration (ms)"
 	SetVariable pulseDurationSV,win=TTLTrainBuilderView,limits={0.001,inf,1},value= _NUM:pulseDuration
 
-	SetVariable baseLevelSV,win=TTLTrainBuilderView,pos={330,15},size={110,15},proc=BuilderContSVTwiddled,title="Base Level"
-	SetVariable baseLevelSV,win=TTLTrainBuilderView,limits={-10000,10000,1},value= _NUM:baseLevel
+	//SetVariable baseLevelSV,win=TTLTrainBuilderView,pos={330,15},size={110,15},proc=BuilderContSVTwiddled,title="Base Level"
+	//SetVariable baseLevelSV,win=TTLTrainBuilderView,limits={-10000,10000,1},value= _NUM:baseLevel
 
-	SetVariable amplitudeSV,win=TTLTrainBuilderView,pos={330,45},size={130,15},proc=BuilderContSVTwiddled,title="Amplitude"
-	SetVariable amplitudeSV,win=TTLTrainBuilderView,limits={-10000,10000,10},value= _NUM:amplitude
+	//SetVariable amplitudeSV,win=TTLTrainBuilderView,pos={330,45},size={130,15},proc=BuilderContSVTwiddled,title="Amplitude"
+	//SetVariable amplitudeSV,win=TTLTrainBuilderView,limits={-10000,10000,10},value= _NUM:amplitude
 	
-	Button saveAsDACButton,win=TTLTrainBuilderView,pos={601,10},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As..."
+	Button saveAsTTLButton,win=TTLTrainBuilderView,pos={601,10},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As..."
 	//Button saveAsTTLButton,win=TTLTrainBuilderView,pos={601,30},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As TTL..."
 	Button importButton,win=TTLTrainBuilderView,pos={601,45},size={90,20},proc=BuilderContImportButtonPressed,title="Import..."
 	SetDataFolder savedDF
@@ -57,7 +57,7 @@ End
 
 Function TTLTrainBuilderModelInitialize()
 	// Called from the constructor, so DF already set.
-	Variable nParameters=6
+	Variable nParameters=4
 	WAVE /T parameterNames
 	WAVE parametersDefault
 	WAVE parameters
@@ -66,15 +66,15 @@ Function TTLTrainBuilderModelInitialize()
 	parameterNames[1]="duration"
 	parameterNames[2]="pulseRate"
 	parameterNames[3]="pulseDuration"
-	parameterNames[4]="baseLevel"
-	parameterNames[5]="amplitude"
+	//parameterNames[4]="baseLevel"
+	//parameterNames[5]="amplitude"
 	Redimension /N=(nParameters) parametersDefault
 	parametersDefault[0]=20		// ms
 	parametersDefault[1]=100		// ms
 	parametersDefault[2]=100		// Hz
 	parametersDefault[3]=2		// ms
-	parametersDefault[4]=0
-	parametersDefault[5]=10
+	//parametersDefault[4]=0
+	//parametersDefault[5]=10
 	Redimension /N=(nParameters) parameters
 	parameters=parametersDefault
 End
@@ -89,9 +89,9 @@ Function fillTTLTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)
 	Variable duration=parameters[1]
 	Variable pulseRate=parameters[2]				
 	Variable pulseDuration=parameters[3]
-	Variable baseLevel=parameters[4]
-	Variable amplitude=parameters[5]			
+	//Variable baseLevel=parameters[4]
+	//Variable amplitude=parameters[5]			
 
 	Variable pulseDutyCycle=max(0,min((pulseDuration/1000)*pulseRate,1))		// pure
-	w=baseLevel+amplitude*unitWindow(x-delay,duration)*squareWave(pulseRate*(x-delay)/1000,pulseDutyCycle)
+	w=unitPulse(x-delay,duration)*squareWave(pulseRate*(x-delay)/1000,pulseDutyCycle)
 End

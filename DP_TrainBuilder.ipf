@@ -93,5 +93,5 @@ Function fillTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)
 	Variable amplitude=parameters[5]			
 
 	Variable pulseDutyCycle=max(0,min((pulseDuration/1000)*pulseRate,1))		// pure
-	w=baseLevel+amplitude*unitWindow(x-delay,duration)*squareWave(pulseRate*(x-delay)/1000,pulseDutyCycle)
+	w=baseLevel+amplitude*unitPulse(x-delay,duration)*squareWave(pulseRate*(x-delay)/1000,pulseDutyCycle)
 End

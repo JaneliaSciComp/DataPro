@@ -72,22 +72,24 @@ Function fillSineFromParamsBang(w,dt,nScans,parameters,parameterNames)
 	Variable amplitude=parameters[2]
 	Variable frequency=parameters[3]
 
-	Variable jFirst=0
-	Variable jLast=round(delay/dt)-1
-	if (jFirst>=nScans)
-		return 0
-	endif
-	w[jFirst,jLast]=0
-	jFirst=jLast+1
-	jLast=jFirst+round(duration/dt)-1
-	if (jFirst>=nScans)
-		return 0
-	endif
-	w[jFirst,jLast]=amplitude*sin(frequency*2*PI*(x-delay)/1000)
-	jFirst=jLast+1
-	jLast=nScans-1
-	if (jFirst>=nScans)
-		return 0
-	endif
-	w[jFirst,jLast]=0	
+//	Variable jFirst=0
+//	Variable jLast=round(delay/dt)-1
+//	if (jFirst>=nScans)
+//		return 0
+//	endif
+//	w[jFirst,jLast]=0
+//	jFirst=jLast+1
+//	jLast=jFirst+round(duration/dt)-1
+//	if (jFirst>=nScans)
+//		return 0
+//	endif
+//	w[jFirst,jLast]=amplitude*sin(frequency*2*PI*(x-delay)/1000)
+//	jFirst=jLast+1
+//	jLast=nScans-1
+//	if (jFirst>=nScans)
+//		return 0
+//	endif
+//	w[jFirst,jLast]=0
+	
+	w=amplitude*unitPulse(x-delay,duration)*sin(frequency*2*PI*(x-delay)/1000)
 End
