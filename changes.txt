@@ -53,3 +53,16 @@ Get Data until you turn on at least one input and one output channel.
 Made it easier for a single user to use different versions of DataPro
 without going insane.
 
+
+
+
+7.05 -> 7.06    (June 3, 2013)
+
+Added Chirp Builder, Multiple Train Builder, Multiple TTL Train
+Builder.  Split Train Builder in Train Builder and TTL Train Builder.
+Renamed Step Builder to Stair Builder.  In general, each builder is
+now designed for either analog output or TTL output, but not both.
+
+Reimplemented how many of the builder outputs are constructed, for
+greater robustness.
+
