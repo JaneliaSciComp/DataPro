@@ -39,16 +39,16 @@ Function TTLMTrainBuilderViewConstructor() : Graph
 	SetVariable durationSV,win=TTLMTrainBuilderView,pos={15,45},size={125,15},proc=BuilderContSVTwiddled,title="Duration (ms)"
 	SetVariable durationSV,win=TTLMTrainBuilderView,limits={1,inf,1},value= _NUM:duration
 
-	SetVariable pulseRateSV,win=TTLMTrainBuilderView,pos={155,15},size={150,15},proc=BuilderContSVTwiddled,title="Pulse Rate (Hz)"
+	SetVariable pulseRateSV,win=TTLMTrainBuilderView,pos={330,15},size={150,15},proc=BuilderContSVTwiddled,title="Pulse Rate (Hz)"
 	SetVariable pulseRateSV,win=TTLMTrainBuilderView,limits={0.001,inf,10},value= _NUM:pulseRate
 
-	SetVariable pulseDurationSV,win=TTLMTrainBuilderView,pos={155,45},size={140,15},proc=BuilderContSVTwiddled,title="Pulse Duration (ms)"
+	SetVariable pulseDurationSV,win=TTLMTrainBuilderView,pos={330,45},size={140,15},proc=BuilderContSVTwiddled,title="Pulse Duration (ms)"
 	SetVariable pulseDurationSV,win=TTLMTrainBuilderView,limits={0.001,inf,1},value= _NUM:pulseDuration
 
-	SetVariable trainRateSV,win=TTLMTrainBuilderView,pos={330,15},size={150,15},proc=BuilderContSVTwiddled,title="Train Rate (Hz)"
+	SetVariable trainRateSV,win=TTLMTrainBuilderView,pos={155,15},size={150,15},proc=BuilderContSVTwiddled,title="Train Rate (Hz)"
 	SetVariable trainRateSV,win=TTLMTrainBuilderView,limits={0.001,inf,10},value= _NUM:trainRate
 
-	SetVariable trainDurationSV,win=TTLMTrainBuilderView,pos={330,45},size={140,15},proc=BuilderContSVTwiddled,title="Train Duration (ms)"
+	SetVariable trainDurationSV,win=TTLMTrainBuilderView,pos={155,45},size={140,15},proc=BuilderContSVTwiddled,title="Train Duration (ms)"
 	SetVariable trainDurationSV,win=TTLMTrainBuilderView,limits={0.001,inf,1},value= _NUM:trainDuration
 
 	//SetVariable baseLevelSV,win=TTLMTrainBuilderView,pos={330+175,15},size={110,15},proc=BuilderContSVTwiddled,title="Base Level"

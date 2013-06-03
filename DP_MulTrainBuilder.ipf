@@ -39,17 +39,17 @@ Function MulTrainBuilderViewConstructor() : Graph
 	SetVariable durationSV,win=MulTrainBuilderView,pos={15,45},size={125,15},proc=BuilderContSVTwiddled,title="Duration (ms)"
 	SetVariable durationSV,win=MulTrainBuilderView,limits={1,inf,1},value= _NUM:duration
 
-	SetVariable pulseRateSV,win=MulTrainBuilderView,pos={155,15},size={150,15},proc=BuilderContSVTwiddled,title="Pulse Rate (Hz)"
-	SetVariable pulseRateSV,win=MulTrainBuilderView,limits={0.001,inf,10},value= _NUM:pulseRate
-
-	SetVariable pulseDurationSV,win=MulTrainBuilderView,pos={155,45},size={140,15},proc=BuilderContSVTwiddled,title="Pulse Duration (ms)"
-	SetVariable pulseDurationSV,win=MulTrainBuilderView,limits={0.001,inf,1},value= _NUM:pulseDuration
-
-	SetVariable trainRateSV,win=MulTrainBuilderView,pos={330,15},size={150,15},proc=BuilderContSVTwiddled,title="Train Rate (Hz)"
+	SetVariable trainRateSV,win=MulTrainBuilderView,pos={155,15},size={150,15},proc=BuilderContSVTwiddled,title="Train Rate (Hz)"
 	SetVariable trainRateSV,win=MulTrainBuilderView,limits={0.001,inf,10},value= _NUM:trainRate
 
-	SetVariable trainDurationSV,win=MulTrainBuilderView,pos={330,45},size={140,15},proc=BuilderContSVTwiddled,title="Train Duration (ms)"
+	SetVariable trainDurationSV,win=MulTrainBuilderView,pos={155,45},size={140,15},proc=BuilderContSVTwiddled,title="Train Duration (ms)"
 	SetVariable trainDurationSV,win=MulTrainBuilderView,limits={0.001,inf,1},value= _NUM:trainDuration
+
+	SetVariable pulseRateSV,win=MulTrainBuilderView,pos={330,15},size={150,15},proc=BuilderContSVTwiddled,title="Pulse Rate (Hz)"
+	SetVariable pulseRateSV,win=MulTrainBuilderView,limits={0.001,inf,10},value= _NUM:pulseRate
+
+	SetVariable pulseDurationSV,win=MulTrainBuilderView,pos={330,45},size={140,15},proc=BuilderContSVTwiddled,title="Pulse Duration (ms)"
+	SetVariable pulseDurationSV,win=MulTrainBuilderView,limits={0.001,inf,1},value= _NUM:pulseDuration
 
 	SetVariable baseLevelSV,win=MulTrainBuilderView,pos={330+175,15},size={110,15},proc=BuilderContSVTwiddled,title="Base Level"
 	SetVariable baseLevelSV,win=MulTrainBuilderView,limits={-10000,10000,1},value= _NUM:baseLevel
