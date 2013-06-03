@@ -736,7 +736,7 @@ Function unitStep(x)
 	return (x>=0)
 End
 
-Function unitWindow(x,duration)
+Function unitPulse(x,duration)
 	Variable x, duration
 	return ( (x>=0)&&(x<duration) )
 End

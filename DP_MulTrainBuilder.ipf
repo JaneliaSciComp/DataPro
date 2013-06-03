@@ -108,5 +108,5 @@ Function fillMulTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)
 
 	Variable pulseDutyCycle=max(0,min((pulseDuration/1000)*pulseRate,1))		// pure
 	Variable trainDutyCycle=max(0,min((trainDuration/1000)*trainRate,1))		// pure
-	w=baseLevel+amplitude*unitWindow(x-delay,duration)*squareWave(trainRate*(x-delay)/1000,trainDutyCycle)*squareWave(pulseRate*(x-delay)/1000,pulseDutyCycle)
+	w=baseLevel+amplitude*unitPulse(x-delay,duration)*squareWave(trainRate*(x-delay)/1000,trainDutyCycle)*squareWave(pulseRate*(x-delay)/1000,pulseDutyCycle)
 End

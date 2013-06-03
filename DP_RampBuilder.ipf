@@ -77,14 +77,16 @@ Function fillRampFromParamsBang(w,dt,nScans,parameters,parameterNames)
 	Variable duration=parameters[2]
 	Variable postLevel=parameters[3]
 
-	Variable nDelay=round(delay/dt)
-	Variable nDuration=round(duration/dt)	
-	Variable slope=(postLevel-preLevel)/duration
-	w=postLevel
-	w[0,nDelay-1]=preLevel
-	if (nDelay>=nScans)
-		return 0
-	endif	
-	w[nDelay,nDelay+nDuration-1]=preLevel+slope*(x-delay)
+//	Variable nDelay=round(delay/dt)
+//	Variable nDuration=round(duration/dt)	
+//	Variable slope=(postLevel-preLevel)/duration
+//	w=postLevel
+//	w[0,nDelay-1]=preLevel
+//	if (nDelay>=nScans)
+//		return 0
+//	endif	
+//	w[nDelay,nDelay+nDuration-1]=preLevel+slope*(x-delay)
+	
+	w=preLevel+(postLevel-preLevel)*max(0,min((x-delay)/duration,1))
 End
 
