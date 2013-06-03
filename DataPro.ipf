@@ -23,6 +23,7 @@
 #include ":datapro_rel_705:DP_PSCBuilder"
 #include ":datapro_rel_705:DP_RampBuilder"
 #include ":datapro_rel_705:DP_TrainBuilder"
+#include ":datapro_rel_705:DP_MulTrainBuilder"
 #include ":datapro_rel_705:DP_StepBuilder"
 #include ":datapro_rel_705:DP_OutputViewer"
 #include ":datapro_rel_705:DP_Utilities"
@@ -53,6 +54,7 @@ Menu "DataPro"
 	"-"
 	"Step Builder",BuilderContConstructor("Step")
 	"Train Builder",BuilderContConstructor("Train")
+	"Multiple Train Builder",BuilderContConstructor("MulTrain")
 	"Ramp Builder",BuilderContConstructor("Ramp")
 	"PSC Builder",BuilderContConstructor("PSC")
 	"Sine Builder",BuilderContConstructor("Sine")

@@ -728,7 +728,7 @@ End
 Function squareWave(x,dutyCycle)
 	Variable x, dutyCycle
 	Variable f=x-floor(x)	// fractional part of x
-	return (x<dutyCycle)
+	return (f<dutyCycle)
 End
 
 Function unitStep(x)
