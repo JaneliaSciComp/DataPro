@@ -152,6 +152,13 @@ Function fillStairFromParamsBang(w,dt,nScans,parameters,parameterNames)
 	Variable delay4=duration3+delay3
 	Variable delay5=duration4+delay4
 	
-	w=level1+delta2*unitStep(x-delay2)+delta3*unitStep(x-delay3)+delta4*unitStep(x-delay4)+delta5*unitStep(x-delay5)
+       // Somewhat controversial, but in the common case that step starts are sample-aligned, and step durations are
+       // an integer multiple of dt, this ensures that each pulse is exactly duration/dt samples long
+	Variable delay2Tweaked=delay2-dt/2
+	Variable delay3Tweaked=delay3-dt/2
+	Variable delay4Tweaked=delay4-dt/2
+	Variable delay5Tweaked=delay5-dt/2
+	
+	w=level1+delta2*unitStep(x-delay2Tweaked)+delta3*unitStep(x-delay3Tweaked)+delta4*unitStep(x-delay4Tweaked)+delta5*unitStep(x-delay5Tweaked)
 End
 
