@@ -103,10 +103,14 @@ Function fillTTLMTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)
 	Variable pulseDuration=parameters[3]
 	Variable trainRate=parameters[4]				
 	Variable trainDuration=parameters[5]
-	//Variable baseLevel=parameters[6]
-	//Variable amplitude=parameters[7]			
+
+      	// Somewhat controversial, but in the common case that pulse starts are sample-aligned, and pulse durations are
+      	// an integer multiple of dt, this ensures that each pulse is exactly pulseDuration samples long
+	Variable delayTweaked=delay-dt/2
+       //Variable pulseDurationTweaked=pulseDuration-dt/2		
+       //Variable trainDurationTweaked=trainDuration-dt/2		
 
 	Variable pulseDutyCycle=max(0,min((pulseDuration/1000)*pulseRate,1))		// pure
 	Variable trainDutyCycle=max(0,min((trainDuration/1000)*trainRate,1))		// pure
-	w=unitPulse(x-delay,duration)*squareWave(trainRate*(x-delay)/1000,trainDutyCycle)*squareWave(pulseRate*(x-delay)/1000,pulseDutyCycle)
+	w=unitPulse(x-delayTweaked,duration)*squareWave(trainRate*(x-delayTweaked)/1000,trainDutyCycle)*squareWave(pulseRate*(x-delayTweaked)/1000,pulseDutyCycle)
 End

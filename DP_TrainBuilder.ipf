@@ -85,13 +85,14 @@ Function fillTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)
 	Wave parameters
 	Wave /T parameterNames
 
-	Variable delay=parameters[0]
-	Variable duration=parameters[1]
-	Variable pulseRate=parameters[2]				
-	Variable pulseDuration=parameters[3]
+	fillTTLTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)
+
+	//Variable delay=parameters[0]
+	//Variable duration=parameters[1]
+	//Variable pulseRate=parameters[2]				
+	//Variable pulseDuration=parameters[3]
 	Variable baseLevel=parameters[4]
 	Variable amplitude=parameters[5]			
 
-	Variable pulseDutyCycle=max(0,min((pulseDuration/1000)*pulseRate,1))		// pure
-	w=baseLevel+amplitude*unitPulse(x-delay,duration)*squareWave(pulseRate*(x-delay)/1000,pulseDutyCycle)
+	w=baseLevel+amplitude*w
 End
