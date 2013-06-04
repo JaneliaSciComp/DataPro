@@ -66,3 +66,9 @@ now designed for either analog output or TTL output, but not both.
 Reimplemented how many of the builder outputs are constructed, for
 greater robustness.
 
+
+7.06 -> 7.07    (June 4, 2013)
+
+Small change to builders that have discontinuities in their outputs,
+to make them more predictable in the common case.
+
