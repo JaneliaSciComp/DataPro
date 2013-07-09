@@ -32,7 +32,7 @@ Function ChirpBuilderViewConstructor() : Graph
 	SetVariable delaySV,win=ChirpBuilderView,pos={40,12},size={140,17},proc=BuilderContSVTwiddled,title="Delay (ms)"
 	SetVariable delaySV,win=ChirpBuilderView,limits={0,1000,1},value= _NUM:delay
 	SetVariable durationSV,win=ChirpBuilderView,pos={205,12},size={120,17},proc=BuilderContSVTwiddled,title="Duration (ms)"
-	SetVariable durationSV,win=ChirpBuilderView,format="%g",limits={0,10000,10},value= _NUM:duration
+	SetVariable durationSV,win=ChirpBuilderView,format="%g",limits={0,100000,10},value= _NUM:duration
 	SetVariable amplitudeSV,win=ChirpBuilderView,pos={128,43},size={120,17},proc=BuilderContSVTwiddled,title="Amplitude"
 	SetVariable amplitudeSV,win=ChirpBuilderView,limits={-10000,10000,10},value= _NUM:amplitude
 	SetVariable initialFrequencySV,win=ChirpBuilderView,pos={205+165,12},size={150,17},proc=BuilderContSVTwiddled,title="Initial Frequency (Hz)"
