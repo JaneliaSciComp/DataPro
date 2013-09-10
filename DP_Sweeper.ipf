@@ -66,6 +66,23 @@ Function SweeperConstructor()
 	Variable /G stepPulseAmplitude=1		// amplitude in units given by channel mode
 	Variable /G stepPulseDuration=100		// duration in ms
 
+	// Initialize the history
+	Variable /G nHistoryCols=11
+	Make /O /T /N=(nHistoryCols) historyColNames	
+	historyColNames[ 0]="Sweep Index"
+	historyColNames[ 1]="Channel Type Name"  // one of "DAC", "TTL Output", "ADC", "TTL Input"
+	historyColNames[ 2]="Channel Index"
+	historyColNames[ 3]="Channel Mode Name"
+	historyColNames[ 4]="Channel Units"
+	historyColNames[ 5]="Wave Base Name"
+	historyColNames[ 6]="Builder Name"
+	historyColNames[ 7]="Builder Parameters"
+	historyColNames[ 8]="Multiplier"
+	historyColNames[ 9]="Channel Gain"
+	historyColNames[10]="Channel Gain Units"
+	
+	Make /O /T /N=(0,nHistoryCols) history
+
 	// Initialize the StepPulse wave
 	SetDataFolder dacWaves
 	Make /O stepPulse
@@ -88,6 +105,85 @@ Function SweeperConstructor()
 	// Restore the original data folder
 	SetDataFolder savedDF
 End
+
+Function SweeperAddHistoryForSweep(sweepIndex)
+  	Variable sweepIndex
+  	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+  	
+	WAVE /T history
+	Variable nHistoryRows=DimSize(history,0)
+	Variable iRow=nHistoryRows
+	Variable nNewRows= SweeperGetNumADCsOn()+SweeperGetNumDACsOn()+SweeperGetNumTTLOutputsOn()
+	NVAR nHistoryCols
+	Redimension /N=(nHistoryRows+nNewRows,nHistoryCols) history
+	
+	Variable nADCChannels=DigitizerModelGetNumADCChans()
+	WAVE adcChannelOn
+	WAVE /T adcBaseName
+	Variable iChan	
+	for (iChan=0; iChan<nADCChannels; iChan+=1)
+		if (adcChannelOn[iChan])
+			history[iRow][ 0]=sprintf1v("%d",sweepIndex)
+			history[iRow][ 1]="ADC"	// channel type name
+			history[iRow][ 2]=sprintf1v("%d",iChan)	// channel index
+			history[iRow][ 3]=DigitizerModelGetADCModeName(iChan)
+			history[iRow][ 4]=DigitizerModelGetADCUnitsString(iChan)			
+			history[iRow][ 5]=adcBaseName(iChan)
+			history[iRow][ 6]=""	// builder name
+			history[iRow][ 7]=""	//builder parameters
+			history[iRow][ 8]=""	// multiplier
+			history[iRow][ 9]=sprintf1v("%26.16g",DigitizerModelGetADCGain(iChan))	// channel gain
+			history[iRow][10]=DigitizerModelADCGainUnits(iChan)	// channel gain units
+			iRow+=1
+		endif		
+	endfor
+	Variable nDACChannels=DigitizerModelGetNumDACChans()
+	WAVE dacChannelOn, dacMultiplier
+	WAVE /T dacWaveName
+	for (iChan=0; iChan<nDACChannels; iChan+=1)
+		if (dacChannelOn[iChan])
+			history[iRow][ 0]=sprintf1v("%d",sweepIndex)
+			history[iRow][ 1]="DAC"	// channel type name
+			history[iRow][ 2]=sprintf1v("%d",iChan)	// channel index
+			history[iRow][ 3]=DigitizerModelGetDACModeName(iChan)
+			history[iRow][ 4]=DigitizerModelGetDACUnitsString(iChan)			
+			history[iRow][ 5]=dacWaveName(iChan)
+			String waveNote=SweeperGetDACWaveNoteByName(dacWaveName(iChan))
+			String builderName=StringByKey("WAVETYPE", waveNote, "=", "\r", 1)  // 1 means match case
+			history[iRow][ 6]=builderName		// builder name
+			history[iRow][ 7]=extractBuilderParamsString(waveNote)	//builder parameters
+			history[iRow][ 8]=sprintf1v("%26.16g",dacMultiplier(iChan))	// multiplier
+			history[iRow][ 9]=sprintf1v("%26.16g",DigitizerModelGetDACGain(iChan))	// channel gain
+			history[iRow][10]=DigitizerModelDACGainUnits(iChan)	// channel gain units
+			iRow+=1
+		endif		
+	endfor
+	Variable nTTLChannels=DigitizerModelGetNumTTLChans()
+	WAVE ttlOutputChannelOn
+	WAVE /T ttlOutputWaveName
+	for (iChan=0; iChan<nTTLChannels; iChan+=1)
+		if (ttlOutputChannelOn[iChan])
+			history[iRow][ 0]=sprintf1v("%d",sweepIndex)
+			history[iRow][ 1]="TTL Output"	// channel type name
+			history[iRow][ 2]=sprintf1v("%d",iChan)	// channel index
+			history[iRow][ 3]=""
+			history[iRow][ 4]=""			
+			history[iRow][ 5]=ttlOutputWaveName(iChan)
+			waveNote=SweeperGetTTLWaveNoteByName(ttlOutputWaveName(iChan))
+			builderName=StringByKey("WAVETYPE", waveNote, "=", "\r", 1)  // 1 means match case
+			history[iRow][ 6]=builderName		// builder name
+			history[iRow][ 7]=extractBuilderParamsString(waveNote)	//builder parameters
+			history[iRow][ 8]=""	// multiplier
+			history[iRow][ 9]=""	// channel gain
+			history[iRow][10]=""	// channel gain units
+			iRow+=1
+		endif		
+	endfor
+	
+	SetDataFolder savedDF
+End		// method
 
 Function SweeperUpdateStepPulseWave()
 	// Updates the step pulse wave to be consistent with the rest of the model state.
@@ -579,6 +675,22 @@ Function /WAVE SweeperGetDACWaveByName(waveNameString)
 	return exportedWave	
 End
 
+Function /T SweeperGetDACWaveNoteByName(waveNameString)
+	String waveNameString
+
+	// Change to the Digitizer data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper:dacWaves
+
+	// Get the wave note
+	String waveNote=note($waveNameString)
+
+	// Restore the original DF
+	SetDataFolder savedDF
+
+	return waveNote
+End
+
 Function /WAVE SweeperGetTTLWaveByName(waveNameString)
 	String waveNameString
 
@@ -596,6 +708,21 @@ Function /WAVE SweeperGetTTLWaveByName(waveNameString)
 	return exportedWave	
 End
 
+Function /T SweeperGetTTLWaveNoteByName(waveNameString)
+	String waveNameString
+
+	// Change to the Digitizer data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper:ttlWaves
+
+	// Get the wave note
+	String waveNote=note($waveNameString)
+
+	// Restore the original DF
+	SetDataFolder savedDF
+
+	return waveNote
+End
 
 Function SweeperResampleInternalWaves()
 	// Private method, called to resample all the internal waves using the current dtWanted, totalDuration
@@ -959,4 +1086,17 @@ Function resampleSynPulseFromParamsBang(w,dt,totalDuration,delay,duration)
 	w=temp
 End
 
+Function /T extractBuilderParamsString(waveNote)
+	// Given a wave note from a builder-made stimulus wave, remove all the non-parameter
+	// key-value pairs and return just the parameter key-value pairs
+	// Also, use semicolon as item separator, instead of carriage return
+	String waveNote
+	String paramKVList
+	
+	paramKVList=RemoveByKey("WAVETYPE",waveNote,"=","\r",1)		// 1 means match case
+	paramKVList=RemoveByKey("STEP",paramKVList,"=","\r",1)		// 1 means match case
+	paramKVList=RemoveByKey("TIME",paramKVList,"=","\r",1)		// 1 means match case
+	paramKVList=ReplaceString("\r",paramKVList,";")
 
+	return paramKVList
+End

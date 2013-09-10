@@ -260,6 +260,9 @@ Function SweeperControllerAcquireSweep(comment)
 		SetScale d 0, 0, units, thisWave
 	endfor
 	
+	// Record the sweep to the history
+	SweeperAddHistoryForSweep(nextSweepIndex)
+	
 	// Update the sweep number in the DP Browsers
 	Variable nBrowsers=numpnts(browserNumbers)
 	Variable i
