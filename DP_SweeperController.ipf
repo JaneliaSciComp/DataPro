@@ -183,7 +183,7 @@ Function SweeperControllerAcquireTrial()
 			sprintf comment "stim %d of %d, with inter-stim-interval of %g s",iSweepWithinTrial+1,nSweepsPerTrial,sweepInterval
 		endif
 		startTime = DateTime		// "Unlike most Igor functions, DateTime is used without parentheses."
-		SweeperControllerAcquireSweep(comment)
+		SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 		endTime=DateTime
 		sweepDuration=endTime-startTime
 		sleepDuration=max(0,sweepInterval-sweepDuration)
@@ -194,10 +194,11 @@ Function SweeperControllerAcquireTrial()
 	SetDataFolder savedDF
 End
 
-Function SweeperControllerAcquireSweep(comment)
+Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	// Acquire a single sweep, which consists of n traces, each trace corresponding to a single 
 	// ADC channel.  Add the supplied comment to the acquired waves.
 	String comment
+	Variable iSweepWithinTrial
 	
 	// Get the number of all extant DP Browsers, so that we can tell them when sweeps get added
 	Wave browserNumbers=GetAllBrowserNumbers()  // returns a free wave
@@ -261,7 +262,7 @@ Function SweeperControllerAcquireSweep(comment)
 	endfor
 	
 	// Record the sweep to the history
-	SweeperAddHistoryForSweep(nextSweepIndex)
+	SweeperAddHistoryForSweep(nextSweepIndex,iSweepWithinTrial)
 	
 	// Update the sweep number in the DP Browsers
 	Variable nBrowsers=numpnts(browserNumbers)

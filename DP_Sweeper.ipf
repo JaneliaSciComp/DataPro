@@ -67,22 +67,22 @@ Function SweeperConstructor()
 	Variable /G stepPulseDuration=100		// duration in ms
 
 	// Initialize the history
-	Variable /G nHistoryCols=11
-	Make /O /T /N=(nHistoryCols) historyColNames	
-	historyColNames[ 0]="Sweep Index"
-	historyColNames[ 1]="Channel Type Name"  // one of "DAC", "TTL Output", "ADC", "TTL Input"
-	historyColNames[ 2]="Channel Index"
-	historyColNames[ 3]="Channel Mode Name"
-	historyColNames[ 4]="Channel Units"
-	historyColNames[ 5]="Wave Base Name"
-	historyColNames[ 6]="Builder Name"
-	historyColNames[ 7]="Builder Parameters"
-	historyColNames[ 8]="Multiplier"
-	historyColNames[ 9]="Channel Gain"
-	historyColNames[10]="Channel Gain Units"
+	Variable /G nHistoryCols=13
+	Make /O /T /N=(1,nHistoryCols) history	
+	history[0][ 0]="Sweep Index"
+	history[0][ 1]="Sweeps in Trial"
+	history[0][ 2]="Sweep Index In Trial"
+	history[0][ 3]="Channel Type Name"  // one of "DAC", "TTL Output", "ADC", "TTL Input"
+	history[0][ 4]="Channel Index"
+	history[0][ 5]="Channel Mode Name"
+	history[0][ 6]="Channel Units"
+	history[0][ 7]="Wave Base Name"
+	history[0][ 8]="Builder Name"
+	history[0][ 9]="Builder Parameters"
+	history[0][10]="Multiplier"
+	history[0][11]="Channel Gain"
+	history[0][12]="Channel Gain Units"
 	
-	Make /O /T /N=(0,nHistoryCols) history
-
 	// Initialize the StepPulse wave
 	SetDataFolder dacWaves
 	Make /O stepPulse
@@ -106,8 +106,9 @@ Function SweeperConstructor()
 	SetDataFolder savedDF
 End
 
-Function SweeperAddHistoryForSweep(sweepIndex)
+Function SweeperAddHistoryForSweep(sweepIndex,iSweepWithinTrial)
   	Variable sweepIndex
+  	Variable iSweepWithinTrial		// zero-based
   	
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Sweeper
@@ -120,22 +121,25 @@ Function SweeperAddHistoryForSweep(sweepIndex)
 	Redimension /N=(nHistoryRows+nNewRows,nHistoryCols) history
 	
 	Variable nADCChannels=DigitizerModelGetNumADCChans()
+	NVAR nSweepsPerTrial
 	WAVE adcChannelOn
 	WAVE /T adcBaseName
 	Variable iChan	
 	for (iChan=0; iChan<nADCChannels; iChan+=1)
 		if (adcChannelOn[iChan])
 			history[iRow][ 0]=sprintf1v("%d",sweepIndex)
-			history[iRow][ 1]="ADC"	// channel type name
-			history[iRow][ 2]=sprintf1v("%d",iChan)	// channel index
-			history[iRow][ 3]=DigitizerModelGetADCModeName(iChan)
-			history[iRow][ 4]=DigitizerModelGetADCUnitsString(iChan)			
-			history[iRow][ 5]=adcBaseName(iChan)
-			history[iRow][ 6]=""	// builder name
-			history[iRow][ 7]=""	//builder parameters
-			history[iRow][ 8]=""	// multiplier
-			history[iRow][ 9]=sprintf1v("%26.16g",DigitizerModelGetADCGain(iChan))	// channel gain
-			history[iRow][10]=DigitizerModelADCGainUnits(iChan)	// channel gain units
+			history[iRow][ 1]=sprintf1v("%d",nSweepsPerTrial)
+			history[iRow][ 2]=sprintf1v("%d",iSweepWithinTrial+1)			
+			history[iRow][ 3]="ADC"	// channel type name
+			history[iRow][ 4]=sprintf1v("%d",iChan)	// channel index
+			history[iRow][ 5]=DigitizerModelGetADCModeName(iChan)
+			history[iRow][ 6]=DigitizerModelGetADCUnitsString(iChan)			
+			history[iRow][ 7]=adcBaseName(iChan)
+			history[iRow][ 8]=""	// builder name
+			history[iRow][ 9]=""	//builder parameters
+			history[iRow][10]=""	// multiplier
+			history[iRow][11]=sprintf1v("%26.16g",DigitizerModelGetADCGain(iChan))	// channel gain
+			history[iRow][12]=DigitizerModelADCGainUnits(iChan)	// channel gain units
 			iRow+=1
 		endif		
 	endfor
@@ -145,18 +149,20 @@ Function SweeperAddHistoryForSweep(sweepIndex)
 	for (iChan=0; iChan<nDACChannels; iChan+=1)
 		if (dacChannelOn[iChan])
 			history[iRow][ 0]=sprintf1v("%d",sweepIndex)
-			history[iRow][ 1]="DAC"	// channel type name
-			history[iRow][ 2]=sprintf1v("%d",iChan)	// channel index
-			history[iRow][ 3]=DigitizerModelGetDACModeName(iChan)
-			history[iRow][ 4]=DigitizerModelGetDACUnitsString(iChan)			
-			history[iRow][ 5]=dacWaveName(iChan)
+			history[iRow][ 1]=sprintf1v("%d",nSweepsPerTrial)
+			history[iRow][ 2]=sprintf1v("%d",iSweepWithinTrial+1)
+			history[iRow][ 3]="DAC"	// channel type name
+			history[iRow][ 4]=sprintf1v("%d",iChan)	// channel index
+			history[iRow][ 5]=DigitizerModelGetDACModeName(iChan)
+			history[iRow][ 6]=DigitizerModelGetDACUnitsString(iChan)			
+			history[iRow][ 7]=dacWaveName(iChan)
 			String waveNote=SweeperGetDACWaveNoteByName(dacWaveName(iChan))
 			String builderName=StringByKey("WAVETYPE", waveNote, "=", "\r", 1)  // 1 means match case
-			history[iRow][ 6]=builderName		// builder name
-			history[iRow][ 7]=extractBuilderParamsString(waveNote)	//builder parameters
-			history[iRow][ 8]=sprintf1v("%26.16g",dacMultiplier(iChan))	// multiplier
-			history[iRow][ 9]=sprintf1v("%26.16g",DigitizerModelGetDACGain(iChan))	// channel gain
-			history[iRow][10]=DigitizerModelDACGainUnits(iChan)	// channel gain units
+			history[iRow][ 8]=builderName		// builder name
+			history[iRow][ 9]=extractBuilderParamsString(waveNote)	//builder parameters
+			history[iRow][10]=sprintf1v("%26.16g",dacMultiplier(iChan))	// multiplier
+			history[iRow][11]=sprintf1v("%26.16g",DigitizerModelGetDACGain(iChan))	// channel gain
+			history[iRow][12]=DigitizerModelDACGainUnits(iChan)	// channel gain units
 			iRow+=1
 		endif		
 	endfor
@@ -166,18 +172,20 @@ Function SweeperAddHistoryForSweep(sweepIndex)
 	for (iChan=0; iChan<nTTLChannels; iChan+=1)
 		if (ttlOutputChannelOn[iChan])
 			history[iRow][ 0]=sprintf1v("%d",sweepIndex)
-			history[iRow][ 1]="TTL Output"	// channel type name
-			history[iRow][ 2]=sprintf1v("%d",iChan)	// channel index
-			history[iRow][ 3]=""
-			history[iRow][ 4]=""			
-			history[iRow][ 5]=ttlOutputWaveName(iChan)
+			history[iRow][ 1]=sprintf1v("%d",nSweepsPerTrial)
+			history[iRow][ 2]=sprintf1v("%d",iSweepWithinTrial+1)
+			history[iRow][ 3]="TTL Output"	// channel type name
+			history[iRow][ 4]=sprintf1v("%d",iChan)	// channel index
+			history[iRow][ 5]=""
+			history[iRow][ 6]=""			
+			history[iRow][ 7]=ttlOutputWaveName(iChan)
 			waveNote=SweeperGetTTLWaveNoteByName(ttlOutputWaveName(iChan))
 			builderName=StringByKey("WAVETYPE", waveNote, "=", "\r", 1)  // 1 means match case
-			history[iRow][ 6]=builderName		// builder name
-			history[iRow][ 7]=extractBuilderParamsString(waveNote)	//builder parameters
-			history[iRow][ 8]=""	// multiplier
-			history[iRow][ 9]=""	// channel gain
-			history[iRow][10]=""	// channel gain units
+			history[iRow][ 8]=builderName		// builder name
+			history[iRow][ 9]=extractBuilderParamsString(waveNote)	//builder parameters
+			history[iRow][10]=""	// multiplier
+			history[iRow][11]=""	// channel gain
+			history[iRow][12]=""	// channel gain units
 			iRow+=1
 		endif		
 	endfor
