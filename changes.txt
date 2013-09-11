@@ -67,8 +67,19 @@ Reimplemented how many of the builder outputs are constructed, for
 greater robustness.
 
 
+
+
 7.06 -> 7.07    (June 4, 2013)
 
 Small change to builders that have discontinuities in their outputs,
 to make them more predictable in the common case.
+
+
+
+
+7.07 -> 7.08    (September 11, 2013)
+
+Added history to the Sweeper.  Similar to the stimHistory in 
+DataPro 6, but contains more information.
+
 

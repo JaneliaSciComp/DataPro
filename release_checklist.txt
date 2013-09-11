@@ -1,0 +1,16 @@
+Users: This is for the DataPro developer(s).  You can safely ignore
+it.
+
+Before tagging a release:
+
+1. Update how_to_install.txt
+2. Update changes.txt
+3. Make sure copyright.txt covers the current year.
+
+The how_to_install assumes you're doing to distribute the Github-made
+.zip file for the release.  The file-naming convention is set by
+Github.
+
+ALT
+2013-09-11
+
