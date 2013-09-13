@@ -83,3 +83,11 @@ Added history to the Sweeper.  Similar to the stimHistory in
 DataPro 6, but contains more information.
 
 
+
+
+7.08 -> 7.09    (September 13, 2013)
+
+Added more precise date/time information to acquired ADC waves.
+
+
+

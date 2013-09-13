@@ -138,7 +138,7 @@ Function SweeperAddHistoryForSweep(sweepIndex,iSweepWithinTrial)
 			history[iRow][ 8]=""	// builder name
 			history[iRow][ 9]=""	//builder parameters
 			history[iRow][10]=""	// multiplier
-			history[iRow][11]=sprintf1v("%26.16g",DigitizerModelGetADCGain(iChan))	// channel gain
+			history[iRow][11]=sprintf1v("%.17g",DigitizerModelGetADCGain(iChan))	// channel gain
 			history[iRow][12]=DigitizerModelADCGainUnits(iChan)	// channel gain units
 			iRow+=1
 		endif		
@@ -160,8 +160,8 @@ Function SweeperAddHistoryForSweep(sweepIndex,iSweepWithinTrial)
 			String builderName=StringByKey("WAVETYPE", waveNote, "=", "\r", 1)  // 1 means match case
 			history[iRow][ 8]=builderName		// builder name
 			history[iRow][ 9]=extractBuilderParamsString(waveNote)	//builder parameters
-			history[iRow][10]=sprintf1v("%26.16g",dacMultiplier(iChan))	// multiplier
-			history[iRow][11]=sprintf1v("%26.16g",DigitizerModelGetDACGain(iChan))	// channel gain
+			history[iRow][10]=sprintf1v("%.17g",dacMultiplier(iChan))	// multiplier
+			history[iRow][11]=sprintf1v("%.17g",DigitizerModelGetDACGain(iChan))	// channel gain
 			history[iRow][12]=DigitizerModelDACGainUnits(iChan)	// channel gain units
 			iRow+=1
 		endif		
