@@ -231,6 +231,7 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	//Variable seqLength=strlen(daSequence)		// both should be same length
 
 	// Actually acquire the data for this sweep
+	Variable absoluteTime=DateTime	// "Unlike most Igor functions, DateTime is used without parentheses."
 	Wave FIFOin=SamplerSampleData(adSequence,daSequence,FIFOout) 
 	// raw acquired data is now in root:DP_Sweeper:FIFOin wave
 		
@@ -252,7 +253,7 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 		String thisWaveNameAbs="root:"+thisWaveNameRel
 		Make /O /N=(nSamplesPerTrace) $thisWaveNameAbs
 		WAVE thisWave=$thisWaveNameAbs
-		annotateADCWaveBang(thisWave,stepAsString,comment)
+		annotateADCWaveBang(thisWave,stepAsString,comment,absoluteTime)
 		ingain=DigitizerModelGetADCNtvsPerPnt(iADCChannel)
 		thisWave=FIFOin[nADCInUse*p+iTrace]*ingain
 			// copy this trace out of the FIFO, and scale it by the gain
@@ -324,14 +325,21 @@ End
 // "Class methods" below here
 //
 
-Function annotateADCWaveBang(w,stepAsString,comment)
+Function annotateADCWaveBang(w,stepAsString,comment,absoluteTime)
 	Wave w
 	String stepAsString,comment
+	Variable absoluteTime
+
+	String dateString=Secs2Date(absoluteTime,-2);	// -2 sets format
+	String timeString=Secs2Time(absoluteTime,3);	// 3 sets format
 
 	Note /K w
 	ReplaceStringByKeyInWaveNote(w,"COMMENTS",comment)	
 	ReplaceStringByKeyInWaveNote(w,"WAVETYPE","adc")
-	ReplaceStringByKeyInWaveNote(w,"TIME",time())
+	//ReplaceStringByKeyInWaveNote(w,"TIME",time())
+	ReplaceStringByKeyInWaveNote(w,"TIMEABS",sprintf1v("%.17g",absoluteTime))
+	ReplaceStringByKeyInWaveNote(w,"DATESTR",dateString)
+	ReplaceStringByKeyInWaveNote(w,"TIMESTR",timeString)	
 	ReplaceStringByKeyInWaveNote(w,"STEP",stepAsString)	
 End
 
