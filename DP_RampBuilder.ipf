@@ -6,10 +6,11 @@ Function RampBuilderViewConstructor() : Graph
 	SetDataFolder root:DP_RampBuilder
 	WAVE theWave
 	WAVE parameters
-	Variable preLevel=parameters[0]
+	Variable baselineLevel=parameters[0]
 	Variable delay=parameters[1]
-	Variable duration=parameters[2]
-	Variable postLevel=parameters[3]		
+	Variable initialLevel=parameters[2]
+	Variable duration=parameters[3]
+	Variable finalLevel=parameters[4]	
 	// These are all in pixels
 	Variable xOffset=105
 	Variable yOffset=200
@@ -29,18 +30,21 @@ Function RampBuilderViewConstructor() : Graph
 	ModifyGraph /W=RampBuilderView /Z tickUnit(left)=1
 	ControlBar 80
 	
-	SetVariable preLevelSV,win=RampBuilderView,pos={25,20},size={140,15},proc=BuilderContSVTwiddled,title="Pre-Ramp Level"
-	SetVariable preLevelSV,win=RampBuilderView,limits={-10000,10000,10},value= _NUM:preLevel
+	SetVariable baselineLevelSV,win=RampBuilderView,pos={25,20},size={140,15},proc=BuilderContSVTwiddled,title="Baseline Level"
+	SetVariable baselineLevelSV,win=RampBuilderView,limits={-10000,10000,10},value= _NUM:baselineLevel
 	
 	SetVariable delaySV,win=RampBuilderView,pos={25,50},size={110,15},proc=BuilderContSVTwiddled,title="Delay (ms)"
 	SetVariable delaySV,win=RampBuilderView,limits={0,1000,1},value= _NUM:delay
 	
-	SetVariable durationSV,win=RampBuilderView,pos={190,35},size={140,15},proc=BuilderContSVTwiddled,title="Ramp Duration (ms)"
+	SetVariable initialLevelSV,win=RampBuilderView,pos={190,20},size={140,15},proc=BuilderContSVTwiddled,title="Ramp Initial Level"
+	SetVariable initialLevelSV,win=RampBuilderView,limits={-10000,10000,10},value= _NUM:initialLevel
+	
+	SetVariable durationSV,win=RampBuilderView,pos={190,50},size={140,15},proc=BuilderContSVTwiddled,title="Ramp Duration (ms)"
 	SetVariable durationSV,win=RampBuilderView,limits={1,100000,10},value= _NUM:duration
 	
-	SetVariable postLevelSV,win=RampBuilderView,pos={360,35},size={140,15},proc=BuilderContSVTwiddled,title="Post-Ramp Level"
-	SetVariable postLevelSV,win=RampBuilderView,limits={-10000,10000,10},value= _NUM:postLevel
-
+	SetVariable finalLevelSV,win=RampBuilderView,pos={360,20},size={140,15},proc=BuilderContSVTwiddled,title="Ramp Final Level"
+	SetVariable finalLevelSV,win=RampBuilderView,limits={-10000,10000,10},value= _NUM:finalLevel
+	
 	Button saveAsDACButton,win=RampBuilderView,pos={601,10},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As..."
 	Button importButton,win=RampBuilderView,pos={601,45},size={90,20},proc=BuilderContImportButtonPressed,title="Import..."
 	SetDataFolder savedDF
@@ -48,20 +52,22 @@ End
 
 Function RampBuilderModelInitialize()
 	// Called from the constructor, so DF already set.
-	Variable nParameters=4
+	Variable nParameters=5
 	WAVE /T parameterNames
 	WAVE parametersDefault
 	WAVE parameters
 	Redimension /N=(nParameters) parameterNames
-	parameterNames[0]="preLevel"
+	parameterNames[0]="baselineLevel"
 	parameterNames[1]="delay"
-	parameterNames[2]="duration"
-	parameterNames[3]="postLevel"
+	parameterNames[2]="initialLevel"
+	parameterNames[3]="duration"
+	parameterNames[4]="finalLevel"	
 	Redimension /N=(nParameters) parametersDefault
-	parametersDefault[0]=-10
+	parametersDefault[0]=0
 	parametersDefault[1]=50
-	parametersDefault[2]=100
-	parametersDefault[3]=10
+	parametersDefault[2]=-10
+	parametersDefault[3]=100
+	parametersDefault[4]=10
 	Redimension /N=(nParameters) parameters
 	parameters=parametersDefault
 End
@@ -72,10 +78,11 @@ Function fillRampFromParamsBang(w,dt,nScans,parameters,parameterNames)
 	Wave parameters
 	Wave /T parameterNames
 
-	Variable preLevel=parameters[0]
+	Variable baselineLevel=parameters[0]
 	Variable delay=parameters[1]
-	Variable duration=parameters[2]
-	Variable postLevel=parameters[3]
+	Variable initialLevel=parameters[2]
+	Variable duration=parameters[3]
+	Variable finalLevel=parameters[4]
 
 //	Variable nDelay=round(delay/dt)
 //	Variable nDuration=round(duration/dt)	
@@ -87,6 +94,6 @@ Function fillRampFromParamsBang(w,dt,nScans,parameters,parameterNames)
 //	endif	
 //	w[nDelay,nDelay+nDuration-1]=preLevel+slope*(x-delay)
 	
-	w=preLevel+(postLevel-preLevel)*max(0,min((x-delay)/duration,1))
+	w=baselineLevel+((initialLevel-baselineLevel)+(finalLevel-initialLevel)*max(0,min((x-delay)/duration,1)))*unitPulse(x-delay,duration)
 End
 

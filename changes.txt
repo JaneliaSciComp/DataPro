@@ -91,3 +91,8 @@ Added more precise date/time information to acquired ADC waves.
 
 
 
+
+7.09 -> 7.10    (October 11, 2013)
+
+Made ramp builder slightly more flexible.
+
