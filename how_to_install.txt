@@ -1,16 +1,16 @@
 How to install DataPro
 
-0. Unzip the DataPro-release_7.10.zip file, which creates a folder called 
-   DataPro-release_7.10.
+0. Unzip the DataPro-release_7.11.zip file, which creates a folder called 
+   DataPro-release_7.11.
 
-1. Copy the folder DataPro-release_7.10 to the "Igor Pro 6 User Files"
+1. Copy the folder DataPro-release_7.11 to the "Igor Pro 6 User Files"
    folder.  (You must copy the whole folder, not just the files within
    the folder.)
 
 2. In experiments where you want to use this version of DataPro, add
    the line
 
-     #include ":DataPro-release_7.10:DataPro"
+     #include ":DataPro-release_7.11:DataPro"
 
    to the experiment's procedure file.  You can access this from the
    Igor Pro menu by going to

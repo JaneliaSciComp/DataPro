@@ -96,3 +96,9 @@ Added more precise date/time information to acquired ADC waves.
 
 Made ramp builder slightly more flexible.
 
+
+
+
+7.10 -> 7.11    (November 5, 2013)
+
+Added white noise builder.
