@@ -21,6 +21,7 @@
 #include ":DP_TestPulser"
 #include ":DP_SineBuilder"
 #include ":DP_ChirpBuilder"
+#include ":DP_WNoiseBuilder"
 #include ":DP_PSCBuilder"
 #include ":DP_RampBuilder"
 #include ":DP_TrainBuilder"
@@ -66,6 +67,7 @@ Menu "DataPro"
 	"PSC Builder",BuilderContConstructor("PSC")
 	"Sine Builder",BuilderContConstructor("Sine")
 	"Chirp Builder",BuilderContConstructor("Chirp")
+	"White Noise Builder",BuilderContConstructor("WNoise")
 	"-"
 	"Output Viewer",OutputViewerContConstructor()
 	"-"
