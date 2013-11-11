@@ -37,12 +37,12 @@
 #include ":DP_BuilderController"
 #include ":DP_Switcher"
 #include ":DP_ASwitcher"
+#include ":DP_Image"
+#include ":DP_SIDX"
 
 //#include <Strings as Lists> 
 //#include "DP_Acquire"
 //#include "DP_Analyze"
-//#include "DP_Image"
-//#include "DP_SIDX"
 //#include "DP_Windows"
 //#include "DP_MyVariables"
 //#include "DP_LTP"
@@ -97,6 +97,7 @@ Function InitializeDataPro()
 	SamplerConstructor()
 	DigitizerModelConstructor()
 	SweeperConstructor()
+	SetupImagingGlobals()
 End
 
 //Function AcquisitionPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
