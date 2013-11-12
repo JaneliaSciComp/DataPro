@@ -3,9 +3,8 @@
 //	Nelson Spruston
 //	Northwestern University
 //	project began 10/27/1998
-//	last updated 1/5/2000
 
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma rtGlobals=3		// Use modern global access method and strict wave access
 
 //-------------------------------------------------------- DataPro Image MENU ---------------------------------------------------------//
 
@@ -131,8 +130,8 @@ Function SetupImagingGlobals()
 	NewDataFolder /O/S root:DP_Imaging
 	String /G all_images
 	Variable /G fluo_on_wheel=1, fluo_off_wheel=0
-	Variable /G sidx_handle
-	Variable /G ccd_opened, ccd_setup 	// ccd_setup may be unnecessary since SIDX_Setup is called often
+	//Variable /G sidx_handle
+	//Variable /G ccd_opened
 //	Variable ccd_driver, ccd_hardware, ccd_camera
 	Variable /G image_trig, image_focus, image_roi // image_focus may be unnecessary if there is a separate focus routine
 	Variable /G imaging, ccd_handle, ccd_tempset, ccd_temp, ccd_frames
@@ -152,19 +151,22 @@ Function SetupImagingGlobals()
 	ypixels=(roi_bottom-roi_top)/ybin
 	Variable /G gray_low, gray_high
 	gray_low=0; gray_high=2^16-1
-	Make /O/N=(6,numrois+1)/I roiwave
+	
+	Make /O /N=(6,numrois+1) /I roiwave
 	roiwave[][1]={roi_left, roi_right, roi_top, roi_bottom, xbin, ybin}
 	roiwave[][2]={roi_left, roi_right, roi_top, roi_bottom, xbin, ybin}
-	Make /O/N=(5,numrois+1)/I roibox_x, roibox_y
+	
+	Make /O /N=(5,numrois+1) /I roibox_x, roibox_y
 	roibox_x[][1]={roi_left, roi_right, roi_right, roi_left, roi_left}
 	roibox_y[][2]={roi_top, roi_top, roi_bottom, roi_bottom, roi_top}
-	Make /O/N=5 roibox_x1, roibox_y1, roibox_x2, roibox_y2
-//	make average wave for imaging
-	//NewDataFolder /O/S root:DP_Imaging
-	Make /N=(imageavgn) dff_avg
+	
+	Make /O /N=5 roibox_x1, roibox_y1, roibox_x2, roibox_y2
+	
+	// make average wave for imaging
+	Make /O /N=(imageavgn) dff_avg
 	
 	// SIDX stuff
-	Variable /G sidx_handle
+	//Variable /G sidx_handle
 
 	// Restore the original data folder
 	SetDataFolder savedDF	
@@ -175,23 +177,22 @@ Function EPhys_Image()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imaging
 
-	// Declare the object vars
+	// Declare the instance vars
 	SVAR focus_name
-	NVAR focus_num, image_trig, ccd_opened, full_num
+	NVAR focus_num, image_trig, full_num
 	NVAR image_roi, im_plane, previouswave
 	SVAR imageseq_name
+	WAVE roiwave
+	NVAR ccd_fullexp
 	
-	Variable sidx_handle, status, exposure, canceled
+	Variable status, exposure, canceled
 	String message, command
-	if (ccd_opened<1)
-		SIDX_Begin()
-	endif
 //	if (sidx_handle==  4.306e+07)
-//		SIDX_Begin_Auto()
+//		SideroxylonBegin()
 //	endif
-//	SIDX_Setup()
+//	SideroxylonSetup(image_roi,roiwave,image_trig,ccd_fullexp)
 	image_trig=1
-	SIDX_Setup_Auto()
+	SideroxylonSetup(image_roi,roiwave,image_trig,ccd_fullexp)
 	image_roi=2		// zero for full frame, one for specific ROI, two for ROI with background
 	im_plane=0
 	FluorescenceON()
@@ -217,9 +218,12 @@ Function Focus_Image()
 
 	// Declare the object vars
 	SVAR focus_name
-	NVAR focus_num, image_trig, ccd_opened, full_num
+	NVAR focus_num, image_trig, full_num
+	NVAR image_roi
+	WAVE roiwave
+	NVAR ccd_fullexp
 
-	Variable sidx_handle, status, exposure, canceled
+	Variable status, exposure, canceled
 	String message
 	Variable frames_per_sequence, frames
 	String wave_image
@@ -227,17 +231,11 @@ Function Focus_Image()
 	frames_per_sequence=1
 	frames=1
 	image_trig=0			// set to one for triggered images
-//	image_focus=0		// set to one when focusing (check if this is needed)
-	if (ccd_opened<1)
-//		SIDX_Begin()		// this is old
-		SIDX_Begin_Auto()
-	endif
-//	SIDX_Setup()		// this is old
-	SIDX_Setup_Auto()
+	SideroxylonSetup(image_roi,roiwave,image_trig,ccd_fullexp)
 	printf "Focusing (press Esc key to stop) ..."
 	FluorescenceON()
 	Sleep /S 0.1
-	Execute "SIDX_Focus()"
+	Execute "SideroxylonFocus()"
 	FluorescenceOFF()
 	full_num+=1; focus_num=full_num
 	printf "%s: Focus Image done\r", wave_image
@@ -253,12 +251,12 @@ Function Acquire_Full_Image()
 
 	// Declare the object vars
 	SVAR full_name
-	NVAR focus_num, image_trig, ccd_opened, full_num
+	NVAR focus_num, image_trig, full_num
 	NVAR xbin, ybin
 	SVAR all_images
 	SVAR imageseq_name
 	
-	Variable sidx_handle, status, exposure, canceled
+	Variable status, exposure, canceled
 	String message
 	//String imageWaveName
 	Variable frames_per_sequence, frames
@@ -267,18 +265,13 @@ Function Acquire_Full_Image()
 	frames=1
 	image_trig=0		// set to one for triggered images
 	xbin=1; ybin=1
-	if (ccd_opened<1)
-//		SIDX_Begin()		// old
-		//Execute "SIDX_Begin_Auto()"  // needs to come back
-	endif
-//	SIDX_Setup()		// old
-	//Execute "SIDX_Setup_Auto()"  // needs to come back
+	//SideroxylonSetup(image_roi,roiwave,image_trig,ccd_fullexp)  // needs to come back
 	FluorescenceON()
 	Sleep /S 0.1
 	Make /O /N=(512,512) $imageWaveName
 	Wave w=$imageWaveName
 	w=100+gnoise(10)
-	//Execute "SIDX_Acquisition(imageWaveName, frames_per_sequence, frames)"  // needs to come back
+	//Execute "SideroxylonAcquisition(imageWaveName, frames_per_sequence, frames)"  // needs to come back
 //	CCD_Acquire()	// old
 	FluorescenceOFF()
 	Image_Display(imageWaveName)  // commented just to make it compile, needs to come back
@@ -304,10 +297,9 @@ Function Image_Stack(trig, disp)
 	NVAR wavenumber
 	NVAR ccd_frames
 	NVAR image_trig
-	NVAR ccd_opened
 	NVAR im_plane
 	
-	Variable sidx_handle, status, exposure, canceled
+	Variable status, exposure, canceled
 	String message
 	String imageWaveName, datawavename
 	Variable frames_per_sequence, frames
@@ -315,13 +307,10 @@ Function Image_Stack(trig, disp)
 	frames_per_sequence=ccd_frames
 	frames=ccd_frames
 	image_trig=trig		// set to one for triggered images
-	if (ccd_opened<1)
-		//SIDXBegin()
-	endif
 	FluorescenceON()
 	Sleep /S 0.1
 	im_plane=0
-	//SIDX_Acquisition(imageWaveName, frames_per_sequence, frames)
+	//SideroxylonAcquisition(imageWaveName, frames_per_sequence, frames)
 	FluorescenceOFF()
 	if (disp>0)
 		Image_Display(imageWaveName)
@@ -350,14 +339,14 @@ Function Load_Full_Image()
 	NVAR focus_num
 
 	//Silent 1; PauseUpdate
-	String newimage
-	Variable low, high
-	sprintf newimage, "%s%d", full_name, full_num
-	GBLoadWave/B/T={80,80}/S=4100/W=1/N=temp
-	Duplicate /O temp0 $newimage
-	Killwaves temp0
-	Redimension /N=(512,512,1) $newimage
-	Image_Display(newimage)
+	//Variable low, high
+	String newImageWaveName=sprintf2sv("%s%d", full_name, full_num)
+	GBLoadWave /B /T={80,80} /S=4100 /W=1 /N=temp
+	Rename temp0 $newImageWaveName
+	//Duplicate /O temp0 $newImageWaveName
+	//Killwaves temp0
+	Redimension /N=(512,512,1) $newImageWaveName
+	Image_Display(newImageWaveName)
 	AutoGrayScaleButtonProc("autogray_button0")
 	printf "%s%d: Image loaded\r", full_name, full_num
 	full_num+=1; focus_num=full_num
@@ -768,6 +757,8 @@ Function DrawROI()
 	NVAR xbin, ybin
 	NVAR xpixels, ypixels
 	WAVE roiwave
+	WAVE roibox_x1, roibox_y1
+	WAVE roibox_x2, roibox_y2
 
 	//PauseUpdate; Silent 1
 	//String doit
@@ -949,7 +940,7 @@ Function DFF_From_Stack(imagestack)
 	String mathWaveName=sprintf1s("%s_math", image)
 	Duplicate /O $imagestack $mathWaveName
 	Wave mathWave=$mathWaveName
-	Redimension /D /N=(-1,-1) im_123_math
+	Redimension /D /N=(-1,-1) $mathWaveName
 	mathWave=0
 	Duplicate /O $mathWaveName, basewave, testwave
 	Variable index
@@ -1027,7 +1018,7 @@ Function SetCCDTempVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imaging
 
-	Execute "CCD_Temp_Set()"
+	Execute "ccdTempSet()"
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -1075,14 +1066,7 @@ End
 Function EphysImageButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
-
-	Execute "EPhys_Image()"
-	
-	// Restore the original DF
-	SetDataFolder savedDF
+	EPhys_Image()
 End
 
 Function ImagePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
