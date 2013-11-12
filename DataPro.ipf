@@ -38,7 +38,7 @@
 #include ":DP_Switcher"
 #include ":DP_ASwitcher"
 #include ":DP_Image"
-#include ":DP_SIDX"
+#include ":DP_Sideroxylon"
 
 //#include <Strings as Lists> 
 //#include "DP_Acquire"
