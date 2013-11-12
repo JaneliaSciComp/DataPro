@@ -44,12 +44,12 @@ End
 
 
 
-Function SideroxylonAcquisition(wave_image, frames_per_sequence, frames, image_trig)
+Function SideroxylonAcquisition(imageWaveName, frames_per_sequence, frames, image_trig)
 //	Prompt frames_per_sequence, "Number of frames per sequence:" // The number of frames to acquire after a call to SIDXAcquisitionStart
 //	Prompt frames, "Number of frames to acquire:"
-//	Prompt wave_image, "Wave name for saving the acquired image:"
+//	Prompt imageWaveName, "Wave name for saving the acquired image:"
 
-	String wave_image
+	String imageWaveName
 	Variable frames_per_sequence, frames, image_trig
 
 	// Change to the imaging data folder
@@ -120,7 +120,7 @@ Function SideroxylonAcquisition(wave_image, frames_per_sequence, frames, image_t
 		// To put a stack of images into a 3D wave, call SIDXAcquisitionGetImagesStart and then 
 		// SIDXAcquisitionGetImagesGet within the acquisition loop to build the 3D wave.
 		// If there are multiple ROIs in each frame, only the first ROI will be saved in the 3D wave.
-		//SIDXAcquisitionGetImagesStart sidxHandle, $wave_image, frames_per_sequence, status
+		//SIDXAcquisitionGetImagesStart sidxHandle, $imageWaveName, frames_per_sequence, status
 		if (status != 0)
 			SIDXGetStatusText sidxHandle, status, message
 			//SIDXAcquisitionDeallocate sidxHandle, buffer, status
@@ -132,7 +132,7 @@ Function SideroxylonAcquisition(wave_image, frames_per_sequence, frames, image_t
 		do
 			// The second parameter is the frame index in the acquisition buffer (starting from zero). 
 			// The fourth parameter is the frame index in the 3D wave.
-			//SIDXAcquisitionGetImagesGet sidxHandle, scan, $wave_image, scan, status
+			//SIDXAcquisitionGetImagesGet sidxHandle, scan, $imageWaveName, scan, status
 			if (status != 0)
 				SIDXGetStatusText sidxHandle, status, message
 				//SIDXAcquisitionDeallocate sidxHandle, buffer, status
@@ -144,7 +144,7 @@ Function SideroxylonAcquisition(wave_image, frames_per_sequence, frames, image_t
 		while (scan < frames_per_sequence)
 		
 		// To put images into individual wave, use SIDXAcquisitionGetImage
-		//	SIDXAcquisitionGetImage sidxHandle, 0, $wave_image, status
+		//	SIDXAcquisitionGetImage sidxHandle, 0, $imageWaveName, status
 		//	if (status != 0)
 		//		SIDXGetStatusText sidxHandle, status, message
 		//		SIDXAcquisitionDeallocate sidxHandle, buffer, status
@@ -474,13 +474,10 @@ Function SideroxylonFocus()
 	NVAR focus_num
 	NVAR gray_low, gray_high
 
-	Variable frames_per_sequence, frames
-	Variable status, canceled
-	Silent 1
-	String wave_image
-	sprintf wave_image, "%s%d", focus_name, focus_num
-	frames_per_sequence=1
-	frames=1
+	String imageWaveName=sprintf2sv(focus_name, focus_num)
+	Variable frames_per_sequence=1
+	Variable	frames=1
+	Variable status
 	//SIDXAcquisitionBegin sidxHandle, frames_per_sequence, status
 	String message
 	if (status != 0)
@@ -488,7 +485,7 @@ Function SideroxylonFocus()
 		printf "%s: %s", "SIDXAcquisitionBegin", message
 		return 0
 	endif
-	Variable bytes, buffer, index, done, roi_index
+	Variable bytes, buffer, done, roi_index
 	Variable x_pixels, y_pixels, maximum_pixel_value, temperature
 	//SIDXAcquisitionAllocate sidxHandle, 1, buffer, status
 	if (status != 0)
@@ -498,6 +495,7 @@ Function SideroxylonFocus()
 		return 0
 	endif
 	Variable locked, hardware_provided
+	Variable iFrame=0
 	do
 		// Start a sequence of images. In the current case, there is 
 		// only one frame in the sequence.
@@ -528,7 +526,7 @@ Function SideroxylonFocus()
 			printf "%s: %s", "SIDXAcquisitionFinish", message
 			return 0
 		endif
-		//SIDXAcquisitionGetImage sidxHandle, 0, $wave_image, status
+		//SIDXAcquisitionGetImage sidxHandle, 0, $imageWaveName, status
 		if (status != 0)
 			SIDXGetStatusText sidxHandle, status, message
 			//SIDXAcquisitionDeallocate sidxHandle, buffer, status
@@ -554,18 +552,18 @@ Function SideroxylonFocus()
 			return 0
 		endif
 //		printf "CCD temperature measured: %d, Temperature locked (1 means true): %d, Temperature locked info provided by hardware (1 means true): %d\r", temperature, locked, hardware_provided
-		if (index<1)
-			Image_Display(wave_image)
-		endif
-		if (index>0)
-			if (index<2)
-				ModifyImage $wave_image ctab= {gray_low,gray_high,Grays,0}
+		if (iFrame==0)
+			Image_Display(imageWaveName)
+		else
+			if (iFrame==1)
+				ModifyImage $imageWaveName ctab= {gray_low,gray_high,Grays,0}
 			endif
 			ControlInfo auto_on_fly_check0
 			if (V_Value>0)
 				AutoGrayScaleButtonProc("autogray_button0")
 			endif
 		endif
+		iFrame+=1
 		printf "."
 	while (!EscapeKeyWasPressed())
 	printf "CCD temperature measured: %d, Temperature locked (1 means true): %d, Temperature locked info provided by hardware (1 means true): %d\r", temperature, locked, hardware_provided
@@ -573,9 +571,13 @@ Function SideroxylonFocus()
 	//SIDXAcquisitionEnd sidxHandle, status
 //	The next line just puts the image into a single-plane "stack" for consistency with 
 //	other acquisition modes and simplicity of the display and autoscale procedures
-	Redimension /N=(512,512,1) $wave_image
+	Redimension /N=(512,512,1) $imageWaveName
 	
 	// Restore the original DF
 	SetDataFolder savedDF
 End
 
+Function SideroxylonSetIlluminationNow(isIlluminationOn)
+	Variable isIlluminationOn
+	// Set the illumination state to isIlluminatonOn
+End

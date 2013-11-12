@@ -13,7 +13,7 @@ Menu "DataPro Image"
 //	"-"
 	"LaunchImagingPanel"
 	"-"
-	"Focus_Image"
+//	"Focus_Image"
 	"Acquire_Full_Image"
 	"Load_Full_Image"
 	"Load_Image_Stack"
@@ -24,7 +24,7 @@ Menu "DataPro Image"
 	"Show_DFoverF"
 	"Append_DFoverF"
 	"Quick_Append"
-	"Get_SIDX_Image"
+	//"Get_SIDX_Image"
 End
 
 // From DataPro 6 main panel:
@@ -195,7 +195,7 @@ Function EPhys_Image()
 	SideroxylonSetup(image_roi,roiwave,image_trig,ccd_fullexp)
 	image_roi=2		// zero for full frame, one for specific ROI, two for ROI with background
 	im_plane=0
-	FluorescenceON()
+	SideroxylonSetIlluminationNow(1)
 	Sleep /S 0.1
 	sprintf command, "Image_Stack(image_trig,0)"
 	Execute command
@@ -204,14 +204,14 @@ Function EPhys_Image()
 	Execute command
 	sprintf command, "Append_DFoverF(%d)", previouswave
 	Execute command
-	FluorescenceOFF()
+	SideroxylonSetIlluminationNow(0)
 	printf "%s%d: Image with EPhys done\r", imageseq_name, previouswave
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
 End
 
-Function Focus_Image()
+Function FocusImage()
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imaging
@@ -232,13 +232,14 @@ Function Focus_Image()
 	frames=1
 	image_trig=0			// set to one for triggered images
 	SideroxylonSetup(image_roi,roiwave,image_trig,ccd_fullexp)
-	printf "Focusing (press Esc key to stop) ..."
-	FluorescenceON()
+	//printf "Focusing (press Esc key to stop) ..."
+	SideroxylonSetIlluminationNow(1)
 	Sleep /S 0.1
-	Execute "SideroxylonFocus()"
-	FluorescenceOFF()
-	full_num+=1; focus_num=full_num
-	printf "%s: Focus Image done\r", wave_image
+	SideroxylonFocus()
+	SideroxylonSetIlluminationNow(0)
+	full_num+=1
+	focus_num=full_num
+	//printf "%s: Focus Image done\r", wave_image
 
 	// Restore the data folder
 	SetDataFolder savedDF
@@ -266,14 +267,14 @@ Function Acquire_Full_Image()
 	image_trig=0		// set to one for triggered images
 	xbin=1; ybin=1
 	//SideroxylonSetup(image_roi,roiwave,image_trig,ccd_fullexp)  // needs to come back
-	FluorescenceON()
+	SideroxylonSetIlluminationNow(1)
 	Sleep /S 0.1
 	Make /O /N=(512,512) $imageWaveName
 	Wave w=$imageWaveName
 	w=100+gnoise(10)
 	//Execute "SideroxylonAcquisition(imageWaveName, frames_per_sequence, frames)"  // needs to come back
 //	CCD_Acquire()	// old
-	FluorescenceOFF()
+	SideroxylonSetIlluminationNow(0)
 	Image_Display(imageWaveName)  // commented just to make it compile, needs to come back
 	printf "%s%d: Full Image done\r", full_name, full_num
 	all_images=WaveList(full_name+"*",";","")+WaveList(imageseq_name+"*",";","")
@@ -307,11 +308,11 @@ Function Image_Stack(trig, disp)
 	frames_per_sequence=ccd_frames
 	frames=ccd_frames
 	image_trig=trig		// set to one for triggered images
-	FluorescenceON()
+	SideroxylonSetIlluminationNow(1)
 	Sleep /S 0.1
 	im_plane=0
 	//SideroxylonAcquisition(imageWaveName, frames_per_sequence, frames)
-	FluorescenceOFF()
+	SideroxylonSetIlluminationNow(0)
 	if (disp>0)
 		Image_Display(imageWaveName)
 	endif
@@ -1057,7 +1058,7 @@ Function FocusButtonProc(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imaging
 
-	Execute "Focus_Image()"
+	FocusImage()
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -1127,38 +1128,38 @@ End
 Function FluONButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
-	FluorescenceON()
+	SideroxylonSetIlluminationNow(1)
 End
 
-Function FluorescenceON()
-	String command
-	
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
-
-	NVAR wheel=fluo_on_wheel
-	// This will need to be updated
-	//SetVDTPort("COM1")
-	//Execute "VDTWriteBinary 238"
-	//sprintf command "VDTWriteBinary 8%d", wheel
-	//Execute command
-	
-	// Restore the original DF
-	SetDataFolder savedDF
-End
+//Function FluorescenceON()
+//	String command
+//	
+//	// Switch to the imaging data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Imaging
+//
+//	NVAR wheel=fluo_on_wheel
+//	// This will need to be updated
+//	//SetVDTPort("COM1")
+//	//Execute "VDTWriteBinary 238"
+//	//sprintf command "VDTWriteBinary 8%d", wheel
+//	//Execute command
+//	
+//	// Restore the original DF
+//	SetDataFolder savedDF
+//End
 
 Function FluOFFButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	FluorescenceOFF()
+	SideroxylonSetIlluminationNow(0)
 End
 
-Function FluorescenceOFF()
-	// This will need to be updated
-	//SetVDTPort("COM1")
-	//Execute "VDTWriteBinary 238"
-	//Execute "VDTWriteBinary 80"
-End
+//Function FluorescenceOFF()
+//	// This will need to be updated
+//	//SetVDTPort("COM1")
+//	//Execute "VDTWriteBinary 238"
+//	//Execute "VDTWriteBinary 80"
+//End
 
 Function SetVDTPort(name)
 	String name
