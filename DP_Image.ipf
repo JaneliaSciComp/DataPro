@@ -184,15 +184,12 @@ Function EPhys_Image()
 	SVAR imageseq_name
 	WAVE roiwave
 	NVAR ccd_fullexp
+	NVAR ccd_tempset
 	
 	Variable status, exposure, canceled
 	String message, command
-//	if (sidx_handle==  4.306e+07)
-//		SideroxylonBegin()
-//	endif
-//	SideroxylonSetup(image_roi,roiwave,image_trig,ccd_fullexp)
 	image_trig=1
-	SideroxylonSetup(image_roi,roiwave,image_trig,ccd_fullexp)
+	SideroxylonSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset)
 	image_roi=2		// zero for full frame, one for specific ROI, two for ROI with background
 	im_plane=0
 	SideroxylonSetIlluminationNow(1)
@@ -222,6 +219,7 @@ Function FocusImage()
 	NVAR image_roi
 	WAVE roiwave
 	NVAR ccd_fullexp
+	NVAR ccd_tempset
 
 	Variable status, exposure, canceled
 	String message
@@ -231,7 +229,7 @@ Function FocusImage()
 	frames_per_sequence=1
 	frames=1
 	image_trig=0			// set to one for triggered images
-	SideroxylonSetup(image_roi,roiwave,image_trig,ccd_fullexp)
+	SideroxylonSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset)
 	//printf "Focusing (press Esc key to stop) ..."
 	SideroxylonSetIlluminationNow(1)
 	Sleep /S 0.1
@@ -266,13 +264,14 @@ Function Acquire_Full_Image()
 	frames=1
 	image_trig=0		// set to one for triggered images
 	xbin=1; ybin=1
-	//SideroxylonSetup(image_roi,roiwave,image_trig,ccd_fullexp)  // needs to come back
+	//SideroxylonSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp)  // needs to come back
 	SideroxylonSetIlluminationNow(1)
 	Sleep /S 0.1
 	Make /O /N=(512,512) $imageWaveName
 	Wave w=$imageWaveName
 	w=100+gnoise(10)
-	//Execute "SideroxylonAcquisition(imageWaveName, frames_per_sequence, frames)"  // needs to come back
+	Variable isVideoTriggered=0
+	//SideroxylonAcquisition(imageWaveName,frames,isVideoTriggered)  // needs to come back
 //	CCD_Acquire()	// old
 	SideroxylonSetIlluminationNow(0)
 	Image_Display(imageWaveName)  // commented just to make it compile, needs to come back
@@ -311,7 +310,7 @@ Function Image_Stack(trig, disp)
 	SideroxylonSetIlluminationNow(1)
 	Sleep /S 0.1
 	im_plane=0
-	//SideroxylonAcquisition(imageWaveName, frames_per_sequence, frames)
+	//SideroxylonAcquisition(imageWaveName,frames,trig)
 	SideroxylonSetIlluminationNow(0)
 	if (disp>0)
 		Image_Display(imageWaveName)
@@ -1019,7 +1018,7 @@ Function SetCCDTempVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imaging
 
-	Execute "ccdTempSet()"
+	SideroxylonSetTemperature(varNum)
 	
 	// Restore the original DF
 	SetDataFolder savedDF

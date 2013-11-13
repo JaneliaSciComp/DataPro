@@ -17,8 +17,9 @@
 
 
 
+
 // Construct the object
-Function SetupSideroxylonGlobals()
+Function SideroxylonConstructor()
 	// if the DF already exists, nothing to do
 	if (DataFolderExists("root:DP_Sideroxylon"))
 		return 0		// have to return something
@@ -28,7 +29,7 @@ Function SetupSideroxylonGlobals()
 	String savedDF=GetDataFolder(1)
 
 	// IMAGING GLOBALS
-	NewDataFolder /O/S root:DP_Sideroxylon
+	NewDataFolder /O /S root:DP_Sideroxylon
 	
 	// SIDX stuff
 	Variable /G isSidxHandleValid=0	// boolean
@@ -44,188 +45,9 @@ End
 
 
 
-Function SideroxylonAcquisition(imageWaveName, frames_per_sequence, frames, image_trig)
-//	Prompt frames_per_sequence, "Number of frames per sequence:" // The number of frames to acquire after a call to SIDXAcquisitionStart
-//	Prompt frames, "Number of frames to acquire:"
-//	Prompt imageWaveName, "Wave name for saving the acquired image:"
+Function SideroxylonInitialize()
+	// Initializes the SIDX interface to the camera.  Generally this will be called once per imaging session.
 
-	String imageWaveName
-	Variable frames_per_sequence, frames, image_trig
-
-	// Change to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sideroxylon
-
-	// instance vars
-	NVAR sidxHandle
-	//NVAR image_trig
-
-	Variable status, canceled
-	//Silent 1
-	//  Perform acquisition
-	//SIDXAcquisitionBegin sidxHandle, frames_per_sequence, status
-	String message=""
-	if (status != 0)
-		SIDXGetStatusText sidxHandle, status, message
-		printf "%s: %s", "SIDXAcquisitionBegin", message
-		return 0
-	endif
-	Variable bytes, buffer, index, done, roi_index
-	Variable x_pixels, y_pixels, maximum_pixel_value, temperature
-	//SIDXAcquisitionAllocate sidxHandle, frames_per_sequence, buffer, status
-	if (status != 0)
-		SIDXGetStatusText sidxHandle, status, message
-		//SIDXAcquisitionEnd sidxHandle, status
-		printf "%s: %s", "SIDXAcquisitionAllocate", message
-		return 0
-	endif
-	Variable locked, hardware_provided, scan
-	roi_index = 0
-	do
-		// Start a sequence of images.
-		//SIDXAcquisitionStart sidxHandle, buffer, status
-		if (status != 0)
-			SIDXGetStatusText sidxHandle, status, message
-			//SIDXAcquisitionDeallocate sidxHandle, buffer, status
-			//SIDXAcquisitionEnd sidxHandle, status
-			printf "%s: %s", "SIDXAcquisitionStart", message
-			return 0
-		endif
-		// If the acquisition is external trigger mode, start the trigger here
-		// Nelson added the next line to do this
-		if (image_trig)
-			//DoDataAcq()	// this doesn't exist anymore
-		endif
-		// Acquire a sequence of frames
-		do
-			//SIDXAcquisitionIsDone sidxHandle, done, status
-			if (status != 0)
-				SIDXGetStatusText sidxHandle, status, message
-				//SIDXAcquisitionFinish sidxHandle, status
-				//SIDXAcquisitionDeallocate sidxHandle, buffer, status
-				//SIDXAcquisitionEnd sidxHandle, status
-				printf "%s: %s", "SIDXAcquisitionIsDone", message
-				return 0
-			endif
-		while (!done)
-		//SIDXAcquisitionFinish sidxHandle, status
-		if (status != 0)
-			SIDXGetStatusText sidxHandle, status, message
-			//SIDXAcquisitionDeallocate sidxHandle, buffer, status
-			//SIDXAcquisitionEnd sidxHandle, status
-			printf "%s: %s", "SIDXAcquisitionFinish", message
-			return 0
-		endif
-		// Transfer images from acquisition buffer to IGOR wave
-		// To put a stack of images into a 3D wave, call SIDXAcquisitionGetImagesStart and then 
-		// SIDXAcquisitionGetImagesGet within the acquisition loop to build the 3D wave.
-		// If there are multiple ROIs in each frame, only the first ROI will be saved in the 3D wave.
-		//SIDXAcquisitionGetImagesStart sidxHandle, $imageWaveName, frames_per_sequence, status
-		if (status != 0)
-			SIDXGetStatusText sidxHandle, status, message
-			//SIDXAcquisitionDeallocate sidxHandle, buffer, status
-			//SIDXAcquisitionEnd sidxHandle, status
-			printf "%s: %s", "SIDXAcquisitionGetImagesStart", message
-			return 0
-		endif
-		scan = 0	
-		do
-			// The second parameter is the frame index in the acquisition buffer (starting from zero). 
-			// The fourth parameter is the frame index in the 3D wave.
-			//SIDXAcquisitionGetImagesGet sidxHandle, scan, $imageWaveName, scan, status
-			if (status != 0)
-				SIDXGetStatusText sidxHandle, status, message
-				//SIDXAcquisitionDeallocate sidxHandle, buffer, status
-				//SIDXAcquisitionEnd sidxHandle, status
-				printf "%s: %s", "SIDXAcquisitionGetImagesGet", message
-				return 0
-			endif
-			scan = scan + 1
-		while (scan < frames_per_sequence)
-		
-		// To put images into individual wave, use SIDXAcquisitionGetImage
-		//	SIDXAcquisitionGetImage sidxHandle, 0, $imageWaveName, status
-		//	if (status != 0)
-		//		SIDXGetStatusText sidxHandle, status, message
-		//		SIDXAcquisitionDeallocate sidxHandle, buffer, status
-		//		SIDXAcquisitionEnd sidx_handle, status
-		//		printf "%s: %s", "SIDXAcquisitionGetImage", message
-		//		return 0
-		//	endif
-		
-		SIDXAcquisitionGetSize sidxHandle, roi_index, bytes, x_pixels, y_pixels, status
-		if (status != 0)
-			SIDXGetStatusText sidxHandle, status, message
-			//SIDXAcquisitionDeallocate sidxHandle, buffer, status
-			//SIDXAcquisitionEnd sidxHandle, status
-			printf "%s: %s", "SIDXAcquisitionGetSize", message
-			return 0
-		endif
-		//SIDXCameraGetTemperature sidxHandle, temperature, locked, hardware_provided, status
-		if (status != 0)
-			SIDXGetStatusText sidxHandle, status, message
-			//SIDXAcquisitionDeallocate sidxHandle, buffer, status
-			//SIDXAcquisitionEnd sidxHandle, status
-			printf "%s: %s", "SIDXCameraGetTemperature", message
-			return 0
-		endif
-		printf "CCD temperature measured: %d, Temperature locked (1 means true): %d, Temperature locked info provided by hardware (1 means true): %d\r", temperature, locked, hardware_provided
-		index = index + frames_per_sequence
-		print "image stack done"
-	while (index < frames)
-	print "image acquisition done"
-	//SIDXAcquisitionDeallocate sidxHandle, buffer, status
-	//SIDXAcquisitionEnd sidxHandle, status
-	
-	// Restore the original DF
-	SetDataFolder savedDF
-End
-
-
-
-
-
-
-
-Function SideroxylonEnd()
-//	This macro will shutdown the communication with the
-//	controller and release memory. It should be called at
-//	the end of the experiment. If you want to restart a new
-//	experiment after you call this macro, you should call
-//	macro SIDXSetup again to start over.
-	// Change to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sideroxylon
-
-	// instance vars
-	NVAR sidxHandle
-	NVAR isSidxHandleValid
-	
-	Variable status
-	String message
-	//SIDXSettingsSave sidxHandle, status
-	if (status != 0)
-		SIDXGetStatusText sidxHandle, status, message
-		printf "%s: %s", "SIDXSettingsSave", message
-	endif
-	//SIDXHardwareEnd sidxHandle, status
-	//SIDXDriverEnd sidxHandle, status
-	SIDXClose sidxHandle
-	isSidxHandleValid=0
-	
-	// Restore the original DF
-	SetDataFolder savedDF
-End
-
-
-
-
-
-
-
-Function SideroxylonBegin()
-//	This macro will setup the hardware configurations
-//	without going through the menus.
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Sideroxylon
@@ -294,13 +116,14 @@ End
 
 
 
-Function SideroxylonSetup(image_roi,roiwave,image_trig,ccd_fullexp)
-//	This macro allows you to setup the imaging and acquisition
-//	parameters without going through a series of menus.
+Function SideroxylonSetupAcquisition(image_roi,roiwave,isTriggered,ccd_fullexp,targetTemperature)
+	// This sets up the camera for a single acquisition.  (A single aquisition could be a single frame, or it could be a video.)  
+	// This is typically called once per acquisition, just before the acquisition.
 	Variable image_roi
 	Wave roiwave
-	Variable image_trig
+	Variable isTriggered
 	Variable ccd_fullexp
+	Variable targetTemperature
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
@@ -308,11 +131,6 @@ Function SideroxylonSetup(image_roi,roiwave,image_trig,ccd_fullexp)
 
 	// Declare instance variables
 	NVAR sidxHandle
-	//NVAR isSidxHandleValid
-	//NVAR image_roi
-	//WAVE roiwave
-	//NVAR image_trig
-	//NVAR ccd_fullexp
 	
 	Variable status, canceled
 	Variable x1, y1, x2, y2
@@ -357,16 +175,16 @@ Function SideroxylonSetup(image_roi,roiwave,image_trig,ccd_fullexp)
 	endif
 	//SIDXImageSetBinning sidxHandle, xbin, ybin, status
 	//SIDXImageSetGain sidxHandle, 0, status
-	if (image_trig>0)
+	if (isTriggered)
+		// Setup for a TTL-triggered acquisition
 		//SIDXImageSetTrigger sidxHandle, 1, status		// trigger required
 	else
-		//SIDXImageSetTrigger sidxHandle, 0, status		// no trigger required
-		sprintf image_set, "SIDXImageSetExposure sidxHandle, %f, status", ccd_fullexp/1000
-		Print image_set
-		//Execute image_set 
+		// Set up for a free-running (non-triggered) aquisition
+		//SIDXImageSetTrigger sidxHandle, 0, status		// no trigger required		
+		//SIDXImageSetExposure sidxHandle, ccd_fullexp/1000, status		// set the exposure
 	endif
 	//	check and report temp before finishing
-	ccdTempSet()
+	SideroxylonSetTemperature(targetTemperature)
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -377,8 +195,194 @@ End
 
 
 
-Function ccdTempSet()
+Function SideroxylonAcquisition(imageWaveName, nFrames, isTriggered)
+	// Acquire nFrames, and store the resulting video in imageWaveName.
+	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
+	// acquisition is free-running.
+
+	String imageWaveName
+	Variable nFrames
+	Variable isTriggered
+
+	// Change to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sideroxylon
+
+	// instance vars
+	NVAR sidxHandle
+
+	//  Set-up for the acquisition
+	Variable status
+	//SIDXAcquisitionBegin sidxHandle, nFrames, status
+	String message=""
+	if (status != 0)
+		SIDXGetStatusText sidxHandle, status, message
+		printf "%s: %s", "SIDXAcquisitionBegin", message
+		return 0
+	endif	
+	Variable iBuffer
+	//SIDXAcquisitionAllocate sidxHandle, nFramesPerChunk, iBuffer, status
+	if (status != 0)
+		SIDXGetStatusText sidxHandle, status, message
+		//SIDXAcquisitionEnd sidxHandle, status
+		printf "%s: %s", "SIDXAcquisitionAllocate", message
+		return 0
+	endif
+
+	// Prep for the acquisition (this will also start the acquisition unless it's a triggered acquire)
+	//SIDXAcquisitionStart sidxHandle, iBuffer, status
+	if (status != 0)
+		SIDXGetStatusText sidxHandle, status, message
+		//SIDXAcquisitionDeallocate sidxHandle, iBuffer, status
+		//SIDXAcquisitionEnd sidxHandle, status
+		printf "%s: %s", "SIDXAcquisitionStart", message
+		return 0
+	endif
+
+	// If the acquisition is external trigger mode, start the data acq, which will provide the per-frame triggers
+	if (isTriggered)
+		//DoDataAcq()	// will have to sub in new method call
+	endif
+
+	// Spin until the acquisition is done
+	Variable done=0
+	do
+		//SIDXAcquisitionIsDone sidxHandle, done, status
+		if (status != 0)
+			SIDXGetStatusText sidxHandle, status, message
+			//SIDXAcquisitionFinish sidxHandle, status
+			//SIDXAcquisitionDeallocate sidxHandle, iBuffer, status
+			//SIDXAcquisitionEnd sidxHandle, status
+			printf "%s: %s", "SIDXAcquisitionIsDone", message
+			return 0
+		endif
+	while (!done)
+	
+	// Finalize the acquisition (Not sure what this does in SIDX, but apparently required)
+	//SIDXAcquisitionFinish sidxHandle, status
+	if (status != 0)
+		SIDXGetStatusText sidxHandle, status, message
+		//SIDXAcquisitionDeallocate sidxHandle, iBuffer, status
+		//SIDXAcquisitionEnd sidxHandle, status
+		printf "%s: %s", "SIDXAcquisitionFinish", message
+		return 0
+	endif
+	
+	// Transfer images from acquisition buffer to IGOR wave
+	// To put a stack of images into a 3D wave, call SIDXAcquisitionGetImagesStart and then 
+	// SIDXAcquisitionGetImagesGet within the acquisition loop to build the 3D wave.
+	// If there are multiple ROIs in each frame, only the first ROI will be saved in the 3D wave.
+	//SIDXAcquisitionGetImagesStart sidxHandle, $imageWaveName, nFramesPerChunk, status
+	if (status != 0)
+		SIDXGetStatusText sidxHandle, status, message
+		//SIDXAcquisitionDeallocate sidxHandle, iBuffer, status
+		//SIDXAcquisitionEnd sidxHandle, status
+		printf "%s: %s", "SIDXAcquisitionGetImagesStart", message
+		return 0
+	endif
+	Variable iFrame
+	for (iFrame=0; iFrame<nFrames; iFrame+=1)
+		// The second parameter is the frame index in the acquisition buffer (starting from zero). 
+		// The fourth parameter is the frame index in the 3D wave.
+		//SIDXAcquisitionGetImagesGet sidxHandle, iFrame, $imageWaveName, iFrame, status
+		if (status != 0)
+			SIDXGetStatusText sidxHandle, status, message
+			//SIDXAcquisitionDeallocate sidxHandle, iBuffer, status
+			//SIDXAcquisitionEnd sidxHandle, status
+			printf "%s: %s", "SIDXAcquisitionGetImagesGet", message
+			return 0
+		endif
+	endfor
+	
+	// To put images into individual wave, use SIDXAcquisitionGetImage
+	//	SIDXAcquisitionGetImage sidxHandle, 0, $imageWaveName, status
+	//	if (status != 0)
+	//		SIDXGetStatusText sidxHandle, status, message
+	//		SIDXAcquisitionDeallocate sidxHandle, iBuffer, status
+	//		SIDXAcquisitionEnd sidx_handle, status
+	//		printf "%s: %s", "SIDXAcquisitionGetImage", message
+	//		return 0
+	//	endif
+	
+	Variable iROI=0
+	Variable nBytes, nXPixels, nYPixels	// Just to hold return values, not actually used
+	SIDXAcquisitionGetSize sidxHandle, iROI, nBytes, nXPixels, nYPixels, status
+	if (status != 0)
+		SIDXGetStatusText sidxHandle, status, message
+		//SIDXAcquisitionDeallocate sidxHandle, iBuffer, status
+		//SIDXAcquisitionEnd sidxHandle, status
+		printf "%s: %s", "SIDXAcquisitionGetSize", message
+		return 0
+	endif
+	
+	// Check the CCD temperature
+	Variable temperature
+	Variable locked, hardware_provided		// Just to hold return values, not actually used
+	//SIDXCameraGetTemperature sidxHandle, temperature, locked, hardware_provided, status
+	if (status != 0)
+		SIDXGetStatusText sidxHandle, status, message
+		//SIDXAcquisitionDeallocate sidxHandle, iBuffer, status
+		//SIDXAcquisitionEnd sidxHandle, status
+		printf "%s: %s", "SIDXCameraGetTemperature", message
+		return 0
+	endif
+	printf "CCD temperature measured: %d, Temperature locked (1 means true): %d, Temperature locked info provided by hardware (1 means true): %d\r", temperature, locked, hardware_provided
+	print "image stack done"
+
+	print "image acquisition done"
+	//SIDXAcquisitionDeallocate sidxHandle, iBuffer, status
+	//SIDXAcquisitionEnd sidxHandle, status
+	
+	// Restore the original DF
+	SetDataFolder savedDF
+End
+
+
+
+
+
+
+
+Function SideroxylonFinalize()
+	// Called to allow the SIDX library to do any required cleanup operations.
+	// Generally called at the end of an imaging session.  This is the "partner" of 
+	// SideroxylonInitialize().
+
+	// Change to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sideroxylon
+
+	// instance vars
+	NVAR sidxHandle
+	NVAR isSidxHandleValid
+	
+	Variable status
+	String message
+	//SIDXSettingsSave sidxHandle, status
+	if (status != 0)
+		SIDXGetStatusText sidxHandle, status, message
+		printf "%s: %s", "SIDXSettingsSave", message
+	endif
+	//SIDXHardwareEnd sidxHandle, status
+	//SIDXDriverEnd sidxHandle, status
+	SIDXClose sidxHandle
+	isSidxHandleValid=0
+	
+	// Restore the original DF
+	SetDataFolder savedDF
+End
+
+
+
+
+
+
+
+
+
+Function SideroxylonSetTemperature(targetTemperature)
 	// I would have thought this was to set the setpoint of the CCD temperature controller, but it doesn't really seem like that...
+	Variable targetTemperature
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
@@ -390,10 +394,7 @@ Function ccdTempSet()
 
 	Variable status=0, temperature=0, locked=0, hardware_provided=0
 	String message=""
-	if (!isSidxHandleValid)
-		SideroxylonBegin()
-	endif
-	//SIDXCameraSetTempSetpoint sidxHandle, ccd_tempset, status
+	//SIDXCameraSetTempSetpoint sidxHandle, targetTemperature, status
 	if (status != 0)
 		SIDXGetStatusText sidxHandle, status, message
 		//SIDXHardwareEnd sidxHandle, status
@@ -402,7 +403,7 @@ Function ccdTempSet()
 		printf "%s: %s", "SIDXCameraSetTempSetpoint", message
 		return 0
 	endif
-	Variable setpoint=0, temperature_maximum=0, temperature_minimum=0, range_valid=0, difference=0, counter=0
+	Variable setpoint=0, temperature_maximum=0, temperature_minimum=0, range_valid=0
 	//SIDXCameraGetTempSetpoint sidxHandle, setpoint, temperature_minimum, temperature_maximum, range_valid, status
 	if (status != 0)
 		SIDXGetStatusText sidxHandle, status, message
@@ -429,15 +430,15 @@ Function ccdTempSet()
 			printf "cooling (press space bar to stop) ..."
 		endif
 	endif
-	counter=0
+	Variable nItersSinceLastPeriodPrinted=0
 	do
 		//SIDXCameraGetTemperature sidxHandle, temperature, locked, hardware_provided, status
 		//ccd_temp=temperature
-		difference=abs(temperature-setpoint)
-		counter+=1
-		if (counter>100)
+		Variable difference=abs(temperature-setpoint)
+		nItersSinceLastPeriodPrinted+=1
+		if (nItersSinceLastPeriodPrinted>100)
 			printf "."
-			counter=0
+			nItersSinceLastPeriodPrinted=0
 		endif
 		if (EscapeKeyWasPressed())
 			break
@@ -474,7 +475,7 @@ Function SideroxylonFocus()
 	NVAR focus_num
 	NVAR gray_low, gray_high
 
-	String imageWaveName=sprintf2sv("%s%d",focus_name, focus_num)
+	String imageWaveName=sprintf2sv("%s%d", focus_name, focus_num)
 	Variable frames_per_sequence=1
 	Variable	frames=1
 	Variable status
@@ -485,7 +486,7 @@ Function SideroxylonFocus()
 		printf "%s: %s", "SIDXAcquisitionBegin", message
 		return 0
 	endif
-	Variable bytes, buffer, done, roi_index
+	Variable nBytes, buffer, done, roi_index
 	Variable x_pixels, y_pixels, maximum_pixel_value, temperature
 	//SIDXAcquisitionAllocate sidxHandle, 1, buffer, status
 	if (status != 0)
@@ -534,7 +535,7 @@ Function SideroxylonFocus()
 			printf "%s: %s", "SIDXAcquisitionGetImage", message
 			return 0
 		endif
-		SIDXAcquisitionGetSize sidxHandle, roi_index, bytes, x_pixels, y_pixels, status
+		SIDXAcquisitionGetSize sidxHandle, roi_index, nBytes, x_pixels, y_pixels, status
 		if (status != 0)
 			SIDXGetStatusText sidxHandle, status, message
 			//SIDXAcquisitionDeallocate sidxHandle, buffer, status
@@ -542,7 +543,7 @@ Function SideroxylonFocus()
 			printf "%s: %s", "SIDXAcquisitionGetSize", message
 			return 0
 		endif
-//		printf "ROI: %d, Bytes: %d, X pixels: %d, Y pixels: %d\r", roi_index, bytes, x_pixels, y_pixels
+//		printf "ROI: %d, Bytes: %d, X pixels: %d, Y pixels: %d\r", roi_index, nBytes, x_pixels, y_pixels
 		//SIDXCameraGetTemperature sidxHandle, temperature, locked, hardware_provided, status
 		if (status != 0)
 			SIDXGetStatusText sidxHandle, status, message
@@ -576,6 +577,13 @@ Function SideroxylonFocus()
 	// Restore the original DF
 	SetDataFolder savedDF
 End
+
+
+
+
+
+
+
 
 Function SideroxylonSetIlluminationNow(isIlluminationOn)
 	Variable isIlluminationOn
