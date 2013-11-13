@@ -474,7 +474,7 @@ Function SideroxylonFocus()
 	NVAR focus_num
 	NVAR gray_low, gray_high
 
-	String imageWaveName=sprintf2sv(focus_name, focus_num)
+	String imageWaveName=sprintf2sv("%s%d",focus_name, focus_num)
 	Variable frames_per_sequence=1
 	Variable	frames=1
 	Variable status
