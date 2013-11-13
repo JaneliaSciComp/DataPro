@@ -189,10 +189,10 @@ Function EPhys_Image()
 	Variable status, exposure, canceled
 	String message, command
 	image_trig=1
-	SideroxylonSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset)
+	CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset)
 	image_roi=2		// zero for full frame, one for specific ROI, two for ROI with background
 	im_plane=0
-	SideroxylonSetIlluminationNow(1)
+	CameraSetIlluminationNow(1)
 	Sleep /S 0.1
 	sprintf command, "Image_Stack(image_trig,0)"
 	Execute command
@@ -201,7 +201,7 @@ Function EPhys_Image()
 	Execute command
 	sprintf command, "Append_DFoverF(%d)", previouswave
 	Execute command
-	SideroxylonSetIlluminationNow(0)
+	CameraSetIlluminationNow(0)
 	printf "%s%d: Image with EPhys done\r", imageseq_name, previouswave
 	
 	// Restore the data folder
@@ -229,12 +229,12 @@ Function FocusImage()
 	frames_per_sequence=1
 	frames=1
 	image_trig=0			// set to one for triggered images
-	SideroxylonSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset)
+	CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset)
 	//printf "Focusing (press Esc key to stop) ..."
-	SideroxylonSetIlluminationNow(1)
+	CameraSetIlluminationNow(1)
 	Sleep /S 0.1
-	SideroxylonFocus()
-	SideroxylonSetIlluminationNow(0)
+	CameraFocus()
+	CameraSetIlluminationNow(0)
 	full_num+=1
 	focus_num=full_num
 	//printf "%s: Focus Image done\r", wave_image
@@ -264,16 +264,16 @@ Function Acquire_Full_Image()
 	frames=1
 	image_trig=0		// set to one for triggered images
 	xbin=1; ybin=1
-	//SideroxylonSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp)  // needs to come back
-	SideroxylonSetIlluminationNow(1)
+	//CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp)  // needs to come back
+	CameraSetIlluminationNow(1)
 	Sleep /S 0.1
 	Make /O /N=(512,512) $imageWaveName
 	Wave w=$imageWaveName
 	w=100+gnoise(10)
 	Variable isVideoTriggered=0
-	//SideroxylonAcquisition(imageWaveName,frames,isVideoTriggered)  // needs to come back
+	//CameraAcquisition(imageWaveName,frames,isVideoTriggered)  // needs to come back
 //	CCD_Acquire()	// old
-	SideroxylonSetIlluminationNow(0)
+	CameraSetIlluminationNow(0)
 	Image_Display(imageWaveName)  // commented just to make it compile, needs to come back
 	printf "%s%d: Full Image done\r", full_name, full_num
 	all_images=WaveList(full_name+"*",";","")+WaveList(imageseq_name+"*",";","")
@@ -307,11 +307,11 @@ Function Image_Stack(trig, disp)
 	frames_per_sequence=ccd_frames
 	frames=ccd_frames
 	image_trig=trig		// set to one for triggered images
-	SideroxylonSetIlluminationNow(1)
+	CameraSetIlluminationNow(1)
 	Sleep /S 0.1
 	im_plane=0
-	//SideroxylonAcquisition(imageWaveName,frames,trig)
-	SideroxylonSetIlluminationNow(0)
+	//CameraAcquisition(imageWaveName,frames,trig)
+	CameraSetIlluminationNow(0)
 	if (disp>0)
 		Image_Display(imageWaveName)
 	endif
@@ -1018,7 +1018,7 @@ Function SetCCDTempVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imaging
 
-	SideroxylonSetTemperature(varNum)
+	CameraSetTemperature(varNum)
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -1127,7 +1127,7 @@ End
 Function FluONButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
-	SideroxylonSetIlluminationNow(1)
+	CameraSetIlluminationNow(1)
 End
 
 //Function FluorescenceON()
@@ -1150,7 +1150,7 @@ End
 
 Function FluOFFButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	SideroxylonSetIlluminationNow(0)
+	CameraSetIlluminationNow(0)
 End
 
 //Function FluorescenceOFF()

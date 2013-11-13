@@ -6,9 +6,8 @@
 
 #pragma rtGlobals=3		// Use modern global access method and strict wave access
 
-// The Sideroxylon "object" wraps all the SIDX functions, so the Imager doesn't have to deal with 
-// them directly.  Sideroxylon is a genus of trees commonly known as "bully trees".  I chose the 
-// name only because it has the letters S, I, D, and X, in that order.
+// The Camera "object" wraps all the SIDX functions, so the Imager doesn't have to deal with 
+// them directly.
 
 // Note that these functions were originally based on example code provided by Lin Ci Brown 
 // of the Bruston Corporation.
@@ -19,9 +18,9 @@
 
 
 // Construct the object
-Function SideroxylonConstructor()
+Function CameraConstructor()
 	// if the DF already exists, nothing to do
-	if (DataFolderExists("root:DP_Sideroxylon"))
+	if (DataFolderExists("root:DP_Camera"))
 		return 0		// have to return something
 	endif
 
@@ -29,7 +28,7 @@ Function SideroxylonConstructor()
 	String savedDF=GetDataFolder(1)
 
 	// IMAGING GLOBALS
-	NewDataFolder /O /S root:DP_Sideroxylon
+	NewDataFolder /O /S root:DP_Camera
 	
 	// SIDX stuff
 	Variable /G isSidxHandleValid=0	// boolean
@@ -45,12 +44,12 @@ End
 
 
 
-Function SideroxylonInitialize()
+Function CameraInitialize()
 	// Initializes the SIDX interface to the camera.  Generally this will be called once per imaging session.
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sideroxylon
+	SetDataFolder root:DP_Camera
 
 	// Declare instance variables
 	NVAR sidxHandle
@@ -116,7 +115,7 @@ End
 
 
 
-Function SideroxylonSetupAcquisition(image_roi,roiwave,isTriggered,ccd_fullexp,targetTemperature)
+Function CameraSetupAcquisition(image_roi,roiwave,isTriggered,ccd_fullexp,targetTemperature)
 	// This sets up the camera for a single acquisition.  (A single aquisition could be a single frame, or it could be a video.)  
 	// This is typically called once per acquisition, just before the acquisition.
 	Variable image_roi
@@ -127,7 +126,7 @@ Function SideroxylonSetupAcquisition(image_roi,roiwave,isTriggered,ccd_fullexp,t
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sideroxylon
+	SetDataFolder root:DP_Camera
 
 	// Declare instance variables
 	NVAR sidxHandle
@@ -184,7 +183,7 @@ Function SideroxylonSetupAcquisition(image_roi,roiwave,isTriggered,ccd_fullexp,t
 		//SIDXImageSetExposure sidxHandle, ccd_fullexp/1000, status		// set the exposure
 	endif
 	//	check and report temp before finishing
-	SideroxylonSetTemperature(targetTemperature)
+	CameraSetTemperature(targetTemperature)
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -195,7 +194,7 @@ End
 
 
 
-Function SideroxylonAcquisition(imageWaveName, nFrames, isTriggered)
+Function CameraAcquisition(imageWaveName, nFrames, isTriggered)
 	// Acquire nFrames, and store the resulting video in imageWaveName.
 	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
 	// acquisition is free-running.
@@ -206,7 +205,7 @@ Function SideroxylonAcquisition(imageWaveName, nFrames, isTriggered)
 
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sideroxylon
+	SetDataFolder root:DP_Camera
 
 	// instance vars
 	NVAR sidxHandle
@@ -343,14 +342,14 @@ End
 
 
 
-Function SideroxylonFinalize()
+Function CameraFinalize()
 	// Called to allow the SIDX library to do any required cleanup operations.
 	// Generally called at the end of an imaging session.  This is the "partner" of 
-	// SideroxylonInitialize().
+	// CameraInitialize().
 
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sideroxylon
+	SetDataFolder root:DP_Camera
 
 	// instance vars
 	NVAR sidxHandle
@@ -380,13 +379,13 @@ End
 
 
 
-Function SideroxylonSetTemperature(targetTemperature)
+Function CameraSetTemperature(targetTemperature)
 	// I would have thought this was to set the setpoint of the CCD temperature controller, but it doesn't really seem like that...
 	Variable targetTemperature
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sideroxylon
+	SetDataFolder root:DP_Camera
 
 	// Declare instance variables
 	NVAR sidxHandle
@@ -460,14 +459,14 @@ End
 
 
 
-Function SideroxylonFocus()
-//	This is an adaptation of SideroxylonACQUISITION
+Function CameraFocus()
+//	This is an adaptation of CameraACQUISITION
 //	which puts the acquisition withing a loop for focusing
 //	exit the loop by pressing the space bar
 
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sideroxylon
+	SetDataFolder root:DP_Camera
 	
 	// instance vars
 	NVAR sidxHandle
@@ -585,7 +584,7 @@ End
 
 
 
-Function SideroxylonSetIlluminationNow(isIlluminationOn)
+Function CameraSetIlluminationNow(isIlluminationOn)
 	Variable isIlluminationOn
 	// Set the illumination state to isIlluminatonOn
 End
