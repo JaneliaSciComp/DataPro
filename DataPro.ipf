@@ -37,8 +37,9 @@
 #include ":DP_BuilderController"
 #include ":DP_Switcher"
 #include ":DP_ASwitcher"
-#include ":DP_Image"
 #include ":DP_Camera"
+#include ":DP_EpiLight"
+#include ":DP_Image"
 
 //#include <Strings as Lists> 
 //#include "DP_Acquire"

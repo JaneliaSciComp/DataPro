@@ -192,7 +192,7 @@ Function EPhys_Image()
 	CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset)
 	image_roi=2		// zero for full frame, one for specific ROI, two for ROI with background
 	im_plane=0
-	CameraSetIlluminationNow(1)
+	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
 	sprintf command, "Image_Stack(image_trig,0)"
 	Execute command
@@ -201,7 +201,7 @@ Function EPhys_Image()
 	Execute command
 	sprintf command, "Append_DFoverF(%d)", previouswave
 	Execute command
-	CameraSetIlluminationNow(0)
+	EpiLightTurnOnOff(0)
 	printf "%s%d: Image with EPhys done\r", imageseq_name, previouswave
 	
 	// Restore the data folder
@@ -231,10 +231,10 @@ Function FocusImage()
 	image_trig=0			// set to one for triggered images
 	CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset)
 	//printf "Focusing (press Esc key to stop) ..."
-	CameraSetIlluminationNow(1)
+	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
 	ImagerFocus()
-	CameraSetIlluminationNow(0)
+	EpiLightTurnOnOff(0)
 	full_num+=1
 	focus_num=full_num
 	//printf "%s: Focus Image done\r", wave_image
@@ -254,27 +254,29 @@ Function Acquire_Full_Image()
 	NVAR xbin, ybin
 	SVAR all_images
 	SVAR imageseq_name
+	WAVE roiwave
+	NVAR ccd_fullexp
+	NVAR ccd_tempset
 	
 	Variable status, exposure, canceled
 	String message
 	//String imageWaveName
-	Variable frames_per_sequence, frames
+	Variable frames
 	String imageWaveName=sprintf2sv("%s%d", full_name, full_num)
-	frames_per_sequence=1
+	Variable image_roi=0		// means there is no ROI
 	frames=1
 	image_trig=0		// set to one for triggered images
 	xbin=1; ybin=1
-	//CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp)  // needs to come back
-	CameraSetIlluminationNow(1)
+	CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset) 
+	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
 	Make /O /N=(512,512) $imageWaveName
 	Wave w=$imageWaveName
 	w=100+gnoise(10)
 	Variable isVideoTriggered=0
-	//CameraAllocateAndAcquire(imageWaveName,frames,isVideoTriggered)  // needs to come back
-//	CCD_Acquire()	// old
-	CameraSetIlluminationNow(0)
-	Image_Display(imageWaveName)  // commented just to make it compile, needs to come back
+	CameraAllocateAndAcquire(imageWaveName,frames,isVideoTriggered)  // needs to come back
+	EpiLightTurnOnOff(0)
+	Image_Display(imageWaveName) 
 	printf "%s%d: Full Image done\r", full_name, full_num
 	all_images=WaveList(full_name+"*",";","")+WaveList(imageseq_name+"*",";","")
 	full_num+=1; focus_num=full_num
@@ -307,11 +309,11 @@ Function Image_Stack(trig, disp)
 	frames_per_sequence=ccd_frames
 	frames=ccd_frames
 	image_trig=trig		// set to one for triggered images
-	CameraSetIlluminationNow(1)
+	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
 	im_plane=0
-	//CameraAllocateAndAcquire(imageWaveName,frames,trig)
-	CameraSetIlluminationNow(0)
+	CameraAllocateAndAcquire(imageWaveName,frames,trig)
+	EpiLightTurnOnOff(0)
 	if (disp>0)
 		Image_Display(imageWaveName)
 	endif
@@ -1127,7 +1129,7 @@ End
 Function FluONButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
-	CameraSetIlluminationNow(1)
+	EpiLightTurnOnOff(1)
 End
 
 //Function FluorescenceON()
@@ -1150,7 +1152,7 @@ End
 
 Function FluOFFButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	CameraSetIlluminationNow(0)
+	EpiLightTurnOnOff(0)
 End
 
 //Function FluorescenceOFF()

@@ -540,9 +540,3 @@ End
 
 
 
-
-
-Function CameraSetIlluminationNow(isIlluminationOn)
-	Variable isIlluminationOn
-	// Set the illumination state to isIlluminatonOn
-End
