@@ -233,7 +233,7 @@ Function FocusImage()
 	//printf "Focusing (press Esc key to stop) ..."
 	CameraSetIlluminationNow(1)
 	Sleep /S 0.1
-	CameraFocus()
+	ImagerFocus()
 	CameraSetIlluminationNow(0)
 	full_num+=1
 	focus_num=full_num
@@ -271,7 +271,7 @@ Function Acquire_Full_Image()
 	Wave w=$imageWaveName
 	w=100+gnoise(10)
 	Variable isVideoTriggered=0
-	//CameraAcquisition(imageWaveName,frames,isVideoTriggered)  // needs to come back
+	//CameraAllocateAndAcquire(imageWaveName,frames,isVideoTriggered)  // needs to come back
 //	CCD_Acquire()	// old
 	CameraSetIlluminationNow(0)
 	Image_Display(imageWaveName)  // commented just to make it compile, needs to come back
@@ -310,7 +310,7 @@ Function Image_Stack(trig, disp)
 	CameraSetIlluminationNow(1)
 	Sleep /S 0.1
 	im_plane=0
-	//CameraAcquisition(imageWaveName,frames,trig)
+	//CameraAllocateAndAcquire(imageWaveName,frames,trig)
 	CameraSetIlluminationNow(0)
 	if (disp>0)
 		Image_Display(imageWaveName)
@@ -1201,6 +1201,55 @@ Function ImagingCheckProc(ctrlName,checked) : CheckBoxControl
 	else
 		imaging=0
 	endif
+	
+	// Restore the original DF
+	SetDataFolder savedDF
+End
+
+
+
+
+
+
+Function ImagerFocus()
+	// Do a live view of the CCD, to enable focusing, etc.
+
+	// Change to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imaging
+	
+	// instance vars
+	SVAR focus_name
+	NVAR focus_num
+	NVAR gray_low, gray_high
+
+	String imageWaveName=sprintf2sv("%s%d", focus_name, focus_num)
+	Variable	nFrames=1
+	Variable isTriggered=0		// Just want the camera to free-run
+	
+	CameraAllocateFramebuffer(imageWaveName, nFrames)
+	Variable iFrame=0
+	do
+		// Start a sequence of images. In the current case, there is 
+		// only one frame in the sequence.
+		CameraAcquire(imageWaveName, nFrames, isTriggered)
+		// If first frame, create a display window.
+		// If subseqent frame, update the image in the display window
+		if (iFrame==0)
+			Image_Display(imageWaveName)
+		else
+			if (iFrame==1)
+				ModifyImage $imageWaveName ctab= {gray_low,gray_high,Grays,0}
+			endif
+			ControlInfo auto_on_fly_check0
+			if (V_Value>0)
+				AutoGrayScaleButtonProc("autogray_button0")
+			endif
+		endif
+		iFrame+=1
+		printf "."
+	while (!EscapeKeyWasPressed())	
+	CameraDeallocateFramebuffer()	
 	
 	// Restore the original DF
 	SetDataFolder savedDF
