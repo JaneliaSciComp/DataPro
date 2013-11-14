@@ -39,7 +39,15 @@
 #include ":DP_ASwitcher"
 #include ":DP_Camera"
 #include ":DP_EpiLight"
-#include ":DP_Image"
+#include ":DP_Imager"
+#include ":DP_ImagerView"
+#include ":DP_ImagerController"
+#include ":DP_ImageBrowser"
+#include ":DP_ImageBrowserView"
+#include ":DP_ImageBrowserController"
+#include ":DP_ImageTovers"
+
+
 
 //#include <Strings as Lists> 
 //#include "DP_Acquire"
@@ -76,6 +84,26 @@ Menu "DataPro"
 	"Axon Switcher",ASwitcherContConstructor()
 End
 
+Menu "DataPro Image"
+//	"Data Pro_Menu"
+//	"-"
+	"ImagerContConstructor"
+	"-"
+//	"Focus_Image"
+	"Acquire_Full_Image"
+	"Load_Full_Image"
+	"Load_Image_Stack"
+	"-"
+	"Image_Display"
+	"DFF_From_Stack"
+	"-"
+	"Show_DFoverF"
+	"Append_DFoverF"
+	"Quick_Append"
+	//"Get_SIDX_Image"
+End
+
+
 //Function IgorStartOrNewHook(igorApplicationNameStr)
 //	String igorApplicationNameStr
 //	InitializeDataPro()
@@ -99,7 +127,7 @@ Function InitializeDataPro()
 	DigitizerModelConstructor()
 	SweeperConstructor()
 	CameraConstructor()
-	SetupImagingGlobals()
+	ImagerConstructor()
 End
 
 //Function AcquisitionPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
@@ -136,3 +164,4 @@ Function MainContConstructors()
 	SweeperContConstructor()
 	BrowserContConstructor("NewOnlyIfNone")
 End
+
