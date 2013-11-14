@@ -29,20 +29,18 @@ Function EPhys_Image()
 	NVAR ybin
 	
 	Variable status, exposure, canceled
-	String message, command
+	String message
+	//String command
 	image_trig=1
 	CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset,xbin,ybin)
 	image_roi=2		// zero for full frame, one for specific ROI, two for ROI with background
 	im_plane=0
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
-	sprintf command, "Image_Stack(image_trig,0)"
-	Execute command
+	Image_Stack(image_trig,0)
 	print "done with image stack"
-	sprintf command, "Get_DFoverF_from_Stack(%d)", previouswave
-	Execute command
-	sprintf command, "Append_DFoverF(%d)", previouswave
-	Execute command
+	Get_DFoverF_from_Stack(previouswave)
+	Append_DFoverF(previouswave)
 	EpiLightTurnOnOff(0)
 	printf "%s%d: Image with EPhys done\r", imageseq_name, previouswave
 	
@@ -182,12 +180,10 @@ Function DFFButtonProc(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imaging
 
-	String command
-	NVAR previouswave=previouswave
-	sprintf command, "Get_DFoverF_from_Stack(%d)", previouswave
-	Execute command
-	sprintf command, "Append_DFoverF(%d)", previouswave
-	Execute command
+	//String command
+	NVAR previouswave
+	Get_DFoverF_from_Stack(previouswave)
+	Append_DFoverF(previouswave)
 	
 	// Restore the original DF
 	SetDataFolder savedDF

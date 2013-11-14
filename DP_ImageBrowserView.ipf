@@ -52,8 +52,10 @@ Function Image_Display(imageWaveName): Graph
 	DoWindow /F Image_Display
 	PopupMenu image_popup0,value= #"all_images"
 	PopupMenu image_popup0,mode=WhichListItem(imageWaveName,all_images)+1
-	sprintf command, "RemoveImage %s", ImageNameList("Image_Display",";")
-	Execute command
+	//sprintf command, "RemoveImage %s", ImageNameList("Image_Display",";")
+	//Execute command
+	String oldImageWaveName=ImageNameList("Image_Display",";")
+	RemoveImage $oldImageWaveName
 	AppendImage $imageWaveName
 //	SetAxis/A/R left
 	ControlInfo auto_on_fly_check0

@@ -58,10 +58,12 @@ Function Load_Image_Stack(stacknum, numimages)
 	String newImageWaveName, filename, getbinary
 	//	NewPath Images "C:Nelson:Imaging Expts:..........."
 	sprintf filename, "%s%d.SPE", imagename, stacknum
-	sprintf getbinary, "GBLoadWave/P=Images/B/T={%d,%d}/S=4100/W=1/N=temp \"%s\"", infile, outfile, filename
-//	print getbinary
+
+	//sprintf getbinary, "GBLoadWave/P=Images/B/T={%d,%d}/S=4100/W=1/N=temp \"%s\"", infile, outfile, filename
+	//Execute getbinary
+	GBLoadWave /P=Images /B /T={infile,outfile} /S=4100 /W=1 /N=temp filename
+
 	sprintf newImageWaveName, "stack_%d", stacknum
-	Execute getbinary
 	Make /O /N=(numimages-1) $newImageWaveName
 	WAVE newImageWave=$newImageWaveName
 	DoWindow /F ImagingPanel

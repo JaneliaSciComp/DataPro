@@ -22,9 +22,10 @@ Function ImagePlaneSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContr
 	SVAR imageseq_name
 	
 	// Do stuff
-	String command
-	sprintf command, "ModifyImage \'\'#0 plane=%d", im_plane
-	Execute command
+	//String command
+	//sprintf command, "ModifyImage \'\'#0 plane=%d", im_plane
+	//Execute command
+	ModifyImage ''#0 plane=(im_plane)
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -97,9 +98,10 @@ Function ImagePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imaging
 
-	String command
-	sprintf command, "Image_Display(\"%s\")", popStr
-	Execute command
+	//String command
+	//sprintf command, "Image_Display(\"%s\")", popStr
+	//Execute command
+	Image_Display(popStr)
 	
 	// Restore the original DF
 	SetDataFolder savedDF
