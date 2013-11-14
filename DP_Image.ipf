@@ -1052,7 +1052,7 @@ Function FullButtonProc(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imaging
 
-	Execute "Acquire_Full_Image()"
+	Acquire_Full_Image()
 	
 	// Restore the original DF
 	SetDataFolder savedDF

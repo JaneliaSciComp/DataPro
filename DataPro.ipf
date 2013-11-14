@@ -51,7 +51,7 @@
 //---------------------- DataPro MENU -----------------------//
 
 Menu "DataPro"
-	"All Controls",MainConstructors()
+	"All Controls",MainContConstructors()
 	"-"
 	"Sweeper Controls",SweeperContConstructor()
 	"Digitizer Controls",DigitizerContConstructor()
@@ -98,6 +98,7 @@ Function InitializeDataPro()
 	SamplerConstructor()
 	DigitizerModelConstructor()
 	SweeperConstructor()
+	CameraConstructor()
 	SetupImagingGlobals()
 End
 
@@ -128,9 +129,8 @@ End
 //	DoWindow /K StartPanel
 //End
 
-Function MainConstructors()
-	// Raise or create the three main windows used for data acquisition
-	SamplerConstructor()
+Function MainContConstructors()
+	// Raise or create the main controllers (and their views) used for data acquisition
 	DigitizerContConstructor()
 	TestPulserContConstructor()
 	SweeperContConstructor()

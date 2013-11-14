@@ -7,9 +7,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 Function DigitizerModelConstructor()
-	//	USERS SHOULD NOT EDIT ANYTHING HERE
-	//	EDIT ONLY IN THE MyVariables FILE
-	
 	// if the DF already exists, nothing to do
 	if (DataFolderExists("root:DP_Digitizer"))
 		return 0		// have to return something
