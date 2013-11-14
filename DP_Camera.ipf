@@ -34,6 +34,18 @@ Function CameraConstructor()
 		Variable /G sidxCamera	
 		Variable /G isSidxAcquirerValid=0	// boolean
 		Variable /G sidxAcquirer		
+		
+		// This stuff is only needed/used if there's no camera and we're faking
+		Variable /G nWidthCCDFake=512	// width of the fake CCD
+		Variable /G nHeightCCDFake=512	// height of the fake CCD
+		Variable /G isTriggeredFake=0		// whether the fake camera is in triggered mode (as opposed to free-running)
+		Variable /G isFullFrameFake=1		// are we doing full-frame for the fake camera?  (false=>ROI)
+		Variable /G nBinWidthFake=1
+		Variable /G nBinHeightFake=1
+		Variable /G jLeftFake, iTopFake, jRightFake, iBottomFake	// the ROI boundaries
+		Variable /G expsoureFake=100		// exposure for the fake camera, in ms
+		Variable /G targetTemperatureFake=-20		// degC
+		Variable /G nFramesFake=1		// How many frames to acquire for the fake camera
 	endif
 
 	// Initialize the camera
@@ -58,13 +70,14 @@ Function CameraInitialize()
 	SetDataFolder root:DP_Camera
 
 	// Declare instance variables
+	NVAR areWeFakingCamera
 	NVAR sidxRoot
 	NVAR isSidxRootValid
 	NVAR sidxCamera
 	NVAR isSidxCameraValid	
 	
 	// If the sidxCamera object is already valid, nothing to do
-	if (isSidxCameraValid)
+	if (isSidxCameraValid||areWeFakingCamera)
 		return 0		// have to return something
 	endif
 	
@@ -76,29 +89,42 @@ Function CameraInitialize()
 	String license=""	// License file is stored in C:/Program Files/Bruxton/SIDX
 	SIDXRootOpen sidxRoot, license, sidxStatus
 	if (sidxStatus != 0)
-		SIDXRootGetLastError sidxRoot, errorMessage
-		Abort sprintf1s("Error in SIDXRootOpen: %s", errorMessage)
+		isSidxRootValid=0
+		//SIDXRootGetLastError sidxRoot, errorMessage
+		//Abort sprintf1s("Error in SIDXRootOpen: %s", errorMessage)
+	else
+		isSidxRootValid=1
 	endif
-	isSidxRootValid=1
 	
-	// Just for fun, enumerate the available cameras
-	Variable nCameras
-	SIDXRootCameraScanGetCount sidxRoot, nCameras,sidxStatus
-	Printf "# of cameras: %d\r", nCameras
-	Variable iCamera
-	for (iCamera=0; iCamera<nCameras; iCamera+=1)
-		String thisCameraName
-		SIDXRootCameraScanGetName sidxRoot, iCamera, thisCameraName, sidxStatus
-		Printf "Camera %d of %d is named %s\r", iCamera, nCameras, thisCameraName
-	endfor
-	
-	// Create the SIDX camera object, referenced by sidxCamera
-	SIDXRootCameraOpenName sidxRoot, "", sidxCamera, sidxStatus
-	if (sidxStatus != 0)
-		SIDXRootGetLastError sidxRoot, errorMessage
-		Abort sprintf1s("Error in SIDXRootCameraOpenName: %s", errorMessage)
+	// Find out how many cameras are available
+	Variable nCameras=0
+	if (isSidxRootValid)
+		SIDXRootCameraScanGetCount sidxRoot, nCameras,sidxStatus
+		if (sidxStatus != 0)
+			nCameras=0
+		endif
+		//Printf "# of cameras: %d\r", nCameras
+	else
+		nCameras=0
 	endif
-	isSidxCameraValid=1
+
+//	Variable iCamera
+//	for (iCamera=0; iCamera<nCameras; iCamera+=1)
+//		String thisCameraName
+//		SIDXRootCameraScanGetName sidxRoot, iCamera, thisCameraName, sidxStatus
+//		Printf "Camera %d of %d is named %s\r", iCamera, nCameras, thisCameraName
+//	endfor
+
+	// If there's at least one camera, get the handle for it.  If not, we'll fake it.
+	if (nCameras>0)
+		// Create the SIDX camera object, referenced by sidxCamera
+		SIDXRootCameraOpenName sidxRoot, "", sidxCamera, sidxStatus
+		if (sidxStatus != 0)
+			isSidxCameraValid=1
+		else
+			isSidxCameraValid=0
+		endif
+	endif
 	
 	// Restore the data folder
 	SetDataFolder savedDF
@@ -111,13 +137,15 @@ End
 
 
 
-Function CameraSetupAcquisition(image_roi,roiwave,isTriggered,ccd_fullexp,targetTemperature,nBinWidth,nBinHeight)
+Function CameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTriggered,exposure,targetTemperature,nBinWidth,nBinHeight)
 	// This sets up the camera for a single acquisition.  (A single aquisition could be a single frame, or it could be a video.)  
 	// This is typically called once per acquisition, just before the acquisition.
-	Variable image_roi
-	Wave roiwave
+	//Variable image_roi
+	Variable isROI
+	Variable isBackgroundROIToo
+	Wave roisWave
 	Variable isTriggered
-	Variable ccd_fullexp
+	Variable exposure	// frame exposure duration, in ms
 	Variable targetTemperature
 	Variable nBinWidth
 	Variable nBinHeight
@@ -140,49 +168,26 @@ Function CameraSetupAcquisition(image_roi,roiwave,isTriggered,ccd_fullexp,target
 	// This is used in lots of places
 	Variable sidxStatus
 	String errorMessage
-	
-	//Variable sidxStatus, canceled
-	//Variable x1, y1, x2, y2
-	//String errorMessage, camera_set, image_set, driver_set, hardware_set
-	//sprintf camera_set "RoperPIAD=\"1\" RoperPIGain=\"0\" RoperPITiming=\"0\" RoperPITemperature=\"-25.0\" RoperPIExposure=\"0.030000\""
-	//SIDXCameraSetSettings sidxRoot, camera_set, sidxStatus
-	//if (sidxStatus != 0)
-	//	SIDXRootGetLastError sidxRoot, errorMessage
-	//	//SIDXHardwareEnd sidxRoot, sidxStatus
-	//	//SIDXDriverEnd sidxRoot, sidxStatus
-	//	SIDXRootClose sidxRoot, sidxStatus
-	//	printf "%s: %s", "SIDXCameraSetSettings", errorMessage
-	//	return 0
-	//endif
-	//SIDXCameraSetSetting sidxRoot, "RoperPICleanScans", "1", sidxStatus
-	//SIDXCameraSetSetting sidxRoot, "RoperPIStripsPerScan", "512", sidxStatus
-	//SIDXCameraSetShutterMode sidxRoot, 4, sidxStatus
-//	if (sidxStatus != 0)
-//		SIDXRootGetLastError sidxRoot, errorMessage
-//		SIDXRootClose sidxRoot, errorMessage
-//		printf "%s: %s", "SIDXCameraSetSetting", errorMessage
-//		return 0
-//	endif
-	//SIDXCameraGetSettings sidxRoot, errorMessage, sidxStatus
-	//print errorMessage
-	
-	//SIDXImageROIFullFrame sidxRoot, sidxStatus
+
+	// Set up stuff
 	SIDXCameraROIClear sidxCamera, sidxStatus
 	if (sidxStatus!=0)
 		SIDXRootGetLastError sidxRoot, errorMessage
 		Abort sprintf1s("Error in SIDXCameraROIClear: %s",errorMessage)
 	endif
 	Variable jLeft, iTop, jRight, iBottom	
-	if (image_roi>0)
-		jLeft=roiwave[0][1]; iTop=roiwave[3][1]; jRight=roiwave[1][1]; iBottom=roiwave[2][1]
+	if (isROI)
+		Variable iROI=0  // the foreground ROI
+		jLeft=roisWave[0][iROI]; iTop=roisWave[3][iROI]; jRight=roisWave[1][iROI]; iBottom=roisWave[2][iROI]
 		SIDXCameraROISet sidxCamera, jLeft, iTop, jRight, iBottom, sidxStatus
 		if (sidxStatus!=0)
 			SIDXRootGetLastError sidxRoot, errorMessage
 			Abort sprintf1s("Error in SIDXCameraROISet: %s",errorMessage)
 		endif
 		//print jLeft, iTop, jRight, iBottom
-		if (image_roi>1)	// add bkgnd ROI
-			jLeft=roiwave[0][2]; iTop=roiwave[3][2]; jRight=roiwave[1][2]; iBottom=roiwave[2][2]
+		if (isBackgroundROIToo)	// add bkgnd ROI
+			iROI=1  // the background ROI
+			jLeft=roisWave[0][iROI]; iTop=roisWave[3][iROI]; jRight=roisWave[1][iROI]; iBottom=roisWave[2][iROI]
 			SIDXCameraROISet sidxCamera, jLeft, iTop, jRight, iBottom, sidxStatus
 			if (sidxStatus!=0)
 				SIDXRootGetLastError sidxRoot, errorMessage
@@ -216,8 +221,8 @@ Function CameraSetupAcquisition(image_roi,roiwave,isTriggered,ccd_fullexp,target
 	endif
 	
 	// Set the exposure
-	Variable exposure=ccd_fullexp/1000	// ms->s
-	SIDXCameraExposeSet sidxCamera, exposure, sidxStatus
+	Variable exposureInSeconds=exposure/1000	// ms->s
+	SIDXCameraExposeSet sidxCamera, exposureInSeconds, sidxStatus
 	if (sidxStatus!=0)
 		SIDXRootGetLastError sidxRoot, errorMessage
 		Abort sprintf1s("Error in SIDXCameraExposeSet: %s",errorMessage)
@@ -509,11 +514,7 @@ Function CameraSetTemperature(targetTemperature)
 	Variable itersAtTargetMinimum=ceil(secondsAtTargetMinimum/secondsBetweenChecks)
 	Variable itersAtTarget=0
 	do
-		SIDXCameraCoolingGetValue sidxCamera, temperature, sidxStatus
-		if (sidxStatus != 0)
-			SIDXRootGetLastError sidxRoot, errorMessage
-			Abort errorMessage
-		endif
+		temperature=CameraGetTemperature()
 		if ( abs(temperature-targetTemperature)<temperatureTolerance ) 
 			itersAtTarget+=1
 		else

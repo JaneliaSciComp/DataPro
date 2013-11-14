@@ -8,19 +8,22 @@
 
 Function ImagerViewConstructor() : Panel
 	// If the view already exists, just raise it
-	if (PanelExists("ImagingPanel"))
-		DoWindow /F ImagingPanel
+	if (PanelExists("ImagerView"))
+		DoWindow /F ImagerView
 		return 0
 	endif
 
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
+
+	// instance vars
+	NVAR iROI
 
 	// This is used in several places
 	String absVarName
 	
-	NewPanel /W=(757,268,1068,741)  /N=ImagingPanel /K=1 as "Imaging Controls"
+	NewPanel /W=(757,268,1068,741)  /N=ImagerView /K=1 as "Imager Controls"
 	Button flu_on,pos={10,40},size={130,20},proc=FluONButtonProc,title="Fluorescence ON"
 	Button flu_off,pos={10,10},size={130,20},proc=FluOFFButtonProc,title="Fluorescence OFF"
 	CheckBox imaging_check0,pos={14,244},size={114,14},proc=ImagingCheckProc,title="trigger filter wheel"
@@ -46,7 +49,7 @@ Function ImagerViewConstructor() : Panel
 	SetVariable focusnum_set,pos={229,98},size={70,15},title="no."
 	SetVariable focusnum_set,limits={0,1000,1},value= focus_num
 	SetVariable fulltime_set,pos={152,130},size={150,15},title="Exp. time (ms)"
-	SetVariable fulltime_set,limits={0,10000,100},value= ccd_fullexp
+	SetVariable fulltime_set,limits={0,10000,100},value= exposure
 	SetVariable imagetime_setvar0,pos={149,193},size={150,15},title="Exp.time (ms)"
 	SetVariable imagetime_setvar0,limits={0,10000,10},value= ccd_seqexp
 	SetVariable setfullname0,pos={137,158},size={80,15},title="name"
@@ -54,7 +57,7 @@ Function ImagerViewConstructor() : Panel
 	SetVariable setfocusname0,pos={139,99},size={80,15},title="name"
 	SetVariable setfocusname0,value= focus_name
 	
-	absVarName=AbsoluteVarName("root:DP_Imaging","ccd_temp")
+	absVarName=AbsoluteVarName("root:DP_Imager","ccd_temp")
 	ValDisplay tempdisp0,pos={174,311},size={120,14},title="CCD Temp."
 	ValDisplay tempdisp0,format="%3.1f",limits={0,0,0},barmisc={0,1000}
 	ValDisplay tempdisp0,value= #absVarName
@@ -65,8 +68,10 @@ Function ImagerViewConstructor() : Panel
 	SetVariable fullnum_set,limits={0,1000,1},value= full_num
 	SetVariable imageseqnum_set,pos={227,223},size={70,15},title="no."
 	SetVariable imageseqnum_set,limits={0,10000,1},value= imageseq_num
-	SetVariable roinum_set0,pos={117,341},size={90,15},proc=GetROIProc,title="ROI no."
-	SetVariable roinum_set0,format="%d",limits={1,2,1},value= roinum
+	
+	SetVariable roinum_set0,pos={117,341},size={90,15},proc=ImagerContiROISVTwiddled,title="ROI no."
+	SetVariable roinum_set0,format="%d",limits={1,2,1},value= _NUM:(iROI+1)
+	
 	SetVariable settop0,pos={182,371},size={77,15},proc=SetROIProc,title="top"
 	SetVariable settop0,format="%d",limits={0,512,1},value= roi_top
 	SetVariable setright0,pos={54,395},size={85,15},proc=SetROIProc,title="right"
@@ -80,11 +85,11 @@ Function ImagerViewConstructor() : Panel
 	SetVariable setybin0,pos={174,419},size={85,15},proc=SetROIProc,title="y bin"
 	SetVariable setybin0,format="%d",limits={0,512,1},value= ybin
 
-	absVarName=AbsoluteVarName("root:DP_Imaging","xpixels")
+	absVarName=AbsoluteVarName("root:DP_Imager","xpixels")
 	ValDisplay xpixels0,pos={54,444},size={85,14},title="x pixels",format="%4.2f"
 	ValDisplay xpixels0,limits={0,0,0},barmisc={0,1000},value= #absVarName
 	
-	absVarName=AbsoluteVarName("root:DP_Imaging","ypixels")
+	absVarName=AbsoluteVarName("root:DP_Imager","ypixels")
 	ValDisplay ypixels0,pos={173,446},size={85,14},title="y pixels",format="%4.2f"
 	ValDisplay ypixels0,limits={0,0,0},barmisc={0,1000},value= #absVarName
 	
@@ -92,6 +97,36 @@ Function ImagerViewConstructor() : Panel
 	CheckBox show_roi_check0,pos={109,286},size={94,14},title="Show ROI Image"
 	CheckBox show_roi_check0,value= 0
 	
+	// Restore the original DF
+	SetDataFolder savedDF
+End
+
+Function ImagerViewModelChanged()
+	// Notify the ImagerView that the Imager (model) has changed.
+	// Currently, this calls the (private) ImagerViewUpdate method.
+	ImagerViewUpdate()
+End
+
+Function ImagerViewUpdate()
+	// This is intended to be a private method in ImagerView.
+	// Currently it updates only one SetVariable, but that should change
+	// in the future
+
+	// If the window doesn't exist, nothing to do
+	if (!PanelExists("ImagerView"))
+		return 0		// Have to return something
+	endif
+
+	// Change to the Imager data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+
+	// Declare the DF vars we need
+	NVAR iROI
+
+	// Update stuff
+	SetVariable roinum_set0,win=ImagerView,value= _NUM:(iROI+1)
+
 	// Restore the original DF
 	SetDataFolder savedDF
 End

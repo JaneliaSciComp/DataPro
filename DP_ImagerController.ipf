@@ -15,25 +15,29 @@ End
 Function EPhys_Image()
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	// Declare the instance vars
 	SVAR focus_name
 	NVAR focus_num, image_trig, full_num
-	NVAR image_roi, im_plane, previouswave
+	NVAR im_plane, previouswave
+	NVAR isROI
+	NVAR isBackgroundROIToo
 	SVAR imageseq_name
-	WAVE roiwave
-	NVAR ccd_fullexp
+	WAVE roisWave
+	NVAR exposure
 	NVAR ccd_tempset
 	NVAR xbin
 	NVAR ybin
 	
-	Variable status, exposure, canceled
+	Variable status, canceled
 	String message
 	//String command
 	image_trig=1
-	CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset,xbin,ybin)
-	image_roi=2		// zero for full frame, one for specific ROI, two for ROI with background
+	CameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,image_trig,exposure,ccd_tempset,xbin,ybin)
+	//image_roi=2		// zero for full frame, one for specific ROI, two for ROI with background
+	isROI=1
+	isBackgroundROIToo=1
 	im_plane=0
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
@@ -51,19 +55,21 @@ End
 Function FocusImage()
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	// Declare the object vars
 	SVAR focus_name
 	NVAR focus_num, image_trig, full_num
-	NVAR image_roi
-	WAVE roiwave
-	NVAR ccd_fullexp
+	//NVAR image_roi
+	NVAR isROI
+	NVAR isBackgroundROIToo
+	WAVE roisWave
+	NVAR exposure
 	NVAR ccd_tempset
 	NVAR xbin
 	NVAR ybin
 
-	Variable status, exposure, canceled
+	Variable status, canceled
 	String message
 	Variable frames_per_sequence, frames
 	String wave_image
@@ -71,7 +77,7 @@ Function FocusImage()
 	frames_per_sequence=1
 	frames=1
 	image_trig=0			// set to one for triggered images
-	CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset,xbin,ybin)
+	CameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,image_trig,exposure,ccd_tempset,xbin,ybin)
 	//printf "Focusing (press Esc key to stop) ..."
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
@@ -88,7 +94,7 @@ End
 Function Acquire_Full_Image()
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	// Declare the object vars
 	SVAR full_name
@@ -96,22 +102,24 @@ Function Acquire_Full_Image()
 	NVAR xbin, ybin
 	SVAR all_images
 	SVAR imageseq_name
-	WAVE roiwave
-	NVAR ccd_fullexp
+	WAVE roisWave
+	NVAR exposure
 	NVAR ccd_tempset
 	NVAR xbin
 	NVAR ybin
 	
-	Variable status, exposure, canceled
+	Variable status, canceled
 	String message
 	//String imageWaveName
 	Variable frames
 	String imageWaveName=sprintf2sv("%s%d", full_name, full_num)
-	Variable image_roi=0		// means there is no ROI
+	//Variable image_roi=0		// means there is no ROI
+	Variable isROI=0
+	Variable isBackgroundROIToo=0	// Irrelevant
 	frames=1
 	image_trig=0		// set to one for triggered images
 	xbin=1; ybin=1
-	CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset,xbin,ybin) 
+	CameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,image_trig,exposure,ccd_tempset,xbin,ybin) 
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
 	Make /O /N=(512,512) $imageWaveName
@@ -136,7 +144,7 @@ Function Image_Stack(trig, disp)
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 	
 	// instance vars
 	SVAR imageseq_name
@@ -178,7 +186,7 @@ Function DFFButtonProc(ctrlName) : ButtonControl
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	//String command
 	NVAR previouswave
@@ -194,7 +202,7 @@ Function ResetAvgButtonProc(ctrlName) : ButtonControl
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	NVAR imageavgn=imageavgn
 	Wave average=dff_avg
@@ -213,7 +221,7 @@ Function SetCCDTempVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	CameraSetTemperature(varNum)
 	
@@ -226,7 +234,7 @@ Function StackButtonProc(ctrlName) : ButtonControl
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	Image_Stack(0,0)
 	
@@ -239,7 +247,7 @@ Function FullButtonProc(ctrlName) : ButtonControl
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	Acquire_Full_Image()
 	
@@ -252,7 +260,7 @@ Function FocusButtonProc(ctrlName) : ButtonControl
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	FocusImage()
 	
@@ -291,7 +299,7 @@ Function ImagingCheckProc(ctrlName,checked) : CheckBoxControl
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 	
 	NVAR imaging=imaging
 	Execute "VDTGetPortList"
@@ -317,7 +325,7 @@ Function ImagerFocus()
 
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 	
 	// instance vars
 	SVAR focus_name
@@ -363,7 +371,7 @@ Function Get_DFoverF_from_Stack(stacknum)
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 	
 	// instance vars
 	SVAR imageseq_name
@@ -402,7 +410,7 @@ Function Append_DFoverF(stacknum)
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 	
 	// instance vars
 	NVAR imageavgn
@@ -414,7 +422,7 @@ Function Append_DFoverF(stacknum)
 	//sprintf newImageWaveName, "dff_%d", stacknum
 	//PauseUpdate
 	AppendToGraph $newImageWaveName
-	DoWindow /F ImagingPanel
+	DoWindow /F ImagerView
 	ControlInfo showimageavg_check0
 	if (V_value>0)
 		if (imageavgn<1)
@@ -467,41 +475,50 @@ Function SetROIProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 	
-	WAVE roiwave=roiwave, roibox_x=roibox_x, roibox_y=roibox_y
-	NVAR roinum=roinum
+	WAVE roisWave=roisWave, roibox_x=roibox_x, roibox_y=roibox_y
+	NVAR iROI
 	NVAR roi_left=roi_left, roi_right=roi_right, xbin=xbin, xpixels=xpixels
 	NVAR roi_top=roi_top, roi_bottom=roi_bottom, ybin=ybin, ypixels=ypixels
 	xpixels=(roi_right-roi_left+1)/xbin
 	ypixels=(roi_bottom-roi_top+1)/ybin
-	roiwave[][roinum]={roi_left, roi_right, roi_top, roi_bottom, xbin, ybin}
+	roisWave[][iROI]={roi_left, roi_right, roi_top, roi_bottom, xbin, ybin}
 	DrawROI()
 	
 	// Restore the original DF
 	SetDataFolder savedDF
 End
 
-Function GetROIProc(ctrlName,varNum,varStr,varName) : SetVariableControl
-	String ctrlName
-	Variable varNum
-	String varStr
-	String varName
+Function ImagerContiROISVTwiddled(svStruct) : SetVariableControl
+	STRUCT WMSetVariableAction &svStruct
+	
+	// If control is being killed, do nothing
+	if ( svStruct.eventCode==-1 ) 
+		return 0
+	endif	
+
+	// Need a better name for the thing set
+	Variable iROIPlusOne=svStruct.dval
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 	
-	WAVE roiwave=roiwave
-	NVAR roinum=roinum
-	NVAR roi_left=roi_left, roi_right=roi_right, xbin=xbin, xpixels=xpixels
-	NVAR roi_top=roi_top, roi_bottom=roi_bottom, ybin=ybin, ypixels=ypixels
-	roi_left=roiwave[0][roinum]
-	roi_right=roiwave[1][roinum]
-	roi_top=roiwave[2][roinum]
-	roi_bottom=roiwave[3][roinum]
-	xbin=roiwave[4][roinum]
-	ybin=roiwave[5][roinum]
+	// decare instance vars
+	WAVE roisWave
+	NVAR iROI
+	NVAR roi_left, roi_right, xbin, xpixels
+	NVAR roi_top, roi_bottom, ybin, ypixels
+	
+	// do stuff
+	iROI=iROIPlusOne-1
+	roi_left=roisWave[0][iROI]
+	roi_right=roisWave[1][iROI]
+	roi_top=roisWave[2][iROI]
+	roi_bottom=roisWave[3][iROI]
+	xbin=roisWave[4][iROI]
+	ybin=roisWave[5][iROI]
 	xpixels=(roi_right-roi_left+1)/xbin
 	ypixels=(roi_bottom-roi_top+1)/ybin
 	DrawROI()
@@ -513,32 +530,31 @@ End
 Function DrawROI()
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	// instance vars
-	NVAR roinum, roi_left, roi_right, roi_top, roi_bottom
+	NVAR iROI
+	NVAR roi_left, roi_right, roi_top, roi_bottom
 	NVAR xbin, ybin
 	NVAR xpixels, ypixels
-	WAVE roiwave
+	WAVE roisWave
+	WAVE roibox_x0, roibox_y0
 	WAVE roibox_x1, roibox_y1
-	WAVE roibox_x2, roibox_y2
 
-	//PauseUpdate; Silent 1
-	//String doit
-	String thebox_yName=sprintf1v("roibox_y%d", roinum)
+	String thebox_yName=sprintf1v("roibox_y%d", iROI)
 	WAVE thebox_y=$thebox_yName
 	thebox_y={roi_top, roi_top, roi_bottom, roi_bottom, roi_top}
-	String thebox_xName=sprintf1v("roibox_x%d", roinum)
+	String thebox_xName=sprintf1v("roibox_x%d", iROI)
 	WAVE thebox_x=$thebox_xName	
 	thebox_x={roi_left, roi_right, roi_right, roi_left, roi_left}
 	if (wintype("Image_Display")>0)
 		DoWindow /F Image_Display
 		String removeit=Wavelist("roibox_yName*",";","WIN:Image_Display")
 		RemoveFromGraph /W=Image_Display $removeit
+		AppendToGraph roibox_y0 vs roibox_x0
+		ModifyGraph /Z lsize(roibox_y0)=1.5
 		AppendToGraph roibox_y1 vs roibox_x1
-		ModifyGraph /Z lsize(roibox_y1)=1.5
-		AppendToGraph roibox_y2 vs roibox_x2
-		ModifyGraph /Z lsize(roibox_y2)=1.5,rgb(roibox_y2)=(0,65280,0)
+		ModifyGraph /Z lsize(roibox_y1)=1.5,rgb(roibox_y1)=(0,65280,0)
 	endif
 	
 	// Restore the original DF

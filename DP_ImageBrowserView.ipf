@@ -13,7 +13,7 @@ Function Image_Display(imageWaveName): Graph
 	
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 	
 	// Declare instance vars
 	//SVAR gimage

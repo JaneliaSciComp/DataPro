@@ -11,7 +11,7 @@
 Function Load_Full_Image()
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	// instance vars
 	SVAR full_name
@@ -42,7 +42,7 @@ Function Load_Image_Stack(stacknum, numimages)
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 	
 	// instance vars
 	SVAR imagename
@@ -66,7 +66,7 @@ Function Load_Image_Stack(stacknum, numimages)
 	sprintf newImageWaveName, "stack_%d", stacknum
 	Make /O /N=(numimages-1) $newImageWaveName
 	WAVE newImageWave=$newImageWaveName
-	DoWindow /F ImagingPanel
+	DoWindow /F ImagerView
 	ControlInfo bkgndcheck0
 	if (V_value<1)
 		newImageWave=temp0[p+1]	// use this if there is no background subtraction
@@ -91,7 +91,7 @@ Function Get_DFoverF_from_Stack2(stacknum)
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 	
 	// instance vars
 	SVAR imageseq_name
@@ -105,7 +105,7 @@ Function Get_DFoverF_from_Stack2(stacknum)
 	String dffWaveName=sprintf1v("dff_%d", stacknum)
 	Make /O /N=(ccd_frames-1) tempwave, $dffWaveName
 	WAVE stackWave=$stackWaveName
-	DoWindow /F ImagingPanel
+	DoWindow /F ImagerView
 	ControlInfo bkgndcheck0
 	if (V_value<1)
 		tempwave=stackWave[0][0][p+1]	// use this if there is no background subtraction
@@ -131,7 +131,7 @@ Function Show_DFoverF(wavenum)
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 	
 //	String stack
 	String newimage
@@ -152,24 +152,28 @@ End
 Function GetROI(): GraphMarquee
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	// instance vars
-	NVAR roinum, roi_left, roi_right, roi_top, roi_bottom
+	NVAR iROI
+	NVAR roi_left, roi_right, roi_top, roi_bottom
 	NVAR xbin, ybin
 	NVAR xpixels, ypixels
-	WAVE roiwave
+	WAVE roisWave
 
 	GetMarquee /K left, bottom
-	roinum=1
+	iROI=0
 	roi_left=V_left; roi_right=V_right
 	roi_top=V_top; roi_bottom=V_bottom
 	xbin=1
 	ybin=1
 	xpixels=(roi_right-roi_left+1)/xbin
 	ypixels=(roi_top-roi_bottom+1)/ybin
-	roiwave[][roinum]={roi_left, roi_right, roi_top, roi_bottom, xbin, xpixels}
+	roisWave[][iROI]={roi_left, roi_right, roi_top, roi_bottom, xbin, xpixels}
 	DrawROI()
+	
+	// Update the view
+	ImagerViewModelChanged()
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -178,24 +182,28 @@ End
 Function GetBkgndROI(): GraphMarquee
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	// instance vars
-	NVAR roinum, roi_left, roi_right, roi_top, roi_bottom
+	NVAR iROI
+	NVAR roi_left, roi_right, roi_top, roi_bottom
 	NVAR xbin, ybin
 	NVAR xpixels, ypixels
-	WAVE roiwave
+	WAVE roisWave
 
 	GetMarquee /K left, bottom
-	roinum=2
+	iROI=1		// the background ROI
 	roi_left=V_left; roi_right=V_left+xpixels
 	xbin=1
 	ybin=1
 	xpixels=(roi_right-roi_left+1)/xbin
 	ypixels=(roi_top-roi_bottom+1)/ybin
-	roiwave[][roinum]={roi_left, roi_right, roi_top, roi_bottom, xbin, xpixels}
+	roisWave[][iROI]={roi_left, roi_right, roi_top, roi_bottom, xbin, xpixels}
 	DrawROI()
-	
+
+	// Update the view
+	ImagerViewModelChanged()
+		
 	// Restore the original DF
 	SetDataFolder savedDF
 End
@@ -203,20 +211,23 @@ End
 Function GetROI_and_Bkgnd(): GraphMarquee
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	// instance vars
-	NVAR roinum, roi_left, roi_right, roi_top, roi_bottom
+	NVAR iROI, roi_left, roi_right, roi_top, roi_bottom
 	NVAR xbin, ybin
 	NVAR xpixels, ypixels
-	WAVE roiwave
+	WAVE roisWave
 
 	GetROI()
-	roinum=2
+	iROI=1	// the background ROI
 	roi_left+=200; roi_right=roi_left+xpixels
-	roiwave[][roinum]={roi_left, roi_right, roi_top, roi_bottom, xbin, xpixels}
+	roisWave[][iROI]={roi_left, roi_right, roi_top, roi_bottom, xbin, xpixels}
 	DrawROI()
 	
+	// Update the view
+	ImagerViewModelChanged()
+		
 	// Restore the original DF
 	SetDataFolder savedDF
 End
@@ -224,24 +235,27 @@ End
 Function Get_10x10_ROI(): GraphMarquee
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	// instance vars
-	NVAR roinum, roi_left, roi_right, roi_top, roi_bottom
+	NVAR iROI, roi_left, roi_right, roi_top, roi_bottom
 	NVAR xbin, ybin
 	NVAR xpixels, ypixels
-	WAVE roiwave
+	WAVE roisWave
 
 	GetMarquee /K left, bottom
-	roinum=1
+	iROI=0	// the primary ROI
 	xbin=10
 	ybin=10
 	roi_left=round(V_left+(V_right-V_left)/2); roi_right=roi_left+xbin-1
 	roi_top=round(V_top-(V_top-V_bottom)/2); roi_bottom=roi_top-ybin+1
 	xpixels=(roi_right-roi_left+1)/xbin
 	ypixels=(roi_top-roi_bottom+1)/ybin
-	roiwave[][roinum]={roi_left, roi_right, roi_top, roi_bottom, xbin, xpixels}
+	roisWave[][iROI]={roi_left, roi_right, roi_top, roi_bottom, xbin, xpixels}
 	DrawROI()
+	
+	// Update the view
+	ImagerViewModelChanged()
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -250,20 +264,23 @@ End
 Function Get_10x10_ROI_and_Bkgnd(): GraphMarquee
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	// instance vars
-	NVAR roinum, roi_left, roi_right, roi_top, roi_bottom
+	NVAR iROI, roi_left, roi_right, roi_top, roi_bottom
 	NVAR xbin, ybin
 	NVAR xpixels, ypixels
-	WAVE roiwave
+	WAVE roisWave
 
 	GetMarquee /K left, bottom
 	Get_10x10_ROI()
-	roinum=2
+	iROI=1
 	roi_left+=200; roi_right=roi_left+9
-	roiwave[][roinum]={roi_left, roi_right, roi_top, roi_bottom, xbin, xpixels}
+	roisWave[][iROI]={roi_left, roi_right, roi_top, roi_bottom, xbin, xpixels}
 	DrawROI()
+	
+	// Update the view
+	ImagerViewModelChanged()
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -274,7 +291,7 @@ Function DFF_From_Stack(imagestack)
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	// instance vars
 	SVAR full_name
@@ -334,7 +351,7 @@ Function SetVDTPort(name)
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	Execute "VDTGetPortList"
 	SVAR port=S_VDT

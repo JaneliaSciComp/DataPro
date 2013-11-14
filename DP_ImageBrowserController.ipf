@@ -14,7 +14,7 @@ Function ImagePlaneSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContr
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	// instance variables
 	NVAR im_plane
@@ -39,7 +39,7 @@ Function GrayScaleSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContro
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	// instance vars
 	NVAR gray_low=gray_low
@@ -56,7 +56,7 @@ Function AutoGrayScaleButtonProc(ctrlName) : ButtonControl
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 	
 	// instance vars
 	NVAR gray_low
@@ -96,7 +96,7 @@ Function ImagePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imaging
+	SetDataFolder root:DP_Imager
 
 	//String command
 	//sprintf command, "Image_Display(\"%s\")", popStr
