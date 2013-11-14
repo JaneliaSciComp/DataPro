@@ -185,11 +185,13 @@ Function EPhys_Image()
 	WAVE roiwave
 	NVAR ccd_fullexp
 	NVAR ccd_tempset
+	NVAR xbin
+	NVAR ybin
 	
 	Variable status, exposure, canceled
 	String message, command
 	image_trig=1
-	CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset)
+	CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset,xbin,ybin)
 	image_roi=2		// zero for full frame, one for specific ROI, two for ROI with background
 	im_plane=0
 	EpiLightTurnOnOff(1)
@@ -220,6 +222,8 @@ Function FocusImage()
 	WAVE roiwave
 	NVAR ccd_fullexp
 	NVAR ccd_tempset
+	NVAR xbin
+	NVAR ybin
 
 	Variable status, exposure, canceled
 	String message
@@ -229,7 +233,7 @@ Function FocusImage()
 	frames_per_sequence=1
 	frames=1
 	image_trig=0			// set to one for triggered images
-	CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset)
+	CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset,xbin,ybin)
 	//printf "Focusing (press Esc key to stop) ..."
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
@@ -257,6 +261,8 @@ Function Acquire_Full_Image()
 	WAVE roiwave
 	NVAR ccd_fullexp
 	NVAR ccd_tempset
+	NVAR xbin
+	NVAR ybin
 	
 	Variable status, exposure, canceled
 	String message
@@ -267,14 +273,14 @@ Function Acquire_Full_Image()
 	frames=1
 	image_trig=0		// set to one for triggered images
 	xbin=1; ybin=1
-	CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset) 
+	CameraSetupAcquisition(image_roi,roiwave,image_trig,ccd_fullexp,ccd_tempset,xbin,ybin) 
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
 	Make /O /N=(512,512) $imageWaveName
 	Wave w=$imageWaveName
 	w=100+gnoise(10)
 	Variable isVideoTriggered=0
-	CameraAllocateAndAcquire(imageWaveName,frames,isVideoTriggered)  // needs to come back
+	CameraArmAcquireDisarm(imageWaveName,frames,isVideoTriggered)  // needs to come back
 	EpiLightTurnOnOff(0)
 	Image_Display(imageWaveName) 
 	printf "%s%d: Full Image done\r", full_name, full_num
@@ -312,7 +318,7 @@ Function Image_Stack(trig, disp)
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
 	im_plane=0
-	CameraAllocateAndAcquire(imageWaveName,frames,trig)
+	CameraArmAcquireDisarm(imageWaveName,frames,trig)
 	EpiLightTurnOnOff(0)
 	if (disp>0)
 		Image_Display(imageWaveName)
@@ -1229,7 +1235,7 @@ Function ImagerFocus()
 	Variable	nFrames=1
 	Variable isTriggered=0		// Just want the camera to free-run
 	
-	CameraAllocateFramebuffer(imageWaveName, nFrames)
+	CameraArm(imageWaveName, nFrames)
 	Variable iFrame=0
 	do
 		// Start a sequence of images. In the current case, there is 
@@ -1251,7 +1257,7 @@ Function ImagerFocus()
 		iFrame+=1
 		printf "."
 	while (!EscapeKeyWasPressed())	
-	CameraDeallocateFramebuffer()	
+	CameraDisarm()	
 	
 	// Restore the original DF
 	SetDataFolder savedDF
