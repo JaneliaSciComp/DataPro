@@ -34,7 +34,7 @@ Function EPhys_Image()
 	String message
 	//String command
 	image_trig=1
-	CameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,image_trig,exposure,ccd_tempset,xbin,ybin)
+	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,image_trig,exposure,ccd_tempset,xbin,ybin)
 	//image_roi=2		// zero for full frame, one for specific ROI, two for ROI with background
 	isROI=1
 	isBackgroundROIToo=1
@@ -77,7 +77,7 @@ Function FocusImage()
 	frames_per_sequence=1
 	frames=1
 	image_trig=0			// set to one for triggered images
-	CameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,image_trig,exposure,ccd_tempset,xbin,ybin)
+	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,image_trig,exposure,ccd_tempset,xbin,ybin)
 	//printf "Focusing (press Esc key to stop) ..."
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
@@ -119,14 +119,14 @@ Function Acquire_Full_Image()
 	frames=1
 	image_trig=0		// set to one for triggered images
 	xbin=1; ybin=1
-	CameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,image_trig,exposure,ccd_tempset,xbin,ybin) 
+	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,image_trig,exposure,ccd_tempset,xbin,ybin) 
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
 	Make /O /N=(512,512) $imageWaveName
 	Wave w=$imageWaveName
 	w=100+gnoise(10)
 	Variable isVideoTriggered=0
-	CameraArmAcquireDisarm(imageWaveName,frames,isVideoTriggered)  // needs to come back
+	FancyCameraArmAcquireDisarm(imageWaveName,frames,isVideoTriggered)  // needs to come back
 	EpiLightTurnOnOff(0)
 	Image_Display(imageWaveName) 
 	printf "%s%d: Full Image done\r", full_name, full_num
@@ -164,7 +164,7 @@ Function Image_Stack(trig, disp)
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
 	im_plane=0
-	CameraArmAcquireDisarm(imageWaveName,frames,trig)
+	FancyCameraArmAcquireDisarm(imageWaveName,frames,trig)
 	EpiLightTurnOnOff(0)
 	if (disp>0)
 		Image_Display(imageWaveName)
@@ -223,7 +223,7 @@ Function SetCCDTempVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 
-	CameraSetTemperature(varNum)
+	FancyCameraSetTemperature(varNum)
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -336,12 +336,12 @@ Function ImagerFocus()
 	Variable	nFrames=1
 	Variable isTriggered=0		// Just want the camera to free-run
 	
-	CameraArm(imageWaveName, nFrames)
+	FancyCameraArm(imageWaveName, nFrames)
 	Variable iFrame=0
 	do
 		// Start a sequence of images. In the current case, there is 
 		// only one frame in the sequence.
-		CameraAcquire(imageWaveName, nFrames, isTriggered)
+		FancyCameraAcquire(imageWaveName, nFrames, isTriggered)
 		// If first frame, create a display window.
 		// If subseqent frame, update the image in the display window
 		if (iFrame==0)
@@ -358,7 +358,7 @@ Function ImagerFocus()
 		iFrame+=1
 		printf "."
 	while (!EscapeKeyWasPressed())	
-	CameraDisarm()	
+	FancyCameraDisarm()	
 	
 	// Restore the original DF
 	SetDataFolder savedDF

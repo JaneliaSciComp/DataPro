@@ -6,7 +6,7 @@
 
 #pragma rtGlobals=3		// Use modern global access method and strict wave access
 
-// The Camera "object" wraps all the SIDX functions, so the Imager doesn't have to deal with 
+// The FancyCamera "object" wraps all the SIDX functions, so the Imager doesn't have to deal with 
 // them directly.
 
 // Note that these functions were originally based on example code provided by Lin Ci Brown 
@@ -18,14 +18,14 @@
 
 
 // Construct the object
-Function CameraConstructor()
+Function FancyCameraConstructor()
 	// Save the current DF
 	String savedDF=GetDataFolder(1)
 
 	// If the data folder doesn't exist, create it (and switch to it)
-	if (!DataFolderExists("root:DP_Camera"))
+	if (!DataFolderExists("root:DP_FancyCamera"))
 		// IMAGING GLOBALS
-		NewDataFolder /O /S root:DP_Camera
+		NewDataFolder /O /S root:DP_FancyCamera
 		
 		// SIDX stuff
 		Variable /G isSidxRootValid=0	// boolean
@@ -49,7 +49,7 @@ Function CameraConstructor()
 	endif
 
 	// Initialize the camera
-	CameraInitialize()
+	FancyCameraInitialize()
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -60,14 +60,14 @@ End
 
 
 
-Function CameraInitialize()
+Function FancyCameraInitialize()
 	// Initializes the SIDX interface to the camera.  Generally this will be called once per imaging session.
 	// But calling it multiple times won't hurt anything---if the camera is already initialized, it doesn't do
 	// anything.
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
+	SetDataFolder root:DP_FancyCamera
 
 	// Declare instance variables
 	NVAR areWeFakingCamera
@@ -137,7 +137,7 @@ End
 
 
 
-Function CameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTriggered,exposure,targetTemperature,nBinWidth,nBinHeight)
+Function FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTriggered,exposure,targetTemperature,nBinWidth,nBinHeight)
 	// This sets up the camera for a single acquisition.  (A single aquisition could be a single frame, or it could be a video.)  
 	// This is typically called once per acquisition, just before the acquisition.
 	//Variable image_roi
@@ -152,7 +152,7 @@ Function CameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTriggered,ex
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
+	SetDataFolder root:DP_FancyCamera
 
 	// Declare instance variables
 	NVAR isSidxRootValid
@@ -229,7 +229,7 @@ Function CameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTriggered,ex
 	endif
 	
 	// Set the CCD temp, wait for it to stabilize
-	CameraSetTemperature(targetTemperature)
+	FancyCameraSetTemperature(targetTemperature)
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -240,7 +240,7 @@ End
 
 
 
-Function CameraArm(imageWaveName, nFrames)
+Function FancyCameraArm(imageWaveName, nFrames)
 	// Acquire nFrames, and store the resulting video in imageWaveName.
 	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
 	// acquisition is free-running.
@@ -250,7 +250,7 @@ Function CameraArm(imageWaveName, nFrames)
 
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
+	SetDataFolder root:DP_FancyCamera
 
 	// instance vars
 	NVAR sidxRoot
@@ -294,7 +294,7 @@ End
 
 
 
-Function CameraAcquire(imageWaveName, nFrames, isTriggered)
+Function FancyCameraAcquire(imageWaveName, nFrames, isTriggered)
 	// Acquire nFrames, and store the resulting video in imageWaveName.
 	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
 	// acquisition is free-running.
@@ -305,7 +305,7 @@ Function CameraAcquire(imageWaveName, nFrames, isTriggered)
 
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
+	SetDataFolder root:DP_FancyCamera
 
 	// instance vars
 	NVAR sidxRoot
@@ -372,10 +372,10 @@ End
 
 
 
-Function CameraDisarm()
+Function FancyCameraDisarm()
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
+	SetDataFolder root:DP_FancyCamera
 
 	// instance vars
 	NVAR sidxRoot
@@ -404,7 +404,7 @@ End
 
 
 
-Function CameraArmAcquireDisarm(imageWaveName, nFrames, isTriggered)
+Function FancyCameraArmAcquireDisarm(imageWaveName, nFrames, isTriggered)
 	// Acquire nFrames, and store the resulting video in imageWaveName.
 	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
 	// acquisition is free-running.  This also handles the allocation and de-allocation
@@ -414,9 +414,9 @@ Function CameraArmAcquireDisarm(imageWaveName, nFrames, isTriggered)
 	Variable nFrames
 	Variable isTriggered
 
-	CameraArm(imageWaveName, nFrames)
-	CameraAcquire(imageWaveName, nFrames, isTriggered)
-	CameraDisarm()
+	FancyCameraArm(imageWaveName, nFrames)
+	FancyCameraAcquire(imageWaveName, nFrames, isTriggered)
+	FancyCameraDisarm()
 End
 
 
@@ -426,14 +426,14 @@ End
 
 
 
-Function CameraFinalize()
+Function FancyCameraFinalize()
 	// Called to allow the SIDX library to do any required cleanup operations.
 	// Generally called at the end of an imaging session.  This is the "partner" of 
-	// CameraInitialize().
+	// FancyCameraInitialize().
 
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
+	SetDataFolder root:DP_FancyCamera
 
 	// instance vars
 	NVAR isSidxRootValid
@@ -477,13 +477,13 @@ End
 
 
 
-Function CameraSetTemperature(targetTemperature)
+Function FancyCameraSetTemperature(targetTemperature)
 	// I would have thought this was to set the setpoint of the CCD temperature controller, but it doesn't really seem like that...
 	Variable targetTemperature
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
+	SetDataFolder root:DP_FancyCamera
 
 	// Declare instance variables
 	NVAR sidxRoot
@@ -514,7 +514,7 @@ Function CameraSetTemperature(targetTemperature)
 	Variable itersAtTargetMinimum=ceil(secondsAtTargetMinimum/secondsBetweenChecks)
 	Variable itersAtTarget=0
 	do
-		temperature=CameraGetTemperature()
+		temperature=FancyCameraGetTemperature()
 		if ( abs(temperature-targetTemperature)<temperatureTolerance ) 
 			itersAtTarget+=1
 		else
@@ -535,10 +535,10 @@ End
 
 
 
-Function CameraGetTemperature()
+Function FancyCameraGetTemperature()
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
+	SetDataFolder root:DP_FancyCamera
 
 	// instance vars
 	NVAR sidxRoot
