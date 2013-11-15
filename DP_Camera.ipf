@@ -6,50 +6,68 @@
 
 #pragma rtGlobals=3		// Use modern global access method and strict wave access
 
-// The FancyCamera "object" wraps all the SIDX functions, so the Imager doesn't have to deal with 
-// them directly.
-
-// Note that these functions were originally based on example code provided by Lin Ci Brown 
-// of the Bruxton Corporation.
-
-
-
-
-
+// The Camera "object" wraps all the SIDX functions, so the "FancyCamera" object doesn't have to deal 
+// with them directly.  It also deals with errors internally, so you don't have to worry about them 
+// at the next level up.  And it adds the ability to fake a camera, for when there is no camera attached.
 
 // Construct the object
-Function FancyCameraConstructor()
+Function CameraConstructor()
 	// Save the current DF
 	String savedDF=GetDataFolder(1)
 
 	// If the data folder doesn't exist, create it (and switch to it)
-	if (!DataFolderExists("root:DP_FancyCamera"))
+	if (!DataFolderExists("root:DP_Camera"))
 		// IMAGING GLOBALS
-		NewDataFolder /O /S root:DP_FancyCamera
-		
+		NewDataFolder /O /S root:DP_Camera
+				
 		// SIDX stuff
+		Variable /G areWeForReal=1	// boolean; if false, we have decided to fake the camera
 		Variable /G isSidxRootValid=0	// boolean
 		Variable /G sidxRoot
 		Variable /G isSidxCameraValid=0	// boolean
 		Variable /G sidxCamera	
 		Variable /G isSidxAcquirerValid=0	// boolean
 		Variable /G sidxAcquirer		
-		
+						
 		// This stuff is only needed/used if there's no camera and we're faking
-		Variable /G nWidthCCDFake=512	// width of the fake CCD
-		Variable /G nHeightCCDFake=512	// height of the fake CCD
-		Variable /G isTriggeredFake=0		// whether the fake camera is in triggered mode (as opposed to free-running)
-		Variable /G isFullFrameFake=1		// are we doing full-frame for the fake camera?  (false=>ROI)
-		Variable /G nBinWidthFake=1
-		Variable /G nBinHeightFake=1
-		Variable /G jLeftFake, iTopFake, jRightFake, iBottomFake	// the ROI boundaries
-		Variable /G expsoureFake=100		// exposure for the fake camera, in ms
-		Variable /G targetTemperatureFake=-20		// degC
-		Variable /G nFramesFake=1		// How many frames to acquire for the fake camera
+		Variable /G fakeNWidthCCD=512	// width of the fake CCD
+		Variable /G fakeNHeightCCD=512	// height of the fake CCD
+		Variable /G fakeIsTriggered=0		// whether the fake camera is in triggered mode (as opposed to free-running)
+		Variable /G fakeIsFullFrame=1		// are we doing full-frame for the fake camera?  (false=>ROI)
+		Variable /G fakeNBinWidth=1
+		Variable /G fakeNBinHeight=1
+		Variable /G fakeJLeft, fakeITop, fakeJRight, fakeIBottom	// the ROI boundaries
+		Variable /G fakeExpsoure=100		// exposure for the fake camera, in ms
+		Variable /G fakeTargetTemperature=-20		// degC
+		Variable /G fakeNFrames=1		// How many frames to acquire for the fake camera
 	endif
 
-	// Initialize the camera
-	FancyCameraInitialize()
+	// Create the SIDX root object, referenced by sidxRoot
+	String license=""	// License file is stored in C:/Program Files/Bruxton/SIDX
+	Variable sidxStatus
+	SIDXRootOpen sidxRoot, license, sidxStatus
+	isSidxRootValid=(sidxStatus==0)
+	areWeForReal= isSidxRootValid	// if we can't get a valid sidx root, then fake
+
+	Variable nCameras
+	if (areWeForReal)
+		if (isSidxRootValid)
+			SIDXRootCameraScanGetCount sidxRoot, nCameras,sidxStatus
+			if (sidxStatus != 0)
+				nCameras=0
+			endif
+			//Printf "# of cameras: %d\r", nCameras
+			if (nCameras>0)
+				// Create the SIDX camera object, referenced by sidxCamera
+				SIDXRootCameraOpenName sidxRoot, "", sidxCamera, sidxStatus
+				isSidxCameraValid= (sidxStatus==0)
+				areWeForReal=isSidxCameraValid		// if no valid camera, then we fake
+			else
+				// if zero cameras, then we fake
+				areWeForReal=0;
+			endif
+		endif
+	endif	
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -59,75 +77,109 @@ End
 
 
 
-
-Function FancyCameraInitialize()
-	// Initializes the SIDX interface to the camera.  Generally this will be called once per imaging session.
-	// But calling it multiple times won't hurt anything---if the camera is already initialized, it doesn't do
-	// anything.
-
+Function CameraROIClear()
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_FancyCamera
 
 	// Declare instance variables
-	NVAR areWeFakingCamera
-	NVAR sidxRoot
-	NVAR isSidxRootValid
+	NVAR areWeForReal
+	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR isSidxCameraValid	
-	
-	// If the sidxCamera object is already valid, nothing to do
-	if (isSidxCameraValid||areWeFakingCamera)
-		return 0		// have to return something
-	endif
-	
-	// This is used in lots of places
+	NVAR fakeIsFullFrame
+
 	Variable sidxStatus
-	String errorMessage
-	
-	// Create the SIDX root object, referenced by sidxRoot
-	String license=""	// License file is stored in C:/Program Files/Bruxton/SIDX
-	SIDXRootOpen sidxRoot, license, sidxStatus
-	if (sidxStatus != 0)
-		isSidxRootValid=0
-		//SIDXRootGetLastError sidxRoot, errorMessage
-		//Abort sprintf1s("Error in SIDXRootOpen: %s", errorMessage)
-	else
-		isSidxRootValid=1
-	endif
-	
-	// Find out how many cameras are available
-	Variable nCameras=0
-	if (isSidxRootValid)
-		SIDXRootCameraScanGetCount sidxRoot, nCameras,sidxStatus
-		if (sidxStatus != 0)
-			nCameras=0
-		endif
-		//Printf "# of cameras: %d\r", nCameras
-	else
-		nCameras=0
-	endif
-
-//	Variable iCamera
-//	for (iCamera=0; iCamera<nCameras; iCamera+=1)
-//		String thisCameraName
-//		SIDXRootCameraScanGetName sidxRoot, iCamera, thisCameraName, sidxStatus
-//		Printf "Camera %d of %d is named %s\r", iCamera, nCameras, thisCameraName
-//	endfor
-
-	// If there's at least one camera, get the handle for it.  If not, we'll fake it.
-	if (nCameras>0)
-		// Create the SIDX camera object, referenced by sidxCamera
-		SIDXRootCameraOpenName sidxRoot, "", sidxCamera, sidxStatus
-		if (sidxStatus != 0)
-			isSidxCameraValid=1
+	if (areWeForReal)
+		if (isSidxCameraValid)
+			SIDXCameraROIClear sidxCamera, sidxStatus
+			if (sidxStatus!=0)
+				SIDXCameraGetLastError sidxCamera, errorMessage
+				Abort sprintf1s("Error in SIDXCameraROIClear: %s",errorMessage)
+			endif	
 		else
-			isSidxCameraValid=0
+			Abort "Called CameraROIClear() before camera was created."
 		endif
+	else
+		fakeIsFullFrame=1
 	endif
-	
+
 	// Restore the data folder
-	SetDataFolder savedDF
+	SetDataFolder savedDF	
+End
+
+
+
+
+Function CameraROISet(jLeft, iTop, jRight, iBottom)
+	Variable jLeft,iTop,jRight,iBottom
+	
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_FancyCamera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxCameraValid
+	NVAR sidxCamera
+	NVAR fakeJLeft, fakeITop, fakeJRight, fakeIBottom
+
+	Variable sidxStatus
+	if (areWeForReal)
+		if (isSidxCameraValid)
+			SIDXCameraROISet sidxCamera, jLeft, iTop, jRight, iBottom, sidxStatus
+			if (sidxStatus!=0)
+				SIDXCameraGetLastError sidxCamera, errorMessage
+				Abort sprintf1s("Error in SIDXCameraROISet: %s",errorMessage)
+			endif
+		else
+			Abort "Called CameraROISet() before camera was created."
+		endif
+	else
+		fakeJLeft=jLeft
+		fakeITop=iTop
+		fakeJRight=jRight
+		fakeIBottom=iBottom
+	endif
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+End
+
+
+
+
+
+Function CameraBinningSet(nBinWidth,nBinHeight)
+	Variable nBinWidth, nBinHeight
+	
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_FancyCamera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxCameraValid
+	NVAR sidxCamera
+	NVAR fakeNBinWidth, fakeNBinHeight
+
+	Variable sidxStatus
+	if (areWeForReal)
+		if (isSidxCameraValid)
+			SIDXCameraBinningSet sidxCamera, nBinWidth, nBinHeight, sidxStatus
+			if (sidxStatus!=0)
+				SIDXCameraGetLastError sidxCamera, errorMessage
+				Abort sprintf1s("Error in SIDXCameraBinningSet: %s",errorMessage)
+			endif
+		else
+			Abort "Called CameraBinningSet() before camera was created."
+		endif
+	else
+		fakeNBinWidth=nBinWidth
+		fakeNBinHeight=nBinHeight
+	endif
+
+	// Restore the data folder
+	SetDataFolder savedDF	
 End
 
 
@@ -135,9 +187,7 @@ End
 
 
 
-
-
-Function FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTriggered,exposure,targetTemperature,nBinWidth,nBinHeight)
+Function CameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTriggered,exposure,targetTemperature,nBinWidth,nBinHeight)
 	// This sets up the camera for a single acquisition.  (A single aquisition could be a single frame, or it could be a video.)  
 	// This is typically called once per acquisition, just before the acquisition.
 	//Variable image_roi
@@ -152,7 +202,7 @@ Function FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTrigger
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FancyCamera
+	SetDataFolder root:DP_Camera
 
 	// Declare instance variables
 	NVAR isSidxRootValid
@@ -221,7 +271,7 @@ Function FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTrigger
 	endif
 	
 	// Set the exposure
-	Variable exposureInSeconds=exposure/1000		// ms->s
+	Variable exposureInSeconds=exposure/1000	// ms->s
 	SIDXCameraExposeSet sidxCamera, exposureInSeconds, sidxStatus
 	if (sidxStatus!=0)
 		SIDXRootGetLastError sidxRoot, errorMessage
@@ -229,7 +279,7 @@ Function FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTrigger
 	endif
 	
 	// Set the CCD temp, wait for it to stabilize
-	FancyCameraSetTemperature(targetTemperature)
+	CameraSetTemperature(targetTemperature)
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -240,7 +290,7 @@ End
 
 
 
-Function FancyCameraArm(imageWaveName, nFrames)
+Function CameraArm(imageWaveName, nFrames)
 	// Acquire nFrames, and store the resulting video in imageWaveName.
 	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
 	// acquisition is free-running.
@@ -250,7 +300,7 @@ Function FancyCameraArm(imageWaveName, nFrames)
 
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FancyCamera
+	SetDataFolder root:DP_Camera
 
 	// instance vars
 	NVAR sidxRoot
@@ -294,7 +344,7 @@ End
 
 
 
-Function FancyCameraAcquire(imageWaveName, nFrames, isTriggered)
+Function CameraAcquire(imageWaveName, nFrames, isTriggered)
 	// Acquire nFrames, and store the resulting video in imageWaveName.
 	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
 	// acquisition is free-running.
@@ -305,7 +355,7 @@ Function FancyCameraAcquire(imageWaveName, nFrames, isTriggered)
 
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FancyCamera
+	SetDataFolder root:DP_Camera
 
 	// instance vars
 	NVAR sidxRoot
@@ -372,10 +422,10 @@ End
 
 
 
-Function FancyCameraDisarm()
+Function CameraDisarm()
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FancyCamera
+	SetDataFolder root:DP_Camera
 
 	// instance vars
 	NVAR sidxRoot
@@ -404,7 +454,7 @@ End
 
 
 
-Function FancyCameraArmAcquireDisarm(imageWaveName, nFrames, isTriggered)
+Function CameraArmAcquireDisarm(imageWaveName, nFrames, isTriggered)
 	// Acquire nFrames, and store the resulting video in imageWaveName.
 	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
 	// acquisition is free-running.  This also handles the allocation and de-allocation
@@ -414,9 +464,9 @@ Function FancyCameraArmAcquireDisarm(imageWaveName, nFrames, isTriggered)
 	Variable nFrames
 	Variable isTriggered
 
-	FancyCameraArm(imageWaveName, nFrames)
-	FancyCameraAcquire(imageWaveName, nFrames, isTriggered)
-	FancyCameraDisarm()
+	CameraArm(imageWaveName, nFrames)
+	CameraAcquire(imageWaveName, nFrames, isTriggered)
+	CameraDisarm()
 End
 
 
@@ -426,14 +476,14 @@ End
 
 
 
-Function FancyCameraFinalize()
+Function CameraFinalize()
 	// Called to allow the SIDX library to do any required cleanup operations.
 	// Generally called at the end of an imaging session.  This is the "partner" of 
-	// FancyCameraInitialize().
+	// CameraInitialize().
 
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FancyCamera
+	SetDataFolder root:DP_Camera
 
 	// instance vars
 	NVAR isSidxRootValid
@@ -477,13 +527,13 @@ End
 
 
 
-Function FancyCameraSetTemperature(targetTemperature)
+Function CameraSetTemperature(targetTemperature)
 	// I would have thought this was to set the setpoint of the CCD temperature controller, but it doesn't really seem like that...
 	Variable targetTemperature
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FancyCamera
+	SetDataFolder root:DP_Camera
 
 	// Declare instance variables
 	NVAR sidxRoot
@@ -514,7 +564,7 @@ Function FancyCameraSetTemperature(targetTemperature)
 	Variable itersAtTargetMinimum=ceil(secondsAtTargetMinimum/secondsBetweenChecks)
 	Variable itersAtTarget=0
 	do
-		temperature=FancyCameraGetTemperature()
+		temperature=CameraGetTemperature()
 		if ( abs(temperature-targetTemperature)<temperatureTolerance ) 
 			itersAtTarget+=1
 		else
@@ -535,10 +585,10 @@ End
 
 
 
-Function FancyCameraGetTemperature()
+Function CameraGetTemperature()
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FancyCamera
+	SetDataFolder root:DP_Camera
 
 	// instance vars
 	NVAR sidxRoot
