@@ -176,14 +176,14 @@ Function SweeperControllerAcquireTrial()
 	
 	NVAR nSweepsPerTrial
 	NVAR sweepInterval
-	NVAR autoAnalyzeChecked
+	NVAR runHookFunctionsChecked
 	
 	Variable startTime, endTime, sweepDuration, sleepDuration 	// all in seconds
 	String temp_comments, doit
 	String comment
 	
 	// If called for, run the pre-trial hook function
-	if (autoAnalyzeChecked)
+	if (runHookFunctionsChecked)
 		PreTrialHook()
 	endif
 	
@@ -205,7 +205,7 @@ Function SweeperControllerAcquireTrial()
 	endfor
 
 	// If called for, run the post-trial hook function
-	if (autoAnalyzeChecked)
+	if (runHookFunctionsChecked)
 		PostTrialHook()
 	endif
 
@@ -227,7 +227,7 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	
 	NVAR nextSweepIndex
 	WAVE /T adcBaseName
-	NVAR autoAnalyzeChecked
+	NVAR runHookFunctionsChecked
 
 	String thisWaveNameRel
 	//String savename
@@ -243,7 +243,7 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	
 	// If called for, run the pre-sweep hook function
 	Variable thisSweepIndex=nextSweepIndex	
-	if (autoAnalyzeChecked)
+	if (runHookFunctionsChecked)
 		PreSweepHook(thisSweepIndex)
 	endif
 	
@@ -308,7 +308,7 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	DoUpdate
 
 	// If called for, run the post-sweep hook function
-	if (autoAnalyzeChecked)
+	if (runHookFunctionsChecked)
 		PostSweepHook(thisSweepIndex)
 	endif
 

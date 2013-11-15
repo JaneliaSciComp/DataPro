@@ -21,8 +21,8 @@ Function SweeperViewConstructor() : Panel
 	NewPanel /W=(720,54,720+290,54+708) /K=1 /N=SweeperView as "Sweeper Controls"
 	ModifyPanel /W=SweeperView fixedSize=1
 
-	CheckBox autoAnalyzeCheckBox,win=SweeperView,pos={180,1},size={58,14},title="Auto analyze on"
-	CheckBox autoAnalyzeCheckBox,win=SweeperView,variable=autoAnalyzeChecked
+	CheckBox autoAnalyzeCheckBox,win=SweeperView,pos={175,1},size={58,14},title="Run hook functions"
+	CheckBox autoAnalyzeCheckBox,win=SweeperView,variable=runHookFunctionsChecked
 
 	// Sweep Control widgets
 	Variable yOffset=0

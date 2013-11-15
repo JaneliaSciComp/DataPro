@@ -37,7 +37,6 @@
 #include ":DP_BuilderController"
 #include ":DP_Switcher"
 #include ":DP_ASwitcher"
-#include ":DP_BarrageDetector"
 
 //#include <Strings as Lists> 
 //#include "DP_Acquire"
