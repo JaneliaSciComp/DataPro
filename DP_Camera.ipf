@@ -32,12 +32,12 @@ Function CameraConstructor()
 		// This stuff is only needed/used if there's no camera and we're faking
 		Variable /G fakeNWidthCCD=512	// width of the fake CCD
 		Variable /G fakeNHeightCCD=512	// height of the fake CCD
-		Variable /G fakeIsTriggered=0		// whether the fake camera is in triggered mode (as opposed to free-running)
+		Variable /G fakeTriggerMode=0		// the trigger mode of the fake camera. 0=>free-running, 1=> each frame is triggered, and there are other settings
 		Variable /G fakeIsFullFrame=1		// are we doing full-frame for the fake camera?  (false=>ROI)
 		Variable /G fakeNBinWidth=1
 		Variable /G fakeNBinHeight=1
 		Variable /G fakeJLeft, fakeITop, fakeJRight, fakeIBottom	// the ROI boundaries
-		Variable /G fakeExpsoure=100		// exposure for the fake camera, in ms
+		Variable /G fakeExposureInSeconds=0.1	// exposure for the fake camera, in sec
 		Variable /G fakeTargetTemperature=-20		// degC
 		Variable /G fakeNFrames=1		// How many frames to acquire for the fake camera
 	endif
@@ -80,7 +80,7 @@ End
 Function CameraROIClear()
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FancyCamera
+	SetDataFolder root:DP_Camera
 
 	// Declare instance variables
 	NVAR areWeForReal
@@ -115,7 +115,7 @@ Function CameraROISet(jLeft, iTop, jRight, iBottom)
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FancyCamera
+	SetDataFolder root:DP_Camera
 
 	// Declare instance variables
 	NVAR areWeForReal
@@ -154,7 +154,7 @@ Function CameraBinningSet(nBinWidth,nBinHeight)
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FancyCamera
+	SetDataFolder root:DP_Camera
 
 	// Declare instance variables
 	NVAR areWeForReal
@@ -181,6 +181,89 @@ Function CameraBinningSet(nBinWidth,nBinHeight)
 	// Restore the data folder
 	SetDataFolder savedDF	
 End
+
+
+
+
+
+
+Function CameraTriggerModeSet(triggerMode)
+	Variable triggerMode
+	
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxCameraValid
+	NVAR sidxCamera
+	NVAR fakeTriggerMode
+
+	Variable sidxStatus
+	if (areWeForReal)
+		if (isSidxCameraValid)
+			SIDXCameraTriggerModeSet sidxCamera, triggerMode, sidxStatus
+			if (sidxStatus!=0)
+				SIDXRootGetLastError sidxRoot, errorMessage
+				Abort sprintf1s("Error in SIDXCameraTriggerModeSet: %s",errorMessage)
+			endif
+		else
+			Abort "Called CameraTriggerModeSet() before camera was created."
+		endif
+	else
+		fakeTriggerMode=triggerMode
+	endif
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+End
+
+
+
+
+
+
+
+Function CameraExposeSet(exposureInSeconds)
+	Variable exposureInSeconds
+	
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxCameraValid
+	NVAR sidxCamera
+	NVAR fakeExposureInSeconds
+
+	Variable sidxStatus
+	if (areWeForReal)
+		if (isSidxCameraValid)
+			SIDXCameraExposeSet sidxCamera, exposureInSeconds, sidxStatus
+			if (sidxStatus!=0)
+				SIDXRootGetLastError sidxRoot, errorMessage
+				Abort sprintf1s("Error in SIDXCameraExposeSet: %s",errorMessage)
+			endif
+		else
+			Abort "Called CameraExposeSet() before camera was created."
+		endif
+	else
+		fakeExposureInSeconds=exposureInSeconds
+	endif
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+End
+
+
+
+
+
+
+
+
 
 
 
