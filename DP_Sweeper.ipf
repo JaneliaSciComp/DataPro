@@ -993,6 +993,25 @@ Function /S SweeperGetFancyWaveListOfType(waveTypeString)
 	return fancyWaveList(dacWaveNames,ttlWaveNames)
 End
 
+Function SweeperSetDACMultiplier(i,newValue)
+	Variable i, newValue
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+	WAVE dacMultiplier
+	dacMultiplier[i]=newValue
+	SetDataFolder savedDF	
+End
+
+Function SweeperGetDACMultiplier(i)
+	Variable i
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+	WAVE dacMultiplier
+	Variable value=dacMultiplier[i]
+	SetDataFolder savedDF	
+	return value
+End
+
 
 
 //
