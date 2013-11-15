@@ -137,7 +137,9 @@ Function SweeperControllerDACMultiplier(ctrlName,varNum,varStr,varName) : SetVar
 	WAVE dacMultiplier
 
 	Variable i=str2num(ctrlName[13])  // DAC channel index
-	dacMultiplier[i]=varNum
+	//dacMultiplier[i]=varNum
+	SweeperSetDACMultiplier(i,varNum)
+	// The internal number is already set to i, so no need to update the view
 		
 	SetDataFolder savedDF
 End
@@ -171,11 +173,20 @@ Function SweeperControllerAcquireTrial()
 	// Acquire a single trial, which is composed of n sweeps
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Sweeper
-	Variable startTime, endTime, sweepDuration, sleepDuration 	// all in seconds
-	String temp_comments, doit
+	
 	NVAR nSweepsPerTrial
 	NVAR sweepInterval
+	NVAR runHookFunctionsChecked
+	
+	Variable startTime, endTime, sweepDuration, sleepDuration 	// all in seconds
+	String temp_comments, doit
 	String comment
+	
+	// If called for, run the pre-trial hook function
+	if (runHookFunctionsChecked)
+		PreTrialHook()
+	endif
+	
 	Variable iSweepWithinTrial
 	for (iSweepWithinTrial=0;iSweepWithinTrial<nSweepsPerTrial; iSweepWithinTrial+=1)	
 		if (nSweepsPerTrial==1)
@@ -192,6 +203,12 @@ Function SweeperControllerAcquireTrial()
  			Sleep /S sleepDuration	// sleep for sleepDuration seconds
  		endif
 	endfor
+
+	// If called for, run the post-trial hook function
+	if (runHookFunctionsChecked)
+		PostTrialHook()
+	endif
+
 	SetDataFolder savedDF
 End
 
@@ -210,16 +227,27 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	
 	NVAR nextSweepIndex
 	WAVE /T adcBaseName
-	NVAR autoAnalyzeChecked
+	NVAR runHookFunctionsChecked
 
 	String thisWaveNameRel
 	//String savename
 	String thisstr, doit, whichadc
 	Variable leftmin, leftmax
 	
-	DoWindow /F SweepControl	
+	// Bring the sweeper forward
+	DoWindow /F SweepControl
+	
+	// Make sure the build-in stimuli are up-to-date	
 	SweeperUpdateStepPulseWave()
 	SweeperUpdateSynPulseWave()
+	
+	// If called for, run the pre-sweep hook function
+	Variable thisSweepIndex=nextSweepIndex	
+	if (runHookFunctionsChecked)
+		PreSweepHook(thisSweepIndex)
+	endif
+	
+	// Get the wave that will be fed into the FIFO	
 	Wave FIFOout=SweeperGetFIFOout()
 	// This shouldn't happen anymore, b/c the interface no longer allows it, but I'll leave it in
 	if (numpnts(FIFOout)==0)
@@ -279,10 +307,9 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	// Update the windows, so user can see the new sweep
 	DoUpdate
 
-	// If called for, run the per-user function
-	if (autoAnalyzeChecked)
-		AutoAnalyze()
-		DoUpdate
+	// If called for, run the post-sweep hook function
+	if (runHookFunctionsChecked)
+		PostSweepHook(thisSweepIndex)
 	endif
 
 	// Restore the original data folder

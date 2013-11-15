@@ -112,6 +112,7 @@ End
 
 Function AfterCompiledHook()
 	InitializeDataPro()
+	PostInitializationHook()
 End
 
 Function InitializeDataPro()

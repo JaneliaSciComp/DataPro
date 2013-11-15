@@ -28,8 +28,8 @@ Function SweeperConstructor()
 	NewDataFolder /O root:DP_Sweeper:dacWaves
 	NewDataFolder /O root:DP_Sweeper:ttlWaves
 	
-	// Should we run the user's custom automatic analysis function after each sweep?
-	Variable /G autoAnalyzeChecked=0		// true iff AutoAnalyze checkbox is checked
+	// Should we run the user's custom hook functions before/after trials/sweeps?
+	Variable /G runHookFunctionsChecked=0		// true iff "Run hook functions" checkbox is checked
 
 	// Variables controlling the trials and sweeps
 	Variable /G nextSweepIndex=1		// index of the next sweep to be acquired
@@ -991,6 +991,25 @@ Function /S SweeperGetFancyWaveListOfType(waveTypeString)
 	String dacWaveNames=SweeperGetDACWaveNamesOfType(waveTypeString)
 	String ttlWaveNames=SweeperGetTTLWaveNamesOfType(waveTypeString)	
 	return fancyWaveList(dacWaveNames,ttlWaveNames)
+End
+
+Function SweeperSetDACMultiplier(i,newValue)
+	Variable i, newValue
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+	WAVE dacMultiplier
+	dacMultiplier[i]=newValue
+	SetDataFolder savedDF	
+End
+
+Function SweeperGetDACMultiplier(i)
+	Variable i
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+	WAVE dacMultiplier
+	Variable value=dacMultiplier[i]
+	SetDataFolder savedDF	
+	return value
 End
 
 

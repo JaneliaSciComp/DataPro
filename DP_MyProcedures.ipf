@@ -97,8 +97,39 @@ Function SetupSweeperForUser()
 	SetDataFolder savedDF
 End
 
-// Use the AutoAnalyze function to call analysis that should occur after the acquisition of each sweep
-Function AutoAnalyze()
-	Print "Inside AutoAnalyze() function!"
+
+
+
+// This gets run just after DataPro is initialized, always
+Function PostInitializationHook()
 End
+
+
+
+//
+// Functions below are only called if "Auto Analyze On" is checked in the Sweeper Panel
+//
+
+// Use the PreTrialHook function to call code that should occur before the acquisition of each trial
+Function PreTrialHook()
+	//Print "Inside PreTrialHook() function!"
+End
+
+// Use the PreSweepHook function to call code that should occur before the acquisition of each sweep
+Function PreSweepHook(iThisSweep)
+	Variable iThisSweep	// index of the just-acquired sweep
+	//Print "Inside PreSweepHook() function!"
+End
+
+// Use the PostSweepHook function to call analysis that should occur after the acquisition of each sweep
+Function PostSweepHook(iThisSweep)
+	Variable iThisSweep	// index of the just-acquired sweep
+	//Print "Inside PostSweepHook() function!"
+End
+
+// Use the PostTrialHook function to call analysis that should occur after the acquisition of each trial
+Function PostTrialHook()
+	//Print "Inside PostTrialHook() function!"
+End
+
 
