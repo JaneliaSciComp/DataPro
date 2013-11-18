@@ -30,19 +30,21 @@ Function CameraConstructor()
 		Variable /G sidxAcquirer		
 
 		// This stuff is only needed/used if there's no camera and we're faking
-		Variable /G fakeNWidthCCD=512	// width of the fake CCD
-		Variable /G fakeNHeightCCD=512	// height of the fake CCD
-		Variable /G fakeTriggerMode=0		// the trigger mode of the fake camera. 0=>free-running, 1=> each frame is triggered, and there are other settings
-		Variable /G fakeIsFullFrame=1		// are we doing full-frame for the fake camera?  (false=>ROI)
-		Variable /G fakeNBinWidth=1
-		Variable /G fakeNBinHeight=1
-		Variable /G fakeJLeft, fakeITop, fakeJRight, fakeIBottom	// the ROI boundaries
-		Variable /G fakeExposureInSeconds=0.1	// exposure for the fake camera, in sec
-		Variable /G fakeTargetTemperature=-20		// degC
-		Variable /G fakeNFrames=1		// How many frames to acquire for the fake camera
-		Variable /G fakeIsAcquireOpen=0		// Whether acquisition is "armed"
-		Variable /G fakeIsAcquisitionOngoing=0
-		Variable /G fakeIFrameRead=0		// the first frame to be read by subsequent read commands
+		Variable /G widthCCDFake=512	// width of the fake CCD
+		Variable /G heightCCDFake=512	// height of the fake CCD
+		Variable /G modeTriggerFake=0		// the trigger mode of the fake camera. 0=>free-running, 1=> each frame is triggered, and there are other settings
+		Variable /G widthBinFake=1
+		Variable /G heightBinFake=1
+		Variable /G offsetColumnROIFake=0
+		Variable /G offsetRowROIFake=0
+		Variable /G heightROIDesiredFake=heightCCDFake
+		Variable /G widthROIDesiredFake=widthCCDFake
+		Variable /G exposureFake=0.1	// exposure for the fake camera, in sec
+		Variable /G temperatureTargetFake=-20		// degC
+		Variable /G countFrameFake=1		// How many frames to acquire for the fake camera
+		Variable /G isAcquireOpenFake=0		// Whether acquisition is "armed"
+		Variable /G isAcquisitionOngoingFake=0
+		Variable /G countReadFrameFake=0		// the first frame to be read by subsequent read commands
 	endif
 
 	// Create the SIDX root object, referenced by sidxRoot
@@ -89,7 +91,9 @@ Function CameraROIClear()
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR fakeIsFullFrame
+	NVAR offsetColumnROIFake, offsetRowROIFake
+	NVAR widthROIDesiredFake, heightROIDesiredFake	 	// the ROI boundaries
+	NVAR widthCCDFake, heightCCDFake
 
 	Variable sidxStatus
 	if (areWeForReal)
@@ -104,12 +108,16 @@ Function CameraROIClear()
 			Abort "Called CameraROIClear() before camera was created."
 		endif
 	else
-		fakeIsFullFrame=1
+		offsetColumnROIFake=0
+		offsetRowROIFake=0
+		widthROIDesiredFake=widthCCDFake
+		heightROIDesiredFake=heightCCDFake
 	endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
 End
+
 
 
 
@@ -125,7 +133,8 @@ Function CameraROISet(jLeft, iTop, jRight, iBottom)
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR fakeJLeft, fakeITop, fakeJRight, fakeIBottom
+	NVAR offsetColumnROIFake, offsetRowROIFake
+	NVAR heightROIDesiredFake, widthROIDesiredFake	 // the ROI boundaries
 
 	Variable sidxStatus
 	if (areWeForReal)
@@ -140,10 +149,10 @@ Function CameraROISet(jLeft, iTop, jRight, iBottom)
 			Abort "Called CameraROISet() before camera was created."
 		endif
 	else
-		fakeJLeft=jLeft
-		fakeITop=iTop
-		fakeJRight=jRight
-		fakeIBottom=iBottom
+		offsetColumnROIFake=jLeft
+		offsetRowROIFake=iTop
+		widthROIDesiredFake=jRight-jLeft+1
+		heightROIDesiredFake=iBottom-iTop+1
 	endif
 
 	// Restore the data folder
@@ -165,7 +174,7 @@ Function CameraBinningSet(nBinWidth,nBinHeight)
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR fakeNBinWidth, fakeNBinHeight
+	NVAR widthBinFake, heightBinFake
 
 	Variable sidxStatus
 	if (areWeForReal)
@@ -180,8 +189,8 @@ Function CameraBinningSet(nBinWidth,nBinHeight)
 			Abort "Called CameraBinningSet() before camera was created."
 		endif
 	else
-		fakeNBinWidth=nBinWidth
-		fakeNBinHeight=nBinHeight
+		widthBinFake=nBinWidth
+		heightBinFake=nBinHeight
 	endif
 
 	// Restore the data folder
@@ -204,7 +213,7 @@ Function CameraTriggerModeSet(triggerMode)
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR fakeTriggerMode
+	NVAR modeTriggerFake
 
 	Variable sidxStatus
 	if (areWeForReal)
@@ -219,7 +228,7 @@ Function CameraTriggerModeSet(triggerMode)
 			Abort "Called CameraTriggerModeSet() before camera was created."
 		endif
 	else
-		fakeTriggerMode=triggerMode
+		modeTriggerFake=triggerMode
 	endif
 
 	// Restore the data folder
@@ -243,7 +252,7 @@ Function CameraExposeSet(exposureInSeconds)
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR fakeExposureInSeconds
+	NVAR exposureFake		// in seconds
 
 	Variable sidxStatus
 	if (areWeForReal)
@@ -258,7 +267,7 @@ Function CameraExposeSet(exposureInSeconds)
 			Abort "Called CameraExposeSet() before camera was created."
 		endif
 	else
-		fakeExposureInSeconds=exposureInSeconds
+		exposureFake=exposureInSeconds
 	endif
 
 	// Restore the data folder
@@ -282,7 +291,7 @@ Function CameraBufferCountSet(nFrames)
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR fakeNFrames
+	NVAR countFrameFake
 
 	Variable sidxStatus
 	if (areWeForReal)
@@ -297,7 +306,7 @@ Function CameraBufferCountSet(nFrames)
 			Abort "Called CameraBufferCountSet() before camera was created."
 		endif
 	else
-		fakeNFrames=nFrames
+		countFrameFake=nFrames
 	endif
 
 	// Restore the data folder
@@ -322,7 +331,7 @@ Function CameraAcquireOpen()
 	NVAR sidxCamera
 	NVAR isSidxAcquirerValid
 	NVAR sidxAcquirer
-	NVAR fakeIsAcquireOpen
+	NVAR isAcquireOpenFake
 
 	Variable sidxStatus
 	if (areWeForReal)
@@ -339,7 +348,7 @@ Function CameraAcquireOpen()
 			Abort "Called CameraAcquireOpen() before camera was created."
 		endif
 	else
-		fakeIsAcquireOpen=1
+		isAcquireOpenFake=1
 	endif
 
 	// Restore the data folder
@@ -360,7 +369,7 @@ Function CameraAcquireStart()
 	NVAR areWeForReal
 	NVAR isSidxAcquirerValid
 	NVAR sidxAcquirer
-	NVAR fakeIsAcquisitionOngoing
+	NVAR isAcquisitionOngoingFake
 
 	Variable sidxStatus
 	if (areWeForReal)
@@ -375,7 +384,7 @@ Function CameraAcquireStart()
 			Abort "Called CameraAcquireStart() before acquisition was armed."
 		endif
 	else
-		fakeIsAcquisitionOngoing=1
+		isAcquisitionOngoingFake=1
 	endif
 
 	// Restore the data folder
@@ -394,7 +403,7 @@ Function CameraAcquireGetStatus()
 	NVAR areWeForReal
 	NVAR isSidxAcquirerValid
 	NVAR sidxAcquirer
-	NVAR fakeIsAcquisitionOngoing
+	NVAR isAcquisitionOngoingFake
 
 	Variable isAcquiring
 	Variable sidxStatus
@@ -433,8 +442,13 @@ Function CameraAcquireStop()
 	NVAR areWeForReal
 	NVAR isSidxAcquirerValid
 	NVAR sidxAcquirer
-	NVAR fakeIsAcquisitionOngoing
-	WAVE frameBuffer
+	NVAR isAcquisitionOngoingFake
+	WAVE bufferFrame
+	NVAR widthCCDFake, heightCCDFake
+	NVAR widthBinFake, heightBinFake
+	NVAR offsetColumnROIFake, offsetRowROIFake
+	NVAR widthROIDesiredFake, heightROIDesiredFake	// the ROI boundaries
+	NVAR countFrameFake
 
 	Variable sidxStatus
 	if (areWeForReal)
@@ -450,27 +464,13 @@ Function CameraAcquireStop()
 		endif
 	else
 		// Fill the framebuffer with fake data
-		Variable nWidthROIBinned, nHeightROIBinned
-		if (fakeIsFullFrame)
-			nWidthROIBinned=fakeNWidthCCD
-			nHeightROIBinned=fakeNHeightCCD
-		else
-			
-		endif
-			
-		Variable /G fakeNWidthCCD=512	// width of the fake CCD
-		Variable /G fakeNHeightCCD=512	// height of the fake CCD
-		Variable /G fakeTriggerMode=0		// the trigger mode of the fake camera. 0=>free-running, 1=> each frame is triggered, and there are other settings
-		Variable /G fakeIsFullFrame=1		// are we doing full-frame for the fake camera?  (false=>ROI)
-		Variable /G fakeNBinWidth=1
-		Variable /G fakeNBinHeight=1
-		Variable /G fakeJLeft, fakeITop, fakeJRight, fakeIBottom	// the ROI boundaries
-		
-		Redimension /N=(nHeightROI,nWidthROI,nFrames) frameBuffer
-		framebuffer=2^15+(2^14)*gnoise()
+		Variable widthROIBinnedFake=floor(widthROIDesiredFake/widthBinFake)
+		Variable heightROIBinnedFake=floor(heightROIDesiredFake/heightBinFake)			
+		Redimension /N=(heightROIBinnedFake,widthROIBinnedFake,countFrameFake) bufferFrame
+		bufferFrame=2^15+(2^14)*gnoise(1)
 				
 		// Note that the acquisiton is done
-		fakeIsAcquisitionOngoing=0
+		isAcquisitionOngoingFake=0
 	endif
 
 	// Restore the data folder
@@ -481,8 +481,7 @@ End
 
 
 
-
-Function CameraAcquireRead(nFramesToRead)
+Function /WAVE CameraAcquireRead(nFramesToRead)
 	Variable nFramesToRead
 
 	// Switch to the imaging data folder
@@ -493,13 +492,17 @@ Function CameraAcquireRead(nFramesToRead)
 	NVAR areWeForReal
 	NVAR isSidxAcquirerValid
 	NVAR sidxAcquirer
-	NVAR fakeIsAcquisitionOngoing
-	WAVE frameBuffer
+	NVAR isAcquisitionOngoingFake
+	WAVE bufferFrame
+	NVAR widthROIDesiredFake, heightROIDesiredFake
+	NVAR widthBinFake, heightBinFake
+	NVAR countFrameReadFake
 
 	Variable sidxStatus
+	Wave frames
 	if (areWeForReal)
 		if (isSidxAcquirerValid)
-			SIDXAcquireRead sidxAcquirer, nFramesToRead, frameBuffer, sidxStatus
+			SIDXAcquireRead sidxAcquirer, nFramesToRead, frames, sidxStatus
 			if (sidxStatus!=0)
 				String errorMessage
 				SIDXAcquireGetLastError sidxAcquirer, errorMessage
@@ -509,14 +512,20 @@ Function CameraAcquireRead(nFramesToRead)
 			Abort "Called CameraAcquireRead() before acquisition was armed."
 		endif
 	else
-		if (fakeIsAcquisitionOngoing)
+		if (isAcquisitionOngoingFake)
 			Abort "Have to stop the fake acquisition before reading the fake data."
 		endif
-		
+		Variable widthROIBinnedFake=floor(widthROIDesiredFake/widthBinFake)
+		Variable heightROIBinnedFake=floor(heightROIDesiredFake/heightBinFake)			
+		Duplicate /FREE /R=[][][countFrameReadFake,countFrameReadFake+nFramesToRead] bufferFrame frames
+		countFrameReadFake+=nFramesToRead
 	endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
+	
+	// Return result
+	return frames
 End
 
 
