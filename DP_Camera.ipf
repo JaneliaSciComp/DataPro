@@ -15,19 +15,21 @@ Function CameraConstructor()
 	// Save the current DF
 	String savedDF=GetDataFolder(1)
 
-	// If the data folder doesn't exist, create it (and switch to it)
+	// If the data folder does not already exist, create it and set up the camera
 	if (!DataFolderExists("root:DP_Camera"))
+		// If the data folder doesn't exist, create it (and switch to it)
 		// IMAGING GLOBALS
 		NewDataFolder /O /S root:DP_Camera
 				
 		// SIDX stuff
-		Variable /G areWeForReal=1	// boolean; if false, we have decided to fake the camera
+		Variable /G areWeForReal		// boolean; if false, we have decided to fake the camera
 		Variable /G isSidxRootValid=0	// boolean
 		Variable /G sidxRoot
 		Variable /G isSidxCameraValid=0	// boolean
 		Variable /G sidxCamera	
 		Variable /G isSidxAcquirerValid=0	// boolean
-		Variable /G sidxAcquirer		
+		Variable /G sidxAcquirer
+		Make /N=(0,0,0) bufferFrame	// Will hold the acquired frames
 
 		// This stuff is only needed/used if there's no camera and we're faking
 		Variable /G widthCCDFake=512	// width of the fake CCD
@@ -45,17 +47,14 @@ Function CameraConstructor()
 		Variable /G isAcquireOpenFake=0		// Whether acquisition is "armed"
 		Variable /G isAcquisitionOngoingFake=0
 		Variable /G countReadFrameFake=0		// the first frame to be read by subsequent read commands
-	endif
 
-	// Create the SIDX root object, referenced by sidxRoot
-	String license=""	// License file is stored in C:/Program Files/Bruxton/SIDX
-	Variable sidxStatus
-	SIDXRootOpen sidxRoot, license, sidxStatus
-	isSidxRootValid=(sidxStatus==0)
-	areWeForReal= isSidxRootValid	// if we can't get a valid sidx root, then fake
-
-	Variable nCameras
-	if (areWeForReal)
+		// Create the SIDX root object, referenced by sidxRoot
+		String license=""	// License file is stored in C:/Program Files/Bruxton/SIDX
+		Variable sidxStatus
+		SIDXRootOpen sidxRoot, license, sidxStatus
+		isSidxRootValid=(sidxStatus==0)
+		printf "isSidxRootValid: %d\r" isSidxRootValid
+		Variable nCameras
 		if (isSidxRootValid)
 			SIDXRootCameraScanGetCount sidxRoot, nCameras,sidxStatus
 			if (sidxStatus != 0)
@@ -66,14 +65,16 @@ Function CameraConstructor()
 				// Create the SIDX camera object, referenced by sidxCamera
 				SIDXRootCameraOpenName sidxRoot, "", sidxCamera, sidxStatus
 				isSidxCameraValid= (sidxStatus==0)
+				printf "isSidxCameraValid: %d\r", isSidxCameraValid
 				areWeForReal=isSidxCameraValid		// if no valid camera, then we fake
 			else
 				// if zero cameras, then we fake
 				areWeForReal=0;
 			endif
 		endif
-	endif	
-	
+		printf "areWeForReal: %d\r", areWeForReal
+	endif
+
 	// Restore the data folder
 	SetDataFolder savedDF	
 End
@@ -205,6 +206,9 @@ End
 Function CameraTriggerModeSet(triggerMode)
 	Variable triggerMode
 	
+	//Variable NO_TRIGGER=0	// start immediately
+	//Variable TRIGGER_EXPOSURE_START=1	// start of each frame is TTL-triggered
+	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Camera
@@ -235,6 +239,41 @@ Function CameraTriggerModeSet(triggerMode)
 	SetDataFolder savedDF	
 End
 
+
+
+Function CameraTriggerModeGet()
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxCameraValid
+	NVAR sidxCamera
+	NVAR modeTriggerFake
+
+	Variable triggerMode
+	Variable sidxStatus
+	if (areWeForReal)
+		if (isSidxCameraValid)
+			SIDXCameraTriggerModeGet sidxCamera, triggerMode, sidxStatus
+			if (sidxStatus!=0)
+				String errorMessage
+				SIDXCameraGetLastError sidxCamera, errorMessage
+				Abort sprintf1s("Error in SIDXCameraTriggerModeGet: %s",errorMessage)
+			endif
+		else
+			Abort "Called CameraTriggerModeGet() before camera was created."
+		endif
+	else
+	triggerMode=modeTriggerFake
+	endif
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+	
+	return triggerMode
+End
 
 
 
@@ -318,7 +357,7 @@ End
 
 
 
-Function CameraAcquireOpen()
+Function CameraAcquireArm()
 	// This basically "arms" the camera for acquisition
 	
 	// Switch to the imaging data folder
@@ -345,7 +384,7 @@ Function CameraAcquireOpen()
 				isSidxAcquirerValid=0
 			endif
 		else
-			Abort "Called CameraAcquireOpen() before camera was created."
+			Abort "Called CameraAcquireArm() before camera was created."
 		endif
 	else
 		isAcquireOpenFake=1
@@ -467,7 +506,7 @@ Function CameraAcquireStop()
 		Variable widthROIBinnedFake=floor(widthROIDesiredFake/widthBinFake)
 		Variable heightROIBinnedFake=floor(heightROIDesiredFake/heightBinFake)			
 		Redimension /N=(heightROIBinnedFake,widthROIBinnedFake,countFrameFake) bufferFrame
-		bufferFrame=2^15+(2^14)*gnoise(1)
+		bufferFrame=2^15+(2^12)*gnoise(1)
 				
 		// Note that the acquisiton is done
 		isAcquisitionOngoingFake=0
@@ -526,6 +565,177 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 	
 	// Return result
 	return frames
+End
+
+
+
+
+
+
+Function CameraAcquireDisarm()
+	// This "disarms" acquisition, allowing settings to be set again
+
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxAcquirerValid
+	NVAR sidxAcquirer		
+	NVAR isAcquireOpenFake
+	NVAR isAcquisitionOngoingFake
+
+	// Close the SIDX Acquire object	
+	Variable sidxStatus
+	if (areWeForReal)
+		if (isSidxAcquirerValid)
+			SIDXAcquireClose sidxAcquirer, sidxStatus
+			if (sidxStatus!=0)
+				String errorMessage
+				SIDXAcquireGetLastError sidxAcquirer, errorMessage
+				Abort sprintf1s("Error in SIDXAcquireClose: %s",errorMessage)
+			endif
+		else
+			Abort "Called CameraAcquireDisarm() before acquisition was armed."
+		endif
+	else
+		if (isAcquisitionOngoingFake)
+			Abort "Have to stop the fake acquisition before disarming."
+		endif
+		isAcquireOpenFake=0		// Whether acquisition is "armed"
+	endif
+	
+	// Restore the data folder
+	SetDataFolder savedDF	
+End
+
+
+
+
+
+
+Function CameraCoolingSet(temperatureTarget)
+	Variable temperatureTarget
+
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxCameraValid
+	NVAR sidxCamera
+	NVAR temperatureTargetFake
+
+	Variable sidxStatus
+	Wave frames
+	if (areWeForReal)
+		if (isSidxCameraValid)
+			SIDXCameraCoolingSet sidxCamera, temperatureTarget, sidxStatus
+			if (sidxStatus!=0)
+				String errorMessage
+				SIDXCameraGetLastError sidxCamera, errorMessage
+				Abort sprintf1s("Error in SIDXCameraCoolingSet: %s",errorMessage)
+			endif
+		else
+			Abort "Called CameraCoolingSet() before camera was created."
+		endif
+	else
+		temperatureTargetFake=temperatureTarget
+	endif
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+End
+
+
+
+
+
+
+Function CameraCoolingGetValue()
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxCameraValid
+	NVAR sidxCamera
+	NVAR temperatureTargetFake
+
+	Variable sidxStatus
+	Variable temperature
+	if (areWeForReal)
+		if (isSidxCameraValid)
+			SIDXCameraCoolingGetValue sidxCamera, temperature, sidxStatus
+			if (sidxStatus!=0)
+				String errorMessage
+				SIDXCameraGetLastError sidxCamera, errorMessage
+				Abort sprintf1s("Error in SIDXCameraCoolingGetValue: %s",errorMessage)
+			endif
+		else
+			Abort "Called CameraCoolingGetValue() before camera was created."
+		endif
+	else
+		temperature=temperatureTargetFake
+	endif
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+	
+	return temperature
+End
+
+
+
+
+
+
+Function CameraDestructor()
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR isSidxRootValid
+	NVAR sidxRoot
+	NVAR isSidxCameraValid
+	NVAR sidxCamera	
+	NVAR isSidxAcquirerValid
+	NVAR sidxAcquirer		
+
+	// This is used in lots of places
+	Variable sidxStatus
+	String errorMessage
+
+	// Close the SIDX Acquire object
+	if (isSidxAcquirerValid)
+		SIDXAcquireClose sidxAcquirer, sidxStatus
+		isSidxAcquirerValid=0	
+	endif
+	
+	// Close the SIDX Camera object
+	if (isSidxCameraValid)
+		SIDXCameraClose sidxCamera, sidxStatus
+		isSidxCameraValid=0	
+	endif
+	
+	// Close the SIDX root object
+	if (isSidxRootValid)
+		SIDXRootClose sidxRoot, errorMessage
+		isSidxRootValid=0
+	endif
+	
+	// Restore the data folder
+	SetDataFolder savedDF	
+
+	// Switch to the root data folder
+	SetDataFolder root:
+	
+	// Delete the camera DF
+	KillDataFolder /Z root:DP_Camera
 End
 
 

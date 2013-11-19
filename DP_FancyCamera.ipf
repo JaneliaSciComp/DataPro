@@ -27,110 +27,14 @@ Function FancyCameraConstructor()
 		// IMAGING GLOBALS
 		NewDataFolder /O /S root:DP_FancyCamera
 		
-		// SIDX stuff
-		Variable /G isSidxRootValid=0	// boolean
-		Variable /G sidxRoot
-		Variable /G isSidxCameraValid=0	// boolean
-		Variable /G sidxCamera	
-		Variable /G isSidxAcquirerValid=0	// boolean
-		Variable /G sidxAcquirer		
-		
-		// This stuff is only needed/used if there's no camera and we're faking
-		Variable /G nWidthCCDFake=512	// width of the fake CCD
-		Variable /G nHeightCCDFake=512	// height of the fake CCD
-		Variable /G isTriggeredFake=0		// whether the fake camera is in triggered mode (as opposed to free-running)
-		Variable /G isFullFrameFake=1		// are we doing full-frame for the fake camera?  (false=>ROI)
-		Variable /G nBinWidthFake=1
-		Variable /G nBinHeightFake=1
-		Variable /G jLeftFake, iTopFake, jRightFake, iBottomFake	// the ROI boundaries
-		Variable /G expsoureFake=100		// exposure for the fake camera, in ms
-		Variable /G targetTemperatureFake=-20		// degC
-		Variable /G nFramesFake=1		// How many frames to acquire for the fake camera
 	endif
 
 	// Initialize the camera
-	FancyCameraInitialize()
+	CameraConstructor()
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
 End
-
-
-
-
-
-
-Function FancyCameraInitialize()
-	// Initializes the SIDX interface to the camera.  Generally this will be called once per imaging session.
-	// But calling it multiple times won't hurt anything---if the camera is already initialized, it doesn't do
-	// anything.
-
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FancyCamera
-
-	// Declare instance variables
-	NVAR areWeFakingCamera
-	NVAR sidxRoot
-	NVAR isSidxRootValid
-	NVAR sidxCamera
-	NVAR isSidxCameraValid	
-	
-	// If the sidxCamera object is already valid, nothing to do
-	if (isSidxCameraValid||areWeFakingCamera)
-		return 0		// have to return something
-	endif
-	
-	// This is used in lots of places
-	Variable sidxStatus
-	String errorMessage
-	
-	// Create the SIDX root object, referenced by sidxRoot
-	String license=""	// License file is stored in C:/Program Files/Bruxton/SIDX
-	SIDXRootOpen sidxRoot, license, sidxStatus
-	if (sidxStatus != 0)
-		isSidxRootValid=0
-		//SIDXRootGetLastError sidxRoot, errorMessage
-		//Abort sprintf1s("Error in SIDXRootOpen: %s", errorMessage)
-	else
-		isSidxRootValid=1
-	endif
-	
-	// Find out how many cameras are available
-	Variable nCameras=0
-	if (isSidxRootValid)
-		SIDXRootCameraScanGetCount sidxRoot, nCameras,sidxStatus
-		if (sidxStatus != 0)
-			nCameras=0
-		endif
-		//Printf "# of cameras: %d\r", nCameras
-	else
-		nCameras=0
-	endif
-
-//	Variable iCamera
-//	for (iCamera=0; iCamera<nCameras; iCamera+=1)
-//		String thisCameraName
-//		SIDXRootCameraScanGetName sidxRoot, iCamera, thisCameraName, sidxStatus
-//		Printf "Camera %d of %d is named %s\r", iCamera, nCameras, thisCameraName
-//	endfor
-
-	// If there's at least one camera, get the handle for it.  If not, we'll fake it.
-	if (nCameras>0)
-		// Create the SIDX camera object, referenced by sidxCamera
-		SIDXRootCameraOpenName sidxRoot, "", sidxCamera, sidxStatus
-		if (sidxStatus != 0)
-			isSidxCameraValid=1
-		else
-			isSidxCameraValid=0
-		endif
-	endif
-	
-	// Restore the data folder
-	SetDataFolder savedDF
-End
-
-
 
 
 
@@ -155,78 +59,31 @@ Function FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTrigger
 	SetDataFolder root:DP_FancyCamera
 
 	// Declare instance variables
-	NVAR isSidxRootValid
-	NVAR sidxRoot
-	NVAR isSidxCameraValid
-	NVAR sidxCamera
 	
-	// Make sure there's a valid camera
-	if (!isSidxCameraValid)
-		Abort "Error in CameraSetupAcquisition(): No valid camera."
-	endif
-	
-	// This is used in lots of places
-	Variable sidxStatus
-	String errorMessage
-
 	// Set up stuff
-	SIDXCameraROIClear sidxCamera, sidxStatus
-	if (sidxStatus!=0)
-		SIDXRootGetLastError sidxRoot, errorMessage
-		Abort sprintf1s("Error in SIDXCameraROIClear: %s",errorMessage)
-	endif
+	CameraROIClear()
 	Variable jLeft, iTop, jRight, iBottom	
 	if (isROI)
 		Variable iROI=0  // the foreground ROI
 		jLeft=roisWave[0][iROI]; iTop=roisWave[3][iROI]; jRight=roisWave[1][iROI]; iBottom=roisWave[2][iROI]
-		SIDXCameraROISet sidxCamera, jLeft, iTop, jRight, iBottom, sidxStatus
-		if (sidxStatus!=0)
-			SIDXRootGetLastError sidxRoot, errorMessage
-			Abort sprintf1s("Error in SIDXCameraROISet: %s",errorMessage)
-		endif
-		//print jLeft, iTop, jRight, iBottom
+		CameraROISet(jLeft, iTop, jRight, iBottom)
 		if (isBackgroundROIToo)	// add bkgnd ROI
 			iROI=1  // the background ROI
 			jLeft=roisWave[0][iROI]; iTop=roisWave[3][iROI]; jRight=roisWave[1][iROI]; iBottom=roisWave[2][iROI]
-			SIDXCameraROISet sidxCamera, jLeft, iTop, jRight, iBottom, sidxStatus
-			if (sidxStatus!=0)
-				SIDXRootGetLastError sidxRoot, errorMessage
-				Abort sprintf1s("Error in SIDXCameraROISet: %s",errorMessage)
-			endif
-			//printf "ROI sidxStatus=%d\r", sidxStatus
-			//print jLeft, iTop, jRight, iBottom
+			CameraROISet(jLeft, iTop, jRight, iBottom)
 		endif
-		//Variable roi_count
-		//SIDXImageGetROICount sidxRoot, roi_count, sidxStatus
-		//printf "%d ROIs set\r", roi_count
 	endif
-	SIDXCameraBinningSet sidxCamera, nBinWidth, nBinHeight, sidxStatus
-	if (sidxStatus!=0)
-		SIDXRootGetLastError sidxRoot, errorMessage
-		Abort sprintf1s("Error in SIDXCameraBinningSet: %s",errorMessage)
-	endif
+	CameraBinningSet(nBinWidth, nBinHeight)
 
-	// Set the amplifier gain 
-	//SIDXImageSetGain sidxRoot, 0, sidxStatus
-	// Maybe the default is OK?  Let's try that...
-	
 	// Set the trigger mode
 	Variable NO_TRIGGER=0	// start immediately
 	Variable TRIGGER_EXPOSURE_START=1	// start of each frame is TTL-triggered
 	Variable triggerMode=(isTriggered ? TRIGGER_EXPOSURE_START : NO_TRIGGER)
-	SIDXCameraTriggerModeSet sidxCamera, triggerMode, sidxStatus
-	if (sidxStatus!=0)
-		SIDXRootGetLastError sidxRoot, errorMessage
-		Abort sprintf1s("Error in SIDXCameraTriggerModeSet: %s",errorMessage)
-	endif
+	CameraTriggerModeSet(triggerMode)
 	
 	// Set the exposure
 	Variable exposureInSeconds=exposure/1000		// ms->s
-	SIDXCameraExposeSet sidxCamera, exposureInSeconds, sidxStatus
-	if (sidxStatus!=0)
-		SIDXRootGetLastError sidxRoot, errorMessage
-		Abort sprintf1s("Error in SIDXCameraExposeSet: %s",errorMessage)
-	endif
+	CameraExposeSet(exposureInSeconds)
 	
 	// Set the CCD temp, wait for it to stabilize
 	FancyCameraSetTemperature(targetTemperature)
@@ -240,12 +97,10 @@ End
 
 
 
-Function FancyCameraArm(imageWaveName, nFrames)
+Function FancyCameraArm(nFrames)
 	// Acquire nFrames, and store the resulting video in imageWaveName.
 	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
 	// acquisition is free-running.
-
-	String imageWaveName
 	Variable nFrames
 
 	// Change to the imaging data folder
@@ -253,36 +108,12 @@ Function FancyCameraArm(imageWaveName, nFrames)
 	SetDataFolder root:DP_FancyCamera
 
 	// instance vars
-	NVAR sidxRoot
-	NVAR sidxCamera
-	NVAR isSidxAcquirerValid
-	NVAR sidxAcquirer
 
-	// This is used in lots of places
-	Variable sidxStatus
-	String errorMessage
-
-	// The old code called SIDXAcquisitonBegin, then SIDXAcquisitionAllocate
-	//  The SIDX 7 library seems to require that these be switched
-	
 	// Allocate space in the frame buffer
-	//SIDXAcquisitionAllocate sidxRoot, nFrames, iBuffer, sidxStatus
-	SIDXCameraBufferCountSet sidxCamera, nFrames, sidxStatus
-	if (sidxStatus != 0)
-		SIDXRootGetLastError sidxRoot, errorMessage
-		Abort errorMessage
-	endif
+	CameraBufferCountSet(nFrames)
 
-	//  "Arm" the camera to start an acquisition, which 
-	// returns a SIDX "Acquire" object, which should maybe be called an
-	// "Acquirer"	
-	//SIDXAcquisitionBegin sidxRoot, nFrames, sidxStatus
-	SIDXCameraAcquireOpen sidxCamera, sidxAcquirer, sidxStatus
-	if (sidxStatus != 0)
-		SIDXRootGetLastError sidxRoot, errorMessage
-		Abort errorMessage
-	endif
-	isSidxAcquirerValid=1
+	// Arm the acquisition
+	CameraAcquireArm()
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -294,72 +125,47 @@ End
 
 
 
-Function FancyCameraAcquire(imageWaveName, nFrames, isTriggered)
+Function /WAVE FancyCameraAcquire(nFrames)
 	// Acquire nFrames, and store the resulting video in imageWaveName.
 	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
 	// acquisition is free-running.
 
-	String imageWaveName
 	Variable nFrames
-	Variable isTriggered
+	//Variable isTriggered
 
 	// Change to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_FancyCamera
 
 	// instance vars
-	NVAR sidxRoot
-	NVAR isSidxAcquirerValid
-	NVAR sidxAcquirer
-
-	// This is used in lots of places
-	Variable sidxStatus
-	String errorMessage
 	
-	// Check that the framebuffer is allocated
-	if (!isSidxAcquirerValid)
-		return 0		// Have to return something
-	endif
-
 	// Prep for the acquisition (this will also start the acquisition unless it's a triggered acquire)
-	SIDXAcquireStart sidxAcquirer, sidxStatus
-	if (sidxStatus != 0)		
-		SIDXRootGetLastError sidxRoot, errorMessage
-		Abort errorMessage
-	endif
+	CameraAcquireStart()
 
 	// If the acquisition is external trigger mode, start the data acq, which will provide the per-frame triggers
-	if (isTriggered)
+	Variable NO_TRIGGER=0		// start immediately
+	if (CameraTriggerModeGet()!=NO_TRIGGER)
 		//DoDataAcq()	// will have to sub in new method call
 	endif
 
 	// Spin until the acquisition is done
 	Variable isAcquiring
 	do
-		SIDXAcquireGetStatus sidxAcquirer, isAcquiring, sidxStatus
-		if (sidxStatus != 0)
-			SIDXRootGetLastError sidxRoot, errorMessage
-			SIDXAcquireAbort sidxAcquirer, sidxStatus
-			Abort errorMessage
-		endif
+		Sleep /S 0.1		// Sleep 0.1 seconds
+		isAcquiring=CameraAcquireGetStatus()
 	while (isAcquiring)
 	
 	// "Stop" the acquisition.  You're only supposed to call this after all frames are acquired...
-	SIDXAcquireStop sidxAcquirer, sidxStatus
-	if (sidxStatus != 0)
-		SIDXRootGetLastError sidxRoot, errorMessage
-		Abort errorMessage
-	endif
+	CameraAcquireStop()
 	
 	// Transfer images from acquisition buffer to IGOR wave
-	SIDXAcquireRead sidxAcquirer, nFrames, imageWaveName, sidxStatus
-	if (sidxStatus != 0)
-		SIDXRootGetLastError sidxRoot, errorMessage
-		Abort errorMessage
-	endif
+	Wave imageWave=CameraAcquireRead(nFrames)
 	
 	// Restore the original DF
 	SetDataFolder savedDF
+	
+	// return
+	return imageWave
 End
 
 
@@ -378,20 +184,9 @@ Function FancyCameraDisarm()
 	SetDataFolder root:DP_FancyCamera
 
 	// instance vars
-	NVAR sidxRoot
-	NVAR isSidxAcquirerValid
-	NVAR sidxAcquirer
 
-	// This is used in lots of places
-	Variable sidxStatus
-	String errorMessage
-	
-	if (isSidxAcquirerValid)
-		SIDXAcquireClose sidxAcquirer, sidxStatus
-		isSidxAcquirerValid=0
-		// Seems like we don't need to deallocate the framebuffer when using SIDX 7
- 		//SIDXAcquisitionDeallocate sidxRoot, iBuffer, sidxStatus
-	endif
+	// Do it
+	CameraAcquireDisarm()
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -404,71 +199,19 @@ End
 
 
 
-Function FancyCameraArmAcquireDisarm(imageWaveName, nFrames, isTriggered)
-	// Acquire nFrames, and store the resulting video in imageWaveName.
+Function /WAVE FancyCameraArmAcquireDisarm(nFrames)
+	// Acquire nFrames, and return the resulting video
 	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
 	// acquisition is free-running.  This also handles the allocation and de-allocation
 	// of the on-camera framebuffer.
 
-	String imageWaveName
 	Variable nFrames
-	Variable isTriggered
 
-	FancyCameraArm(imageWaveName, nFrames)
-	FancyCameraAcquire(imageWaveName, nFrames, isTriggered)
+	FancyCameraArm(nFrames)
+	Wave imageWave=FancyCameraAcquire(nFrames)
 	FancyCameraDisarm()
+	return imageWave
 End
-
-
-
-
-
-
-
-
-Function FancyCameraFinalize()
-	// Called to allow the SIDX library to do any required cleanup operations.
-	// Generally called at the end of an imaging session.  This is the "partner" of 
-	// FancyCameraInitialize().
-
-	// Change to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FancyCamera
-
-	// instance vars
-	NVAR isSidxRootValid
-	NVAR sidxRoot
-	NVAR isSidxCameraValid
-	NVAR sidxCamera
-	NVAR isSidxAcquirerValid
-	NVAR sidxAcquirer
-	
-	// This is used in lots of places
-	Variable sidxStatus
-	String errorMessage
-
-	// Close the SIDX Acquire object
-	if (isSidxAcquirerValid)
-		SIDXAcquireClose sidxAcquirer, sidxStatus
-		isSidxAcquirerValid=0	
-	endif
-	
-	// Close the SIDX Camera object
-	if (isSidxCameraValid)
-		SIDXCameraClose sidxCamera, sidxStatus
-		isSidxCameraValid=0	
-	endif
-	
-	// Close the SIDX root object
-	if (isSidxRootValid)
-		SIDXRootClose sidxRoot, errorMessage
-		isSidxRootValid=0
-	endif
-	
-	// Restore the original DF
-	SetDataFolder savedDF
-End
-
 
 
 
@@ -486,34 +229,19 @@ Function FancyCameraSetTemperature(targetTemperature)
 	SetDataFolder root:DP_FancyCamera
 
 	// Declare instance variables
-	NVAR sidxRoot
-	NVAR isSidxCameraValid
-	NVAR sidxCamera
-
-	// Make sure there's a camera
-	if (!isSidxCameraValid)
-		Abort "There is no valid camera object."
-	endif
-
-	// This is used in lots of places
-	Variable sidxStatus
-	String errorMessage
 
 	// Set the target temperature	
-	SIDXCameraCoolingSet sidxCamera, targetTemperature, sidxStatus
-	if (sidxStatus != 0)
-		SIDXRootGetLastError sidxRoot, errorMessage
-		Abort errorMessage
-	endif
+	CameraCoolingSet(targetTemperature)
 
 	// Spin until the actual temperature reaches the target, and stays there for a while
 	Variable temperature
 	Variable temperatureTolerance=0.1		// degC
-	Variable secondsAtTargetMinimum=5
+	Variable secondsAtTargetMinimum=0.1
 	Variable secondsBetweenChecks=0.1
 	Variable itersAtTargetMinimum=ceil(secondsAtTargetMinimum/secondsBetweenChecks)
 	Variable itersAtTarget=0
 	do
+		Sleep /S secondsBetweenChecks
 		temperature=FancyCameraGetTemperature()
 		if ( abs(temperature-targetTemperature)<temperatureTolerance ) 
 			itersAtTarget+=1
@@ -541,26 +269,9 @@ Function FancyCameraGetTemperature()
 	SetDataFolder root:DP_FancyCamera
 
 	// instance vars
-	NVAR sidxRoot
-	NVAR isSidxCameraValid
-	NVAR sidxCamera
-
-	// This is used in lots of places
-	Variable sidxStatus
-	String errorMessage
-	
-	// Check that the framebuffer is allocated
-	if (!isSidxCameraValid)
-		return nan		// Have to return something
-	endif
 
 	// Check the CCD temperature
-	Variable temperature
-	SIDXCameraCoolingGetValue sidxCamera, temperature, sidxStatus
-	if (sidxStatus != 0)
-		SIDXRootGetLastError sidxRoot, errorMessage
-		Abort errorMessage
-	endif
+	Variable temperature=CameraCoolingGetValue()
 	
 	// Return the temp
 	return temperature

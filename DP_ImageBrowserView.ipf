@@ -33,6 +33,7 @@ Function Image_Display(imageWaveName): Graph
 	im_plane=0
 	all_images=WaveList(full_name+"*",";","")+WaveList(imageseq_name+"*",";","")
 	if (wintype("Image_Display")<1)
+	//if ( !GraphExists("Image_Display") )
 		Display /W=(45,40,345,340) /K=1 as "Image_Display"
 		SetVariable plane_setvar0,pos={45,23},size={80,16},proc=ImagePlaneSetVarProc,title="plane"
 		SetVariable plane_setvar0,limits={0,numplanes-1,1},value= im_plane
@@ -55,7 +56,7 @@ Function Image_Display(imageWaveName): Graph
 	//sprintf command, "RemoveImage %s", ImageNameList("Image_Display",";")
 	//Execute command
 	String oldImageWaveName=ImageNameList("Image_Display",";")
-	RemoveImage $oldImageWaveName
+	RemoveImage /Z $oldImageWaveName
 	AppendImage $imageWaveName
 //	SetAxis/A/R left
 	ControlInfo auto_on_fly_check0

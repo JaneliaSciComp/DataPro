@@ -121,12 +121,15 @@ Function Acquire_Full_Image()
 	xbin=1; ybin=1
 	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,image_trig,exposure,ccd_tempset,xbin,ybin) 
 	EpiLightTurnOnOff(1)
-	Sleep /S 0.1
-	Make /O /N=(512,512) $imageWaveName
-	Wave w=$imageWaveName
-	w=100+gnoise(10)
-	Variable isVideoTriggered=0
-	FancyCameraArmAcquireDisarm(imageWaveName,frames,isVideoTriggered)  // needs to come back
+	//Sleep /S 0.1
+	//Make /O /N=(512,512) $imageWaveName
+	//Wave w=$imageWaveName
+	//w=100+gnoise(10)
+	Wave imageWave=FancyCameraArmAcquireDisarm(frames)
+	if (WaveExists($imageWaveName))
+		 KillWaves $imageWaveName
+	endif
+	MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
 	EpiLightTurnOnOff(0)
 	Image_Display(imageWaveName) 
 	printf "%s%d: Full Image done\r", full_name, full_num
@@ -164,7 +167,9 @@ Function Image_Stack(trig, disp)
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
 	im_plane=0
-	FancyCameraArmAcquireDisarm(imageWaveName,frames,trig)
+	//Wave imageWave=FancyCameraArmAcquireDisarm(frames,trig)
+	Wave imageWave=FancyCameraArmAcquireDisarm(frames)	// trigger mode is now set during camera setup
+	MoveWave imageWave, imageWaveName 	// Cage the once-free wave
 	EpiLightTurnOnOff(0)
 	if (disp>0)
 		Image_Display(imageWaveName)
@@ -334,14 +339,16 @@ Function ImagerFocus()
 
 	String imageWaveName=sprintf2sv("%s%d", focus_name, focus_num)
 	Variable	nFrames=1
-	Variable isTriggered=0		// Just want the camera to free-run
+	//Variable isTriggered=0		// Just want the camera to free-run
 	
-	FancyCameraArm(imageWaveName, nFrames)
+	FancyCameraArm(nFrames)
 	Variable iFrame=0
 	do
 		// Start a sequence of images. In the current case, there is 
 		// only one frame in the sequence.
-		FancyCameraAcquire(imageWaveName, nFrames, isTriggered)
+		//Wave imageWave=FancyCameraAcquire(nFrames, isTriggered)
+		Wave imageWave=FancyCameraAcquire(nFrames)
+		MoveWave imageWave, imageWaveName
 		// If first frame, create a display window.
 		// If subseqent frame, update the image in the display window
 		if (iFrame==0)
@@ -363,6 +370,9 @@ Function ImagerFocus()
 	// Restore the original DF
 	SetDataFolder savedDF
 End
+
+
+
 
 
 
