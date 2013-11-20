@@ -377,7 +377,7 @@ Function BrowserViewUpdate(browserNumber)
 	currentlyUpdatingView=1
 	
 	// Remove the old waves from the graph
-	RemoveFromGraphAll(browserName)
+	RemoveAllTracesFromGraph(browserName)
 	
 	// Update the viable range for the current sweep control, and the current sweep
 	Variable minSweepIndexA=minSweepIndexFromBaseName(baseNameA)

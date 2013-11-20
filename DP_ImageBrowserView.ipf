@@ -15,38 +15,24 @@ Function ImageBrowserViewConstructor()
 		return 0
 	endif
 
-	// Save the current DF
-	String savedDF=GetDataFolder(1)
-
-	// Set the data folder
-	SetDataFolder root:DP_ImageBrowserModel
-	
-	// Declare instance vars
-	NVAR iFrame		// the index of the video frame currently being shown
-	//SVAR fullFrameWaveBaseName		// the base name of the full-frame image waves
-	//SVAR videoWaveBaseName	// the base name of the triggered video waves, including the underscore
-	NVAR blackCount
-	NVAR whiteCount
-	SVAR imageWaveName
-	NVAR autoscaleOnTheFly
-	
 	// Create the graph window, widgets
 	Display /W=(45,40,345,340) /K=1 /N=ImageBrowserView as "Image Browser"
 
 	SetVariable plane_setvar0,win=ImageBrowserView,pos={45,23},size={80,16},proc=ImagePlaneSetVarProc,title="Frame:"
 
-	Variable nFrames=DimSize($imageWaveName, 2)
-	SetVariable plane_setvar0,win=ImageBrowserView,limits={0,nFrames-1,1},value= iFrame
+	//Variable nFrames=DimSize($imageWaveName, 2)
+	//SetVariable plane_setvar0,win=ImageBrowserView,limits={0,nFrames-1,1},value= iFrame
 
-	SetVariable gray_setvar0,win=ImageBrowserView,pos={137,1},size={130,16},proc=GrayScaleSetVarProc,title="Black count:"
-	SetVariable gray_setvar0,win=ImageBrowserView,limits={0,2^16-1,1024},value= blackCount
+	SetVariable gray_setvar0,win=ImageBrowserView,pos={137,1},size={130,16},proc=BlackCountSetVarProc,title="Black count:"
+	SetVariable gray_setvar0,win=ImageBrowserView,limits={0,2^16-1,1024}
 
-	SetVariable gray_setvar1,win=ImageBrowserView,pos={137,23},size={130,16},proc=GrayScaleSetVarProc,title="White count:"
-	SetVariable gray_setvar1,win=ImageBrowserView,limits={0,2^16-1,1024},value= whiteCount
+	SetVariable gray_setvar1,win=ImageBrowserView,pos={137,23},size={130,16},proc=WhiteCountSetVarProc,title="White count:"
+	SetVariable gray_setvar1,win=ImageBrowserView,limits={0,2^16-1,1024}
 
 	Button autogray_button0,win=ImageBrowserView,pos={282,0},size={80,20},proc=AutoGrayScaleButtonProc,title="Autoscale"
 
 	CheckBox auto_on_fly_check0,win=ImageBrowserView,pos={282,25},size={111,14},title="Autoscale on the fly"
+	CheckBox auto_on_fly_check0,win=ImageBrowserView, proc=ImageBrowserContAutoscaleCB
 	//CheckBox auto_on_fly_check0,win=ImageBrowserView,value=autoscaleOnTheFly
 
 	PopupMenu image_popup0,win=ImageBrowserView,pos={17,0},size={111,21},proc=ImagePopMenuProc,title="Image"
@@ -57,9 +43,6 @@ Function ImageBrowserViewConstructor()
 	
 	//ModifyGraph /W=ImageBrowserView margin(left)=29,margin(bottom)=22,margin(top)=36,gfSize=8,gmSize=8
 	//ModifyGraph /W=ImageBrowserView manTick={0,64,0,0},manMinor={8,8}
-	
-	// Restore the original DF
-	SetDataFolder savedDF	
 End
 
 
@@ -75,6 +58,11 @@ End
 
 
 Function ImageBrowserViewUpdate()
+	// If the view doesn't exist, nothing to do
+	if (!GraphExists("ImageBrowserView"))
+		return 0
+	endif
+
 	// Update the autoscaleOnFly checkbox
 	Variable autoscaleOnTheFly=ImageBrowserModGetAutoscaleFly()
 	CheckBox auto_on_fly_check0, win=ImageBrowserView, value=autoscaleOnTheFly
@@ -88,21 +76,29 @@ Function ImageBrowserViewUpdate()
 
 	// Update the frame selector
 	Variable nFrames=DimSize($imageWaveName, 2)
-	SetVariable plane_setvar0,win=ImageBrowserView,limits={0,nFrames-1,1}
+	Variable iFrame=ImageBrowserModelGetIFrame()
+	SetVariable plane_setvar0,win=ImageBrowserView,limits={0,nFrames-1,1}, value=_NUM:iFrame
+
+	// Update the blackCount SetVariable
+	Variable blackCount=ImageBrowserModelGetBlackCount()
+	SetVariable gray_setvar0,win=ImageBrowserView, value= _NUM:blackCount
+	
+	// Update the whiteCount SetVariable
+	Variable whiteCount=ImageBrowserModelGetWhiteCount()	
+	SetVariable gray_setvar1, win=ImageBrowserView, value= _NUM:whiteCount
 	
 	// Update the image
-	String oldImageName=ImageNameList("ImageBrowserView",";")
-	printf "oldImageName: %s\r", oldImageName
-	RemoveImage /Z /W=ImageBrowserView $oldImageName
+	//String oldImageName=ImageNameList("ImageBrowserView",";")
+	//printf "oldImageName: %s\r", oldImageName
+	//RemoveImage /Z /W=ImageBrowserView $oldImageName
+	RemoveAllImagesFromGraph("ImageBrowserView")
 	AppendImage /W=ImageBrowserView /G=1 $imageWaveName
 	
 	// Update the scaling, frame
-	Variable iFrame=ImageBrowserModelGetIFrame()
-	Variable blackCount=ImageBrowserModelGetBlackCount()
-	Variable whiteCount=ImageBrowserModelGetWhiteCount()	
 	ModifyImage /W=ImageBrowserView $imageWaveName ctab= {blackCount,whiteCount,Grays,0}, plane=iFrame
 
 	// Re-do the formating stuff (do we need to do this here?)
 	ModifyGraph /W=ImageBrowserView margin(left)=29,margin(bottom)=22,margin(top)=36,gfSize=8,gmSize=8
 	ModifyGraph /W=ImageBrowserView manTick={0,64,0,0},manMinor={8,8}
 End
+

@@ -12,81 +12,36 @@ Function ImagePlaneSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContr
 	String varStr
 	String varName
 
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-
-	// instance variables
-	NVAR iFrame
-	NVAR previouswave
-	SVAR videoWaveBaseName
-	
-	// Do stuff
-	//String command
-	//sprintf command, "ModifyImage \'\'#0 plane=%d", iFrame
-	//Execute command
-	ModifyImage ''#0 plane=(iFrame)
-	
-	// Restore the original DF
-	SetDataFolder savedDF
+	ImageBrowserModelSetIFrame(varNum)
+	ImageBrowserViewModelChanged()
+	//ModifyImage ''#0 plane=(iFrame)
 End
 
-Function GrayScaleSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
+Function BlackCountSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName
 	Variable varNum
 	String varStr
 	String varName
 
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
+	ImageBrowserModelSetBlackCount(varNum)
+	ImageBrowserViewModelChanged()
+End
 
-	// instance vars
-	NVAR blackCount=blackCount
-	NVAR whiteCount=whiteCount
-	
-	ModifyImage ''#0 ctab= {blackCount,whiteCount,Grays,0}
-	
-	// Restore the original DF
-	SetDataFolder savedDF
+Function WhiteCountSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum
+	String varStr
+	String varName
+
+	ImageBrowserModelSetWhiteCount(varNum)
+	ImageBrowserViewModelChanged()
 End
 
 Function AutoGrayScaleButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-	
-	// instance vars
-	NVAR blackCount
-	NVAR whiteCount
-	NVAR full_num
-	NVAR iFrame
-	SVAR fullFrameWaveBaseName
-	
-	String imageWaveName=WaveList("full_*","","WIN:")
-	//String command
-
-	//sprintf command, "ImageTransform /P=%d getplane %s", iFrame, imageWaveName
-	//Execute command
-	//WAVE M_ImagePlane	// "returned" from ImageTransform
-	//ImageTransform /P=(iFrame) getPlane imageWaveName
-
-	//sprintf command, "Imagestats /M=1/G={0,506,2,506} M_ImagePlane"
-	//Execute command
-	
-	Imagestats /M=1 $imageWaveName
-	blackCount=V_min
-	whiteCount=V_max
-	
-	//sprintf command, "ModifyImage \'\'#0 ctab= {%d,%d,Grays,0}", blackCount, whiteCount
-	//Execute command
-	
-	ModifyImage ''#0 ctab= {blackCount,whiteCount,Grays,0}
-	
-	// Restore the original DF
-	SetDataFolder savedDF
+	ImageBrowserModelAutoscale()
+	ImageBrowserViewModelChanged()
 End
 
 Function ImagePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
@@ -94,21 +49,19 @@ Function ImagePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	Variable popNum
 	String popStr
 
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-
-	//String command
-	//sprintf command, "Image_Display(\"%s\")", popStr
-	//Execute command
-	ImageBrowserContSetVideo(popStr)
-	
-	// Restore the original DF
-	SetDataFolder savedDF
+	ImageBrowserModelSetVideo(popStr)
+	ImageBrowserViewModelChanged()
 End
 
 
+Function ImageBrowserContAutoscaleCB(ctrlName,isChecked): CheckboxControl
+	String ctrlName
+	Variable isChecked
+	
+	ImageBrowserModSetAutoscaleFly(isChecked)
+	ImageBrowserViewModelChanged()	
 
+End
 
 
 

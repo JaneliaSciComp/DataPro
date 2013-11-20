@@ -368,7 +368,7 @@ Function /S TraceLetterFromIndex(i)
 	return letter
 End
 
-Function RemoveFromGraphAll(graphName)
+Function RemoveAllTracesFromGraph(graphName)
 	String graphName
 	
 	String traceList=TraceNameList(graphName,";",3)  // 3 means all traces
@@ -378,6 +378,19 @@ Function RemoveFromGraphAll(graphName)
 	for (i=0; i<nTraces; i+=1)
 		thisTraceName=StringFromList(i,traceList)
 		RemoveFromGraph /Z /W=$graphName $thisTraceName
+	endfor
+End
+
+Function RemoveAllImagesFromGraph(graphName)
+	String graphName
+	
+	String imageList=ImageNameList(graphName,";")
+	Variable nImages=ItemsInList(imageList)
+	Variable i
+	String thisImageName
+	for (i=0; i<nImages; i+=1)
+		thisImageName=StringFromList(i,imageList)
+		RemoveImage /W=$graphName $thisImageName
 	endfor
 End
 

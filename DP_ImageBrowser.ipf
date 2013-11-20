@@ -48,6 +48,32 @@ Function ImageBrowserModGetAutoscaleFly()
 End
 
 
+
+Function ImageBrowserModSetAutoscaleFly(newValue)
+	Variable newValue
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_ImageBrowserModel
+	
+	// Declare instance vars
+	NVAR autoscaleOnTheFly
+
+	// Set the field
+	autoscaleOnTheFly=newValue
+	
+	// Auto-scale now, if needed
+	if (autoscaleOnTheFly)
+		ImageBrowserModelAutoscale()
+	endif
+
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+
+
 Function /S ImageBrowserModGetImageWaveName()
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
@@ -63,6 +89,7 @@ Function /S ImageBrowserModGetImageWaveName()
 
 	return value
 End
+
 
 
 Function ImageBrowserModelGetIFrame()
@@ -82,6 +109,25 @@ Function ImageBrowserModelGetIFrame()
 End
 
 
+
+Function ImageBrowserModelSetIFrame(newValue)
+	Variable newValue
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_ImageBrowserModel
+	
+	// Declare instance vars
+	NVAR iFrame
+
+	iFrame=newValue
+
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+
 Function ImageBrowserModelGetBlackCount()
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
@@ -99,6 +145,31 @@ Function ImageBrowserModelGetBlackCount()
 End
 
 
+
+Function ImageBrowserModelSetBlackCount(newValue)
+	Variable newValue
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_ImageBrowserModel
+	
+	// Declare instance vars
+	NVAR blackCount
+	NVAR whiteCount	
+	NVAR autoscaleOnTheFly
+
+	if (!autoscaleOnTheFly)	// Can only set the black count if not auto-auto-scaling
+		if (newValue<whiteCount)
+			blackCount=newValue
+		endif
+	endif
+
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+
 Function ImageBrowserModelGetWhiteCount()
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
@@ -113,6 +184,30 @@ Function ImageBrowserModelGetWhiteCount()
 	SetDataFolder savedDF	
 
 	return value
+End
+
+
+
+Function ImageBrowserModelSetWhiteCount(newValue)
+	Variable newValue
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_ImageBrowserModel
+	
+	// Declare instance vars
+	NVAR whiteCount
+	NVAR blackCount
+	NVAR autoscaleOnTheFly
+
+	if (!autoscaleOnTheFly)	// Can only set the white count if not auto-auto-scaling
+		if (newValue>blackCount)
+			whiteCount=newValue
+		endif
+	endif
+
+	// Restore the original DF
+	SetDataFolder savedDF	
 End
 
 
@@ -145,7 +240,6 @@ End
 
 
 
-// Private methods
 Function ImageBrowserModelAutoscale()
 	// This sets blackCount and whiteCount to the min and max of the current frame
 
@@ -159,7 +253,7 @@ Function ImageBrowserModelAutoscale()
 	SVAR imageWaveName
 
 	// Find the min and max of the first frame
-	ImageStats /M=1 $imageWaveName
+	ImageStats /M=1 root:DP_Imager:$imageWaveName
 	blackCount=V_min
 	whiteCount=V_max
 
