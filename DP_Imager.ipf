@@ -23,7 +23,7 @@ Function ImagerConstructor()
 	Variable /G image_trig		// boolean, true iff the image acquisition will be triggerd (as opposed to free-running)
 	Variable /G image_focus	// image_focus may be unnecessary if there is a separate focus routine
 	Variable /G isROI=0		// is there a ROI? (false=>full frame)
-	Variable /G isBackroundROIToo=0		// if isROI, is there a background ROI too? (if full-frame, this is unused)
+	Variable /G isBackgroundROIToo=0		// if isROI, is there a background ROI too? (if full-frame, this is unused)
 	Variable /G ccd_tempset= -20		// the setpoint CCD temperature
 	Variable /G ccd_temp=nan			// the current CCD temperature
 	Variable /G ccd_frames=56	// number of frames to acquire

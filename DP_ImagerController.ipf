@@ -335,7 +335,7 @@ Function ImagerFocus()
 	// instance vars
 	SVAR focus_name
 	NVAR focus_num
-	NVAR blackCount, whiteCount
+	//NVAR blackCount, whiteCount
 
 	String imageWaveName=sprintf2sv("%s%d", focus_name, focus_num)
 	Variable	nFrames=1
@@ -355,17 +355,18 @@ Function ImagerFocus()
 		MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
 		// If first frame, create a display window.
 		// If subseqent frame, update the image in the display window
-		if (iFrame==0)
-			ImageBrowserContSetVideo(imageWaveName)
-		else
-			if (iFrame==1)
-				ModifyImage $imageWaveName ctab= {blackCount,whiteCount,Grays,0}
-			endif
-			ControlInfo auto_on_fly_check0
-			if (V_Value>0)
-				AutoGrayScaleButtonProc("autogray_button0")
-			endif
-		endif
+		ImageBrowserContSetVideo(imageWaveName)
+//		if (iFrame==0)
+//			ImageBrowserContSetVideo(imageWaveName)
+//		else
+//			if (iFrame==1)
+//				ModifyImage $imageWaveName ctab= {blackCount,whiteCount,Grays,0}
+//			endif
+//			ControlInfo auto_on_fly_check0
+//			if (V_Value>0)
+//				AutoGrayScaleButtonProc("autogray_button0")
+//			endif
+//		endif
 		iFrame+=1
 		printf "."
 		DoUpdate
