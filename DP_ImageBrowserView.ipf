@@ -29,15 +29,16 @@ Function Image_Display(imageWaveName): Graph
 	//gimage=imageWaveName
 	//String wave=imageWaveName
 	//String command
-	Variable numplanes=DimSize($imageWaveName, 2)
+	Variable nFrames=DimSize($imageWaveName, 2)
 	iFrame=0
 	allVideoWaveNames=WaveList(fullFrameWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
+	printf "wintype(\"Image_Display\"): %d\r", wintype("Image_Display")
 	if (wintype("Image_Display")<1)
 	//if ( !GraphExists("Image_Display") )
 		// If no window named Image_Display exists, create one
 		Display /W=(45,40,345,340) /K=1 as "Image_Display"			// Create the graph window
 		SetVariable plane_setvar0,pos={45,23},size={80,16},proc=ImagePlaneSetVarProc,title="plane"
-		SetVariable plane_setvar0,limits={0,numplanes-1,1},value= iFrame
+		SetVariable plane_setvar0,limits={0,nFrames-1,1},value= iFrame
 		SetVariable gray_setvar0,pos={137,1},size={130,16},proc=GrayScaleSetVarProc,title="gray low"
 		SetVariable gray_setvar0,limits={0,64000,1000},value= blackCount
 		SetVariable gray_setvar1,pos={137,23},size={130,16},proc=GrayScaleSetVarProc,title="gray high"
@@ -50,7 +51,7 @@ Function Image_Display(imageWaveName): Graph
 		PopupMenu image_popup0,mode=1
 	else
 		// If a window named Image_Display exists, update the plane index SetVariable
-		SetVariable plane_setvar0,limits={0,numplanes-1,1},value= iFrame
+		SetVariable plane_setvar0,limits={0,nFrames-1,1},value= iFrame
 	endif
 	DoWindow /F Image_Display	// Bring window named Image_Display to front
 	PopupMenu image_popup0,value= #"allVideoWaveNames"
@@ -58,6 +59,7 @@ Function Image_Display(imageWaveName): Graph
 	//sprintf command, "RemoveImage %s", ImageNameList("Image_Display",";")
 	//Execute command
 	String oldImageWaveName=ImageNameList("Image_Display",";")
+	printf "oldImageWaveName: %s\r", oldImageWaveName
 	RemoveImage /Z $oldImageWaveName
 	AppendImage $imageWaveName
 //	SetAxis/A/R left
