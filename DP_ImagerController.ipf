@@ -131,7 +131,7 @@ Function Acquire_Full_Image()
 	endif
 	MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
 	EpiLightTurnOnOff(0)
-	ImageBrowserContSetCurrentVideo(imageWaveName) 
+	ImageBrowserContSetVideo(imageWaveName) 
 	printf "%s%d: Full Image done\r", fullFrameWaveBaseName, full_num
 	String allVideoWaveNames=WaveList(fullFrameWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
 	full_num+=1; focus_num=full_num
@@ -172,7 +172,7 @@ Function AcquireVideo(trig, disp)
 	MoveWave imageWave, imageWaveName 	// Cage the once-free wave
 	EpiLightTurnOnOff(0)
 	if (disp>0)
-		ImageBrowserContSetCurrentVideo(imageWaveName)
+		ImageBrowserContSetVideo(imageWaveName)
 	endif
 	printf "%s%d: Image Stack done\r", videoWaveBaseName, wavenumber
 	if (image_trig<1)
@@ -356,7 +356,7 @@ Function ImagerFocus()
 		// If first frame, create a display window.
 		// If subseqent frame, update the image in the display window
 		if (iFrame==0)
-			ImageBrowserContSetCurrentVideo(imageWaveName)
+			ImageBrowserContSetVideo(imageWaveName)
 		else
 			if (iFrame==1)
 				ModifyImage $imageWaveName ctab= {blackCount,whiteCount,Grays,0}

@@ -330,7 +330,7 @@ Function CameraBufferCountSet(nFrames)
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR countFrameFake
+	NVAR  countFrameFake
 
 	Variable sidxStatus
 	if (areWeForReal)
@@ -345,7 +345,7 @@ Function CameraBufferCountSet(nFrames)
 			Abort "Called CameraBufferCountSet() before camera was created."
 		endif
 	else
-		countFrameFake=nFrames
+		 countFrameFake=nFrames
 	endif
 
 	// Restore the data folder
@@ -535,10 +535,9 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 	WAVE bufferFrame
 	NVAR widthROIDesiredFake, heightROIDesiredFake
 	NVAR widthBinFake, heightBinFake
-	NVAR countFrameReadFake
+	NVAR countReadFrameFake
 
 	Variable sidxStatus
-	Wave frames
 	if (areWeForReal)
 		if (isSidxAcquirerValid)
 			SIDXAcquireRead sidxAcquirer, nFramesToRead, frames, sidxStatus
@@ -556,8 +555,8 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 		endif
 		Variable widthROIBinnedFake=floor(widthROIDesiredFake/widthBinFake)
 		Variable heightROIBinnedFake=floor(heightROIDesiredFake/heightBinFake)			
-		Duplicate /FREE /R=[][][countFrameReadFake,countFrameReadFake+nFramesToRead] bufferFrame frames
-		countFrameReadFake+=nFramesToRead
+		Duplicate /FREE /R=[][][countReadFrameFake,countReadFrameFake+nFramesToRead] bufferFrame frames
+		countReadFrameFake+=nFramesToRead
 	endif
 
 	// Restore the data folder
@@ -629,7 +628,6 @@ Function CameraCoolingSet(temperatureTarget)
 	NVAR temperatureTargetFake
 
 	Variable sidxStatus
-	Wave frames
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			SIDXCameraCoolingSet sidxCamera, temperatureTarget, sidxStatus

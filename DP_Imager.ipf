@@ -31,7 +31,7 @@ Function ImagerConstructor()
 	Variable /G exposure=100		// duration of each frame exposure for full-frame images, in ms
 	Variable /G ccd_seqexp=50	// duration of each frame for triggered video, in ms
 	Variable /G imageavgn=0		// number of frames to average (not sure for what purpose)
-	Variable /G iFrame		// Frame index to show in the browser
+	//Variable /G iFrame		// Frame index to show in the browser
 	String /G fullFrameWaveBaseName="full_"		// the base name of the full-frame image waves, including the underscore
 	String /G focus_name="full_"		// the base name of the focusing image waves, including the underscore
 	String /G videoWaveBaseName="trig_"	// the base name of the triggered video waves, including the underscore
@@ -48,8 +48,8 @@ Function ImagerConstructor()
 	Variable /G ybin=20	// CCD bins per pixel in y dimension
 	Variable /G xpixels=(roi_right-roi_left)/xbin	// Width of the binned ROI image
 	Variable /G ypixels=(roi_bottom-roi_top)/ybin		// Height of the binned ROI image
-	Variable /G blackCount=0		// the CCD count that gets mapped to black
-	Variable /G whiteCount=2^16-1	// the CCD count that gets mapped to white
+	//Variable /G blackCount=0		// the CCD count that gets mapped to black
+	//Variable /G whiteCount=2^16-1	// the CCD count that gets mapped to white
 	
 	Make /O /N=(6,nROIs) /I roisWave		// a 2D wave holding a ROI specification in each column
 	roisWave[][0]={roi_left, roi_right, roi_top, roi_bottom, xbin, ybin}
@@ -75,4 +75,21 @@ Function ImagerConstructor()
 	SetDataFolder savedDF	
 End
 
-		
+Function /S ImagerGetAllVideoWaveNames()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	SVAR fullFrameWaveBaseName
+	SVAR videoWaveBaseName
+
+	// Construct the value
+	String value=WaveList(fullFrameWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
+
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End

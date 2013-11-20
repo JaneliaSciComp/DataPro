@@ -88,7 +88,7 @@ End
 Menu "DataPro Image"
 //	"Data Pro_Menu"
 //	"-"
-	"ImagerContConstructor"
+	"Imager Controls", ImagerContConstructor()
 	"-"
 //	"Focus_Image"
 	"Acquire_Full_Image"
@@ -130,6 +130,7 @@ Function InitializeDataPro()
 	SweeperConstructor()
 	FancyCameraConstructor()
 	ImagerConstructor()
+	ImageBrowserModelConstructor()
 End
 
 //Function AcquisitionPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
