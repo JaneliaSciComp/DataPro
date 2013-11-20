@@ -31,7 +31,7 @@ Function ImagerViewConstructor() : Panel
 	Button button0,pos={215,283},size={80,20},proc=DFFButtonProc,title="Append DF/F"
 	Button button1,pos={9,190},size={130,20},proc=EphysImageButtonProc,title="Electrophys. + Image"
 	SetVariable setimagename0,pos={141,223},size={80,15},title="name"
-	SetVariable setimagename0,value= imageseq_name
+	SetVariable setimagename0,value= videoWaveBaseName
 	CheckBox bkgndcheck0,pos={14,265},size={71,14},title="Bkgnd Sub.",value= 1
 	SetVariable numimages_setvar0,pos={11,223},size={120,15},title="No. images"
 	SetVariable numimages_setvar0,limits={1,10000,1},value= ccd_frames
@@ -53,7 +53,7 @@ Function ImagerViewConstructor() : Panel
 	SetVariable imagetime_setvar0,pos={149,193},size={150,15},title="Exp.time (ms)"
 	SetVariable imagetime_setvar0,limits={0,10000,10},value= ccd_seqexp
 	SetVariable setfullname0,pos={137,158},size={80,15},title="name"
-	SetVariable setfullname0,value= full_name
+	SetVariable setfullname0,value= fullFrameWaveBaseName
 	SetVariable setfocusname0,pos={139,99},size={80,15},title="name"
 	SetVariable setfocusname0,value= focus_name
 	

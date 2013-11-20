@@ -20,10 +20,10 @@ Function EPhys_Image()
 	// Declare the instance vars
 	SVAR focus_name
 	NVAR focus_num, image_trig, full_num
-	NVAR im_plane, previouswave
+	NVAR iFrame, previouswave
 	NVAR isROI
 	NVAR isBackgroundROIToo
-	SVAR imageseq_name
+	SVAR videoWaveBaseName
 	WAVE roisWave
 	NVAR exposure
 	NVAR ccd_tempset
@@ -38,7 +38,7 @@ Function EPhys_Image()
 	//image_roi=2		// zero for full frame, one for specific ROI, two for ROI with background
 	isROI=1
 	isBackgroundROIToo=1
-	im_plane=0
+	iFrame=0
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
 	Image_Stack(image_trig,0)
@@ -46,7 +46,7 @@ Function EPhys_Image()
 	Get_DFoverF_from_Stack(previouswave)
 	Append_DFoverF(previouswave)
 	EpiLightTurnOnOff(0)
-	printf "%s%d: Image with EPhys done\r", imageseq_name, previouswave
+	printf "%s%d: Image with EPhys done\r", videoWaveBaseName, previouswave
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -97,11 +97,11 @@ Function Acquire_Full_Image()
 	SetDataFolder root:DP_Imager
 
 	// Declare the object vars
-	SVAR full_name
+	SVAR fullFrameWaveBaseName
 	NVAR focus_num, image_trig, full_num
 	NVAR xbin, ybin
-	SVAR all_images
-	SVAR imageseq_name
+	SVAR allVideoWaveNames
+	SVAR videoWaveBaseName
 	WAVE roisWave
 	NVAR exposure
 	NVAR ccd_tempset
@@ -112,7 +112,7 @@ Function Acquire_Full_Image()
 	String message
 	//String imageWaveName
 	Variable frames
-	String imageWaveName=sprintf2sv("%s%d", full_name, full_num)
+	String imageWaveName=sprintf2sv("%s%d", fullFrameWaveBaseName, full_num)
 	//Variable image_roi=0		// means there is no ROI
 	Variable isROI=0
 	Variable isBackgroundROIToo=0	// Irrelevant
@@ -132,8 +132,8 @@ Function Acquire_Full_Image()
 	MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
 	EpiLightTurnOnOff(0)
 	Image_Display(imageWaveName) 
-	printf "%s%d: Full Image done\r", full_name, full_num
-	all_images=WaveList(full_name+"*",";","")+WaveList(imageseq_name+"*",";","")
+	printf "%s%d: Full Image done\r", fullFrameWaveBaseName, full_num
+	allVideoWaveNames=WaveList(fullFrameWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
 	full_num+=1; focus_num=full_num
 
 	// Restore the data folder
@@ -150,23 +150,23 @@ Function Image_Stack(trig, disp)
 	SetDataFolder root:DP_Imager
 	
 	// instance vars
-	SVAR imageseq_name
+	SVAR videoWaveBaseName
 	NVAR wavenumber
 	NVAR ccd_frames
 	NVAR image_trig
-	NVAR im_plane
+	NVAR iFrame
 	
 	Variable status, exposure, canceled
 	String message
 	String imageWaveName, datawavename
 	Variable frames_per_sequence, frames
-	sprintf imageWaveName, "%s%d", imageseq_name, wavenumber
+	sprintf imageWaveName, "%s%d", videoWaveBaseName, wavenumber
 	frames_per_sequence=ccd_frames
 	frames=ccd_frames
 	image_trig=trig		// set to one for triggered images
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
-	im_plane=0
+	iFrame=0
 	//Wave imageWave=FancyCameraArmAcquireDisarm(frames,trig)
 	Wave imageWave=FancyCameraArmAcquireDisarm(frames)	// trigger mode is now set during camera setup
 	MoveWave imageWave, imageWaveName 	// Cage the once-free wave
@@ -174,7 +174,7 @@ Function Image_Stack(trig, disp)
 	if (disp>0)
 		Image_Display(imageWaveName)
 	endif
-	printf "%s%d: Image Stack done\r", imageseq_name, wavenumber
+	printf "%s%d: Image Stack done\r", videoWaveBaseName, wavenumber
 	if (image_trig<1)
 		wavenumber+=1		
 	endif
@@ -335,7 +335,7 @@ Function ImagerFocus()
 	// instance vars
 	SVAR focus_name
 	NVAR focus_num
-	NVAR gray_low, gray_high
+	NVAR blackCount, whiteCount
 
 	String imageWaveName=sprintf2sv("%s%d", focus_name, focus_num)
 	Variable	nFrames=1
@@ -348,14 +348,18 @@ Function ImagerFocus()
 		// only one frame in the sequence.
 		//Wave imageWave=FancyCameraAcquire(nFrames, isTriggered)
 		Wave imageWave=FancyCameraAcquire(nFrames)
-		MoveWave imageWave, imageWaveName
+		if (WaveExists($imageWaveName))
+			//RemoveImage /S 
+			KillWaves $imageWaveName
+		endif
+		MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
 		// If first frame, create a display window.
 		// If subseqent frame, update the image in the display window
 		if (iFrame==0)
 			Image_Display(imageWaveName)
 		else
 			if (iFrame==1)
-				ModifyImage $imageWaveName ctab= {gray_low,gray_high,Grays,0}
+				ModifyImage $imageWaveName ctab= {blackCount,whiteCount,Grays,0}
 			endif
 			ControlInfo auto_on_fly_check0
 			if (V_Value>0)
@@ -364,6 +368,7 @@ Function ImagerFocus()
 		endif
 		iFrame+=1
 		printf "."
+		DoUpdate
 	while (!EscapeKeyWasPressed())	
 	FancyCameraDisarm()	
 	
@@ -384,14 +389,14 @@ Function Get_DFoverF_from_Stack(stacknum)
 	SetDataFolder root:DP_Imager
 	
 	// instance vars
-	SVAR imageseq_name
+	SVAR videoWaveBaseName
 	NVAR ccd_seqexp
 	
 	Variable numbase
 	numbase=16
 	//Silent 1; PauseUpdate
 	String stackWaveName, newImageWaveName
-	sprintf stackWaveName, "%s%d", imageseq_name, stacknum
+	sprintf stackWaveName, "%s%d", videoWaveBaseName, stacknum
 	sprintf newImageWaveName, "dff_%d", stacknum
 	print stackWaveName, newImageWaveName
 	DeletePoints /M=2 0,1, $stackWaveName		// kill the first plane of $stackWaveName

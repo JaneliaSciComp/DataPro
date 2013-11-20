@@ -17,15 +17,15 @@ Function ImagePlaneSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContr
 	SetDataFolder root:DP_Imager
 
 	// instance variables
-	NVAR im_plane
+	NVAR iFrame
 	NVAR previouswave
-	SVAR imageseq_name
+	SVAR videoWaveBaseName
 	
 	// Do stuff
 	//String command
-	//sprintf command, "ModifyImage \'\'#0 plane=%d", im_plane
+	//sprintf command, "ModifyImage \'\'#0 plane=%d", iFrame
 	//Execute command
-	ModifyImage ''#0 plane=(im_plane)
+	ModifyImage ''#0 plane=(iFrame)
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -42,10 +42,10 @@ Function GrayScaleSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContro
 	SetDataFolder root:DP_Imager
 
 	// instance vars
-	NVAR gray_low=gray_low
-	NVAR gray_high=gray_high
+	NVAR blackCount=blackCount
+	NVAR whiteCount=whiteCount
 	
-	ModifyImage ''#0 ctab= {gray_low,gray_high,Grays,0}
+	ModifyImage ''#0 ctab= {blackCount,whiteCount,Grays,0}
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -59,31 +59,31 @@ Function AutoGrayScaleButtonProc(ctrlName) : ButtonControl
 	SetDataFolder root:DP_Imager
 	
 	// instance vars
-	NVAR gray_low
-	NVAR gray_high
+	NVAR blackCount
+	NVAR whiteCount
 	NVAR full_num
-	NVAR im_plane
-	SVAR full_name
+	NVAR iFrame
+	SVAR fullFrameWaveBaseName
 	
 	String imageWaveName=WaveList("full_*","","WIN:")
 	//String command
 
-	//sprintf command, "ImageTransform /P=%d getplane %s", im_plane, imageWaveName
+	//sprintf command, "ImageTransform /P=%d getplane %s", iFrame, imageWaveName
 	//Execute command
 	//WAVE M_ImagePlane	// "returned" from ImageTransform
-	//ImageTransform /P=(im_plane) getPlane imageWaveName
+	//ImageTransform /P=(iFrame) getPlane imageWaveName
 
 	//sprintf command, "Imagestats /M=1/G={0,506,2,506} M_ImagePlane"
 	//Execute command
 	
 	Imagestats /M=1 $imageWaveName
-	gray_low=V_min
-	gray_high=V_max
+	blackCount=V_min
+	whiteCount=V_max
 	
-	//sprintf command, "ModifyImage \'\'#0 ctab= {%d,%d,Grays,0}", gray_low, gray_high
+	//sprintf command, "ModifyImage \'\'#0 ctab= {%d,%d,Grays,0}", blackCount, whiteCount
 	//Execute command
 	
-	ModifyImage ''#0 ctab= {gray_low,gray_high,Grays,0}
+	ModifyImage ''#0 ctab= {blackCount,whiteCount,Grays,0}
 	
 	// Restore the original DF
 	SetDataFolder savedDF

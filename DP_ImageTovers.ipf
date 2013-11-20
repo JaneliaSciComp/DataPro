@@ -14,13 +14,13 @@ Function Load_Full_Image()
 	SetDataFolder root:DP_Imager
 
 	// instance vars
-	SVAR full_name
+	SVAR fullFrameWaveBaseName
 	NVAR full_num
 	NVAR focus_num
 
 	//Silent 1; PauseUpdate
 	//Variable low, high
-	String newImageWaveName=sprintf2sv("%s%d", full_name, full_num)
+	String newImageWaveName=sprintf2sv("%s%d", fullFrameWaveBaseName, full_num)
 	GBLoadWave /B /T={80,80} /S=4100 /W=1 /N=temp
 	Rename temp0 $newImageWaveName
 	//Duplicate /O temp0 $newImageWaveName
@@ -28,7 +28,7 @@ Function Load_Full_Image()
 	Redimension /N=(512,512,1) $newImageWaveName
 	Image_Display(newImageWaveName)
 	AutoGrayScaleButtonProc("autogray_button0")
-	printf "%s%d: Image loaded\r", full_name, full_num
+	printf "%s%d: Image loaded\r", fullFrameWaveBaseName, full_num
 	full_num+=1; focus_num=full_num
 	
 	// Restore the original DF
@@ -94,13 +94,13 @@ Function Get_DFoverF_from_Stack2(stacknum)
 	SetDataFolder root:DP_Imager
 	
 	// instance vars
-	SVAR imageseq_name
+	SVAR videoWaveBaseName
 	NVAR ccd_frames
 	NVAR ccd_seqexp
 	
 	Variable index, basef
 	Variable numbase=3
-	String stackWaveName=sprintf2sv("%s%d", imageseq_name, stacknum)
+	String stackWaveName=sprintf2sv("%s%d", videoWaveBaseName, stacknum)
 	print stackWaveName
 	String dffWaveName=sprintf1v("dff_%d", stacknum)
 	Make /O /N=(ccd_frames-1) tempwave, $dffWaveName
@@ -294,12 +294,12 @@ Function DFF_From_Stack(imagestack)
 	SetDataFolder root:DP_Imager
 
 	// instance vars
-	SVAR full_name
+	SVAR fullFrameWaveBaseName
 	SVAR trig_name	
 
 	//String imagestack=gstack
-	//Prompt imagestack, "Enter image stack wave", popup, WaveList(full_name+"*",";","");trig_name+"*";		// Not sure what this is supposed to be
-	Prompt imagestack, "Enter image stack wave", popup, WaveList(full_name+"*",";","")
+	//Prompt imagestack, "Enter image stack wave", popup, WaveList(fullFrameWaveBaseName+"*",";","");trig_name+"*";		// Not sure what this is supposed to be
+	Prompt imagestack, "Enter image stack wave", popup, WaveList(fullFrameWaveBaseName+"*",";","")
 	//gstack=imagestack
 	//Silent 1
 	Variable numbaseline, numtest, low, high
