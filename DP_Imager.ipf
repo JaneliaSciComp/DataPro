@@ -17,7 +17,7 @@ Function ImagerConstructor()
 
 //	IMAGING GLOBALS
 	NewDataFolder /O/S root:DP_Imager
-	String /G allVideoWaveNames		// a semicolon-separated list of all the video wave names
+	//String /G allVideoWaveNames		// a semicolon-separated list of all the video wave names
 	Variable /G fluo_on_wheel=1	// Setting of something that results in epi-illumination being on
 	Variable /G fluo_off_wheel=0	// Setting of something that results in epi-illumination being off
 	Variable /G image_trig		// boolean, true iff the image acquisition will be triggerd (as opposed to free-running)

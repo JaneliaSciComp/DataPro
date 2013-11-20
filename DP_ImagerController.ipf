@@ -41,7 +41,7 @@ Function EPhys_Image()
 	iFrame=0
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
-	Image_Stack(image_trig,0)
+	AcquireVideo(image_trig,0)
 	print "done with image stack"
 	Get_DFoverF_from_Stack(previouswave)
 	Append_DFoverF(previouswave)
@@ -100,7 +100,7 @@ Function Acquire_Full_Image()
 	SVAR fullFrameWaveBaseName
 	NVAR focus_num, image_trig, full_num
 	NVAR xbin, ybin
-	SVAR allVideoWaveNames
+	//SVAR allVideoWaveNames
 	SVAR videoWaveBaseName
 	WAVE roisWave
 	NVAR exposure
@@ -131,16 +131,16 @@ Function Acquire_Full_Image()
 	endif
 	MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
 	EpiLightTurnOnOff(0)
-	Image_Display(imageWaveName) 
+	ImageBrowserContSetCurrentVideo(imageWaveName) 
 	printf "%s%d: Full Image done\r", fullFrameWaveBaseName, full_num
-	allVideoWaveNames=WaveList(fullFrameWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
+	String allVideoWaveNames=WaveList(fullFrameWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
 	full_num+=1; focus_num=full_num
 
 	// Restore the data folder
 	SetDataFolder savedDF
 End
 
-Function Image_Stack(trig, disp)
+Function AcquireVideo(trig, disp)
 	Variable trig, disp
 	//	trig: one=triggered, zero=not triggered
 	//	disp: one=display stack, zero=don't display stack
@@ -172,7 +172,7 @@ Function Image_Stack(trig, disp)
 	MoveWave imageWave, imageWaveName 	// Cage the once-free wave
 	EpiLightTurnOnOff(0)
 	if (disp>0)
-		Image_Display(imageWaveName)
+		ImageBrowserContSetCurrentVideo(imageWaveName)
 	endif
 	printf "%s%d: Image Stack done\r", videoWaveBaseName, wavenumber
 	if (image_trig<1)
@@ -241,7 +241,7 @@ Function StackButtonProc(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 
-	Image_Stack(0,0)
+	AcquireVideo(0,0)
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -356,7 +356,7 @@ Function ImagerFocus()
 		// If first frame, create a display window.
 		// If subseqent frame, update the image in the display window
 		if (iFrame==0)
-			Image_Display(imageWaveName)
+			ImageBrowserContSetCurrentVideo(imageWaveName)
 		else
 			if (iFrame==1)
 				ModifyImage $imageWaveName ctab= {blackCount,whiteCount,Grays,0}

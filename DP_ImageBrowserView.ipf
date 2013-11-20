@@ -8,7 +8,7 @@
 
 //---------------------------------------------------------- IMAGE DISPLAY PROCEDURES -----------------------------------------//
 
-Function Image_Display(imageWaveName): Graph
+Function ImageBrowserViewConstructor()
 	String imageWaveName
 	
 	// Change to the imaging data folder
@@ -18,7 +18,7 @@ Function Image_Display(imageWaveName): Graph
 	// Declare instance vars
 	//SVAR gimage
 	NVAR iFrame		// the index of the video frame currently being shown
-	SVAR allVideoWaveNames		// a semicolon-separated list of all the video wave names
+	//SVAR allVideoWaveNames		// a semicolon-separated list of all the video wave names
 	SVAR fullFrameWaveBaseName		// the base name of the full-frame image waves
 	SVAR videoWaveBaseName	// the base name of the triggered video waves, including the underscore
 	NVAR blackCount
@@ -31,12 +31,11 @@ Function Image_Display(imageWaveName): Graph
 	//String command
 	Variable nFrames=DimSize($imageWaveName, 2)
 	iFrame=0
-	allVideoWaveNames=WaveList(fullFrameWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
 	printf "wintype(\"Image_Display\"): %d\r", wintype("Image_Display")
-	if (wintype("Image_Display")<1)
+	if ( wintype("Image_Display")<1 )
 	//if ( !GraphExists("Image_Display") )
 		// If no window named Image_Display exists, create one
-		Display /W=(45,40,345,340) /K=1 as "Image_Display"			// Create the graph window
+		Display /W=(45,40,345,340) /K=1 as "Image Browser"			// Create the graph window
 		SetVariable plane_setvar0,pos={45,23},size={80,16},proc=ImagePlaneSetVarProc,title="plane"
 		SetVariable plane_setvar0,limits={0,nFrames-1,1},value= iFrame
 		SetVariable gray_setvar0,pos={137,1},size={130,16},proc=GrayScaleSetVarProc,title="gray low"
@@ -54,6 +53,7 @@ Function Image_Display(imageWaveName): Graph
 		SetVariable plane_setvar0,limits={0,nFrames-1,1},value= iFrame
 	endif
 	DoWindow /F Image_Display	// Bring window named Image_Display to front
+	String allVideoWaveNames=WaveList(fullFrameWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
 	PopupMenu image_popup0,value= #"allVideoWaveNames"
 	PopupMenu image_popup0,mode=WhichListItem(imageWaveName,allVideoWaveNames)+1
 	//sprintf command, "RemoveImage %s", ImageNameList("Image_Display",";")

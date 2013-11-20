@@ -26,7 +26,7 @@ Function Load_Full_Image()
 	//Duplicate /O temp0 $newImageWaveName
 	//Killwaves temp0
 	Redimension /N=(512,512,1) $newImageWaveName
-	Image_Display(newImageWaveName)
+	ImageBrowserContSetCurrentVideo(newImageWaveName)
 	AutoGrayScaleButtonProc("autogray_button0")
 	printf "%s%d: Image loaded\r", fullFrameWaveBaseName, full_num
 	full_num+=1; focus_num=full_num
@@ -335,7 +335,7 @@ Function DFF_From_Stack(imagestack)
  	low=V_min+0.1*(V_max-V_min)
  	high=V_max-0.1*(V_max-V_min)
  	print V_min, V_max, low, high
-	Image_Display(mathWaveName)
+	ImageBrowserContSetCurrentVideo(mathWaveName)
 //	ModifyImage $mathWaveName ctab= {low,high,Grays,0}
 	
 	// Restore the original DF
