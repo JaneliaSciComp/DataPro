@@ -59,8 +59,8 @@ Function FocusImage()
 
 	// Declare the object vars
 	SVAR focus_name
-	NVAR focus_num, image_trig, full_num
-	//NVAR image_roi
+	NVAR focus_num
+	NVAR full_num
 	NVAR isROI
 	NVAR isBackgroundROIToo
 	WAVE roisWave
@@ -69,19 +69,56 @@ Function FocusImage()
 	NVAR xbin
 	NVAR ybin
 
-	Variable status, canceled
-	String message
-	Variable frames_per_sequence, frames
-	String wave_image
-	sprintf wave_image, "%s%d", focus_name, focus_num
-	frames_per_sequence=1
-	frames=1
-	image_trig=0			// set to one for triggered images
+	ImagerViewSetIsProTipShowing(1)
+	DoUpdate
+
+	//Variable status, canceled
+	//String message
+	//Variable frames_per_sequence, frames
+	//String wave_image
+	String wave_image=sprintf2sv("%s%d", focus_name, focus_num)
+	Variable frames_per_sequence=1
+	Variable frames=1
+	Variable image_trig=0			// set to one for triggered images
 	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,image_trig,exposure,ccd_tempset,xbin,ybin)
 	//printf "Focusing (press Esc key to stop) ..."
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
-	ImagerFocus()
+	//ImagerFocus()
+
+	String imageWaveNameRel=sprintf2sv("%s%d", focus_name, focus_num)
+	String imageWaveNameAbs=sprintf1s("root:DP_Imager:%s",imageWaveNameRel)
+	
+	Variable	nFrames=1
+	//Variable isTriggered=0		// Just want the camera to free-run
+	
+	ImagerViewSetIsProTipShowing(1)
+	DoUpdate
+	FancyCameraArm(nFrames)
+	Variable iFrame=0
+	do
+		// Start a sequence of images. In the current case, there is 
+		// only one frame in the sequence.
+		//Wave imageWave=FancyCameraAcquire(nFrames, isTriggered)
+		Wave imageWaveFree=FancyCameraAcquire(nFrames)
+		if (iFrame==0)
+			MoveWave imageWaveFree, $imageWaveNameAbs 	// Cage the once-free wave
+			Wave imageWaveCaged= $imageWaveNameAbs
+			ImageBrowserContSetVideo(imageWaveNameRel)
+			DoUpdate
+		else
+			// replace the wave data with the new data
+			imageWaveCaged=imageWaveFree[p][q]
+			DoUpdate
+		endif
+		iFrame+=1
+		printf "."
+		DoUpdate
+	while (!EscapeKeyWasPressed())	
+	ImagerViewSetIsProTipShowing(0)
+	DoUpdate
+	FancyCameraDisarm()	
+		
 	EpiLightTurnOnOff(0)
 	full_num+=1
 	focus_num=full_num
@@ -325,57 +362,65 @@ End
 
 
 
-Function ImagerFocus()
-	// Do a live view of the CCD, to enable focusing, etc.
-
-	// Change to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-	
-	// instance vars
-	SVAR focus_name
-	NVAR focus_num
-	//NVAR blackCount, whiteCount
-
-	String imageWaveName=sprintf2sv("%s%d", focus_name, focus_num)
-	Variable	nFrames=1
-	//Variable isTriggered=0		// Just want the camera to free-run
-	
-	FancyCameraArm(nFrames)
-	Variable iFrame=0
-	do
-		// Start a sequence of images. In the current case, there is 
-		// only one frame in the sequence.
-		//Wave imageWave=FancyCameraAcquire(nFrames, isTriggered)
-		Wave imageWave=FancyCameraAcquire(nFrames)
-		if (WaveExists($imageWaveName))
-			//RemoveImage /S 
-			KillWaves $imageWaveName
-		endif
-		MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
-		// If first frame, create a display window.
-		// If subseqent frame, update the image in the display window
-		ImageBrowserContSetVideo(imageWaveName)
+//Function ImagerFocus()
+//	// Do a live view of the CCD, to enable focusing, etc.
+//
+//	// Change to the imaging data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Imager
+//	
+//	// instance vars
+//	SVAR focus_name
+//	NVAR focus_num
+//	//NVAR blackCount, whiteCount
+//
+//	String imageWaveNameRel=sprintf2sv("%s%d", focus_name, focus_num)
+//	String imageWaveNameAbs=sprintf1s("root:DP_Imager:%s",imageWaveNameRel)
+//	
+//	Variable	nFrames=1
+//	//Variable isTriggered=0		// Just want the camera to free-run
+//	
+//	ImagerViewSetIsProTipShowing(1)
+//	DoUpdate
+//	FancyCameraArm(nFrames)
+//	Variable iFrame=0
+//	do
+//		// Start a sequence of images. In the current case, there is 
+//		// only one frame in the sequence.
+//		//Wave imageWave=FancyCameraAcquire(nFrames, isTriggered)
+//		Wave imageWaveFree=FancyCameraAcquire(nFrames)
 //		if (iFrame==0)
-//			ImageBrowserContSetVideo(imageWaveName)
+//			MoveWave imageWaveFree, $imageWaveNameAbs 	// Cage the once-free wave
+//			Wave imageWaveCaged= $imageWaveNameAbs
+//			ImageBrowserContSetVideo(imageWaveNameRel)
+//			DoUpdate
 //		else
-//			if (iFrame==1)
-//				ModifyImage $imageWaveName ctab= {blackCount,whiteCount,Grays,0}
-//			endif
-//			ControlInfo auto_on_fly_check0
-//			if (V_Value>0)
-//				AutoGrayScaleButtonProc("autogray_button0")
-//			endif
+//			// replace the wave data with the new data
+//			imageWaveCaged=imageWaveFree[p][q]
+//			DoUpdate
 //		endif
-		iFrame+=1
-		printf "."
-		DoUpdate
-	while (!EscapeKeyWasPressed())	
-	FancyCameraDisarm()	
-	
-	// Restore the original DF
-	SetDataFolder savedDF
-End
+////		if (iFrame==0)
+////			ImageBrowserContSetVideo(imageWaveName)
+////		else
+////			if (iFrame==1)
+////				ModifyImage $imageWaveName ctab= {blackCount,whiteCount,Grays,0}
+////			endif
+////			ControlInfo auto_on_fly_check0
+////			if (V_Value>0)
+////				AutoGrayScaleButtonProc("autogray_button0")
+////			endif
+////		endif
+//		iFrame+=1
+//		printf "."
+//		DoUpdate
+//	while (!EscapeKeyWasPressed())	
+//	ImagerViewSetIsProTipShowing(0)
+//	DoUpdate
+//	FancyCameraDisarm()	
+//	
+//	// Restore the original DF
+//	SetDataFolder savedDF
+//End
 
 
 
