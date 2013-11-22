@@ -744,3 +744,55 @@ End
 
 
 
+Function CameraCCDWidthGet()
+	Variable value
+	
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR widthCCDFake
+
+	if (areWeForReal)
+		value=nan	// need to fill this in
+	else
+		value=widthCCDFake
+	endif
+	
+	// Restore the data folder
+	SetDataFolder savedDF	
+	
+	return value
+End
+
+
+
+
+
+Function CameraCCDHeightGet()
+	Variable value
+	
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR heightCCDFake
+
+	if (areWeForReal)
+		value=nan	// need to fill this in
+	else
+		value=heightCCDFake
+	endif
+	
+	// Restore the data folder
+	SetDataFolder savedDF	
+
+	return value
+End
+
+
+

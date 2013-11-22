@@ -15,12 +15,12 @@ Function Load_Full_Image()
 
 	// instance vars
 	SVAR fullFrameWaveBaseName
-	NVAR full_num
-	NVAR focus_num
+	NVAR iFullFrameWave
+	NVAR iFocusWave
 
 	//Silent 1; PauseUpdate
 	//Variable low, high
-	String newImageWaveName=sprintf2sv("%s%d", fullFrameWaveBaseName, full_num)
+	String newImageWaveName=sprintf2sv("%s%d", fullFrameWaveBaseName, iFullFrameWave)
 	GBLoadWave /B /T={80,80} /S=4100 /W=1 /N=temp
 	Rename temp0 $newImageWaveName
 	//Duplicate /O temp0 $newImageWaveName
@@ -28,8 +28,9 @@ Function Load_Full_Image()
 	Redimension /N=(512,512,1) $newImageWaveName
 	ImageBrowserContSetVideo(newImageWaveName)
 	AutoGrayScaleButtonProc("autogray_button0")
-	printf "%s%d: Image loaded\r", fullFrameWaveBaseName, full_num
-	full_num+=1; focus_num=full_num
+	printf "%s%d: Image loaded\r", fullFrameWaveBaseName, iFullFrameWave
+	iFullFrameWave+=1
+	iFocusWave=iFullFrameWave
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -156,20 +157,20 @@ Function GetROI(): GraphMarquee
 
 	// instance vars
 	NVAR iROI
-	NVAR roi_left, roi_right, roi_top, roi_bottom
-	NVAR xbin, ybin
-	NVAR xpixels, ypixels
+	NVAR iROILeft, iROIRight, iROITop, iROIBottom
+	NVAR binWidth, binHeight
+	//NVAR binnedFrameWidth, binnedFrameHeight
 	WAVE roisWave
 
 	GetMarquee /K left, bottom
 	iROI=0
-	roi_left=V_left; roi_right=V_right
-	roi_top=V_top; roi_bottom=V_bottom
-	xbin=1
-	ybin=1
-	xpixels=(roi_right-roi_left+1)/xbin
-	ypixels=(roi_top-roi_bottom+1)/ybin
-	roisWave[][iROI]={roi_left, roi_right, roi_top, roi_bottom, xbin, xpixels}
+	iROILeft=V_left; iROIRight=V_right
+	iROITop=V_top; iROIBottom=V_bottom
+	binWidth=1
+	binHeight=1
+	//binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth
+	//binnedFrameHeight=(iROITop-iROIBottom+1)/binHeight
+	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
 	DrawROI()
 	
 	// Update the view
@@ -186,19 +187,20 @@ Function GetBkgndROI(): GraphMarquee
 
 	// instance vars
 	NVAR iROI
-	NVAR roi_left, roi_right, roi_top, roi_bottom
-	NVAR xbin, ybin
-	NVAR xpixels, ypixels
+	NVAR iROILeft, iROIRight, iROITop, iROIBottom
+	NVAR binWidth, binHeight
+	//NVAR binnedFrameWidth, binnedFrameHeight
 	WAVE roisWave
 
 	GetMarquee /K left, bottom
 	iROI=1		// the background ROI
-	roi_left=V_left; roi_right=V_left+xpixels
-	xbin=1
-	ybin=1
-	xpixels=(roi_right-roi_left+1)/xbin
-	ypixels=(roi_top-roi_bottom+1)/ybin
-	roisWave[][iROI]={roi_left, roi_right, roi_top, roi_bottom, xbin, xpixels}
+	iROILeft=V_left
+	iROIRight=V_right
+	binWidth=1
+	binHeight=1
+	//binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth
+	//binnedFrameHeight=(iROITop-iROIBottom+1)/binHeight
+	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
 	DrawROI()
 
 	// Update the view
@@ -214,15 +216,18 @@ Function GetROI_and_Bkgnd(): GraphMarquee
 	SetDataFolder root:DP_Imager
 
 	// instance vars
-	NVAR iROI, roi_left, roi_right, roi_top, roi_bottom
-	NVAR xbin, ybin
-	NVAR xpixels, ypixels
+	NVAR iROI
+	NVAR iROILeft, iROIRight, iROITop, iROIBottom
+	NVAR binWidth, binHeight
+	//NVAR binnedFrameWidth, binnedFrameHeight
 	WAVE roisWave
 
 	GetROI()
 	iROI=1	// the background ROI
-	roi_left+=200; roi_right=roi_left+xpixels
-	roisWave[][iROI]={roi_left, roi_right, roi_top, roi_bottom, xbin, xpixels}
+	iROILeft+=200; 
+	Variable binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth
+	iROIRight=iROILeft+binnedFrameWidth
+	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
 	DrawROI()
 	
 	// Update the view
@@ -238,20 +243,20 @@ Function Get_10x10_ROI(): GraphMarquee
 	SetDataFolder root:DP_Imager
 
 	// instance vars
-	NVAR iROI, roi_left, roi_right, roi_top, roi_bottom
-	NVAR xbin, ybin
-	NVAR xpixels, ypixels
+	NVAR iROI, iROILeft, iROIRight, iROITop, iROIBottom
+	NVAR binWidth, binHeight
+	//NVAR binnedFrameWidth, binnedFrameHeight
 	WAVE roisWave
 
 	GetMarquee /K left, bottom
 	iROI=0	// the primary ROI
-	xbin=10
-	ybin=10
-	roi_left=round(V_left+(V_right-V_left)/2); roi_right=roi_left+xbin-1
-	roi_top=round(V_top-(V_top-V_bottom)/2); roi_bottom=roi_top-ybin+1
-	xpixels=(roi_right-roi_left+1)/xbin
-	ypixels=(roi_top-roi_bottom+1)/ybin
-	roisWave[][iROI]={roi_left, roi_right, roi_top, roi_bottom, xbin, xpixels}
+	binWidth=10
+	binHeight=10
+	iROILeft=round(V_left+(V_right-V_left)/2); iROIRight=iROILeft+binWidth-1
+	iROITop=round(V_top-(V_top-V_bottom)/2); iROIBottom=iROITop-binHeight+1
+	//binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth
+	//binnedFrameHeight=(iROITop-iROIBottom+1)/binHeight
+	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
 	DrawROI()
 	
 	// Update the view
@@ -267,16 +272,16 @@ Function Get_10x10_ROI_and_Bkgnd(): GraphMarquee
 	SetDataFolder root:DP_Imager
 
 	// instance vars
-	NVAR iROI, roi_left, roi_right, roi_top, roi_bottom
-	NVAR xbin, ybin
-	NVAR xpixels, ypixels
+	NVAR iROI, iROILeft, iROIRight, iROITop, iROIBottom
+	NVAR binWidth, binHeight
+	//NVAR binnedFrameWidth, binnedFrameHeight
 	WAVE roisWave
 
 	GetMarquee /K left, bottom
 	Get_10x10_ROI()
 	iROI=1
-	roi_left+=200; roi_right=roi_left+9
-	roisWave[][iROI]={roi_left, roi_right, roi_top, roi_bottom, xbin, xpixels}
+	iROILeft+=200; iROIRight=iROILeft+9
+	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
 	DrawROI()
 	
 	// Update the view

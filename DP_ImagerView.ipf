@@ -50,7 +50,7 @@ Function ImagerViewConstructor() : Panel
 	SetVariable fluo_off_set,win=ImagerView,pos={177,10},size={120,15},title="OFF position"
 	SetVariable fluo_off_set,win=ImagerView,limits={0,9,1},value= wheelPositionForEpiLightOff
 	SetVariable focusnum_set,win=ImagerView,pos={229,98},size={70,15},title="no."
-	SetVariable focusnum_set,win=ImagerView,limits={0,1000,1},value= focus_num
+	SetVariable focusnum_set,win=ImagerView,limits={0,1000,1},value= iFocusWave
 	SetVariable fulltime_set,win=ImagerView,pos={152,130},size={150,15},title="Exp. time (ms)"
 	SetVariable fulltime_set,win=ImagerView,limits={0,10000,100},value= exposure
 	SetVariable imagetime_setvar0,win=ImagerView,pos={149,193},size={150,15},title="Exp.time (ms)"
@@ -58,7 +58,7 @@ Function ImagerViewConstructor() : Panel
 	SetVariable setfullname0,win=ImagerView,pos={137,158},size={80,15},title="name"
 	SetVariable setfullname0,win=ImagerView,value= fullFrameWaveBaseName
 	SetVariable setfocusname0,win=ImagerView,pos={139,99},size={80,15},title="name"
-	SetVariable setfocusname0,win=ImagerView,value= focus_name
+	SetVariable setfocusname0,win=ImagerView,value= focusWaveBaseName
 	
 	absVarName=AbsoluteVarName("root:DP_Imager","ccdTemperature")
 	ValDisplay tempdisp0,win=ImagerView,pos={174,311},size={120,14},title="CCD Temp."
@@ -68,47 +68,54 @@ Function ImagerViewConstructor() : Panel
 	SetVariable focustime_set,win=ImagerView,pos={151,70},size={150,15},title="Exp. time (ms)"
 	SetVariable focustime_set,win=ImagerView,limits={0,10000,100},value= focusingExposure
 	SetVariable fullnum_set,win=ImagerView,pos={230,159},size={70,15},title="no."
-	SetVariable fullnum_set,win=ImagerView,limits={0,1000,1},value= full_num
+	SetVariable fullnum_set,win=ImagerView,limits={0,1000,1},value= iFullFrameWave
 	SetVariable imageseqnum_set,win=ImagerView,pos={227,223},size={70,15},title="no."
-	SetVariable imageseqnum_set,win=ImagerView,limits={0,10000,1},value= imageseq_num
+	SetVariable imageseqnum_set,win=ImagerView,limits={0,10000,1},value= iVideoWave
 	
-	SetVariable roinum_set0,win=ImagerView,pos={117,341},size={90,15},proc=ImagerContiROISVTwiddled,title="ROI no."
-	SetVariable roinum_set0,win=ImagerView,format="%d",limits={1,2,1},value= _NUM:(iROI+1)
+	SetVariable roinum_set,win=ImagerView,pos={117,341},size={90,15},proc=ImagerContiROISVTwiddled,title="ROI no."
+	SetVariable roinum_set,win=ImagerView,format="%d",limits={1,2,1},value= _NUM:(iROI+1)
 	
-	SetVariable settop0,win=ImagerView,pos={182,371},size={77,15},proc=SetROIProc,title="top"
-	SetVariable settop0,win=ImagerView,format="%d",limits={0,512,1},value= roi_top
-	SetVariable setright0,win=ImagerView,pos={54,395},size={85,15},proc=SetROIProc,title="right"
-	SetVariable setright0,win=ImagerView,format="%d",limits={0,512,1},value= roi_right
-	SetVariable settleft0,win=ImagerView,pos={64,370},size={75,15},proc=SetROIProc,title="left"
-	SetVariable settleft0,win=ImagerView,format="%d",limits={0,512,1},value= roi_left
-	SetVariable setbottom0,win=ImagerView,pos={159,395},size={100,15},proc=SetROIProc,title="bottom"
-	SetVariable setbottom0,win=ImagerView,format="%d",limits={0,512,1},value= roi_bottom
-	SetVariable setxbin0,win=ImagerView,pos={55,419},size={85,15},proc=SetROIProc,title="x bin"
-	SetVariable setxbin0,win=ImagerView,format="%d",limits={0,512,1},value= xbin
-	SetVariable setybin0,win=ImagerView,pos={174,419},size={85,15},proc=SetROIProc,title="y bin"
-	SetVariable setybin0,win=ImagerView,format="%d",limits={0,512,1},value= ybin
+	SetVariable iROILeftSV,win=ImagerView,pos={64,370},size={75,15},proc=SetROIProc,title="left"
+	SetVariable iROILeftSV,win=ImagerView,format="%d"
+	SetVariable iROIRightSV,win=ImagerView,pos={54,395},size={85,15},proc=SetROIProc,title="right"
+	SetVariable iROIRightSV,win=ImagerView,format="%d"
+	SetVariable iROITopSV,win=ImagerView,pos={182,371},size={77,15},proc=SetROIProc,title="top"
+	SetVariable iROITopSV,win=ImagerView,format="%d"
+	SetVariable iROIBottomSV,win=ImagerView,pos={159,395},size={100,15},proc=SetROIProc,title="bottom"
+	SetVariable iROIBottomSV,win=ImagerView,format="%d"
+	SetVariable binWidthSV,win=ImagerView,pos={55,419},size={85,15},proc=SetROIProc,title="x bin"
+	SetVariable binWidthSV,win=ImagerView,format="%d"
+	SetVariable binHeightSV,win=ImagerView,pos={174,419},size={85,15},proc=SetROIProc,title="y bin"
+	SetVariable binHeightSV,win=ImagerView,format="%d"
 
-	absVarName=AbsoluteVarName("root:DP_Imager","xpixels")
-	ValDisplay xpixels0,win=ImagerView,pos={54,444},size={85,14},title="x pixels",format="%4.2f"
-	ValDisplay xpixels0,win=ImagerView,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	//absVarName=AbsoluteVarName("root:DP_Imager","binnedFrameWidth")
+	ValDisplay binnedFrameWidthVD,win=ImagerView,pos={54,444},size={85,14},title="x pixels",format="%4.2f"
+	ValDisplay binnedFrameWidthVD,win=ImagerView,limits={0,0,0},barmisc={0,1000}
 	
-	absVarName=AbsoluteVarName("root:DP_Imager","ypixels")
-	ValDisplay ypixels0,win=ImagerView,pos={173,446},size={85,14},title="y pixels",format="%4.2f"
-	ValDisplay ypixels0,win=ImagerView,limits={0,0,0},barmisc={0,1000},value= #absVarName
+	//absVarName=AbsoluteVarName("root:DP_Imager","binnedFrameHeight")
+	ValDisplay binnedFrameHeightVD,win=ImagerView,pos={173,446},size={85,14},title="y pixels",format="%4.2f"
+	ValDisplay binnedFrameHeightVD,win=ImagerView,limits={0,0,0},barmisc={0,1000}
 	
 	Button getstac_button,win=ImagerView,pos={125,253},size={80,20},proc=StackButtonProc,title="GetStack"
 	CheckBox show_roi_check0,win=ImagerView,pos={109,286},size={94,14},title="Show ROI Image"
 	CheckBox show_roi_check0,win=ImagerView,value= 0
 	
+	// Sync the view to the model
+	ImagerViewUpdate()
+	
 	// Restore the original DF
 	SetDataFolder savedDF
 End
+
+
 
 Function ImagerViewModelChanged()
 	// Notify the ImagerView that the Imager (model) has changed.
 	// Currently, this calls the (private) ImagerViewUpdate method.
 	ImagerViewUpdate()
 End
+
+
 
 Function ImagerViewUpdate()
 	// This is intended to be a private method in ImagerView.
@@ -126,9 +133,29 @@ Function ImagerViewUpdate()
 
 	// Declare the DF vars we need
 	NVAR iROI
+	WAVE roisWave
+
+	// Calculate things we need
+	Variable ccdWidth=CameraCCDWidthGet()
+	Variable ccdHeight=CameraCCDHeightGet()
+	Variable iROILeft=roisWave[0][iROI]
+	Variable iROIRight=roisWave[1][iROI]
+	Variable iROITop=roisWave[2][iROI]
+	Variable iROIBottom=roisWave[3][iROI]
+	Variable binWidth=roisWave[4][iROI]
+	Variable binHeight=roisWave[5][iROI]
 
 	// Update stuff
-	SetVariable roinum_set0,win=ImagerView,value= _NUM:(iROI+1)
+	SetVariable roinum_set,win=ImagerView,value= _NUM:(iROI+1)
+	SetVariable iROILeftSV,win=ImagerView,limits={0,ccdWidth-1,1},value= _NUM:iROILeft
+	SetVariable iROIRightSV,win=ImagerView,limits={0,ccdWidth-1,1},value= _NUM:iROIRight
+	SetVariable iROITopSV,win=ImagerView,limits={0,ccdHeight-1,1},value= _NUM:iROITop
+	SetVariable iROIBottomSV,win=ImagerView,limits={0,ccdHeight-1,1},value= _NUM:iROIBottom
+	SetVariable binWidthSV,win=ImagerView,limits={1,ccdWidth,1},value= _NUM:binWidth
+	SetVariable binHeightSV,win=ImagerView,limits={1,ccdHeight,1},value= _NUM:binHeight
+	
+	ValDisplay binnedFrameWidthVD, win=ImagerView, value= _NUM:(iROIRight-iROILeft+1)/binWidth
+	ValDisplay binnedFrameHeightVD, win=ImagerView, value= _NUM:(iROIBottom-iROITop+1)/binHeight
 
 	// Restore the original DF
 	SetDataFolder savedDF

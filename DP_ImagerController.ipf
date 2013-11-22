@@ -18,8 +18,8 @@ Function EPhys_Image()
 	SetDataFolder root:DP_Imager
 
 	// Declare the instance vars
-	SVAR focus_name
-	NVAR focus_num, isImagingTriggered, full_num
+	SVAR focusWaveBaseName
+	NVAR iFocusWave, isImagingTriggered, iFullFrameWave
 	NVAR iFrame, previouswave
 	NVAR isROI
 	NVAR isBackgroundROIToo
@@ -27,14 +27,14 @@ Function EPhys_Image()
 	WAVE roisWave
 	NVAR exposure
 	NVAR ccdTargetTemperature
-	NVAR xbin
-	NVAR ybin
+	NVAR binWidth
+	NVAR binHeight
 	
 	Variable status, canceled
 	String message
 	//String command
 	isImagingTriggered=1
-	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,exposure,ccdTargetTemperature,xbin,ybin)
+	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,exposure,ccdTargetTemperature,binWidth,binHeight)
 	//image_roi=2		// zero for full frame, one for specific ROI, two for ROI with background
 	isROI=1
 	isBackgroundROIToo=1
@@ -58,16 +58,16 @@ Function FocusImage()
 	SetDataFolder root:DP_Imager
 
 	// Declare the object vars
-	SVAR focus_name
-	NVAR focus_num
-	NVAR full_num
+	SVAR focusWaveBaseName
+	NVAR iFocusWave
+	NVAR iFullFrameWave
 	NVAR isROI
 	NVAR isBackgroundROIToo
 	WAVE roisWave
 	NVAR exposure
 	NVAR ccdTargetTemperature
-	NVAR xbin
-	NVAR ybin
+	NVAR binWidth
+	NVAR binHeight
 
 	ImagerViewSetIsProTipShowing(1)
 	DoUpdate
@@ -76,17 +76,17 @@ Function FocusImage()
 	//String message
 	//Variable frames_per_sequence, frames
 	//String wave_image
-	String wave_image=sprintf2sv("%s%d", focus_name, focus_num)
+	String wave_image=sprintf2sv("%s%d", focusWaveBaseName, iFocusWave)
 	Variable frames_per_sequence=1
 	Variable frames=1
 	Variable isImagingTriggered=0			// set to one for triggered images
-	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,exposure,ccdTargetTemperature,xbin,ybin)
+	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,exposure,ccdTargetTemperature,binWidth,binHeight)
 	//printf "Focusing (press Esc key to stop) ..."
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
 	//ImagerFocus()
 
-	String imageWaveNameRel=sprintf2sv("%s%d", focus_name, focus_num)
+	String imageWaveNameRel=sprintf2sv("%s%d", focusWaveBaseName, iFocusWave)
 	String imageWaveNameAbs=sprintf1s("root:DP_Imager:%s",imageWaveNameRel)
 	
 	Variable	nFrames=1
@@ -120,8 +120,8 @@ Function FocusImage()
 	FancyCameraDisarm()	
 		
 	EpiLightTurnOnOff(0)
-	full_num+=1
-	focus_num=full_num
+	iFullFrameWave+=1
+	iFocusWave=iFullFrameWave
 	//printf "%s: Focus Image done\r", wave_image
 
 	// Restore the data folder
@@ -135,28 +135,27 @@ Function Acquire_Full_Image()
 
 	// Declare the object vars
 	SVAR fullFrameWaveBaseName
-	NVAR focus_num, isImagingTriggered, full_num
-	NVAR xbin, ybin
+	NVAR iFocusWave, isImagingTriggered, iFullFrameWave
 	//SVAR allVideoWaveNames
 	SVAR videoWaveBaseName
 	WAVE roisWave
 	NVAR exposure
 	NVAR ccdTargetTemperature
-	NVAR xbin
-	NVAR ybin
+	NVAR binWidth
+	NVAR binHeight
 	
 	Variable status, canceled
 	String message
 	//String imageWaveName
 	Variable frames
-	String imageWaveName=sprintf2sv("%s%d", fullFrameWaveBaseName, full_num)
+	String imageWaveName=sprintf2sv("%s%d", fullFrameWaveBaseName, iFullFrameWave)
 	//Variable image_roi=0		// means there is no ROI
 	Variable isROI=0
 	Variable isBackgroundROIToo=0	// Irrelevant
 	frames=1
 	isImagingTriggered=0		// set to one for triggered images
-	xbin=1; ybin=1
-	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,exposure,ccdTargetTemperature,xbin,ybin) 
+	binWidth=1; binHeight=1
+	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,exposure,ccdTargetTemperature,binWidth,binHeight) 
 	EpiLightTurnOnOff(1)
 	//Sleep /S 0.1
 	//Make /O /N=(512,512) $imageWaveName
@@ -169,9 +168,10 @@ Function Acquire_Full_Image()
 	MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
 	EpiLightTurnOnOff(0)
 	ImageBrowserContSetVideo(imageWaveName) 
-	printf "%s%d: Full Image done\r", fullFrameWaveBaseName, full_num
+	printf "%s%d: Full Image done\r", fullFrameWaveBaseName, iFullFrameWave
 	String allVideoWaveNames=WaveList(fullFrameWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
-	full_num+=1; focus_num=full_num
+	iFullFrameWave+=1
+	iFocusWave=iFullFrameWave
 
 	// Restore the data folder
 	SetDataFolder savedDF
@@ -370,11 +370,11 @@ End
 //	SetDataFolder root:DP_Imager
 //	
 //	// instance vars
-//	SVAR focus_name
-//	NVAR focus_num
+//	SVAR focusWaveBaseName
+//	NVAR iFocusWave
 //	//NVAR blackCount, whiteCount
 //
-//	String imageWaveNameRel=sprintf2sv("%s%d", focus_name, focus_num)
+//	String imageWaveNameRel=sprintf2sv("%s%d", focusWaveBaseName, iFocusWave)
 //	String imageWaveNameAbs=sprintf1s("root:DP_Imager:%s",imageWaveNameRel)
 //	
 //	Variable	nFrames=1
@@ -538,13 +538,24 @@ Function SetROIProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 	
-	WAVE roisWave=roisWave, roibox_x=roibox_x, roibox_y=roibox_y
+	// instance vars
 	NVAR iROI
-	NVAR roi_left=roi_left, roi_right=roi_right, xbin=xbin, xpixels=xpixels
-	NVAR roi_top=roi_top, roi_bottom=roi_bottom, ybin=ybin, ypixels=ypixels
-	xpixels=(roi_right-roi_left+1)/xbin
-	ypixels=(roi_bottom-roi_top+1)/ybin
-	roisWave[][iROI]={roi_left, roi_right, roi_top, roi_bottom, xbin, ybin}
+	WAVE roisWave
+
+	if ( AreStringsEqual(ctrlName,"iROILeftSV") )
+		ImagerSetIROILeft(iROI,varNum)
+	elseif ( AreStringsEqual(ctrlName,"iROIRightSV") )
+		ImagerSetIROIRight(iROI,varNum)
+	elseif ( AreStringsEqual(ctrlName,"iROITopSV") )
+		ImagerSetIROITop(iROI,varNum)
+	elseif ( AreStringsEqual(ctrlName,"iROIBottomSV") )
+		ImagerSetIROIBottom(iROI,varNum)
+	elseif ( AreStringsEqual(ctrlName,"binWidthSV") )
+		ImagerSetBinWidth(iROI,varNum)
+	elseif ( AreStringsEqual(ctrlName,"binHeightSV") )
+		ImagerSetBinHeight(iROI,varNum)
+	endif
+	ImagerViewModelChanged()
 	DrawROI()
 	
 	// Restore the original DF
@@ -567,21 +578,11 @@ Function ImagerContiROISVTwiddled(svStruct) : SetVariableControl
 	SetDataFolder root:DP_Imager
 	
 	// decare instance vars
-	WAVE roisWave
 	NVAR iROI
-	NVAR roi_left, roi_right, xbin, xpixels
-	NVAR roi_top, roi_bottom, ybin, ypixels
 	
 	// do stuff
 	iROI=iROIPlusOne-1
-	roi_left=roisWave[0][iROI]
-	roi_right=roisWave[1][iROI]
-	roi_top=roisWave[2][iROI]
-	roi_bottom=roisWave[3][iROI]
-	xbin=roisWave[4][iROI]
-	ybin=roisWave[5][iROI]
-	xpixels=(roi_right-roi_left+1)/xbin
-	ypixels=(roi_bottom-roi_top+1)/ybin
+	ImagerViewModelChanged()
 	DrawROI()
 	
 	// Restore the original DF
@@ -595,19 +596,27 @@ Function DrawROI()
 
 	// instance vars
 	NVAR iROI
-	NVAR roi_left, roi_right, roi_top, roi_bottom
-	NVAR xbin, ybin
-	NVAR xpixels, ypixels
+	//NVAR iROILeft, iROIRight, iROITop, iROIBottom
+	//NVAR binWidth, binHeight
+	//NVAR binnedFrameWidth, binnedFrameHeight
 	WAVE roisWave
 	WAVE roibox_x0, roibox_y0
 	WAVE roibox_x1, roibox_y1
 
+	// Extract things we need
+	Variable iROILeft=roisWave[0][iROI]
+	Variable iROIRight=roisWave[1][iROI]
+	Variable iROITop=roisWave[2][iROI]
+	Variable iROIBottom=roisWave[3][iROI]
+	Variable binWidth=roisWave[4][iROI]
+	Variable binHeight=roisWave[5][iROI]
+
 	String thebox_yName=sprintf1v("roibox_y%d", iROI)
 	WAVE thebox_y=$thebox_yName
-	thebox_y={roi_top, roi_top, roi_bottom, roi_bottom, roi_top}
+	thebox_y={iROITop, iROITop, iROIBottom, iROIBottom, iROITop}
 	String thebox_xName=sprintf1v("roibox_x%d", iROI)
 	WAVE thebox_x=$thebox_xName	
-	thebox_x={roi_left, roi_right, roi_right, roi_left, roi_left}
+	thebox_x={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}
 	if (wintype("Image_Display")>0)
 		DoWindow /F Image_Display
 		String removeit=Wavelist("roibox_yName*",";","WIN:Image_Display")
