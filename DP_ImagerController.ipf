@@ -19,29 +19,29 @@ Function EPhys_Image()
 
 	// Declare the instance vars
 	SVAR focus_name
-	NVAR focus_num, image_trig, full_num
+	NVAR focus_num, isImagingTriggered, full_num
 	NVAR iFrame, previouswave
 	NVAR isROI
 	NVAR isBackgroundROIToo
 	SVAR videoWaveBaseName
 	WAVE roisWave
 	NVAR exposure
-	NVAR ccd_tempset
+	NVAR ccdTargetTemperature
 	NVAR xbin
 	NVAR ybin
 	
 	Variable status, canceled
 	String message
 	//String command
-	image_trig=1
-	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,image_trig,exposure,ccd_tempset,xbin,ybin)
+	isImagingTriggered=1
+	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,exposure,ccdTargetTemperature,xbin,ybin)
 	//image_roi=2		// zero for full frame, one for specific ROI, two for ROI with background
 	isROI=1
 	isBackgroundROIToo=1
 	iFrame=0
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
-	AcquireVideo(image_trig,0)
+	AcquireVideo(isImagingTriggered,0)
 	print "done with image stack"
 	Get_DFoverF_from_Stack(previouswave)
 	Append_DFoverF(previouswave)
@@ -65,7 +65,7 @@ Function FocusImage()
 	NVAR isBackgroundROIToo
 	WAVE roisWave
 	NVAR exposure
-	NVAR ccd_tempset
+	NVAR ccdTargetTemperature
 	NVAR xbin
 	NVAR ybin
 
@@ -79,8 +79,8 @@ Function FocusImage()
 	String wave_image=sprintf2sv("%s%d", focus_name, focus_num)
 	Variable frames_per_sequence=1
 	Variable frames=1
-	Variable image_trig=0			// set to one for triggered images
-	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,image_trig,exposure,ccd_tempset,xbin,ybin)
+	Variable isImagingTriggered=0			// set to one for triggered images
+	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,exposure,ccdTargetTemperature,xbin,ybin)
 	//printf "Focusing (press Esc key to stop) ..."
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
@@ -135,13 +135,13 @@ Function Acquire_Full_Image()
 
 	// Declare the object vars
 	SVAR fullFrameWaveBaseName
-	NVAR focus_num, image_trig, full_num
+	NVAR focus_num, isImagingTriggered, full_num
 	NVAR xbin, ybin
 	//SVAR allVideoWaveNames
 	SVAR videoWaveBaseName
 	WAVE roisWave
 	NVAR exposure
-	NVAR ccd_tempset
+	NVAR ccdTargetTemperature
 	NVAR xbin
 	NVAR ybin
 	
@@ -154,9 +154,9 @@ Function Acquire_Full_Image()
 	Variable isROI=0
 	Variable isBackgroundROIToo=0	// Irrelevant
 	frames=1
-	image_trig=0		// set to one for triggered images
+	isImagingTriggered=0		// set to one for triggered images
 	xbin=1; ybin=1
-	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,image_trig,exposure,ccd_tempset,xbin,ybin) 
+	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,exposure,ccdTargetTemperature,xbin,ybin) 
 	EpiLightTurnOnOff(1)
 	//Sleep /S 0.1
 	//Make /O /N=(512,512) $imageWaveName
@@ -189,8 +189,8 @@ Function AcquireVideo(trig, disp)
 	// instance vars
 	SVAR videoWaveBaseName
 	NVAR wavenumber
-	NVAR ccd_frames
-	NVAR image_trig
+	NVAR nFramesForVideo
+	NVAR isImagingTriggered
 	NVAR iFrame
 	
 	Variable status, exposure, canceled
@@ -198,9 +198,9 @@ Function AcquireVideo(trig, disp)
 	String imageWaveName, datawavename
 	Variable frames_per_sequence, frames
 	sprintf imageWaveName, "%s%d", videoWaveBaseName, wavenumber
-	frames_per_sequence=ccd_frames
-	frames=ccd_frames
-	image_trig=trig		// set to one for triggered images
+	frames_per_sequence=nFramesForVideo
+	frames=nFramesForVideo
+	isImagingTriggered=trig		// set to one for triggered images
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
 	iFrame=0
@@ -212,7 +212,7 @@ Function AcquireVideo(trig, disp)
 		ImageBrowserContSetVideo(imageWaveName)
 	endif
 	printf "%s%d: Image Stack done\r", videoWaveBaseName, wavenumber
-	if (image_trig<1)
+	if (!isImagingTriggered)
 		wavenumber+=1		
 	endif
 	//	might want to add code to make an empty data wave if the image stack is taken on its own
@@ -246,10 +246,10 @@ Function ResetAvgButtonProc(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 
-	NVAR imageavgn=imageavgn
+	NVAR nFramesToAverage=nFramesToAverage
 	Wave average=dff_avg
 	average=0
-	imageavgn=0
+	nFramesToAverage=0
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -436,7 +436,7 @@ Function Get_DFoverF_from_Stack(stacknum)
 	
 	// instance vars
 	SVAR videoWaveBaseName
-	NVAR ccd_seqexp
+	NVAR videoExposure
 	
 	Variable numbase
 	numbase=16
@@ -458,7 +458,7 @@ Function Get_DFoverF_from_Stack(stacknum)
 	while (i<numbase)
 	basef=basef/numbase
 	newImageWave=100*(basef-stackWave)/basef
-	SetScale /P x 0,ccd_seqexp,"ms", newImageWave
+	SetScale /P x 0,videoExposure,"ms", newImageWave
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -474,7 +474,7 @@ Function Append_DFoverF(stacknum)
 	SetDataFolder root:DP_Imager
 	
 	// instance vars
-	NVAR imageavgn
+	NVAR nFramesToAverage
 	WAVE dff_avg
 	
 //	String stack
@@ -486,15 +486,15 @@ Function Append_DFoverF(stacknum)
 	DoWindow /F ImagerView
 	ControlInfo showimageavg_check0
 	if (V_value>0)
-		if (imageavgn<1)
+		if (nFramesToAverage<1)
 			Duplicate /O $newImageWaveName dff_avg
-			imageavgn+=1
+			nFramesToAverage+=1
 		else
-			dff_avg*=imageavgn
+			dff_avg*=nFramesToAverage
 			WAVE newImageWave=$newImageWaveName
 			dff_avg+=newImageWave
-			imageavgn+=1
-			dff_avg/=imageavgn
+			nFramesToAverage+=1
+			dff_avg/=nFramesToAverage
 			AppendToGraph dff_avg
 		endif
 	endif
@@ -502,8 +502,8 @@ Function Append_DFoverF(stacknum)
 	ModifyGraph lsize($newImageWaveName)=1.5
 	ModifyGraph mode($newImageWaveName)=6
 	ModifyGraph marker($newImageWaveName)=19
-//	print imageavgn
-	if (imageavgn>1)
+//	print nFramesToAverage
+	if (nFramesToAverage>1)
 		ModifyGraph lsize(dff_avg)=1.5,rgb(dff_avg)=(0,52224,0)
 		ModifyGraph offset(dff_avg)={50,0}
 	endif

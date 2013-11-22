@@ -34,9 +34,9 @@ Function ImagerViewConstructor() : Panel
 	SetVariable setimagename0,win=ImagerView,value= videoWaveBaseName
 	CheckBox bkgndcheck0,win=ImagerView,pos={14,265},size={71,14},title="Bkgnd Sub.",value= 1
 	SetVariable numimages_setvar0,win=ImagerView,pos={11,223},size={120,15},title="No. images"
-	SetVariable numimages_setvar0,win=ImagerView,limits={1,10000,1},value= ccd_frames
+	SetVariable numimages_setvar0,win=ImagerView,limits={1,10000,1},value= nFramesForVideo
 	SetVariable ccdtemp_setvar0,win=ImagerView,pos={13,311},size={150,15},proc=SetCCDTempVarProc,title="CCD Temp. Set"
-	SetVariable ccdtemp_setvar0,win=ImagerView,limits={-50,20,5},value= ccd_tempset
+	SetVariable ccdtemp_setvar0,win=ImagerView,limits={-50,20,5},value= ccdTargetTemperature
 	CheckBox showimageavg_check0,win=ImagerView,pos={14,286},size={84,14},title="Show Average"
 	CheckBox showimageavg_check0,win=ImagerView,value= 0
 	Button resetavg_button2,win=ImagerView,pos={212,253},size={80,20},proc=ResetAvgButtonProc,title="Reset Avg"
@@ -46,27 +46,27 @@ Function ImagerViewConstructor() : Panel
 	
 	Button full_frame,win=ImagerView,pos={10,130},size={130,20},proc=FullButtonProc,title="Full Frame Image"
 	SetVariable fluo_on_set,win=ImagerView,pos={178,40},size={120,15},title="ON   position"
-	SetVariable fluo_on_set,win=ImagerView,limits={0,9,1},value= fluo_on_wheel
+	SetVariable fluo_on_set,win=ImagerView,limits={0,9,1},value= wheelPositionForEpiLightOn
 	SetVariable fluo_off_set,win=ImagerView,pos={177,10},size={120,15},title="OFF position"
-	SetVariable fluo_off_set,win=ImagerView,limits={0,9,1},value= fluo_off_wheel
+	SetVariable fluo_off_set,win=ImagerView,limits={0,9,1},value= wheelPositionForEpiLightOff
 	SetVariable focusnum_set,win=ImagerView,pos={229,98},size={70,15},title="no."
 	SetVariable focusnum_set,win=ImagerView,limits={0,1000,1},value= focus_num
 	SetVariable fulltime_set,win=ImagerView,pos={152,130},size={150,15},title="Exp. time (ms)"
 	SetVariable fulltime_set,win=ImagerView,limits={0,10000,100},value= exposure
 	SetVariable imagetime_setvar0,win=ImagerView,pos={149,193},size={150,15},title="Exp.time (ms)"
-	SetVariable imagetime_setvar0,win=ImagerView,limits={0,10000,10},value= ccd_seqexp
+	SetVariable imagetime_setvar0,win=ImagerView,limits={0,10000,10},value= videoExposure
 	SetVariable setfullname0,win=ImagerView,pos={137,158},size={80,15},title="name"
 	SetVariable setfullname0,win=ImagerView,value= fullFrameWaveBaseName
 	SetVariable setfocusname0,win=ImagerView,pos={139,99},size={80,15},title="name"
 	SetVariable setfocusname0,win=ImagerView,value= focus_name
 	
-	absVarName=AbsoluteVarName("root:DP_Imager","ccd_temp")
+	absVarName=AbsoluteVarName("root:DP_Imager","ccdTemperature")
 	ValDisplay tempdisp0,win=ImagerView,pos={174,311},size={120,14},title="CCD Temp."
 	ValDisplay tempdisp0,win=ImagerView,format="%3.1f",limits={0,0,0},barmisc={0,1000}
 	ValDisplay tempdisp0,win=ImagerView,value= #absVarName
 	
 	SetVariable focustime_set,win=ImagerView,pos={151,70},size={150,15},title="Exp. time (ms)"
-	SetVariable focustime_set,win=ImagerView,limits={0,10000,100},value= ccd_focusexp
+	SetVariable focustime_set,win=ImagerView,limits={0,10000,100},value= focusingExposure
 	SetVariable fullnum_set,win=ImagerView,pos={230,159},size={70,15},title="no."
 	SetVariable fullnum_set,win=ImagerView,limits={0,1000,1},value= full_num
 	SetVariable imageseqnum_set,win=ImagerView,pos={227,223},size={70,15},title="no."

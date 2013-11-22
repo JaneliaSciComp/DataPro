@@ -53,7 +53,7 @@ Function CameraConstructor()
 		Variable sidxStatus
 		SIDXRootOpen sidxRoot, license, sidxStatus
 		isSidxRootValid=(sidxStatus==0)
-		printf "isSidxRootValid: %d\r" isSidxRootValid
+		//printf "isSidxRootValid: %d\r" isSidxRootValid
 		Variable nCameras
 		if (isSidxRootValid)
 			SIDXRootCameraScanGetCount sidxRoot, nCameras,sidxStatus
@@ -72,7 +72,10 @@ Function CameraConstructor()
 				areWeForReal=0;
 			endif
 		endif
-		printf "areWeForReal: %d\r", areWeForReal
+		//printf "areWeForReal: %d\r", areWeForReal
+		if (!areWeForReal)
+			Redimension /N=(heightCCDFake,widthCCDFake,countFrameFake) bufferFrame
+		endif
 	endif
 
 	// Restore the data folder

@@ -18,19 +18,19 @@ Function ImagerConstructor()
 //	IMAGING GLOBALS
 	NewDataFolder /O/S root:DP_Imager
 	//String /G allVideoWaveNames		// a semicolon-separated list of all the video wave names
-	Variable /G fluo_on_wheel=1	// Setting of something that results in epi-illumination being on
-	Variable /G fluo_off_wheel=0	// Setting of something that results in epi-illumination being off
-	Variable /G image_trig		// boolean, true iff the image acquisition will be triggerd (as opposed to free-running)
-	Variable /G image_focus	// image_focus may be unnecessary if there is a separate focus routine
+	Variable /G wheelPositionForEpiLightOn=1	// Setting of something that results in epi-illumination being on
+	Variable /G wheelPositionForEpiLightOff=0	// Setting of something that results in epi-illumination being off
+	Variable /G isImagingTriggered		// boolean, true iff the image acquisition will be triggerd (as opposed to free-running)
+	//Variable /G image_focus	// image_focus may be unnecessary if there is a separate focus routine
 	Variable /G isROI=0		// is there a ROI? (false=>full frame)
 	Variable /G isBackgroundROIToo=0		// if isROI, is there a background ROI too? (if full-frame, this is unused)
-	Variable /G ccd_tempset= -20		// the setpoint CCD temperature
-	Variable /G ccd_temp=nan			// the current CCD temperature
-	Variable /G ccd_frames=56	// number of frames to acquire
-	Variable /G ccd_focusexp=100		// duration of each exposure when focusing, in ms
+	Variable /G ccdTargetTemperature= -20		// the setpoint CCD temperature
+	Variable /G ccdTemperature=nan			// the current CCD temperature
+	Variable /G nFramesForVideo=56	// number of frames to acquire
+	Variable /G focusingExposure=100		// duration of each exposure when focusing, in ms
 	Variable /G exposure=100		// duration of each frame exposure for full-frame images, in ms
-	Variable /G ccd_seqexp=50	// duration of each frame for triggered video, in ms
-	Variable /G imageavgn=0		// number of frames to average (not sure for what purpose)
+	Variable /G videoExposure=50	// duration of each frame for triggered video, in ms
+	Variable /G nFramesToAverage=0		// number of frames to average (not sure for what purpose)
 	//Variable /G iFrame		// Frame index to show in the browser
 	String /G fullFrameWaveBaseName="full_"		// the base name of the full-frame image waves, including the underscore
 	String /G focus_name="full_"		// the base name of the focusing image waves, including the underscore
@@ -69,7 +69,7 @@ Function ImagerConstructor()
 	Make /O /N=5 roibox_y1	// a 1D wave holding the ROI corner y-coords for the background ROI
 	
 	// make average wave for imaging
-	Make /O /N=(imageavgn) dff_avg
+	Make /O /N=(nFramesToAverage) dff_avg
 	
 	// Restore the original data folder
 	SetDataFolder savedDF	

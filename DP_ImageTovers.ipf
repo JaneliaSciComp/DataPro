@@ -95,15 +95,15 @@ Function Get_DFoverF_from_Stack2(stacknum)
 	
 	// instance vars
 	SVAR videoWaveBaseName
-	NVAR ccd_frames
-	NVAR ccd_seqexp
+	NVAR nFramesForVideo
+	NVAR videoExposure
 	
 	Variable index, basef
 	Variable numbase=3
 	String stackWaveName=sprintf2sv("%s%d", videoWaveBaseName, stacknum)
 	print stackWaveName
 	String dffWaveName=sprintf1v("dff_%d", stacknum)
-	Make /O /N=(ccd_frames-1) tempwave, $dffWaveName
+	Make /O /N=(nFramesForVideo-1) tempwave, $dffWaveName
 	WAVE stackWave=$stackWaveName
 	DoWindow /F ImagerView
 	ControlInfo bkgndcheck0
@@ -119,7 +119,7 @@ Function Get_DFoverF_from_Stack2(stacknum)
 	basef=basef/numbase
 	WAVE dffWave=$dffWaveName
 	dffWave=100*(basef-tempwave)/basef
-	SetScale/P x 0,ccd_seqexp,"ms", dffWave
+	SetScale/P x 0,videoExposure,"ms", dffWave
 	Killwaves tempwave
 	
 	// Restore the original DF
