@@ -12,21 +12,24 @@ Function ImagerContConstructor()
 End
 
 
-Function EPhys_Image()
+Function ImagerContAcquireVideo()
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 
 	// Declare the instance vars
 	SVAR focusWaveBaseName
-	NVAR iFocusWave, isImagingTriggered, iFullFrameWave
-	NVAR iFrame, previouswave
+	NVAR iFocusWave
+	NVAR isImagingTriggered
+	NVAR iFullFrameWave
+	NVAR iFrame
+	NVAR previouswave
 	NVAR isROI
 	NVAR isBackgroundROIToo
 	SVAR videoWaveBaseName
 	WAVE roisWave
 	NVAR exposure
-	NVAR ccdTargetTemperature
+	NVAR ccdTargetTemperature	
 	NVAR binWidth
 	NVAR binHeight
 	
@@ -41,7 +44,7 @@ Function EPhys_Image()
 	iFrame=0
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
-	AcquireVideo(isImagingTriggered,0)
+	ImagerContAcquireVideoHelper(isImagingTriggered,0)
 	print "done with image stack"
 	Get_DFoverF_from_Stack(previouswave)
 	Append_DFoverF(previouswave)
@@ -52,7 +55,7 @@ Function EPhys_Image()
 	SetDataFolder savedDF	
 End
 
-Function FocusImage()
+Function ImagerContFocus()
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
@@ -61,13 +64,14 @@ Function FocusImage()
 	SVAR focusWaveBaseName
 	NVAR iFocusWave
 	NVAR iFullFrameWave
-	NVAR isROI
-	NVAR isBackgroundROIToo
 	WAVE roisWave
 	NVAR exposure
 	NVAR ccdTargetTemperature
-	NVAR binWidth
-	NVAR binHeight
+
+	Variable isROI=0
+	Variable isBackgroundROIToo=0
+	Variable binWidth=1
+	Variable binHeight=1
 
 	ImagerViewSetIsProTipShowing(1)
 	DoUpdate
@@ -128,7 +132,7 @@ Function FocusImage()
 	SetDataFolder savedDF
 End
 
-Function Acquire_Full_Image()
+Function ImagerContAcquireFullFrameImage()
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
@@ -141,9 +145,9 @@ Function Acquire_Full_Image()
 	WAVE roisWave
 	NVAR exposure
 	NVAR ccdTargetTemperature
-	NVAR binWidth
-	NVAR binHeight
 	
+	Variable binWidth=1
+	Variable binHeight=1
 	Variable status, canceled
 	String message
 	//String imageWaveName
@@ -177,10 +181,10 @@ Function Acquire_Full_Image()
 	SetDataFolder savedDF
 End
 
-Function AcquireVideo(trig, disp)
-	Variable trig, disp
-	//	trig: one=triggered, zero=not triggered
-	//	disp: one=display stack, zero=don't display stack
+Function ImagerContAcquireVideoHelper(isImagingTriggered, doDisplay)
+	Variable isImagingTriggered, doDisplay
+	//	isImagingTriggered: one=triggered, zero=not triggered
+	//	doDisplay: one=display stack, zero=don't display stack
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
@@ -190,7 +194,7 @@ Function AcquireVideo(trig, disp)
 	SVAR videoWaveBaseName
 	NVAR wavenumber
 	NVAR nFramesForVideo
-	NVAR isImagingTriggered
+	//NVAR isImagingTriggered
 	NVAR iFrame
 	
 	Variable status, exposure, canceled
@@ -200,15 +204,15 @@ Function AcquireVideo(trig, disp)
 	sprintf imageWaveName, "%s%d", videoWaveBaseName, wavenumber
 	frames_per_sequence=nFramesForVideo
 	frames=nFramesForVideo
-	isImagingTriggered=trig		// set to one for triggered images
+	//isImagingTriggered=isImagingTriggered		// set to one for triggered images
 	EpiLightTurnOnOff(1)
 	Sleep /S 0.1
 	iFrame=0
-	//Wave imageWave=FancyCameraArmAcquireDisarm(frames,trig)
+	//Wave imageWave=FancyCameraArmAcquireDisarm(frames,isImagingTriggered)
 	Wave imageWave=FancyCameraArmAcquireDisarm(frames)	// trigger mode is now set during camera setup
 	MoveWave imageWave, imageWaveName 	// Cage the once-free wave
 	EpiLightTurnOnOff(0)
-	if (disp>0)
+	if ( doDisplay>0 )
 		ImageBrowserContSetVideo(imageWaveName)
 	endif
 	printf "%s%d: Image Stack done\r", videoWaveBaseName, wavenumber
@@ -278,7 +282,7 @@ Function StackButtonProc(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 
-	AcquireVideo(0,0)
+	ImagerContAcquireVideoHelper(0,0)
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -291,7 +295,7 @@ Function FullButtonProc(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 
-	Acquire_Full_Image()
+	ImagerContAcquireFullFrameImage()
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -304,7 +308,7 @@ Function FocusButtonProc(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 
-	FocusImage()
+	ImagerContFocus()
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -313,7 +317,7 @@ End
 Function EphysImageButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	EPhys_Image()
+	ImagerContAcquireVideo()
 End
 
 //--------------------------------------- END OF BUTTON AND SETVAR PROCEDURES---------------------------------------//
@@ -427,8 +431,8 @@ End
 
 
 
-Function Get_DFoverF_from_Stack(stacknum)
-	Variable stacknum
+Function Get_DFoverF_from_Stack(iVideoWave)
+	Variable iVideoWave
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
@@ -438,18 +442,17 @@ Function Get_DFoverF_from_Stack(stacknum)
 	SVAR videoWaveBaseName
 	NVAR videoExposure
 	
-	Variable numbase
-	numbase=16
-	//Silent 1; PauseUpdate
-	String stackWaveName, newImageWaveName
-	sprintf stackWaveName, "%s%d", videoWaveBaseName, stacknum
-	sprintf newImageWaveName, "dff_%d", stacknum
-	print stackWaveName, newImageWaveName
-	DeletePoints /M=2 0,1, $stackWaveName		// kill the first plane of $stackWaveName
+	Variable numbase=16
+	String videoWaveName=sprintf2sv("%s%d",videoWaveBaseName, iVideoWave)
+	String dffVideoWaveName=sprintf1v("dff_%d", iVideoWave)
+	//sprintf stackWaveName, "%s%d", videoWaveBaseName, iVideoWave
+	//sprintf dffVideoWaveName, "dff_%d", iVideoWave
+	//print stackWaveName, dffVideoWaveName
+	DeletePoints /M=2 0,1, $videoWaveName		// kill the first plane of $videoWaveName
 //	Duplicate /O $stack $newimage
-	Make /O /N=(numpnts($stackWaveName)) $newImageWaveName
-	WAVE newImageWave=$newImageWaveName
-	WAVE stackWave=$stackWaveName
+	Make /O /N=(numpnts($videoWaveName)) $dffVideoWaveName
+	Wave dffVideoWave=$dffVideoWaveName
+	Wave stackWave=$videoWaveName
 	Variable basef=0
 	Variable i=0
 	do
@@ -457,8 +460,8 @@ Function Get_DFoverF_from_Stack(stacknum)
 		i+=1
 	while (i<numbase)
 	basef=basef/numbase
-	newImageWave=100*(basef-stackWave)/basef
-	SetScale /P x 0,videoExposure,"ms", newImageWave
+	dffVideoWave=100*(basef-stackWave)/basef
+	SetScale /P x 0,videoExposure,"ms", dffVideoWave
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -466,8 +469,12 @@ End
 
 
 
-Function Append_DFoverF(stacknum)
-	Variable stacknum
+
+
+
+
+Function Append_DFoverF(iVideoWave)
+	Variable iVideoWave
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
@@ -478,9 +485,9 @@ Function Append_DFoverF(stacknum)
 	WAVE dff_avg
 	
 //	String stack
-	String newImageWaveName=sprintf1v("dff_%d", stacknum)
-//	sprintf stack, "stack_%d", stacknum
-	//sprintf newImageWaveName, "dff_%d", stacknum
+	String newImageWaveName=sprintf1v("dff_%d", iVideoWave)
+//	sprintf stack, "stack_%d", iVideoWave
+	//sprintf newImageWaveName, "dff_%d", iVideoWave
 	//PauseUpdate
 	AppendToGraph $newImageWaveName
 	DoWindow /F ImagerView
@@ -551,9 +558,9 @@ Function SetROIProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	elseif ( AreStringsEqual(ctrlName,"iROIBottomSV") )
 		ImagerSetIROIBottom(iROI,varNum)
 	elseif ( AreStringsEqual(ctrlName,"binWidthSV") )
-		ImagerSetBinWidth(iROI,varNum)
+		ImagerSetROIBinWidth(iROI,varNum)
 	elseif ( AreStringsEqual(ctrlName,"binHeightSV") )
-		ImagerSetBinHeight(iROI,varNum)
+		ImagerSetROIBinHeight(iROI,varNum)
 	endif
 	ImagerViewModelChanged()
 	DrawROI()

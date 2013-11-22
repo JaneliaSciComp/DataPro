@@ -138,12 +138,12 @@ Function ImagerViewUpdate()
 	// Calculate things we need
 	Variable ccdWidth=CameraCCDWidthGet()
 	Variable ccdHeight=CameraCCDHeightGet()
-	Variable iROILeft=roisWave[0][iROI]
-	Variable iROIRight=roisWave[1][iROI]
-	Variable iROITop=roisWave[2][iROI]
-	Variable iROIBottom=roisWave[3][iROI]
-	Variable binWidth=roisWave[4][iROI]
-	Variable binHeight=roisWave[5][iROI]
+	Variable iROILeft=ImagerGetIROILeft(iROI)
+	Variable iROIRight=ImagerGetIROIRight(iROI)
+	Variable iROITop=ImagerGetIROITop(iROI)
+	Variable iROIBottom=ImagerGetIROIBottom(iROI)
+	Variable binWidth=ImagerGetROIBinWidth(iROI)
+	Variable binHeight=ImagerGetROIBinWidth(iROI)
 
 	// Update stuff
 	SetVariable roinum_set,win=ImagerView,value= _NUM:(iROI+1)

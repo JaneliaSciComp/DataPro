@@ -119,6 +119,26 @@ End
 
 
 
+Function ImagerGetIROILeft(iROI)
+	Variable iROI
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE roisWave
+
+	// Get the value
+	Variable value=roisWave[0][iROI]
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+
+
 Function ImagerSetIROIRight(iROI,newValue)
 	Variable iROI
 	Variable newValue
@@ -143,6 +163,26 @@ End
 
 
 
+Function ImagerGetIROIRight(iROI)
+	Variable iROI
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE roisWave
+
+	// Get the value
+	Variable value=roisWave[1][iROI]
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+
+
 Function ImagerSetIROITop(iROI,newValue)
 	Variable iROI
 	Variable newValue
@@ -164,6 +204,26 @@ Function ImagerSetIROITop(iROI,newValue)
 	// Restore the original DF
 	SetDataFolder savedDF	
 End
+
+
+
+Function ImagerGetIROITop(iROI)
+	Variable iROI
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE roisWave
+
+	// Get the value
+	Variable value=roisWave[2][iROI]
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
 
 
 
@@ -192,7 +252,27 @@ End
 
 
 
-Function ImagerSetBinWidth(iROI,newValue)
+Function ImagerGetIROIBottom(iROI)
+	Variable iROI
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE roisWave
+
+	// Get the value
+	Variable value=roisWave[3][iROI]
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+
+
+Function ImagerSetROIBinWidth(iROI,newValue)
 	Variable iROI
 	Variable newValue
 	
@@ -215,8 +295,27 @@ End
 
 
 
+Function ImagerGetROIBinWidth(iROI)
+	Variable iROI
 
-Function ImagerSetBinHeight(iROI,newValue)
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE roisWave
+
+	// Get the value
+	Variable value=roisWave[4][iROI]
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+
+
+Function ImagerSetROIBinHeight(iROI,newValue)
 	Variable iROI
 	Variable newValue
 	
@@ -232,6 +331,26 @@ Function ImagerSetBinHeight(iROI,newValue)
 	if ( (1<=newValue) && (newValue<=ccdHeight) )
 		roisWave[5][iROI]=newValue
 	endif
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+
+
+Function ImagerGetROIBinHeight(iROI)
+	Variable iROI
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE roisWave
+
+	// Get the value
+	Variable value=roisWave[5][iROI]
 	
 	// Restore the original DF
 	SetDataFolder savedDF	

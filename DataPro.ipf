@@ -91,7 +91,7 @@ Menu "DataPro Image"
 	"Imager Controls", ImagerContConstructor()
 	"-"
 //	"Focus_Image"
-	"Acquire_Full_Image"
+//	"Acquire_Full_Image"
 	"Load_Full_Image"
 	"Load_Image_Stack"
 	"-"
