@@ -142,8 +142,8 @@ Function ImagerViewUpdate()
 	Variable iROIRight=ImagerGetIROIRight(iROI)
 	Variable iROITop=ImagerGetIROITop(iROI)
 	Variable iROIBottom=ImagerGetIROIBottom(iROI)
-	Variable binWidth=ImagerGetROIBinWidth(iROI)
-	Variable binHeight=ImagerGetROIBinWidth(iROI)
+	Variable binWidth=ImagerGetBinWidth()
+	Variable binHeight=ImagerGetBinHeight()
 
 	// Update stuff
 	SetVariable roinum_set,win=ImagerView,value= _NUM:(iROI+1)
@@ -154,8 +154,8 @@ Function ImagerViewUpdate()
 	SetVariable binWidthSV,win=ImagerView,limits={1,ccdWidth,1},value= _NUM:binWidth
 	SetVariable binHeightSV,win=ImagerView,limits={1,ccdHeight,1},value= _NUM:binHeight
 	
-	ValDisplay binnedFrameWidthVD, win=ImagerView, value= _NUM:(iROIRight-iROILeft+1)/binWidth
-	ValDisplay binnedFrameHeightVD, win=ImagerView, value= _NUM:(iROIBottom-iROITop+1)/binHeight
+	ValDisplay binnedFrameWidthVD, win=ImagerView, value= _NUM:(iROIRight-iROILeft)/binWidth
+	ValDisplay binnedFrameHeightVD, win=ImagerView, value= _NUM:(iROIBottom-iROITop)/binHeight
 
 	// Restore the original DF
 	SetDataFolder savedDF

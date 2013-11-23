@@ -171,7 +171,7 @@ Function GetROI(): GraphMarquee
 	//binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth
 	//binnedFrameHeight=(iROITop-iROIBottom+1)/binHeight
 	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
-	DrawROI()
+	ImageBrowserViewDrawROI()
 	
 	// Update the view
 	ImagerViewModelChanged()
@@ -201,7 +201,7 @@ Function GetBkgndROI(): GraphMarquee
 	//binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth
 	//binnedFrameHeight=(iROITop-iROIBottom+1)/binHeight
 	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
-	DrawROI()
+	ImageBrowserViewDrawROI()
 
 	// Update the view
 	ImagerViewModelChanged()
@@ -228,7 +228,7 @@ Function GetROI_and_Bkgnd(): GraphMarquee
 	Variable binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth
 	iROIRight=iROILeft+binnedFrameWidth
 	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
-	DrawROI()
+	ImageBrowserViewDrawROI()
 	
 	// Update the view
 	ImagerViewModelChanged()
@@ -257,7 +257,7 @@ Function Get_10x10_ROI(): GraphMarquee
 	//binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth
 	//binnedFrameHeight=(iROITop-iROIBottom+1)/binHeight
 	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
-	DrawROI()
+	ImageBrowserViewDrawROI()
 	
 	// Update the view
 	ImagerViewModelChanged()
@@ -282,7 +282,7 @@ Function Get_10x10_ROI_and_Bkgnd(): GraphMarquee
 	iROI=1
 	iROILeft+=200; iROIRight=iROILeft+9
 	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
-	DrawROI()
+	ImageBrowserViewDrawROI()
 	
 	// Update the view
 	ImagerViewModelChanged()

@@ -38,6 +38,8 @@ Function ImagerConstructor()
 	Variable /G iFullFrameWave=1	// The "sweep number" to use for the next full-frame image
 	Variable /G iFocusWave=1		// The "sweep number" to use for the next focus image
 	Variable /G iVideoWave=1		// The "sweep number" to use for the video
+	Variable /G binWidth=10	// CCD bins per pixel in x dimension
+	Variable /G binHeight=20	// CCD bins per pixel in y dimension
 	Variable /G nROIs=2	// the primary ROI, and the background ROI
 	Variable /G iROI=0	// indicates the primary ROI
 	//Variable /G binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth	// Width of the binned ROI image
@@ -49,12 +51,10 @@ Function ImagerConstructor()
 	Variable iROIRight=210	// column index of the right border of the ROI
 	Variable iROITop=200	// row index of the top border of the ROI
 	Variable iROIBottom=220	// row index of the bottom border of the ROI
-	Variable binWidth=10	// CCD bins per pixel in x dimension
-	Variable binHeight=20	// CCD bins per pixel in y dimension
 
-	Make /O /N=(6,nROIs) /I roisWave		// a 2D wave holding a ROI specification in each column
-	roisWave[][0]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
-	roisWave[][1]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
+	Make /O /N=(4,nROIs) /I roisWave		// a 2D wave holding a ROI specification in each column
+	roisWave[][0]={iROILeft, iROIRight, iROITop, iROIBottom}
+	roisWave[][1]={iROILeft, iROIRight, iROITop, iROIBottom}
 	
 	Make /O /N=(5,nROIs) /I roibox_x 		// a 2D wave holding ROI corner x-coords in each column
 	roibox_x[][0]={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}
@@ -134,6 +134,9 @@ Function ImagerGetIROILeft(iROI)
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
+	
+	// Return the value
+	return value
 End
 
 
@@ -178,6 +181,9 @@ Function ImagerGetIROIRight(iROI)
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
+
+	// Return the value
+	return value
 End
 
 
@@ -222,6 +228,9 @@ Function ImagerGetIROITop(iROI)
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
+
+	// Return the value
+	return value
 End
 
 
@@ -267,13 +276,15 @@ Function ImagerGetIROIBottom(iROI)
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
+
+	// Return the value
+	return value
 End
 
 
 
 
-Function ImagerSetROIBinWidth(iROI,newValue)
-	Variable iROI
+Function ImagerSetBinWidth(newValue)
 	Variable newValue
 	
 	// Switch to the data folder
@@ -281,12 +292,12 @@ Function ImagerSetROIBinWidth(iROI,newValue)
 	SetDataFolder root:DP_Imager
 	
 	// Declare instance vars
-	WAVE roisWave
+	NVAR binWidth
 
 	// Set the value
 	Variable ccdWidth=CameraCCDWidthGet()
 	if ( (1<=newValue) && (newValue<=ccdWidth) )
-		roisWave[4][iROI]=newValue
+		binWidth=newValue
 	endif
 	
 	// Restore the original DF
@@ -295,28 +306,28 @@ End
 
 
 
-Function ImagerGetROIBinWidth(iROI)
-	Variable iROI
-
+Function ImagerGetBinWidth()
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 	
 	// Declare instance vars
-	WAVE roisWave
+	NVAR binWidth
 
 	// Get the value
-	Variable value=roisWave[4][iROI]
+	Variable value=binWidth
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
+
+	// Return the value
+	return value
 End
 
 
 
 
-Function ImagerSetROIBinHeight(iROI,newValue)
-	Variable iROI
+Function ImagerSetBinHeight(newValue)
 	Variable newValue
 	
 	// Switch to the data folder
@@ -324,12 +335,12 @@ Function ImagerSetROIBinHeight(iROI,newValue)
 	SetDataFolder root:DP_Imager
 	
 	// Declare instance vars
-	WAVE roisWave
+	NVAR binHeight
 
 	// Set the value
 	Variable ccdHeight=CameraCCDHeightGet()
 	if ( (1<=newValue) && (newValue<=ccdHeight) )
-		roisWave[5][iROI]=newValue
+		binHeight=newValue
 	endif
 	
 	// Restore the original DF
@@ -339,21 +350,22 @@ End
 
 
 
-Function ImagerGetROIBinHeight(iROI)
-	Variable iROI
-
+Function ImagerGetBinHeight()
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 	
 	// Declare instance vars
-	WAVE roisWave
+	NVAR binHeight
 
 	// Get the value
-	Variable value=roisWave[5][iROI]
+	Variable value=binHeight
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
+
+	// Return the value
+	return value
 End
 
 

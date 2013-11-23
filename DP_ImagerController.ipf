@@ -12,44 +12,34 @@ Function ImagerContConstructor()
 End
 
 
-Function ImagerContAcquireVideo()
+Function ImagerContAcquireTriggeredVideo()
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 
 	// Declare the instance vars
-	SVAR focusWaveBaseName
-	NVAR iFocusWave
-	NVAR isImagingTriggered
-	NVAR iFullFrameWave
-	NVAR iFrame
-	NVAR previouswave
+	//SVAR focusWaveBaseName
+	//NVAR iFocusWave
+	//NVAR iFullFrameWave
 	NVAR isROI
 	NVAR isBackgroundROIToo
-	SVAR videoWaveBaseName
+	//SVAR videoWaveBaseName
 	WAVE roisWave
 	NVAR exposure
 	NVAR ccdTargetTemperature	
 	NVAR binWidth
 	NVAR binHeight
 	
-	Variable status, canceled
-	String message
-	//String command
-	isImagingTriggered=1
+	Variable isImagingTriggered=1
+	Variable doDisplay=0
 	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,exposure,ccdTargetTemperature,binWidth,binHeight)
-	//image_roi=2		// zero for full frame, one for specific ROI, two for ROI with background
-	isROI=1
-	isBackgroundROIToo=1
-	iFrame=0
 	EpiLightTurnOnOff(1)
-	Sleep /S 0.1
-	ImagerContAcquireVideoHelper(isImagingTriggered,0)
-	print "done with image stack"
-	Get_DFoverF_from_Stack(previouswave)
-	Append_DFoverF(previouswave)
+	ImagerContAcquireVideo(isImagingTriggered,doDisplay)
 	EpiLightTurnOnOff(0)
-	printf "%s%d: Image with EPhys done\r", videoWaveBaseName, previouswave
+	// These next two lines may need to come back in some form, but I'm not really clear on what they do
+	//Get_DFoverF_from_Stack(previouswave)
+	//Append_DFoverF(previouswave)
+	//printf "%s%d: Image with EPhys done\r", videoWaveBaseName, previouswave
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -181,7 +171,7 @@ Function ImagerContAcquireFullFrameImage()
 	SetDataFolder savedDF
 End
 
-Function ImagerContAcquireVideoHelper(isImagingTriggered, doDisplay)
+Function ImagerContAcquireVideo(isImagingTriggered, doDisplay)
 	Variable isImagingTriggered, doDisplay
 	//	isImagingTriggered: one=triggered, zero=not triggered
 	//	doDisplay: one=display stack, zero=don't display stack
@@ -282,7 +272,7 @@ Function StackButtonProc(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 
-	ImagerContAcquireVideoHelper(0,0)
+	ImagerContAcquireVideo(0,0)
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -317,7 +307,7 @@ End
 Function EphysImageButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	ImagerContAcquireVideo()
+	ImagerContAcquireTriggeredVideo()
 End
 
 //--------------------------------------- END OF BUTTON AND SETVAR PROCEDURES---------------------------------------//
@@ -558,12 +548,12 @@ Function SetROIProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	elseif ( AreStringsEqual(ctrlName,"iROIBottomSV") )
 		ImagerSetIROIBottom(iROI,varNum)
 	elseif ( AreStringsEqual(ctrlName,"binWidthSV") )
-		ImagerSetROIBinWidth(iROI,varNum)
+		ImagerSetBinWidth(varNum)
 	elseif ( AreStringsEqual(ctrlName,"binHeightSV") )
-		ImagerSetROIBinHeight(iROI,varNum)
+		ImagerSetBinHeight(varNum)
 	endif
 	ImagerViewModelChanged()
-	DrawROI()
+	ImageBrowserViewDrawROI()
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -590,53 +580,9 @@ Function ImagerContiROISVTwiddled(svStruct) : SetVariableControl
 	// do stuff
 	iROI=iROIPlusOne-1
 	ImagerViewModelChanged()
-	DrawROI()
+	ImageBrowserViewDrawROI()
 	
 	// Restore the original DF
 	SetDataFolder savedDF
 End
-
-Function DrawROI()
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-
-	// instance vars
-	NVAR iROI
-	//NVAR iROILeft, iROIRight, iROITop, iROIBottom
-	//NVAR binWidth, binHeight
-	//NVAR binnedFrameWidth, binnedFrameHeight
-	WAVE roisWave
-	WAVE roibox_x0, roibox_y0
-	WAVE roibox_x1, roibox_y1
-
-	// Extract things we need
-	Variable iROILeft=roisWave[0][iROI]
-	Variable iROIRight=roisWave[1][iROI]
-	Variable iROITop=roisWave[2][iROI]
-	Variable iROIBottom=roisWave[3][iROI]
-	Variable binWidth=roisWave[4][iROI]
-	Variable binHeight=roisWave[5][iROI]
-
-	String thebox_yName=sprintf1v("roibox_y%d", iROI)
-	WAVE thebox_y=$thebox_yName
-	thebox_y={iROITop, iROITop, iROIBottom, iROIBottom, iROITop}
-	String thebox_xName=sprintf1v("roibox_x%d", iROI)
-	WAVE thebox_x=$thebox_xName	
-	thebox_x={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}
-	if (wintype("Image_Display")>0)
-		DoWindow /F Image_Display
-		String removeit=Wavelist("roibox_yName*",";","WIN:Image_Display")
-		RemoveFromGraph /W=Image_Display $removeit
-		AppendToGraph roibox_y0 vs roibox_x0
-		ModifyGraph /Z lsize(roibox_y0)=1.5
-		AppendToGraph roibox_y1 vs roibox_x1
-		ModifyGraph /Z lsize(roibox_y1)=1.5,rgb(roibox_y1)=(0,65280,0)
-	endif
-	
-	// Restore the original DF
-	SetDataFolder savedDF
-End
-
-
 

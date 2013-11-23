@@ -102,3 +102,52 @@ Function ImageBrowserViewUpdate()
 	ModifyGraph /W=ImageBrowserView manTick={0,64,0,0},manMinor={8,8}
 End
 
+
+
+
+
+
+Function ImageBrowserViewDrawROI()
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+
+	// instance vars
+	NVAR iROI
+	//NVAR iROILeft, iROIRight, iROITop, iROIBottom
+	//NVAR binWidth, binHeight
+	//NVAR binnedFrameWidth, binnedFrameHeight
+	WAVE roisWave
+	WAVE roibox_x0, roibox_y0
+	WAVE roibox_x1, roibox_y1
+	NVAR binWidth
+	NVAR binHeight
+
+	// Extract things we need
+	Variable iROILeft=roisWave[0][iROI]
+	Variable iROIRight=roisWave[1][iROI]
+	Variable iROITop=roisWave[2][iROI]
+	Variable iROIBottom=roisWave[3][iROI]
+
+	String thebox_yName=sprintf1v("roibox_y%d", iROI)
+	WAVE thebox_y=$thebox_yName
+	thebox_y={iROITop, iROITop, iROIBottom, iROIBottom, iROITop}
+	String thebox_xName=sprintf1v("roibox_x%d", iROI)
+	WAVE thebox_x=$thebox_xName	
+	thebox_x={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}
+	if ( GraphExists("ImageBrowserView") )
+		DoWindow /F ImageBrowserView
+		String removeit=Wavelist("roibox_yName*",";","WIN:ImageBrowserView")
+		RemoveFromGraph /W=ImageBrowserView $removeit
+		AppendToGraph roibox_y0 vs roibox_x0
+		ModifyGraph /Z lsize(roibox_y0)=1.5
+		AppendToGraph roibox_y1 vs roibox_x1
+		ModifyGraph /Z lsize(roibox_y1)=1.5,rgb(roibox_y1)=(0,65280,0)
+	endif
+	
+	// Restore the original DF
+	SetDataFolder savedDF
+End
+
+
+
