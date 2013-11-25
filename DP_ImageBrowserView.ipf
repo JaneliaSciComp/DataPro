@@ -79,7 +79,7 @@ Function ImageBrowserViewUpdate()
 	String allVideoWaveNames=ImagerGetAllVideoWaveNames()
 	String allVideoWaveNamesFU="\""+allVideoWaveNames+"\""
 	Variable iVideo=WhichListItem(imageWaveName,allVideoWaveNames)
-	PopupMenu image_popup0, mode=iVideo+1, value= #allVideoWaveNamesFU
+	PopupMenu image_popup0, win=ImageBrowserView, mode=iVideo+1, value= #allVideoWaveNamesFU
 
 	// Update the frame selector
 	Variable nFrames=DimSize($imageWaveName, 2)
