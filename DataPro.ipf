@@ -43,7 +43,7 @@
 #include ":DP_Imager"
 #include ":DP_ImagerView"
 #include ":DP_ImagerController"
-#include ":DP_ImageBrowser"
+#include ":DP_ImageBrowserModel"
 #include ":DP_ImageBrowserView"
 #include ":DP_ImageBrowserController"
 #include ":DP_ImageTovers"

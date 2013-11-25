@@ -553,7 +553,8 @@ Function SetROIProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 		ImagerSetBinHeight(varNum)
 	endif
 	ImagerViewModelChanged()
-	ImageBrowserViewDrawROI()
+	ImageBrowserModelImagerChanged()
+	ImageBrowserViewModelChanged()
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -580,7 +581,7 @@ Function ImagerContiROISVTwiddled(svStruct) : SetVariableControl
 	// do stuff
 	iROI=iROIPlusOne-1
 	ImagerViewModelChanged()
-	ImageBrowserViewDrawROI()
+	ImageBrowserViewModelChanged()
 	
 	// Restore the original DF
 	SetDataFolder savedDF

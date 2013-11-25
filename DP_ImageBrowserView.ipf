@@ -10,7 +10,8 @@
 
 Function ImageBrowserViewConstructor()
 	// If the view already exists, just bring it forward
-	if (GraphExists("ImageBrowserView"))
+	Variable windowExists=GraphExists("ImageBrowserView")
+	if (windowExists)
 		DoWindow /F ImageBrowserView
 		return 0
 	endif
@@ -57,18 +58,24 @@ End
 
 
 
+
 Function ImageBrowserViewUpdate()
 	// If the view doesn't exist, nothing to do
 	if (!GraphExists("ImageBrowserView"))
 		return 0
 	endif
 
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_ImageBrowserModel
+
 	// Update the autoscaleOnFly checkbox
 	Variable autoscaleOnTheFly=ImageBrowserModGetAutoscaleFly()
 	CheckBox auto_on_fly_check0, win=ImageBrowserView, value=autoscaleOnTheFly
 	
 	// Update the image popup
-	String imageWaveName=ImageBrowserModGetImageWaveName()
+	String imageWaveName=ImageBrowserModGetImWaveName()
+	String imageWaveNameAbs=ImageBrowserModGetImWaveNameAbs()
 	String allVideoWaveNames=ImagerGetAllVideoWaveNames()
 	String allVideoWaveNamesFU="\""+allVideoWaveNames+"\""
 	Variable iVideo=WhichListItem(imageWaveName,allVideoWaveNames)
@@ -92,7 +99,7 @@ Function ImageBrowserViewUpdate()
 	//printf "oldImageName: %s\r", oldImageName
 	//RemoveImage /Z /W=ImageBrowserView $oldImageName
 	RemoveAllImagesFromGraph("ImageBrowserView")
-	AppendImage /W=ImageBrowserView /G=1 $imageWaveName
+	AppendImage /W=ImageBrowserView /G=1 $imageWaveNameAbs
 	
 	// Update the scaling, frame
 	ModifyImage /W=ImageBrowserView $imageWaveName ctab= {blackCount,whiteCount,Grays,0}, plane=iFrame
@@ -100,54 +107,31 @@ Function ImageBrowserViewUpdate()
 	// Re-do the formating stuff (do we need to do this here?)
 	ModifyGraph /W=ImageBrowserView margin(left)=29,margin(bottom)=22,margin(top)=36,gfSize=8,gmSize=8
 	ModifyGraph /W=ImageBrowserView manTick={0,64,0,0},manMinor={8,8}
-End
-
-
-
-
-
-
-Function ImageBrowserViewDrawROI()
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-
-	// instance vars
-	NVAR iROI
-	//NVAR iROILeft, iROIRight, iROITop, iROIBottom
-	//NVAR binWidth, binHeight
-	//NVAR binnedFrameWidth, binnedFrameHeight
-	WAVE roisWave
-	WAVE roibox_x0, roibox_y0
-	WAVE roibox_x1, roibox_y1
-	NVAR binWidth
-	NVAR binHeight
-
-	// Extract things we need
-	Variable iROILeft=roisWave[0][iROI]
-	Variable iROIRight=roisWave[1][iROI]
-	Variable iROITop=roisWave[2][iROI]
-	Variable iROIBottom=roisWave[3][iROI]
-
-	String thebox_yName=sprintf1v("roibox_y%d", iROI)
-	WAVE thebox_y=$thebox_yName
-	thebox_y={iROITop, iROITop, iROIBottom, iROIBottom, iROITop}
-	String thebox_xName=sprintf1v("roibox_x%d", iROI)
-	WAVE thebox_x=$thebox_xName	
-	thebox_x={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}
-	if ( GraphExists("ImageBrowserView") )
-		DoWindow /F ImageBrowserView
-		String removeit=Wavelist("roibox_yName*",";","WIN:ImageBrowserView")
-		RemoveFromGraph /W=ImageBrowserView $removeit
-		AppendToGraph roibox_y0 vs roibox_x0
-		ModifyGraph /Z lsize(roibox_y0)=1.5
-		AppendToGraph roibox_y1 vs roibox_x1
-		ModifyGraph /Z lsize(roibox_y1)=1.5,rgb(roibox_y1)=(0,65280,0)
-	endif
+	
+	// Update the ROIs
+	RemoveAllTracesFromGraph("ImageBrowserView")	
+	Variable nROIs=ImagerGetNROIs()
+	Variable iROICurrent=ImagerGetIROI()
+	Variable iROI
+	for (iROI=0; iROI<nROIs; iROI+=1)	
+		String xBoxName=sprintf1v("xBox%d",iROI)
+		Wave xBox=$xBoxName
+		String yBoxName=sprintf1v("yBox%d",iROI)
+		Wave yBox=$yBoxName
+		AppendToGraph /W=ImageBrowserView yBox vs xBox
+		//Print TraceNameList("ImageBrowserView",";",3)
+		//ModifyGraph /W=ImageBrowserView lsize($yBoxName)=1.5
+		if (iROI==iROICurrent)
+			ModifyGraph /W=ImageBrowserView rgb($yBoxName)=(0,0,65535)
+		else
+			ModifyGraph /W=ImageBrowserView rgb($yBoxName)=(0,0.7*65535,65535)
+		endif
+	endfor
 	
 	// Restore the original DF
-	SetDataFolder savedDF
+	SetDataFolder savedDF	 	
 End
+
 
 
 

@@ -56,18 +56,18 @@ Function ImagerConstructor()
 	roisWave[][0]={iROILeft, iROIRight, iROITop, iROIBottom}
 	roisWave[][1]={iROILeft, iROIRight, iROITop, iROIBottom}
 	
-	Make /O /N=(5,nROIs) /I roibox_x 		// a 2D wave holding ROI corner x-coords in each column
-	roibox_x[][0]={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}
-	roibox_x[][1]={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}
+	//Make /O /N=(5,nROIs) /I roibox_x 		// a 2D wave holding ROI corner x-coords in each column
+	//roibox_x[][0]={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}
+	//roibox_x[][1]={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}
 
-	Make /O /N=(5,nROIs) /I roibox_y 		// a 2D wave holding ROI corner y-coords in each column
-	roibox_y[][0]={iROITop, iROITop, iROIBottom, iROIBottom, iROITop}
-	roibox_y[][1]={iROITop, iROITop, iROIBottom, iROIBottom, iROITop}
+	//Make /O /N=(5,nROIs) /I roibox_y 		// a 2D wave holding ROI corner y-coords in each column
+	//roibox_y[][0]={iROITop, iROITop, iROIBottom, iROIBottom, iROITop}
+	//roibox_y[][1]={iROITop, iROITop, iROIBottom, iROIBottom, iROITop}
 	
-	Make /O /N=5 roibox_x0	// a 1D wave holding the ROI corner x-coords for the foreground ROI
-	Make /O /N=5 roibox_y0	// a 1D wave holding the ROI corner y-coords for the foreground ROI
-	Make /O /N=5 roibox_x1	// a 1D wave holding the ROI corner x-coords for the background ROI
-	Make /O /N=5 roibox_y1	// a 1D wave holding the ROI corner y-coords for the background ROI
+	//Make /O /N=5 roibox_x0={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}		// a 1D wave holding the ROI corner x-coords for the foreground ROI
+	//Make /O /N=5 roibox_y0={iROITop, iROITop, iROIBottom, iROIBottom, iROITop}		// a 1D wave holding the ROI corner y-coords for the foreground ROI
+	//Make /O /N=5 roibox_x1={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}		// a 1D wave holding the ROI corner x-coords for the background ROI
+	//Make /O /N=5 roibox_y1={iROITop, iROITop, iROIBottom, iROIBottom, iROITop}	 	// a 1D wave holding the ROI corner y-coords for the background ROI
 	
 	// make average wave for imaging
 	Make /O /N=(nFramesToAverage) dff_avg
@@ -369,6 +369,68 @@ Function ImagerGetBinHeight()
 End
 
 
+
+
+Function /WAVE ImagerGetROIsWave()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE roisWave
+
+	// Get the value
+	Duplicate /FREE roisWave value
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End
+
+
+
+
+
+Function ImagerGetNROIs()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE roisWave
+
+	// Get the value
+	Variable value=DimSize(roisWave,1)
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End
+
+
+
+
+Function ImagerGetIROI()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR iROI
+
+	// Get the value
+	Variable value=iROI
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End
 
 
 

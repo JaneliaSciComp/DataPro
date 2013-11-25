@@ -26,6 +26,9 @@ Function ImageBrowserModelConstructor()
 	Variable /G autoscaleOnTheFly=0
 		// Whether to automatically set blackCount, whiteCount to min/max of image/video
 	
+	// Sync the internal ROI boxes to the ROIs in the Imager
+	ImageBrowserUpdateROIs()
+	
 	// Restore the original DF
 	SetDataFolder savedDF	
 End
@@ -74,7 +77,7 @@ End
 
 
 
-Function /S ImageBrowserModGetImageWaveName()
+Function /S ImageBrowserModGetImWaveName()
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_ImageBrowserModel
@@ -88,6 +91,12 @@ Function /S ImageBrowserModGetImageWaveName()
 	SetDataFolder savedDF	
 
 	return value
+End
+
+
+
+Function /S ImageBrowserModGetImWaveNameAbs()
+	return "root:DP_Imager:"+ImageBrowserModGetImWaveName()
 End
 
 
@@ -260,3 +269,48 @@ Function ImageBrowserModelAutoscale()
 	// Restore the original DF
 	SetDataFolder savedDF			
 End
+
+
+
+
+Function ImageBrowserModelImagerChanged()
+	ImageBrowserUpdateROIs()
+End
+
+
+
+
+
+
+
+// Private methods
+
+Function ImageBrowserUpdateROIs()
+	// Syncs the internal representation of the ROIs to that of the Imager.
+
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_ImageBrowserModel
+
+	// Populate the DF
+	Wave roisWave=ImagerGetROIsWave()
+	Variable nROIs=DimSize(roisWave,1)
+	Variable iROI
+	for (iROI=0; iROI<nROIs; iROI+=1)
+		Variable iROILeft=roisWave[0][iROI]
+		Variable iROIRight=roisWave[1][iROI]
+		Variable iROITop=roisWave[2][iROI]
+		Variable iROIBottom=roisWave[3][iROI]
+		// Make a wave holding the x-coords of this ROI, for plotting
+		String xBoxName=sprintf1v("xBox%d",iROI)
+		Make /O $xBoxName={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}
+		// Make a wave holding the y-coords of this ROI, for plotting
+		String yBoxName=sprintf1v("yBox%d",iROI)
+		Make /O $yBoxName={iROITop, iROITop, iROIBottom, iROIBottom, iROITop}
+	endfor
+	
+	// Restore the original DF
+	SetDataFolder savedDF	 
+End
+
+ 
