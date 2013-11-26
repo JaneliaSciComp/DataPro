@@ -23,7 +23,9 @@ Function ImagerViewConstructor() : Panel
 	// This is used in several places
 	String absVarName
 	
-	NewPanel /W=(757,268,1068,741)  /N=ImagerView /K=1 as "Imager Controls"
+	Variable xOffset=1550
+	Variable yOffset=54
+	NewPanel /W=(xOffset,yOffset,xOffset+310,yOffset+472)  /N=ImagerView /K=1 as "Imager Controls"
 	Button flu_on,win=ImagerView,pos={10,40},size={130,20},proc=FluONButtonProc,title="Fluorescence ON"
 	Button flu_off,win=ImagerView,pos={10,10},size={130,20},proc=FluOFFButtonProc,title="Fluorescence OFF"
 	CheckBox imaging_check0,win=ImagerView,pos={14,244},size={114,14},proc=ImagingCheckProc,title="trigger filter wheel"
@@ -73,7 +75,6 @@ Function ImagerViewConstructor() : Panel
 	SetVariable imageseqnum_set,win=ImagerView,limits={0,10000,1},value= iVideoWave
 	
 	SetVariable roinum_set,win=ImagerView,pos={117,341},size={90,15},proc=ImagerContiROISVTwiddled,title="ROI no."
-	SetVariable roinum_set,win=ImagerView,format="%d",limits={1,2,1},value= _NUM:(iROI+1)
 	
 	SetVariable iROILeftSV,win=ImagerView,pos={64,370},size={75,15},proc=SetROIProc,title="left"
 	SetVariable iROILeftSV,win=ImagerView,format="%d"
@@ -144,9 +145,14 @@ Function ImagerViewUpdate()
 	Variable iROIBottom=ImagerGetIROIBottom(iROI)
 	Variable binWidth=ImagerGetBinWidth()
 	Variable binHeight=ImagerGetBinHeight()
+	Variable nROIs=ImagerGetNROIs()
 
 	// Update stuff
-	SetVariable roinum_set,win=ImagerView,value= _NUM:(iROI+1)
+	if (nROIs==0)
+		SetVariable roinum_set, win=ImagerView, value= _STR:"(none)"
+	else
+		SetVariable roinum_set, win=ImagerView, format="%d", limits={1,nROIs,1}, value= _NUM:(iROI+1)
+	endif
 	SetVariable iROILeftSV,win=ImagerView,limits={0,ccdWidth-1,1},value= _NUM:iROILeft
 	SetVariable iROIRightSV,win=ImagerView,limits={0,ccdWidth-1,1},value= _NUM:iROIRight
 	SetVariable iROITopSV,win=ImagerView,limits={0,ccdHeight-1,1},value= _NUM:iROITop

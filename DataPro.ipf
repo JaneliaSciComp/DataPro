@@ -83,13 +83,15 @@ Menu "DataPro"
 	"-"
 	"Switcher",SwitcherContConstructor()
 	"Axon Switcher",ASwitcherContConstructor()
+	"-"
+	"Imager Controls", ImagerContConstructor()
 End
 
 Menu "DataPro Image"
 //	"Data Pro_Menu"
 //	"-"
-	"Imager Controls", ImagerContConstructor()
-	"-"
+	//"Imager Controls", ImagerContConstructor()
+	//"-"
 //	"Focus_Image"
 //	"Acquire_Full_Image"
 	"Load_Full_Image"
@@ -166,5 +168,6 @@ Function MainContConstructors()
 	TestPulserContConstructor()
 	SweeperContConstructor()
 	BrowserContConstructor("NewOnlyIfNone")
+	ImagerContConstructor()
 End
 

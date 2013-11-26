@@ -18,7 +18,7 @@ Function SweeperViewConstructor() : Panel
 	NVAR dtWanted
 	NVAR totalDuration
 	
-	NewPanel /W=(720,54,720+290,54+708) /K=1 /N=SweeperView as "Sweeper Controls"
+	NewPanel /W=(730,54,730+290,54+708) /K=1 /N=SweeperView as "Sweeper Controls"
 	ModifyPanel /W=SweeperView fixedSize=1
 
 	CheckBox autoAnalyzeCheckBox,win=SweeperView,pos={175,1},size={58,14},title="Run hook functions"

@@ -13,7 +13,7 @@ Function ImagePlaneSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContr
 	String varName
 
 	ImageBrowserModelSetIFrame(varNum)
-	ImageBrowserViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
 	//ModifyImage ''#0 plane=(iFrame)
 End
 
@@ -24,7 +24,7 @@ Function BlackCountSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContr
 	String varName
 
 	ImageBrowserModelSetBlackCount(varNum)
-	ImageBrowserViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
 End
 
 Function WhiteCountSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
@@ -34,14 +34,14 @@ Function WhiteCountSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContr
 	String varName
 
 	ImageBrowserModelSetWhiteCount(varNum)
-	ImageBrowserViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
 End
 
 Function AutoGrayScaleButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
 	ImageBrowserModelAutoscale()
-	ImageBrowserViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
 End
 
 Function ImagePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
@@ -50,7 +50,7 @@ Function ImagePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String popStr
 
 	ImageBrowserModelSetVideo(popStr)
-	ImageBrowserViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
 End
 
 
@@ -59,7 +59,7 @@ Function ImageBrowserContAutoscaleCB(ctrlName,isChecked): CheckboxControl
 	Variable isChecked
 	
 	ImageBrowserModSetAutoscaleFly(isChecked)
-	ImageBrowserViewModelChanged()	
+	ImageBrowserViewModelEtcChanged()	
 
 End
 
@@ -71,5 +71,30 @@ Function ImageBrowserContSetVideo(imageWaveName)
 	
 	ImageBrowserModelSetVideo(imageWaveName)
 	RaiseOrCreateView("ImageBrowserView")
-	ImageBrowserViewModelChanged()	
+	ImageBrowserViewModelEtcChanged()	
 End
+
+
+
+
+
+// Marquee functions --- these are invoked by clicking inside a Marquee
+
+Menu "GraphMarquee"
+	"--"
+	"Add ROI", ImagerBrowserContAddROI()
+End
+
+Function ImagerBrowserContAddROI()
+	GetMarquee /W=ImageBrowserView /K left, bottom
+	Variable iROILeft=V_left
+	Variable iROIRight=V_right
+	Variable iROITop=V_top
+	Variable iROIBottom=V_bottom
+	ImagerAddROI(iROILeft, iROIRight, iROITop, iROIBottom)
+	ImageBrowserModelImagerChanged()
+	ImagerViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
+End
+
+

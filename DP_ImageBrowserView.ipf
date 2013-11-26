@@ -50,7 +50,9 @@ End
 
 
 
-Function ImageBrowserViewModelChanged()
+Function ImageBrowserViewModelEtcChanged()
+	// The Etc is because this is intended to signal the ImagerBrowserView that either the
+	// ImagerBrowserModel or the Imager has changed.
 	ImageBrowserViewUpdate()
 End
 

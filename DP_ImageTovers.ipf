@@ -150,146 +150,116 @@ End
 
 //----------------------------------------------------- ROI PROCEDURES -----------------------------------//
 
-Function GetROI(): GraphMarquee
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-
-	// instance vars
-	NVAR iROI
-	NVAR iROILeft, iROIRight, iROITop, iROIBottom
-	NVAR binWidth, binHeight
-	//NVAR binnedFrameWidth, binnedFrameHeight
-	WAVE roisWave
-
-	GetMarquee /K left, bottom
-	iROI=0
-	iROILeft=V_left; iROIRight=V_right
-	iROITop=V_top; iROIBottom=V_bottom
-	binWidth=1
-	binHeight=1
-	//binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth
-	//binnedFrameHeight=(iROITop-iROIBottom+1)/binHeight
-	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
-	ImageBrowserViewModelChanged()
-	
-	// Update the view
-	ImagerViewModelChanged()
-	
-	// Restore the original DF
-	SetDataFolder savedDF
-End
-
-Function GetBkgndROI(): GraphMarquee
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-
-	// instance vars
-	NVAR iROI
-	NVAR iROILeft, iROIRight, iROITop, iROIBottom
-	NVAR binWidth, binHeight
-	//NVAR binnedFrameWidth, binnedFrameHeight
-	WAVE roisWave
-
-	GetMarquee /K left, bottom
-	iROI=1		// the background ROI
-	iROILeft=V_left
-	iROIRight=V_right
-	binWidth=1
-	binHeight=1
-	//binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth
-	//binnedFrameHeight=(iROITop-iROIBottom+1)/binHeight
-	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
-	ImageBrowserViewModelChanged()
-
-	// Update the view
-	ImagerViewModelChanged()
-		
-	// Restore the original DF
-	SetDataFolder savedDF
-End
-
-Function GetROI_and_Bkgnd(): GraphMarquee
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-
-	// instance vars
-	NVAR iROI
-	NVAR iROILeft, iROIRight, iROITop, iROIBottom
-	NVAR binWidth, binHeight
-	//NVAR binnedFrameWidth, binnedFrameHeight
-	WAVE roisWave
-
-	GetROI()
-	iROI=1	// the background ROI
-	iROILeft+=200; 
-	Variable binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth
-	iROIRight=iROILeft+binnedFrameWidth
-	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
-	ImageBrowserViewModelChanged()
-	
-	// Update the view
-	ImagerViewModelChanged()
-		
-	// Restore the original DF
-	SetDataFolder savedDF
-End
-
-Function Get_10x10_ROI(): GraphMarquee
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-
-	// instance vars
-	NVAR iROI, iROILeft, iROIRight, iROITop, iROIBottom
-	NVAR binWidth, binHeight
-	//NVAR binnedFrameWidth, binnedFrameHeight
-	WAVE roisWave
-
-	GetMarquee /K left, bottom
-	iROI=0	// the primary ROI
-	binWidth=10
-	binHeight=10
-	iROILeft=round(V_left+(V_right-V_left)/2); iROIRight=iROILeft+binWidth-1
-	iROITop=round(V_top-(V_top-V_bottom)/2); iROIBottom=iROITop-binHeight+1
-	//binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth
-	//binnedFrameHeight=(iROITop-iROIBottom+1)/binHeight
-	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
-	ImageBrowserViewModelChanged()
-	
-	// Update the view
-	ImagerViewModelChanged()
-	
-	// Restore the original DF
-	SetDataFolder savedDF
-End
-
-Function Get_10x10_ROI_and_Bkgnd(): GraphMarquee
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-
-	// instance vars
-	NVAR iROI, iROILeft, iROIRight, iROITop, iROIBottom
-	NVAR binWidth, binHeight
-	//NVAR binnedFrameWidth, binnedFrameHeight
-	WAVE roisWave
-
-	GetMarquee /K left, bottom
-	Get_10x10_ROI()
-	iROI=1
-	iROILeft+=200; iROIRight=iROILeft+9
-	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
-	ImageBrowserViewModelChanged()
-	
-	// Update the view
-	ImagerViewModelChanged()
-	
-	// Restore the original DF
-	SetDataFolder savedDF
-End
+//Function GetBkgndROI(): GraphMarquee
+//	// Switch to the imaging data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Imager
+//
+//	// instance vars
+//	NVAR iROI
+//	NVAR iROILeft, iROIRight, iROITop, iROIBottom
+//	NVAR binWidth, binHeight
+//	//NVAR binnedFrameWidth, binnedFrameHeight
+//	WAVE roisWave
+//
+//	GetMarquee /K left, bottom
+//	iROI=1		// the background ROI
+//	iROILeft=V_left
+//	iROIRight=V_right
+//	binWidth=1
+//	binHeight=1
+//	//binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth
+//	//binnedFrameHeight=(iROITop-iROIBottom+1)/binHeight
+//	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
+//	ImageBrowserViewModelEtcChanged()
+//
+//	// Update the view
+//	ImagerViewModelChanged()
+//		
+//	// Restore the original DF
+//	SetDataFolder savedDF
+//End
+//
+//Function GetROI_and_Bkgnd(): GraphMarquee
+//	// Switch to the imaging data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Imager
+//
+//	// instance vars
+//	NVAR iROI
+//	NVAR iROILeft, iROIRight, iROITop, iROIBottom
+//	NVAR binWidth, binHeight
+//	//NVAR binnedFrameWidth, binnedFrameHeight
+//	WAVE roisWave
+//
+//	//GetROI()
+//	iROI=1	// the background ROI
+//	iROILeft+=200; 
+//	Variable binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth
+//	iROIRight=iROILeft+binnedFrameWidth
+//	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
+//	ImageBrowserViewModelEtcChanged()
+//	
+//	// Update the view
+//	ImagerViewModelChanged()
+//		
+//	// Restore the original DF
+//	SetDataFolder savedDF
+//End
+//
+//Function Get_10x10_ROI(): GraphMarquee
+//	// Switch to the imaging data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Imager
+//
+//	// instance vars
+//	NVAR iROI, iROILeft, iROIRight, iROITop, iROIBottom
+//	NVAR binWidth, binHeight
+//	//NVAR binnedFrameWidth, binnedFrameHeight
+//	WAVE roisWave
+//
+//	GetMarquee /K left, bottom
+//	iROI=0	// the primary ROI
+//	binWidth=10
+//	binHeight=10
+//	iROILeft=round(V_left+(V_right-V_left)/2); iROIRight=iROILeft+binWidth-1
+//	iROITop=round(V_top-(V_top-V_bottom)/2); iROIBottom=iROITop-binHeight+1
+//	//binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth
+//	//binnedFrameHeight=(iROITop-iROIBottom+1)/binHeight
+//	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
+//	ImageBrowserViewModelEtcChanged()
+//	
+//	// Update the view
+//	ImagerViewModelChanged()
+//	
+//	// Restore the original DF
+//	SetDataFolder savedDF
+//End
+//
+//Function Get_10x10_ROI_and_Bkgnd(): GraphMarquee
+//	// Switch to the imaging data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Imager
+//
+//	// instance vars
+//	NVAR iROI, iROILeft, iROIRight, iROITop, iROIBottom
+//	NVAR binWidth, binHeight
+//	//NVAR binnedFrameWidth, binnedFrameHeight
+//	WAVE roisWave
+//
+//	GetMarquee /K left, bottom
+//	Get_10x10_ROI()
+//	iROI=1
+//	iROILeft+=200; iROIRight=iROILeft+9
+//	roisWave[][iROI]={iROILeft, iROIRight, iROITop, iROIBottom, binWidth, binHeight}
+//	ImageBrowserViewModelEtcChanged()
+//	
+//	// Update the view
+//	ImagerViewModelChanged()
+//	
+//	// Restore the original DF
+//	SetDataFolder savedDF
+//End
 
 Function DFF_From_Stack(imagestack)
 	String imagestack

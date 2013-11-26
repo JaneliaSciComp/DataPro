@@ -554,7 +554,7 @@ Function SetROIProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	endif
 	ImagerViewModelChanged()
 	ImageBrowserModelImagerChanged()
-	ImageBrowserViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -581,9 +581,11 @@ Function ImagerContiROISVTwiddled(svStruct) : SetVariableControl
 	// do stuff
 	iROI=iROIPlusOne-1
 	ImagerViewModelChanged()
-	ImageBrowserViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
 	
 	// Restore the original DF
 	SetDataFolder savedDF
 End
+
+
 

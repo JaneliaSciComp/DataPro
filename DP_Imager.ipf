@@ -40,34 +40,14 @@ Function ImagerConstructor()
 	Variable /G iVideoWave=1		// The "sweep number" to use for the video
 	Variable /G binWidth=10	// CCD bins per pixel in x dimension
 	Variable /G binHeight=20	// CCD bins per pixel in y dimension
-	Variable /G nROIs=2	// the primary ROI, and the background ROI
-	Variable /G iROI=0	// indicates the primary ROI
+	Variable /G iROI=nan		// indicates the current ROI
 	//Variable /G binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth	// Width of the binned ROI image
 	//Variable /G binnedFrameHeight=(iROIBottom-iROITop+1)/binHeight		// Height of the binned ROI image
 	//Variable /G blackCount=0		// the CCD count that gets mapped to black
 	//Variable /G whiteCount=2^16-1	// the CCD count that gets mapped to white
 	
-	Variable iROILeft=200	// column index of the left border of the ROI
-	Variable iROIRight=210	// column index of the right border of the ROI
-	Variable iROITop=200	// row index of the top border of the ROI
-	Variable iROIBottom=220	// row index of the bottom border of the ROI
-
+	Variable nROIs=0
 	Make /O /N=(4,nROIs) /I roisWave		// a 2D wave holding a ROI specification in each column
-	roisWave[][0]={iROILeft, iROIRight, iROITop, iROIBottom}
-	roisWave[][1]={iROILeft, iROIRight, iROITop, iROIBottom}
-	
-	//Make /O /N=(5,nROIs) /I roibox_x 		// a 2D wave holding ROI corner x-coords in each column
-	//roibox_x[][0]={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}
-	//roibox_x[][1]={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}
-
-	//Make /O /N=(5,nROIs) /I roibox_y 		// a 2D wave holding ROI corner y-coords in each column
-	//roibox_y[][0]={iROITop, iROITop, iROIBottom, iROIBottom, iROITop}
-	//roibox_y[][1]={iROITop, iROITop, iROIBottom, iROIBottom, iROITop}
-	
-	//Make /O /N=5 roibox_x0={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}		// a 1D wave holding the ROI corner x-coords for the foreground ROI
-	//Make /O /N=5 roibox_y0={iROITop, iROITop, iROIBottom, iROIBottom, iROITop}		// a 1D wave holding the ROI corner y-coords for the foreground ROI
-	//Make /O /N=5 roibox_x1={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}		// a 1D wave holding the ROI corner x-coords for the background ROI
-	//Make /O /N=5 roibox_y1={iROITop, iROITop, iROIBottom, iROIBottom, iROITop}	 	// a 1D wave holding the ROI corner y-coords for the background ROI
 	
 	// make average wave for imaging
 	Make /O /N=(nFramesToAverage) dff_avg
@@ -434,4 +414,32 @@ End
 
 
 
+
+Function ImagerAddROI(iROILeft, iROIRight, iROITop, iROIBottom)
+	Variable iROILeft
+	Variable iROIRight
+	Variable iROITop
+	Variable iROIBottom
+	
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE roisWave
+	NVAR iROI
+	
+	// Add the new ROI
+	Variable nROIsOriginal=ImagerGetNROIs()
+	Variable nROIs=nROIsOriginal+1
+	Redimension /N=(4,nROIs) roisWave
+	iROI=nROIs-1
+	roisWave[0,iROI]=iROILeft
+	roisWave[1,iROI]=iROIRight
+	roisWave[2,iROI]=iROITop
+	roisWave[3,iROI]=iROIBottom
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
 
