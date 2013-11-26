@@ -80,11 +80,6 @@ End
 
 // Marquee functions --- these are invoked by clicking inside a Marquee
 
-Menu "GraphMarquee"
-	"--"
-	"Add ROI", ImagerBrowserContAddROI()
-End
-
 Function ImagerBrowserContAddROI()
 	GetMarquee /W=ImageBrowserView /K left, bottom
 	Variable iROILeft=V_left

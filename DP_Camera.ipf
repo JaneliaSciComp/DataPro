@@ -74,7 +74,7 @@ Function CameraConstructor()
 		endif
 		//printf "areWeForReal: %d\r", areWeForReal
 		if (!areWeForReal)
-			Redimension /N=(heightCCDFake,widthCCDFake,countFrameFake) bufferFrame
+			Redimension /N=(widthCCDFake,heightCCDFake,countFrameFake) bufferFrame		// sic: this is how Igor Pro organizes image data 
 		endif
 	endif
 
@@ -508,8 +508,9 @@ Function CameraAcquireStop()
 		// Fill the framebuffer with fake data
 		Variable widthROIBinnedFake=floor(widthROIDesiredFake/widthBinFake)
 		Variable heightROIBinnedFake=floor(heightROIDesiredFake/heightBinFake)			
-		Redimension /N=(heightROIBinnedFake,widthROIBinnedFake,countFrameFake) bufferFrame
+		Redimension /N=(widthROIBinnedFake,heightROIBinnedFake,countFrameFake) bufferFrame	// sic, this is how Igor Pro organizes image data
 		bufferFrame=2^15+(2^12)*gnoise(1)
+		//bufferFrame=p
 				
 		// Note that the acquisiton is done
 		isAcquisitionOngoingFake=0

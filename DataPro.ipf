@@ -106,6 +106,11 @@ Menu "DataPro Image"
 	//"Get_SIDX_Image"
 End
 
+// This adds it to the marquee pop-up menu in a graph window
+Menu "GraphMarquee"
+	"-"
+	"Add ROI", ImagerBrowserContAddROI()
+End
 
 //Function IgorStartOrNewHook(igorApplicationNameStr)
 //	String igorApplicationNameStr

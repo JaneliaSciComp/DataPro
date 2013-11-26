@@ -25,7 +25,11 @@ Function ImagerViewConstructor() : Panel
 	
 	Variable xOffset=1550
 	Variable yOffset=54
-	NewPanel /W=(xOffset,yOffset,xOffset+310,yOffset+472)  /N=ImagerView /K=1 as "Imager Controls"
+	Variable panelWidth=310
+	Variable panelHeight=472
+	NewPanel /W=(xOffset,yOffset,xOffset+panelWidth,yOffset+panelHeight)  /N=ImagerView /K=1 as "Imager Controls"
+	ModifyPanel /W=ImagerView fixedSize=1
+
 	Button flu_on,win=ImagerView,pos={10,40},size={130,20},proc=FluONButtonProc,title="Fluorescence ON"
 	Button flu_off,win=ImagerView,pos={10,10},size={130,20},proc=FluOFFButtonProc,title="Fluorescence OFF"
 	CheckBox imaging_check0,win=ImagerView,pos={14,244},size={114,14},proc=ImagingCheckProc,title="trigger filter wheel"
@@ -74,27 +78,49 @@ Function ImagerViewConstructor() : Panel
 	SetVariable imageseqnum_set,win=ImagerView,pos={227,223},size={70,15},title="no."
 	SetVariable imageseqnum_set,win=ImagerView,limits={0,10000,1},value= iVideoWave
 	
-	SetVariable roinum_set,win=ImagerView,pos={117,341},size={90,15},proc=ImagerContiROISVTwiddled,title="ROI no."
-	
-	SetVariable iROILeftSV,win=ImagerView,pos={64,370},size={75,15},proc=SetROIProc,title="left"
-	SetVariable iROILeftSV,win=ImagerView,format="%d"
-	SetVariable iROIRightSV,win=ImagerView,pos={54,395},size={85,15},proc=SetROIProc,title="right"
-	SetVariable iROIRightSV,win=ImagerView,format="%d"
-	SetVariable iROITopSV,win=ImagerView,pos={182,371},size={77,15},proc=SetROIProc,title="top"
-	SetVariable iROITopSV,win=ImagerView,format="%d"
-	SetVariable iROIBottomSV,win=ImagerView,pos={159,395},size={100,15},proc=SetROIProc,title="bottom"
-	SetVariable iROIBottomSV,win=ImagerView,format="%d"
-	SetVariable binWidthSV,win=ImagerView,pos={55,419},size={85,15},proc=SetROIProc,title="x bin"
+	SetVariable binWidthSV,win=ImagerView,pos={55,338},size={85,15},proc=SetROIProc,title="x bin"
 	SetVariable binWidthSV,win=ImagerView,format="%d"
-	SetVariable binHeightSV,win=ImagerView,pos={174,419},size={85,15},proc=SetROIProc,title="y bin"
+	SetVariable binHeightSV,win=ImagerView,pos={174,338},size={85,15},proc=SetROIProc,title="y bin"
 	SetVariable binHeightSV,win=ImagerView,format="%d"
 
-	//absVarName=AbsoluteVarName("root:DP_Imager","binnedFrameWidth")
-	ValDisplay binnedFrameWidthVD,win=ImagerView,pos={54,444},size={85,14},title="x pixels",format="%4.2f"
+	// ROI Index
+	yOffset=341+25+4
+	Variable width=70
+	Variable height=16
+	SetVariable roinum_set,win=ImagerView,pos={(panelWidth-width)/2,yOffset},size={width,height},proc=ImagerContiROISVTwiddled,title="ROI #:"
+
+	// The four ROI borders
+	Variable xCenter=panelWidth/2
+	Variable yCenter=(370+395)/2+25+8
+	Variable dx=56	// horzontal distance from center to closest edge of right/left SV
+	Variable dy=4	// vertical distance from center to closest edge of top/bottom SV
+	
+	// Top
+	width=70
+	SetVariable iROITopSV,win=ImagerView,pos={xCenter-width/2,yCenter-dy-height},size={width,height},proc=SetROIProc,title="Top:"
+	SetVariable iROITopSV,win=ImagerView,format="%d"
+	
+	width=72
+	SetVariable iROILeftSV,win=ImagerView,pos={xCenter-dx-width,yCenter-height/2},size={width,height},proc=SetROIProc,title="Left:"
+	SetVariable iROILeftSV,win=ImagerView,format="%d"
+	
+	width=76
+	SetVariable iROIRightSV,win=ImagerView,pos={xCenter+dx,yCenter-height/2},size={width,height},proc=SetROIProc,title="Right:"
+	SetVariable iROIRightSV,win=ImagerView,format="%d"
+	
+	width=86
+	SetVariable iROIBottomSV,win=ImagerView,pos={xCenter-width/2,yCenter+dy},size={width,height},proc=SetROIProc,title="Bottom:"
+	SetVariable iROIBottomSV,win=ImagerView,format="%d"
+
+	// Binned width, height
+	yOffset=450
+	dx=10	// horzontal distance from center to closest edge of right/left VD
+	width=110
+	ValDisplay binnedFrameWidthVD,win=ImagerView,pos={xCenter-dx-width,yOffset},size={width,height},title="Binned width:",format="%4.2f"
 	ValDisplay binnedFrameWidthVD,win=ImagerView,limits={0,0,0},barmisc={0,1000}
 	
 	//absVarName=AbsoluteVarName("root:DP_Imager","binnedFrameHeight")
-	ValDisplay binnedFrameHeightVD,win=ImagerView,pos={173,446},size={85,14},title="y pixels",format="%4.2f"
+	ValDisplay binnedFrameHeightVD,win=ImagerView,pos={xCenter+dx,yOffset},size={width,height},title="Binned height:",format="%4.2f"
 	ValDisplay binnedFrameHeightVD,win=ImagerView,limits={0,0,0},barmisc={0,1000}
 	
 	Button getstac_button,win=ImagerView,pos={125,253},size={80,20},proc=StackButtonProc,title="GetStack"

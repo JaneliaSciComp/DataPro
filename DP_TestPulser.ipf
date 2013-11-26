@@ -46,6 +46,7 @@ Function TestPulserViewConstructor() : Graph
 	Variable widthInPoints=pointsPerPixel*width
 	Variable heightInPoints=pointsPerPixel*height
 	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) /N=TestPulserView /K=1 as "Test Pulser"
+	//ModifyPanel /W=TestPulserView fixedSize=1	// Apparently there's no way to fix the size of a graph window
 	
 	// Draw the top "panel"
 	ControlBar /T /W=TestPulserView 80

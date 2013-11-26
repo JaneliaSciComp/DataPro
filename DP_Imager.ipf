@@ -434,10 +434,10 @@ Function ImagerAddROI(iROILeft, iROIRight, iROITop, iROIBottom)
 	Variable nROIs=nROIsOriginal+1
 	Redimension /N=(4,nROIs) roisWave
 	iROI=nROIs-1
-	roisWave[0,iROI]=iROILeft
-	roisWave[1,iROI]=iROIRight
-	roisWave[2,iROI]=iROITop
-	roisWave[3,iROI]=iROIBottom
+	roisWave[0][iROI]=iROILeft
+	roisWave[1][iROI]=iROIRight
+	roisWave[2][iROI]=iROITop
+	roisWave[3][iROI]=iROIBottom
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
