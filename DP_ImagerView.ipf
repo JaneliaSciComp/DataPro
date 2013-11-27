@@ -34,7 +34,7 @@ Function ImagerViewConstructor() : Panel
 	Button flu_off,win=ImagerView,pos={10,10},size={130,20},proc=FluOFFButtonProc,title="Fluorescence OFF"
 	CheckBox imaging_check0,win=ImagerView,pos={14,244},size={114,14},proc=ImagingCheckProc,title="trigger filter wheel"
 	CheckBox imaging_check0,win=ImagerView,value= 1
-	Button button0,win=ImagerView,pos={215,283},size={80,20},proc=DFFButtonProc,title="Append DF/F"
+	Button button0,win=ImagerView,pos={215,283},size={80,20},proc=AppendDFFButtonProc,title="Append DF/F"
 	Button button1,win=ImagerView,pos={9,190},size={130,20},proc=EphysImageButtonProc,title="Electrophys. + Image"
 	SetVariable setimagename0,win=ImagerView,pos={141,223},size={80,15},title="name"
 	SetVariable setimagename0,win=ImagerView,value= videoWaveBaseName
@@ -85,7 +85,7 @@ Function ImagerViewConstructor() : Panel
 
 	// ROI Index
 	yOffset=341+25+4
-	Variable width=70
+	Variable width=80
 	Variable height=16
 	SetVariable roinum_set,win=ImagerView,pos={(panelWidth-width)/2,yOffset},size={width,height},proc=ImagerContiROISVTwiddled,title="ROI #:"
 
@@ -123,7 +123,7 @@ Function ImagerViewConstructor() : Panel
 	ValDisplay binnedFrameHeightVD,win=ImagerView,pos={xCenter+dx,yOffset},size={width,height},title="Binned height:",format="%4.2f"
 	ValDisplay binnedFrameHeightVD,win=ImagerView,limits={0,0,0},barmisc={0,1000}
 	
-	Button getstac_button,win=ImagerView,pos={125,253},size={80,20},proc=StackButtonProc,title="GetStack"
+	Button getstac_button,win=ImagerView,pos={125,253},size={80,20},proc=StackButtonProc,title="Take Video"
 	CheckBox show_roi_check0,win=ImagerView,pos={109,286},size={94,14},title="Show ROI Image"
 	CheckBox show_roi_check0,win=ImagerView,value= 0
 	

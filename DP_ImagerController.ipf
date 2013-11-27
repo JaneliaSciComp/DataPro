@@ -220,7 +220,7 @@ End
 
 //------------------------------------- START OF BUTTON AND SETVAR PROCEDURES  ----------------------------------------------//
 
-Function DFFButtonProc(ctrlName) : ButtonControl
+Function AppendDFFButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 	// Switch to the imaging data folder
@@ -243,10 +243,11 @@ Function ResetAvgButtonProc(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 
-	NVAR nFramesToAverage=nFramesToAverage
-	Wave average=dff_avg
-	average=0
-	nFramesToAverage=0
+	NVAR nFramesInAverage
+	WAVE dff_avg
+	
+	dff_avg=0
+	nFramesInAverage=0
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -275,7 +276,10 @@ Function StackButtonProc(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 
-	ImagerContAcquireVideo(0,0)
+	Variable isImagingTriggered=0
+	Variable doDisplay=0
+	
+	ImagerContAcquireVideo(isImagingTriggered,doDisplay)
 	
 	// Restore the original DF
 	SetDataFolder savedDF
@@ -435,7 +439,7 @@ Function Get_DFoverF_from_Stack(iVideoWave)
 	SVAR videoWaveBaseName
 	NVAR videoExposure
 	
-	Variable numbase=16
+	Variable numBase=16		// number of frames to use for calculation of baseline fluorescence?
 	String videoWaveName=sprintf2sv("%s%d",videoWaveBaseName, iVideoWave)
 	String dffVideoWaveName=sprintf1v("dff_%d", iVideoWave)
 	//sprintf stackWaveName, "%s%d", videoWaveBaseName, iVideoWave
@@ -446,14 +450,14 @@ Function Get_DFoverF_from_Stack(iVideoWave)
 	Make /O /N=(numpnts($videoWaveName)) $dffVideoWaveName
 	Wave dffVideoWave=$dffVideoWaveName
 	Wave stackWave=$videoWaveName
-	Variable basef=0
+	Variable fSummed=0
 	Variable i=0
-	do
-		basef+=stackWave[i]
+	for (i=0; i<numBase; i+=1)
+		fSummed+=stackWave[i]
 		i+=1
-	while (i<numbase)
-	basef=basef/numbase
-	dffVideoWave=100*(basef-stackWave)/basef
+	endfor
+	Variable fBaseline=fSummed/numBase
+	dffVideoWave=100*(fBaseline-stackWave)/fBaseline		// inverted, presumably makes sense for original fluorophore
 	SetScale /P x 0,videoExposure,"ms", dffVideoWave
 	
 	// Restore the original DF
@@ -474,7 +478,7 @@ Function Append_DFoverF(iVideoWave)
 	SetDataFolder root:DP_Imager
 	
 	// instance vars
-	NVAR nFramesToAverage
+	NVAR nFramesInAverage
 	WAVE dff_avg
 	
 //	String stack
@@ -486,15 +490,15 @@ Function Append_DFoverF(iVideoWave)
 	DoWindow /F ImagerView
 	ControlInfo showimageavg_check0
 	if (V_value>0)
-		if (nFramesToAverage<1)
+		if (nFramesInAverage==0)
 			Duplicate /O $newImageWaveName dff_avg
-			nFramesToAverage+=1
+			nFramesInAverage+=1
 		else
-			dff_avg*=nFramesToAverage
+			dff_avg*=nFramesInAverage
 			WAVE newImageWave=$newImageWaveName
 			dff_avg+=newImageWave
-			nFramesToAverage+=1
-			dff_avg/=nFramesToAverage
+			nFramesInAverage+=1
+			dff_avg/=nFramesInAverage
 			AppendToGraph dff_avg
 		endif
 	endif
@@ -502,8 +506,8 @@ Function Append_DFoverF(iVideoWave)
 	ModifyGraph lsize($newImageWaveName)=1.5
 	ModifyGraph mode($newImageWaveName)=6
 	ModifyGraph marker($newImageWaveName)=19
-//	print nFramesToAverage
-	if (nFramesToAverage>1)
+//	print nFramesInAverage
+	if (nFramesInAverage>1)
 		ModifyGraph lsize(dff_avg)=1.5,rgb(dff_avg)=(0,52224,0)
 		ModifyGraph offset(dff_avg)={50,0}
 	endif
@@ -527,6 +531,11 @@ Function Append_DFoverF(iVideoWave)
 	// Restore the original DF
 	SetDataFolder savedDF
 End
+
+
+
+
+
 
 Function SetROIProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName

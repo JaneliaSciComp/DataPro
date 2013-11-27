@@ -30,7 +30,6 @@ Function ImagerConstructor()
 	Variable /G focusingExposure=100		// duration of each exposure when focusing, in ms
 	Variable /G exposure=100		// duration of each frame exposure for full-frame images, in ms
 	Variable /G videoExposure=50	// duration of each frame for triggered video, in ms
-	Variable /G nFramesToAverage=0		// number of frames to average (not sure for what purpose)
 	//Variable /G iFrame		// Frame index to show in the browser
 	String /G fullFrameWaveBaseName="full_"		// the base name of the full-frame image waves, including the underscore
 	String /G focusWaveBaseName="full_"		// the base name of the focusing image waves, including the underscore
@@ -50,7 +49,8 @@ Function ImagerConstructor()
 	Make /O /N=(4,nROIs) /I roisWave		// a 2D wave holding a ROI specification in each column
 	
 	// make average wave for imaging
-	Make /O /N=(nFramesToAverage) dff_avg
+	Variable /G nFramesInAverage=0		// number of frames to average, I think for calculating dF/F
+	Make /O /N=(nFramesInAverage) dff_avg
 	
 	// Restore the original data folder
 	SetDataFolder savedDF	
