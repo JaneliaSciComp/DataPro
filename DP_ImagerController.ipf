@@ -53,7 +53,7 @@ Function ImagerContFocus()
 	// Declare the object vars
 	SVAR fullFrameWaveBaseName
 	//NVAR iFocusWave
-	NVAR iFullFrameWave
+	//NVAR iFullFrameWave
 	WAVE roisWave
 	NVAR exposure
 	NVAR ccdTargetTemperature
@@ -70,7 +70,8 @@ Function ImagerContFocus()
 	//String message
 	//Variable frames_per_sequence, frames
 	//String wave_image
-	String wave_image=sprintf2sv("%s%d", fullFrameWaveBaseName, iFullFrameWave)
+	Variable iFullFrameWave=SweeperGetNextSweepIndex()
+	String wave_image=sprintf2sv("%s_%d", fullFrameWaveBaseName, iFullFrameWave)
 	Variable frames_per_sequence=1
 	Variable frames=1
 	Variable isImagingTriggered=0			// set to one for triggered images
@@ -80,7 +81,7 @@ Function ImagerContFocus()
 	Sleep /S 0.1
 	//ImagerFocus()
 
-	String imageWaveNameRel=sprintf2sv("%s%d", fullFrameWaveBaseName, iFullFrameWave)
+	String imageWaveNameRel=sprintf2sv("%s_%d", fullFrameWaveBaseName, iFullFrameWave)
 	String imageWaveNameAbs=sprintf1s("root:DP_Imager:%s",imageWaveNameRel)
 	
 	Variable	nFrames=1
@@ -114,12 +115,15 @@ Function ImagerContFocus()
 	FancyCameraDisarm()	
 		
 	EpiLightSetIsOn(0)
-	iFullFrameWave+=1
+	SweeperIncrementNextSweepIndex()
+	SweeperViewSweeperChanged()
+	//iFullFrameWave+=1
 	//iFocusWave=iFullFrameWave
 	//printf "%s: Focus Image done\r", wave_image
 
 	// Call this to make sure the image gets auto-scaled properly if needed
-	ImageBrowserContSetVideo(imageWaveNameRel)
+	ImageBrowserModelSetVideo(imageWaveNameRel)
+	ImageBrowserViewModelEtcChanged()	
 
 	// Restore the data folder
 	SetDataFolder savedDF
@@ -133,7 +137,7 @@ Function ImagerContAcquireFullFrameImage()
 	// Declare the object vars
 	SVAR fullFrameWaveBaseName
 	NVAR isImagingTriggered
-	NVAR iFullFrameWave
+	//NVAR iFullFrameWave
 	//SVAR allVideoWaveNames
 	SVAR videoWaveBaseName
 	WAVE roisWave
@@ -146,7 +150,8 @@ Function ImagerContAcquireFullFrameImage()
 	String message
 	//String imageWaveName
 	Variable frames
-	String imageWaveName=sprintf2sv("%s%d", fullFrameWaveBaseName, iFullFrameWave)
+	Variable iFullFrameWave=SweeperGetNextSweepIndex()
+	String imageWaveName=sprintf2sv("%s_%d", fullFrameWaveBaseName, iFullFrameWave)
 	//Variable image_roi=0		// means there is no ROI
 	Variable isROI=0
 	Variable isBackgroundROIToo=0	// Irrelevant
@@ -166,9 +171,11 @@ Function ImagerContAcquireFullFrameImage()
 	MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
 	EpiLightSetIsOn(0)
 	ImageBrowserContSetVideo(imageWaveName) 
-	printf "%s%d: Full Image done\r", fullFrameWaveBaseName, iFullFrameWave
+	//printf "%s%d: Full Image done\r", fullFrameWaveBaseName, iFullFrameWave
 	String allVideoWaveNames=WaveList(fullFrameWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
-	iFullFrameWave+=1
+	SweeperIncrementNextSweepIndex()
+	SweeperViewSweeperChanged()
+	//iFullFrameWave+=1
 	//iFocusWave=iFullFrameWave
 
 	// Restore the data folder
@@ -195,7 +202,7 @@ Function ImagerContAcquireVideo(isImagingTriggered, doDisplay)
 	String message
 	String imageWaveName, datawavename
 	Variable frames_per_sequence, frames
-	sprintf imageWaveName, "%s%d", videoWaveBaseName, wavenumber
+	sprintf imageWaveName, "%s_%d", videoWaveBaseName, wavenumber
 	frames_per_sequence=nFramesForVideo
 	frames=nFramesForVideo
 	//isImagingTriggered=isImagingTriggered		// set to one for triggered images
@@ -209,7 +216,7 @@ Function ImagerContAcquireVideo(isImagingTriggered, doDisplay)
 	if ( doDisplay>0 )
 		ImageBrowserContSetVideo(imageWaveName)
 	endif
-	printf "%s%d: Image Stack done\r", videoWaveBaseName, wavenumber
+	//printf "%s%d: Image Stack done\r", videoWaveBaseName, wavenumber
 	if (!isImagingTriggered)
 		wavenumber+=1		
 	endif
@@ -442,7 +449,7 @@ Function Get_DFoverF_from_Stack(iVideoWave)
 	NVAR videoExposure
 	
 	Variable numBase=16		// number of frames to use for calculation of baseline fluorescence?
-	String videoWaveName=sprintf2sv("%s%d",videoWaveBaseName, iVideoWave)
+	String videoWaveName=sprintf2sv("%s_%d",videoWaveBaseName, iVideoWave)
 	String dffVideoWaveName=sprintf1v("dff_%d", iVideoWave)
 	//sprintf stackWaveName, "%s%d", videoWaveBaseName, iVideoWave
 	//sprintf dffVideoWaveName, "dff_%d", iVideoWave

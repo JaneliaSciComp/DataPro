@@ -15,12 +15,13 @@ Function Load_Full_Image()
 
 	// instance vars
 	SVAR fullFrameWaveBaseName
-	NVAR iFullFrameWave
+	//NVAR iFullFrameWave
 	//NVAR iFocusWave
 
 	//Silent 1; PauseUpdate
 	//Variable low, high
-	String newImageWaveName=sprintf2sv("%s%d", fullFrameWaveBaseName, iFullFrameWave)
+	Variable iFullFrameWave=SweeperGetNextSweepIndex()
+	String newImageWaveName=sprintf2sv("%s_%d", fullFrameWaveBaseName, iFullFrameWave)
 	GBLoadWave /B /T={80,80} /S=4100 /W=1 /N=temp
 	Rename temp0 $newImageWaveName
 	//Duplicate /O temp0 $newImageWaveName
@@ -28,8 +29,9 @@ Function Load_Full_Image()
 	Redimension /N=(512,512,1) $newImageWaveName
 	ImageBrowserContSetVideo(newImageWaveName)
 	ImageBrowserContScaleToData("scaleButton")
-	printf "%s%d: Image loaded\r", fullFrameWaveBaseName, iFullFrameWave
-	iFullFrameWave+=1
+	//printf "%s%d: Image loaded\r", fullFrameWaveBaseName, iFullFrameWave
+	SweeperIncrementNextSweepIndex()
+	SweeperViewSweeperChanged()
 	//iFocusWave=iFullFrameWave
 	
 	// Restore the original DF
@@ -101,7 +103,7 @@ Function Get_DFoverF_from_Stack2(stacknum)
 	
 	Variable index, basef
 	Variable numbase=3
-	String stackWaveName=sprintf2sv("%s%d", videoWaveBaseName, stacknum)
+	String stackWaveName=sprintf2sv("%s_%d", videoWaveBaseName, stacknum)
 	print stackWaveName
 	String dffWaveName=sprintf1v("dff_%d", stacknum)
 	Make /O /N=(nFramesForVideo-1) tempwave, $dffWaveName

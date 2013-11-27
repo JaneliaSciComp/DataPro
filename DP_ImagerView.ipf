@@ -73,10 +73,10 @@ Function ImagerViewConstructor() : Panel
 	
 	SetVariable focustime_set,win=ImagerView,pos={151,70},size={100,15},title="Exposure:"
 	SetVariable focustime_set,win=ImagerView,limits={0,10000,100},value= focusingExposure
-	SetVariable fullnum_set,win=ImagerView,pos={230,159},size={70,15},title="Next:"
-	SetVariable fullnum_set,win=ImagerView,limits={0,1000,1},value= iFullFrameWave
-	SetVariable imageseqnum_set,win=ImagerView,pos={227,223},size={70,15},title="Next:"
-	SetVariable imageseqnum_set,win=ImagerView,limits={0,10000,1},value= iVideoWave
+	//SetVariable fullnum_set,win=ImagerView,pos={230,159},size={70,15},title="Next:"
+	//SetVariable fullnum_set,win=ImagerView,limits={0,1000,1},value= iFullFrameWave
+	//SetVariable imageseqnum_set,win=ImagerView,pos={227,223},size={70,15},title="Next:"
+	//SetVariable imageseqnum_set,win=ImagerView,limits={0,10000,1},value= iVideoWave
 	
 	SetVariable binWidthSV,win=ImagerView,pos={55,338},size={90,15},proc=SetROIProc,title="Bin Width:"
 	SetVariable binWidthSV,win=ImagerView,format="%d"
@@ -180,6 +180,8 @@ Function ImagerViewUpdate()
 	Variable binWidth=ImagerGetBinWidth()
 	Variable binHeight=ImagerGetBinHeight()
 	Variable nROIs=ImagerGetNROIs()
+	Variable roiWidthInBins=(iROIRight-iROILeft)/binWidth
+	Variable roiHeightInBins=(iROIBottom-iROITop)/binHeight
 
 	// Update stuff
 	SetVariable binWidthSV,win=ImagerView,limits={1,ccdWidth,1},value= _NUM:binWidth
@@ -190,17 +192,19 @@ Function ImagerViewUpdate()
 		SetVariable iROIRightSV,win=ImagerView,value= _STR:"NA"
 		SetVariable iROITopSV,win=ImagerView,value= _STR:"NA"
 		SetVariable iROIBottomSV,win=ImagerView,value= _STR:"NA"
-		ValDisplay binnedFrameWidthVD, win=ImagerView, value= _NUM:NaN
-		ValDisplay binnedFrameHeightVD, win=ImagerView, value= _NUM:NaN
 	else
 		SetVariable roinum_set, win=ImagerView, format="%d", limits={1,nROIs,1}, value= _NUM:(iROI+1)
 		SetVariable iROILeftSV,win=ImagerView,limits={0,ccdWidth-1,1},value= _NUM:iROILeft
 		SetVariable iROIRightSV,win=ImagerView,limits={0,ccdWidth-1,1},value= _NUM:iROIRight
 		SetVariable iROITopSV,win=ImagerView,limits={0,ccdHeight-1,1},value= _NUM:iROITop
 		SetVariable iROIBottomSV,win=ImagerView,limits={0,ccdHeight-1,1},value= _NUM:iROIBottom
-		ValDisplay binnedFrameWidthVD, win=ImagerView, value= _NUM:(iROIRight-iROILeft)/binWidth
-		ValDisplay binnedFrameHeightVD, win=ImagerView, value= _NUM:(iROIBottom-iROITop)/binHeight
 	endif
+	
+	ValDisplay binnedFrameWidthVD, win=ImagerView, value= _NUM:roiWidthInBins
+	WhiteOutIffNan("binnedFrameWidthVD","ImagerView",roiWidthInBins)
+	
+	ValDisplay binnedFrameHeightVD, win=ImagerView, value= _NUM:roiHeightInBins
+	WhiteOutIffNan("binnedFrameHeightVD","ImagerView",roiHeightInBins)
 	
 	// Restore the original DF
 	SetDataFolder savedDF

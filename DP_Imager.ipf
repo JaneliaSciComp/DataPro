@@ -33,12 +33,12 @@ Function ImagerConstructor()
 	Variable /G exposure=100		// duration of each frame exposure for full-frame images, in ms
 	Variable /G videoExposure=50	// duration of each frame for triggered video, in ms
 	//Variable /G iFrame		// Frame index to show in the browser
-	String /G fullFrameWaveBaseName="snap_"		// the base name of the full-frame image waves, including the underscore
+	String /G fullFrameWaveBaseName="snap"		// the base name of the full-frame image waves, including the underscore
 	//String /G focusWaveBaseName="full_"		// the base name of the focusing image waves, including the underscore
-	String /G videoWaveBaseName="video_"	// the base name of the triggered video waves, including the underscore
-	Variable /G iFullFrameWave=1	// The "sweep number" to use for the next full-frame image
+	String /G videoWaveBaseName="video"	// the base name of the triggered video waves, including the underscore
+	//Variable /G iFullFrameWave=1	// The "sweep number" to use for the next full-frame image
 	//Variable /G iFocusWave=1		// The "sweep number" to use for the next focus image
-	Variable /G iVideoWave=1		// The "sweep number" to use for the video
+	//Variable /G iVideoWave=1		// The "sweep number" to use for the video 
 	Variable /G binWidth=10	// CCD bins per pixel in x dimension
 	Variable /G binHeight=20	// CCD bins per pixel in y dimension
 	Variable /G iROI=nan		// indicates the current ROI
@@ -112,7 +112,11 @@ Function ImagerGetIROILeft(iROI)
 	WAVE roisWave
 
 	// Get the value
-	Variable value=roisWave[0][iROI]
+	Variable value=nan
+	Variable nROIs=ImagerGetNROIs()
+	if ( (0<=iROI) && (iROI<nROIs) )
+		value=roisWave[0][iROI]
+	endif
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -159,7 +163,11 @@ Function ImagerGetIROIRight(iROI)
 	WAVE roisWave
 
 	// Get the value
-	Variable value=roisWave[1][iROI]
+	Variable value=nan
+	Variable nROIs=ImagerGetNROIs()
+	if ( (0<=iROI) && (iROI<nROIs) )
+		value=roisWave[1][iROI]
+	endif
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -206,7 +214,11 @@ Function ImagerGetIROITop(iROI)
 	WAVE roisWave
 
 	// Get the value
-	Variable value=roisWave[2][iROI]
+	Variable value=nan
+	Variable nROIs=ImagerGetNROIs()
+	if ( (0<=iROI) && (iROI<nROIs) )
+		value=roisWave[2][iROI]
+	endif
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -254,7 +266,11 @@ Function ImagerGetIROIBottom(iROI)
 	WAVE roisWave
 
 	// Get the value
-	Variable value=roisWave[3][iROI]
+	Variable value=nan
+	Variable nROIs=ImagerGetNROIs()
+	if ( (0<=iROI) && (iROI<nROIs) )
+		value=roisWave[3][iROI]
+	endif
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
