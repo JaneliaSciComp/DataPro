@@ -27,7 +27,7 @@ Function Load_Full_Image()
 	//Killwaves temp0
 	Redimension /N=(512,512,1) $newImageWaveName
 	ImageBrowserContSetVideo(newImageWaveName)
-	AutoGrayScaleButtonProc("autogray_button0")
+	ImageBrowserContScaleButton("scaleButton")
 	printf "%s%d: Image loaded\r", fullFrameWaveBaseName, iFullFrameWave
 	iFullFrameWave+=1
 	iFocusWave=iFullFrameWave

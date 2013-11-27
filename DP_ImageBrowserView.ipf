@@ -26,16 +26,16 @@ Function ImageBrowserViewConstructor()
 
 	SetVariable plane_setvar0,win=ImageBrowserView,pos={26,32},size={70,16},proc=ImagePlaneSetVarProc,title="Frame:"
 	
-	SetVariable gray_setvar0,win=ImageBrowserView,pos={126,8},size={130,16},proc=BlackCountSetVarProc,title="Black count:"
+	SetVariable gray_setvar0,win=ImageBrowserView,pos={126,8},size={130,16},proc=BlackCountSetVarProc,title="Black Count:"
 	SetVariable gray_setvar0,win=ImageBrowserView,limits={0,2^16-1,1024}
 
-	SetVariable gray_setvar1,win=ImageBrowserView,pos={126,30},size={130,16},proc=WhiteCountSetVarProc,title="White count:"
+	SetVariable gray_setvar1,win=ImageBrowserView,pos={126,30},size={130,16},proc=WhiteCountSetVarProc,title="White Count:"
 	SetVariable gray_setvar1,win=ImageBrowserView,limits={0,2^16-1,1024}
 
-	Button autogray_button0,win=ImageBrowserView,pos={280,8},size={80,20},proc=AutoGrayScaleButtonProc,title="Autoscale"
+	Button scaleButton,win=ImageBrowserView,pos={280,8},size={100,20},proc=ImageBrowserContScaleButton,title="Scale to Data"
 
-	CheckBox auto_on_fly_check0,win=ImageBrowserView,pos={280,32},size={111,14},title="Autoscale on the fly"
-	CheckBox auto_on_fly_check0,win=ImageBrowserView, proc=ImageBrowserContAutoscaleCB
+	CheckBox autoscaleCB,win=ImageBrowserView,pos={280,32},size={111,14},title="Autoscale to Data"
+	CheckBox autoscaleCB,win=ImageBrowserView, proc=ImageBrowserContAutoscaleCB
 End
 
 
@@ -64,8 +64,8 @@ Function ImageBrowserViewUpdate()
 	SetDataFolder root:DP_ImageBrowserModel
 
 	// Update the autoscaleOnFly checkbox
-	Variable autoscaleOnTheFly=ImageBrowserModGetAutoscaleFly()
-	CheckBox auto_on_fly_check0, win=ImageBrowserView, value=autoscaleOnTheFly
+	Variable autoscale=ImageBrowserModGetAutoscale()
+	CheckBox autoscaleCB, win=ImageBrowserView, value=autoscale
 	
 	// Update the image popup
 	String imageWaveName=ImageBrowserModGetImWaveName()
@@ -101,7 +101,7 @@ Function ImageBrowserViewUpdate()
 	ModifyGraph /W=ImageBrowserView gfSize=8,gmSize=8
 	ModifyGraph /W=ImageBrowserView manTick={0,64,0,0},manMinor={8,8}
 
-	// Make the pixels square, with the larger dim being auto-sized
+	// Make the pixels square, with the height being auto-sized
 	//Variable widthInPels=DimSize($imageWaveNameAbs,0)
 	//Variable heightInPels=DimSize($imageWaveNameAbs,1)
 	ModifyGraph /W=ImageBrowserView width=0, height={Plan,1,left,bottom}

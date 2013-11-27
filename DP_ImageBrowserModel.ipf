@@ -23,7 +23,7 @@ Function ImageBrowserModelConstructor()
 	Variable /G blackCount=0		// the CCD count that gets mapped to black
 	Variable /G whiteCount=2^16-1		// the CCD count that gets mapped to white
 	String /G imageWaveName=""
-	Variable /G autoscaleOnTheFly=0
+	Variable /G autoscale=0
 		// Whether to automatically set blackCount, whiteCount to min/max of image/video
 	
 	// Sync the internal ROI boxes to the ROIs in the Imager
@@ -34,15 +34,15 @@ Function ImageBrowserModelConstructor()
 End
 
 
-Function ImageBrowserModGetAutoscaleFly()
+Function ImageBrowserModGetAutoscale()
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_ImageBrowserModel
 	
 	// Declare instance vars
-	NVAR autoscaleOnTheFly
+	NVAR autoscale
 
-	Variable value=autoscaleOnTheFly
+	Variable value=autoscale
 
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -52,7 +52,7 @@ End
 
 
 
-Function ImageBrowserModSetAutoscaleFly(newValue)
+Function ImageBrowserModSetAutoscale(newValue)
 	Variable newValue
 
 	// Switch to the data folder
@@ -60,14 +60,14 @@ Function ImageBrowserModSetAutoscaleFly(newValue)
 	SetDataFolder root:DP_ImageBrowserModel
 	
 	// Declare instance vars
-	NVAR autoscaleOnTheFly
+	NVAR autoscale
 
 	// Set the field
-	autoscaleOnTheFly=newValue
+	autoscale=newValue
 	
 	// Auto-scale now, if needed
-	if (autoscaleOnTheFly)
-		ImageBrowserModelAutoscale()
+	if (autoscale)
+		ImageBrowserModelScale()
 	endif
 
 	// Restore the original DF
@@ -165,9 +165,9 @@ Function ImageBrowserModelSetBlackCount(newValue)
 	// Declare instance vars
 	NVAR blackCount
 	NVAR whiteCount	
-	NVAR autoscaleOnTheFly
+	NVAR autoscale
 
-	if (!autoscaleOnTheFly)	// Can only set the black count if not auto-auto-scaling
+	if (!autoscale)	// Can only set the black count if not auto-auto-scaling
 		if (newValue<whiteCount)
 			blackCount=newValue
 		endif
@@ -207,9 +207,9 @@ Function ImageBrowserModelSetWhiteCount(newValue)
 	// Declare instance vars
 	NVAR whiteCount
 	NVAR blackCount
-	NVAR autoscaleOnTheFly
+	NVAR autoscale
 
-	if (!autoscaleOnTheFly)	// Can only set the white count if not auto-auto-scaling
+	if (!autoscale)	// Can only set the white count if not auto-auto-scaling
 		if (newValue>blackCount)
 			whiteCount=newValue
 		endif
@@ -233,13 +233,13 @@ Function ImageBrowserModelSetVideo(imageWaveNameNew)
 	// Declare instance vars
 	NVAR iFrame
 	SVAR imageWaveName
-	NVAR autoscaleOnTheFly
+	NVAR autoscale
 	
 	// Set instance vars appropriately
 	imageWaveName=imageWaveNameNew
 	iFrame=0
-	if (autoscaleOnTheFly)
-		ImageBrowserModelAutoscale()
+	if (autoscale)
+		ImageBrowserModelScale()
 	endif
 
 	// Restore the original DF
@@ -249,7 +249,7 @@ End
 
 
 
-Function ImageBrowserModelAutoscale()
+Function ImageBrowserModelScale()
 	// This sets blackCount and whiteCount to the min and max of the current frame
 
 	// Switch to the data folder

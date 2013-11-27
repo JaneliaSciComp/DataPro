@@ -37,10 +37,10 @@ Function WhiteCountSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContr
 	ImageBrowserViewModelEtcChanged()
 End
 
-Function AutoGrayScaleButtonProc(ctrlName) : ButtonControl
+Function ImageBrowserContScaleButton(ctrlName) : ButtonControl
 	String ctrlName
 	
-	ImageBrowserModelAutoscale()
+	ImageBrowserModelScale()
 	ImageBrowserViewModelEtcChanged()
 End
 
@@ -58,7 +58,7 @@ Function ImageBrowserContAutoscaleCB(ctrlName,isChecked): CheckboxControl
 	String ctrlName
 	Variable isChecked
 	
-	ImageBrowserModSetAutoscaleFly(isChecked)
+	ImageBrowserModSetAutoscale(isChecked)
 	ImageBrowserViewModelEtcChanged()	
 
 End

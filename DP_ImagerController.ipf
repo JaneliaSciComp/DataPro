@@ -399,9 +399,9 @@ End
 ////			if (iFrame==1)
 ////				ModifyImage $imageWaveName ctab= {blackCount,whiteCount,Grays,0}
 ////			endif
-////			ControlInfo auto_on_fly_check0
+////			ControlInfo autoscaleCB
 ////			if (V_Value>0)
-////				AutoGrayScaleButtonProc("autogray_button0")
+////				AutoGrayScaleButtonProc("scaleButton")
 ////			endif
 ////		endif
 //		iFrame+=1
