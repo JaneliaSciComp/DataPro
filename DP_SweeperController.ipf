@@ -298,7 +298,7 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	Variable nBrowsers=numpnts(browserNumbers)
 	Variable i
 	for (i=0;i<nBrowsers;i+=1)
-		BrowserContSetNextSweepIndex(browserNumbers[i],nextSweepIndex)
+		BrowserContSetCurSweepIndex(browserNumbers[i],nextSweepIndex)
 	endfor
 	
 	// Update some of the acquisition counters

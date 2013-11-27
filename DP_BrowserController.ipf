@@ -122,7 +122,7 @@ Function BrowserContToolsPanelHook(s)
 	return 0		// If non-zero, we handled event and Igor will ignore it.
 End
 
-Function BrowserContSetNextSweepIndex(browserNumber,iSweep)
+Function BrowserContSetCurSweepIndex(browserNumber,iSweep)
 	// Just what it says on the tin.  Called by the data acquisition loop when a sweep is acquired.
 	// Set the sweep in the model
 	Variable browserNumber, iSweep
