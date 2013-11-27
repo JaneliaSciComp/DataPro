@@ -15,11 +15,13 @@ Function ImagerConstructor()
 	// Save the current DF
 	String savedDF=GetDataFolder(1)
 
-//	IMAGING GLOBALS
+	// Make a new DF, switch to it
 	NewDataFolder /O/S root:DP_Imager
+
+	// Instance variables
 	//String /G allVideoWaveNames		// a semicolon-separated list of all the video wave names
-	Variable /G wheelPositionForEpiLightOn=1	// Setting of something that results in epi-illumination being on
-	Variable /G wheelPositionForEpiLightOff=0	// Setting of something that results in epi-illumination being off
+	//Variable /G wheelPositionForEpiLightOn=1	// Setting of something that results in epi-illumination being on
+	//Variable /G wheelPositionForEpiLightOff=0	// Setting of something that results in epi-illumination being off
 	Variable /G isImagingTriggered		// boolean, true iff the image acquisition will be triggerd (as opposed to free-running)
 	//Variable /G image_focus	// image_focus may be unnecessary if there is a separate focus routine
 	Variable /G isROI=0		// is there a ROI? (false=>full frame)
@@ -31,11 +33,11 @@ Function ImagerConstructor()
 	Variable /G exposure=100		// duration of each frame exposure for full-frame images, in ms
 	Variable /G videoExposure=50	// duration of each frame for triggered video, in ms
 	//Variable /G iFrame		// Frame index to show in the browser
-	String /G fullFrameWaveBaseName="full_"		// the base name of the full-frame image waves, including the underscore
-	String /G focusWaveBaseName="full_"		// the base name of the focusing image waves, including the underscore
-	String /G videoWaveBaseName="trig_"	// the base name of the triggered video waves, including the underscore
+	String /G fullFrameWaveBaseName="snap_"		// the base name of the full-frame image waves, including the underscore
+	//String /G focusWaveBaseName="full_"		// the base name of the focusing image waves, including the underscore
+	String /G videoWaveBaseName="video_"	// the base name of the triggered video waves, including the underscore
 	Variable /G iFullFrameWave=1	// The "sweep number" to use for the next full-frame image
-	Variable /G iFocusWave=1		// The "sweep number" to use for the next focus image
+	//Variable /G iFocusWave=1		// The "sweep number" to use for the next focus image
 	Variable /G iVideoWave=1		// The "sweep number" to use for the video
 	Variable /G binWidth=10	// CCD bins per pixel in x dimension
 	Variable /G binHeight=20	// CCD bins per pixel in y dimension

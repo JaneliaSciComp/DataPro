@@ -6,8 +6,43 @@
 
 #pragma rtGlobals=3		// Use modern global access method and strict wave access
 
+Function EpiLightConstructor()
+	// if the DF already exists, nothing to do
+	if (DataFolderExists("root:DP_EpiLight"))
+		return 0		// have to return something
+	endif
 
-Function EpiLightTurnOnOff(wantOn)
-	Variable wantOn
-	// Set the illumination state to wantOn
+	// Save the current DF
+	String savedDF=GetDataFolder(1)
+
+	// Make a new DF, switch to it
+	NewDataFolder /O/S root:DP_EpiLight
+
+	// Instance vars
+	Variable /G isOn=0	// boolean
+	
+	// Restore the original data folder
+	SetDataFolder savedDF	
 End
+
+
+Function EpiLightSetIsOn(value)
+	Variable value
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_EpiLight
+	NVAR isOn	
+	isOn=value
+	SetDataFolder savedDF	
+End
+
+
+Function EpiLightGetIsOn()	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_EpiLight
+	NVAR isOn	
+	Variable value=isOn
+	SetDataFolder savedDF	
+	return value
+End
+
+

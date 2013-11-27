@@ -72,28 +72,28 @@ Function SweeperViewConstructor() : Panel
 	Variable xSize=90	// width of setvariables
 	yOffset+=20
 	CheckBox ADC0Checkbox,win=SweeperView,pos={xOffset,yOffset},size={44,14},proc=SweeperControllerADCCheckbox,title="ADC0"
-	SetVariable adc0BaseNameSetVariable,win=SweeperView,pos={xOffset+xShift,yOffset-1},size={xSize,15},proc=SweeperControllerADCBaseNameSV,title="name:"
+	SetVariable adc0BaseNameSetVariable,win=SweeperView,pos={xOffset+xShift,yOffset-1},size={xSize,15},proc=SweeperControllerADCBaseNameSV,title="Name:"
 	yOffset+=yShift	
 	CheckBox ADC1Checkbox,win=SweeperView,pos={xOffset,yOffset},size={44,14},proc=SweeperControllerADCCheckbox,title="ADC1"
-	SetVariable adc1BaseNameSetVariable,win=SweeperView,pos={xOffset+xShift,yOffset-1},size={xSize,15},proc=SweeperControllerADCBaseNameSV,title="name:"
+	SetVariable adc1BaseNameSetVariable,win=SweeperView,pos={xOffset+xShift,yOffset-1},size={xSize,15},proc=SweeperControllerADCBaseNameSV,title="Name:"
 	yOffset+=yShift	
 	CheckBox ADC2Checkbox,win=SweeperView,pos={xOffset,yOffset},size={44,14},proc=SweeperControllerADCCheckbox,title="ADC2"
-	SetVariable adc2BaseNameSetVariable,win=SweeperView,pos={xOffset+xShift,yOffset-1},size={xSize,15},proc=SweeperControllerADCBaseNameSV,title="name:"
+	SetVariable adc2BaseNameSetVariable,win=SweeperView,pos={xOffset+xShift,yOffset-1},size={xSize,15},proc=SweeperControllerADCBaseNameSV,title="Name:"
 	yOffset+=yShift	
 	CheckBox ADC3Checkbox,win=SweeperView,pos={xOffset,yOffset},size={44,14},proc=SweeperControllerADCCheckbox,title="ADC3"
-	SetVariable adc3BaseNameSetVariable,win=SweeperView,pos={xOffset+xShift,yOffset-1},size={xSize,15},proc=SweeperControllerADCBaseNameSV,title="name:"
+	SetVariable adc3BaseNameSetVariable,win=SweeperView,pos={xOffset+xShift,yOffset-1},size={xSize,15},proc=SweeperControllerADCBaseNameSV,title="Name:"
 	yOffset+=yShift	
 	CheckBox ADC4Checkbox,win=SweeperView,pos={xOffset,yOffset},size={44,14},proc=SweeperControllerADCCheckbox,title="ADC4"
-	SetVariable adc4BaseNameSetVariable,win=SweeperView,pos={xOffset+xShift,yOffset-1},size={xSize,15},proc=SweeperControllerADCBaseNameSV,title="name:"
+	SetVariable adc4BaseNameSetVariable,win=SweeperView,pos={xOffset+xShift,yOffset-1},size={xSize,15},proc=SweeperControllerADCBaseNameSV,title="Name:"
 	yOffset+=yShift	
 	CheckBox ADC5Checkbox,win=SweeperView,pos={xOffset,yOffset},size={44,14},proc=SweeperControllerADCCheckbox,title="ADC5"
-	SetVariable adc5BaseNameSetVariable,win=SweeperView,pos={xOffset+xShift,yOffset-1},size={xSize,15},proc=SweeperControllerADCBaseNameSV,title="name:"
+	SetVariable adc5BaseNameSetVariable,win=SweeperView,pos={xOffset+xShift,yOffset-1},size={xSize,15},proc=SweeperControllerADCBaseNameSV,title="Name:"
 	yOffset+=yShift	
 	CheckBox ADC6Checkbox,win=SweeperView,pos={xOffset,yOffset},size={44,14},proc=SweeperControllerADCCheckbox,title="ADC6"
-	SetVariable adc6BaseNameSetVariable,win=SweeperView,pos={xOffset+xShift,yOffset-1},size={xSize,15},proc=SweeperControllerADCBaseNameSV,title="name:"
+	SetVariable adc6BaseNameSetVariable,win=SweeperView,pos={xOffset+xShift,yOffset-1},size={xSize,15},proc=SweeperControllerADCBaseNameSV,title="Name:"
 	yOffset+=yShift	
 	CheckBox ADC7Checkbox,win=SweeperView,pos={xOffset,yOffset},size={44,14},proc=SweeperControllerADCCheckbox,title="ADC7"
-	SetVariable adc7BaseNameSetVariable,win=SweeperView,pos={xOffset+xShift,yOffset-1},size={xSize,15},proc=SweeperControllerADCBaseNameSV,title="name:"
+	SetVariable adc7BaseNameSetVariable,win=SweeperView,pos={xOffset+xShift,yOffset-1},size={xSize,15},proc=SweeperControllerADCBaseNameSV,title="Name:"
 
 	// DAC Channel controls
 	Variable xShiftPopup=60	// offset from checkbox to popup

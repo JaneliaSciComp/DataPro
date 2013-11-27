@@ -45,7 +45,7 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	CheckBox autoscaleXCheckbox,win=$browserName,value= 1, variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"iCurrentSweep")
-	SetVariable setSweepIndexSV,win=$browserName,pos={11,15},size={100,18},proc=BrowserContNextSweepIndexSV,title="Sweep"
+	SetVariable setSweepIndexSV,win=$browserName,pos={11,15},size={100,18},proc=BrowserContNextSweepIndexSV,title="Sweep:"
 	SetVariable setSweepIndexSV,win=$browserName,fSize=12
 	SetVariable setSweepIndexSV,win=$browserName,limits={1,100000,1},value=_NUM:1
 	
@@ -53,20 +53,20 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	Variable yBaselineForTraceB=30
 	NVAR traceAChecked
 	CheckBox showTraceACheckbox,win=$browserName,pos={125,yBaselineForTraceA},size={39,14}
-	CheckBox showTraceACheckbox,win=$browserName,proc=BrowserContShowTraceACB,title="Tr.A",value= 1
+	CheckBox showTraceACheckbox,win=$browserName,proc=BrowserContShowTraceACB,title="Tr A",value= 1
 	CheckBox showTraceACheckbox,win=$browserName,value=traceAChecked
 	
 	NVAR traceBChecked
 	CheckBox showTraceBCheckbox,win=$browserName,pos={125,yBaselineForTraceB},size={39,14}
-	CheckBox showTraceBCheckbox,win=$browserName,proc=BrowserContShowTraceBCB,title="Tr.B",value= 0
+	CheckBox showTraceBCheckbox,win=$browserName,proc=BrowserContShowTraceBCB,title="Tr B",value= 0
 	CheckBox showTraceBCheckbox,win=$browserName,value=traceBChecked
 	
 	SVAR baseNameA
-	SetVariable bnameset_1,win=$browserName,pos={176,yBaselineForTraceA},size={80,14},proc=BrowserContBaseNameASV,title="Name"
+	SetVariable bnameset_1,win=$browserName,pos={176,yBaselineForTraceA},size={80,14},proc=BrowserContBaseNameASV,title="Name:"
 	SetVariable bnameset_1,win=$browserName,value= _STR:baseNameA
 	
 	SVAR baseNameB
-	SetVariable bnameset_2,win=$browserName,pos={176,yBaselineForTraceB},size={80,14},proc=BrowserContBaseNameBSV,title="Name"
+	SetVariable bnameset_2,win=$browserName,pos={176,yBaselineForTraceB},size={80,14},proc=BrowserContBaseNameBSV,title="Name:"
 	SetVariable bnameset_2,win=$browserName,value= _STR:baseNameB
 		
 	// This kind of color popup doesn't work in a ControlBar, seemingly...
@@ -75,9 +75,9 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	
 	SVAR colorNameList
 	String colorNameListFU="\""+colorNameList+"\""
-	PopupMenu traceAColorPopupMenu,win=$browserName,pos={265,yBaselineForTraceA-2},size={96,14},bodyWidth=65,proc=BrowserContTraceAColorPopup,title="Color"
+	PopupMenu traceAColorPopupMenu,win=$browserName,pos={265,yBaselineForTraceA-2},size={96,14},bodyWidth=65,proc=BrowserContTraceAColorPopup,title="Color:"
 	PopupMenu traceAColorPopupMenu,win=$browserName,value=#colorNameListFU
-	PopupMenu traceBColorPopupMenu,win=$browserName,pos={265,yBaselineForTraceB-2},size={96,14},bodyWidth=65,proc=BrowserContTraceBColorPopup,title="Color"
+	PopupMenu traceBColorPopupMenu,win=$browserName,pos={265,yBaselineForTraceB-2},size={96,14},bodyWidth=65,proc=BrowserContTraceBColorPopup,title="Color:"
 	PopupMenu traceBColorPopupMenu,win=$browserName,value=#colorNameListFU
 		
 	xOffset=370		// pixels
@@ -93,7 +93,7 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	ValDisplay stepBValDisplay,win=$browserName,pos={xOffset,yBaselineForTraceB},size={70,14},title="Step:",format="%3.3g"
 	ValDisplay stepBValDisplay,win=$browserName,limits={0,0,0},value=_NUM:nan
 	
-	SetVariable commentsSetVariable,win=$browserName,pos={20,55},size={260,15},title="comments"
+	SetVariable commentsSetVariable,win=$browserName,pos={20,55},size={260,15},title="Comments:"
 	SetVariable commentsSetVariable,win=$browserName,proc=BrowserContCommentsSV,value=_STR:""
 
 	absVarName=AbsoluteVarName(browserDFName,"showToolsChecked")

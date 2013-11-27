@@ -33,9 +33,9 @@ Function ImagerContAcquireTriggeredVideo()
 	Variable isImagingTriggered=1
 	Variable doDisplay=0
 	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,exposure,ccdTargetTemperature,binWidth,binHeight)
-	EpiLightTurnOnOff(1)
+	EpiLightSetIsOn(1)
 	ImagerContAcquireVideo(isImagingTriggered,doDisplay)
-	EpiLightTurnOnOff(0)
+	EpiLightSetIsOn(0)
 	// These next two lines may need to come back in some form, but I'm not really clear on what they do
 	//Get_DFoverF_from_Stack(previouswave)
 	//Append_DFoverF(previouswave)
@@ -51,8 +51,8 @@ Function ImagerContFocus()
 	SetDataFolder root:DP_Imager
 
 	// Declare the object vars
-	SVAR focusWaveBaseName
-	NVAR iFocusWave
+	SVAR fullFrameWaveBaseName
+	//NVAR iFocusWave
 	NVAR iFullFrameWave
 	WAVE roisWave
 	NVAR exposure
@@ -70,17 +70,17 @@ Function ImagerContFocus()
 	//String message
 	//Variable frames_per_sequence, frames
 	//String wave_image
-	String wave_image=sprintf2sv("%s%d", focusWaveBaseName, iFocusWave)
+	String wave_image=sprintf2sv("%s%d", fullFrameWaveBaseName, iFullFrameWave)
 	Variable frames_per_sequence=1
 	Variable frames=1
 	Variable isImagingTriggered=0			// set to one for triggered images
 	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,exposure,ccdTargetTemperature,binWidth,binHeight)
 	//printf "Focusing (press Esc key to stop) ..."
-	EpiLightTurnOnOff(1)
+	EpiLightSetIsOn(1)
 	Sleep /S 0.1
 	//ImagerFocus()
 
-	String imageWaveNameRel=sprintf2sv("%s%d", focusWaveBaseName, iFocusWave)
+	String imageWaveNameRel=sprintf2sv("%s%d", fullFrameWaveBaseName, iFullFrameWave)
 	String imageWaveNameAbs=sprintf1s("root:DP_Imager:%s",imageWaveNameRel)
 	
 	Variable	nFrames=1
@@ -113,9 +113,9 @@ Function ImagerContFocus()
 	DoUpdate
 	FancyCameraDisarm()	
 		
-	EpiLightTurnOnOff(0)
+	EpiLightSetIsOn(0)
 	iFullFrameWave+=1
-	iFocusWave=iFullFrameWave
+	//iFocusWave=iFullFrameWave
 	//printf "%s: Focus Image done\r", wave_image
 
 	// Call this to make sure the image gets auto-scaled properly if needed
@@ -132,7 +132,8 @@ Function ImagerContAcquireFullFrameImage()
 
 	// Declare the object vars
 	SVAR fullFrameWaveBaseName
-	NVAR iFocusWave, isImagingTriggered, iFullFrameWave
+	NVAR isImagingTriggered
+	NVAR iFullFrameWave
 	//SVAR allVideoWaveNames
 	SVAR videoWaveBaseName
 	WAVE roisWave
@@ -153,7 +154,7 @@ Function ImagerContAcquireFullFrameImage()
 	isImagingTriggered=0		// set to one for triggered images
 	binWidth=1; binHeight=1
 	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,exposure,ccdTargetTemperature,binWidth,binHeight) 
-	EpiLightTurnOnOff(1)
+	EpiLightSetIsOn(1)
 	//Sleep /S 0.1
 	//Make /O /N=(512,512) $imageWaveName
 	//Wave w=$imageWaveName
@@ -163,12 +164,12 @@ Function ImagerContAcquireFullFrameImage()
 		 KillWaves $imageWaveName
 	endif
 	MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
-	EpiLightTurnOnOff(0)
+	EpiLightSetIsOn(0)
 	ImageBrowserContSetVideo(imageWaveName) 
 	printf "%s%d: Full Image done\r", fullFrameWaveBaseName, iFullFrameWave
 	String allVideoWaveNames=WaveList(fullFrameWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
 	iFullFrameWave+=1
-	iFocusWave=iFullFrameWave
+	//iFocusWave=iFullFrameWave
 
 	// Restore the data folder
 	SetDataFolder savedDF
@@ -198,13 +199,13 @@ Function ImagerContAcquireVideo(isImagingTriggered, doDisplay)
 	frames_per_sequence=nFramesForVideo
 	frames=nFramesForVideo
 	//isImagingTriggered=isImagingTriggered		// set to one for triggered images
-	EpiLightTurnOnOff(1)
+	EpiLightSetIsOn(1)
 	Sleep /S 0.1
 	iFrame=0
 	//Wave imageWave=FancyCameraArmAcquireDisarm(frames,isImagingTriggered)
 	Wave imageWave=FancyCameraArmAcquireDisarm(frames)	// trigger mode is now set during camera setup
 	MoveWave imageWave, imageWaveName 	// Cage the once-free wave
-	EpiLightTurnOnOff(0)
+	EpiLightSetIsOn(0)
 	if ( doDisplay>0 )
 		ImageBrowserContSetVideo(imageWaveName)
 	endif
@@ -325,16 +326,17 @@ End
 //______________________DataPro Imaging PROCEDURES__________________________//
 
 
-Function FluONButtonProc(ctrlName) : ButtonControl
+Function ImagerContEpiLightToggle(ctrlName) : ButtonControl
 	String ctrlName
 	
-	EpiLightTurnOnOff(1)
+	EpiLightSetIsOn(~EpiLightGetIsOn())
+	ImagerViewEpiLightChanged()
 End
 
-Function FluOFFButtonProc(ctrlName) : ButtonControl
-	String ctrlName
-	EpiLightTurnOnOff(0)
-End
+//Function FluOFFButtonProc(ctrlName) : ButtonControl
+//	String ctrlName
+//	EpiLightSetIsOn(0)
+//End
 
 Function ImagingCheckProc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
@@ -371,11 +373,11 @@ End
 //	SetDataFolder root:DP_Imager
 //	
 //	// instance vars
-//	SVAR focusWaveBaseName
+//	SVAR fullFrameWaveBaseName
 //	NVAR iFocusWave
 //	//NVAR blackCount, whiteCount
 //
-//	String imageWaveNameRel=sprintf2sv("%s%d", focusWaveBaseName, iFocusWave)
+//	String imageWaveNameRel=sprintf2sv("%s%d", fullFrameWaveBaseName, iFocusWave)
 //	String imageWaveNameAbs=sprintf1s("root:DP_Imager:%s",imageWaveNameRel)
 //	
 //	Variable	nFrames=1

@@ -16,7 +16,7 @@ Function Load_Full_Image()
 	// instance vars
 	SVAR fullFrameWaveBaseName
 	NVAR iFullFrameWave
-	NVAR iFocusWave
+	//NVAR iFocusWave
 
 	//Silent 1; PauseUpdate
 	//Variable low, high
@@ -30,7 +30,7 @@ Function Load_Full_Image()
 	ImageBrowserContScaleToData("scaleButton")
 	printf "%s%d: Image loaded\r", fullFrameWaveBaseName, iFullFrameWave
 	iFullFrameWave+=1
-	iFocusWave=iFullFrameWave
+	//iFocusWave=iFullFrameWave
 	
 	// Restore the original DF
 	SetDataFolder savedDF

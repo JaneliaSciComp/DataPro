@@ -753,3 +753,18 @@ Function unitPulse(x,duration)
 	Variable x, duration
 	return ( (x>=0)&&(x<duration) )
 End
+
+Function /S stringFif(test,trueString,falseString)
+	// Like the ternary operator ? :, but for strings
+	// stringFif is for "string functional if"
+	Variable test
+	String trueString, falseString
+	
+	String result
+	if (test)
+		result=trueString
+	else
+		result=falseString
+	endif
+	return result
+End

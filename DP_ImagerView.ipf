@@ -30,64 +30,64 @@ Function ImagerViewConstructor() : Panel
 	NewPanel /W=(xOffset,yOffset,xOffset+panelWidth,yOffset+panelHeight)  /N=ImagerView /K=1 as "Imager Controls"
 	ModifyPanel /W=ImagerView fixedSize=1
 
-	Button flu_on,win=ImagerView,pos={10,40},size={130,20},proc=FluONButtonProc,title="Fluorescence ON"
-	Button flu_off,win=ImagerView,pos={10,10},size={130,20},proc=FluOFFButtonProc,title="Fluorescence OFF"
-	CheckBox imaging_check0,win=ImagerView,pos={14,244},size={114,14},proc=ImagingCheckProc,title="trigger filter wheel"
-	CheckBox imaging_check0,win=ImagerView,value= 1
-	Button button0,win=ImagerView,pos={215,283},size={80,20},proc=AppendDFFButtonProc,title="Append DF/F"
-	Button button1,win=ImagerView,pos={9,190},size={130,20},proc=EphysImageButtonProc,title="Electrophys. + Image"
-	SetVariable setimagename0,win=ImagerView,pos={141,223},size={80,15},title="name"
+	Button EpiLightToggleButton,win=ImagerView,pos={10,20},size={130,20},proc=ImagerContEpiLightToggle
+	//Button flu_off,win=ImagerView,pos={10,10},size={130,40},proc=FluOFFButtonProc,title="Epi Light Off"
+	//CheckBox imaging_check0,win=ImagerView,pos={14,244},size={114,14},proc=ImagingCheckProc,title="trigger filter wheel"
+	//CheckBox imaging_check0,win=ImagerView,value= 1
+	//Button button0,win=ImagerView,pos={215,283},size={80,20},proc=AppendDFFButtonProc,title="Append DF/F"
+	Button button1,win=ImagerView,pos={9,190},size={130,20},proc=EphysImageButtonProc,title="Triggered Video"
+	SetVariable setimagename0,win=ImagerView,pos={141,223},size={80,15},title="Name:"
 	SetVariable setimagename0,win=ImagerView,value= videoWaveBaseName
-	CheckBox bkgndcheck0,win=ImagerView,pos={14,265},size={71,14},title="Bkgnd Sub.",value= 1
-	SetVariable numimages_setvar0,win=ImagerView,pos={11,223},size={120,15},title="No. images"
+	//CheckBox bkgndcheck0,win=ImagerView,pos={14,265},size={71,14},title="Bkgnd Sub.",value= 1
+	SetVariable numimages_setvar0,win=ImagerView,pos={11,223},size={100,15},title="# Frames:"
 	SetVariable numimages_setvar0,win=ImagerView,limits={1,10000,1},value= nFramesForVideo
-	SetVariable ccdtemp_setvar0,win=ImagerView,pos={13,311},size={150,15},proc=SetCCDTempVarProc,title="CCD Temp. Set"
+	SetVariable ccdtemp_setvar0,win=ImagerView,pos={13,311},size={140,15},proc=SetCCDTempVarProc,title="CCD Temp Setpoint:"
 	SetVariable ccdtemp_setvar0,win=ImagerView,limits={-50,20,5},value= ccdTargetTemperature
-	CheckBox showimageavg_check0,win=ImagerView,pos={14,286},size={84,14},title="Show Average"
-	CheckBox showimageavg_check0,win=ImagerView,value= 0
-	Button resetavg_button2,win=ImagerView,pos={212,253},size={80,20},proc=ResetAvgButtonProc,title="Reset Avg"
+	//CheckBox showimageavg_check0,win=ImagerView,pos={14,286},size={84,14},title="Show Average"
+	//CheckBox showimageavg_check0,win=ImagerView,value= 0
+	//Button resetavg_button2,win=ImagerView,pos={212,253},size={80,20},proc=ResetAvgButtonProc,title="Reset Avg"
 	
 	Button focus,win=ImagerView,pos={10,70},size={130,20},proc=FocusButtonProc,title="Focus"
 	TitleBox proTipTitleBox,win=ImagerView,pos={26,94},frame=0,title="(hit ESC key to stop)",disable=1
 	
-	Button full_frame,win=ImagerView,pos={10,130},size={130,20},proc=FullButtonProc,title="Full Frame Image"
-	SetVariable fluo_on_set,win=ImagerView,pos={178,40},size={120,15},title="ON   position"
-	SetVariable fluo_on_set,win=ImagerView,limits={0,9,1},value= wheelPositionForEpiLightOn
-	SetVariable fluo_off_set,win=ImagerView,pos={177,10},size={120,15},title="OFF position"
-	SetVariable fluo_off_set,win=ImagerView,limits={0,9,1},value= wheelPositionForEpiLightOff
-	SetVariable focusnum_set,win=ImagerView,pos={229,98},size={70,15},title="no."
-	SetVariable focusnum_set,win=ImagerView,limits={0,1000,1},value= iFocusWave
-	SetVariable fulltime_set,win=ImagerView,pos={152,130},size={150,15},title="Exp. time (ms)"
+	Button full_frame,win=ImagerView,pos={10,130},size={130,20},proc=FullButtonProc,title="Snapshot"
+	//SetVariable fluo_on_set,win=ImagerView,pos={178,40},size={120,15},title="ON   position"
+	//SetVariable fluo_on_set,win=ImagerView,limits={0,9,1},value= wheelPositionForEpiLightOn
+	//SetVariable fluo_off_set,win=ImagerView,pos={177,10},size={120,15},title="OFF position"
+	//SetVariable fluo_off_set,win=ImagerView,limits={0,9,1},value= wheelPositionForEpiLightOff
+	//SetVariable focusnum_set,win=ImagerView,pos={229,98},size={70,15},title="no."
+	//SetVariable focusnum_set,win=ImagerView,limits={0,1000,1},value= iFocusWave
+	SetVariable fulltime_set,win=ImagerView,pos={152,130},size={100,15},title="Exposure:"
 	SetVariable fulltime_set,win=ImagerView,limits={0,10000,100},value= exposure
-	SetVariable imagetime_setvar0,win=ImagerView,pos={149,193},size={150,15},title="Exp.time (ms)"
+	SetVariable imagetime_setvar0,win=ImagerView,pos={149,193},size={100,15},title="Exposure:"
 	SetVariable imagetime_setvar0,win=ImagerView,limits={0,10000,10},value= videoExposure
-	SetVariable setfullname0,win=ImagerView,pos={137,158},size={80,15},title="name"
+	SetVariable setfullname0,win=ImagerView,pos={137,158},size={80,15},title="Name:"
 	SetVariable setfullname0,win=ImagerView,value= fullFrameWaveBaseName
-	SetVariable setfocusname0,win=ImagerView,pos={139,99},size={80,15},title="name"
-	SetVariable setfocusname0,win=ImagerView,value= focusWaveBaseName
+	//SetVariable setfocusname0,win=ImagerView,pos={139,99},size={80,15},title="name"
+	//SetVariable setfocusname0,win=ImagerView,value= focusWaveBaseName
 	
 	absVarName=AbsoluteVarName("root:DP_Imager","ccdTemperature")
-	ValDisplay tempdisp0,win=ImagerView,pos={174,311},size={120,14},title="CCD Temp."
+	ValDisplay tempdisp0,win=ImagerView,pos={194,311},size={100,14},title="CCD Temp:"
 	ValDisplay tempdisp0,win=ImagerView,format="%3.1f",limits={0,0,0},barmisc={0,1000}
 	ValDisplay tempdisp0,win=ImagerView,value= #absVarName
 	
-	SetVariable focustime_set,win=ImagerView,pos={151,70},size={150,15},title="Exp. time (ms)"
+	SetVariable focustime_set,win=ImagerView,pos={151,70},size={100,15},title="Exposure:"
 	SetVariable focustime_set,win=ImagerView,limits={0,10000,100},value= focusingExposure
-	SetVariable fullnum_set,win=ImagerView,pos={230,159},size={70,15},title="no."
+	SetVariable fullnum_set,win=ImagerView,pos={230,159},size={70,15},title="Next:"
 	SetVariable fullnum_set,win=ImagerView,limits={0,1000,1},value= iFullFrameWave
-	SetVariable imageseqnum_set,win=ImagerView,pos={227,223},size={70,15},title="no."
+	SetVariable imageseqnum_set,win=ImagerView,pos={227,223},size={70,15},title="Next:"
 	SetVariable imageseqnum_set,win=ImagerView,limits={0,10000,1},value= iVideoWave
 	
-	SetVariable binWidthSV,win=ImagerView,pos={55,338},size={85,15},proc=SetROIProc,title="x bin"
+	SetVariable binWidthSV,win=ImagerView,pos={55,338},size={90,15},proc=SetROIProc,title="Bin Width:"
 	SetVariable binWidthSV,win=ImagerView,format="%d"
-	SetVariable binHeightSV,win=ImagerView,pos={174,338},size={85,15},proc=SetROIProc,title="y bin"
+	SetVariable binHeightSV,win=ImagerView,pos={174,338},size={90,15},proc=SetROIProc,title="Bin Height:"
 	SetVariable binHeightSV,win=ImagerView,format="%d"
 
 	// ROI Index
 	yOffset=341+25+4
-	Variable width=80
+	Variable width=66
 	Variable height=16
-	SetVariable roinum_set,win=ImagerView,pos={(panelWidth-width)/2,yOffset},size={width,height},proc=ImagerContiROISVTwiddled,title="ROI #:"
+	SetVariable roinum_set,win=ImagerView,pos={(panelWidth-width)/2,yOffset},size={width,height},proc=ImagerContiROISVTwiddled,title="ROI:"
 
 	// The four ROI borders
 	Variable xCenter=panelWidth/2
@@ -115,17 +115,17 @@ Function ImagerViewConstructor() : Panel
 	// Binned width, height
 	yOffset=450
 	dx=10	// horzontal distance from center to closest edge of right/left VD
-	width=110
-	ValDisplay binnedFrameWidthVD,win=ImagerView,pos={xCenter-dx-width,yOffset},size={width,height},title="Binned width:",format="%4.2f"
+	width=136
+	ValDisplay binnedFrameWidthVD,win=ImagerView,pos={xCenter-dx-width,yOffset},size={width,height},title="Width / Bin Width:",format="%4.2f"
 	ValDisplay binnedFrameWidthVD,win=ImagerView,limits={0,0,0},barmisc={0,1000}
 	
 	//absVarName=AbsoluteVarName("root:DP_Imager","binnedFrameHeight")
-	ValDisplay binnedFrameHeightVD,win=ImagerView,pos={xCenter+dx,yOffset},size={width,height},title="Binned height:",format="%4.2f"
+	ValDisplay binnedFrameHeightVD,win=ImagerView,pos={xCenter+dx,yOffset},size={width,height},title="Height / Bin Height:",format="%4.2f"
 	ValDisplay binnedFrameHeightVD,win=ImagerView,limits={0,0,0},barmisc={0,1000}
 	
 	Button getstac_button,win=ImagerView,pos={125,253},size={80,20},proc=StackButtonProc,title="Take Video"
-	CheckBox show_roi_check0,win=ImagerView,pos={109,286},size={94,14},title="Show ROI Image"
-	CheckBox show_roi_check0,win=ImagerView,value= 0
+	//CheckBox show_roi_check0,win=ImagerView,pos={109,286},size={94,14},title="Show ROI Image"
+	//CheckBox show_roi_check0,win=ImagerView,value= 0
 	
 	// Sync the view to the model
 	ImagerViewUpdate()
@@ -142,6 +142,10 @@ Function ImagerViewModelChanged()
 	ImagerViewUpdate()
 End
 
+
+Function ImagerViewEpiLightChanged()
+	ImagerViewUpdate()
+End
 
 
 Function ImagerViewUpdate()
@@ -162,6 +166,10 @@ Function ImagerViewUpdate()
 	NVAR iROI
 	WAVE roisWave
 
+	// Update the Epi light toggle button
+	String titleStr = stringFif(EpiLightGetIsOn(),"Turn Epi Light Off","Turn Epi Light On")
+	Button EpiLightToggleButton, win=ImagerView, title=titleStr
+
 	// Calculate things we need
 	Variable ccdWidth=CameraCCDWidthGet()
 	Variable ccdHeight=CameraCCDHeightGet()
@@ -174,21 +182,26 @@ Function ImagerViewUpdate()
 	Variable nROIs=ImagerGetNROIs()
 
 	// Update stuff
-	if (nROIs==0)
-		SetVariable roinum_set, win=ImagerView, value= _STR:"(none)"
-	else
-		SetVariable roinum_set, win=ImagerView, format="%d", limits={1,nROIs,1}, value= _NUM:(iROI+1)
-	endif
-	SetVariable iROILeftSV,win=ImagerView,limits={0,ccdWidth-1,1},value= _NUM:iROILeft
-	SetVariable iROIRightSV,win=ImagerView,limits={0,ccdWidth-1,1},value= _NUM:iROIRight
-	SetVariable iROITopSV,win=ImagerView,limits={0,ccdHeight-1,1},value= _NUM:iROITop
-	SetVariable iROIBottomSV,win=ImagerView,limits={0,ccdHeight-1,1},value= _NUM:iROIBottom
 	SetVariable binWidthSV,win=ImagerView,limits={1,ccdWidth,1},value= _NUM:binWidth
 	SetVariable binHeightSV,win=ImagerView,limits={1,ccdHeight,1},value= _NUM:binHeight
+	if (nROIs==0)
+		SetVariable roinum_set, win=ImagerView, value= _STR:"(none)"
+		SetVariable iROILeftSV,win=ImagerView,value= _STR:"NA"
+		SetVariable iROIRightSV,win=ImagerView,value= _STR:"NA"
+		SetVariable iROITopSV,win=ImagerView,value= _STR:"NA"
+		SetVariable iROIBottomSV,win=ImagerView,value= _STR:"NA"
+		ValDisplay binnedFrameWidthVD, win=ImagerView, value= _NUM:NaN
+		ValDisplay binnedFrameHeightVD, win=ImagerView, value= _NUM:NaN
+	else
+		SetVariable roinum_set, win=ImagerView, format="%d", limits={1,nROIs,1}, value= _NUM:(iROI+1)
+		SetVariable iROILeftSV,win=ImagerView,limits={0,ccdWidth-1,1},value= _NUM:iROILeft
+		SetVariable iROIRightSV,win=ImagerView,limits={0,ccdWidth-1,1},value= _NUM:iROIRight
+		SetVariable iROITopSV,win=ImagerView,limits={0,ccdHeight-1,1},value= _NUM:iROITop
+		SetVariable iROIBottomSV,win=ImagerView,limits={0,ccdHeight-1,1},value= _NUM:iROIBottom
+		ValDisplay binnedFrameWidthVD, win=ImagerView, value= _NUM:(iROIRight-iROILeft)/binWidth
+		ValDisplay binnedFrameHeightVD, win=ImagerView, value= _NUM:(iROIBottom-iROITop)/binHeight
+	endif
 	
-	ValDisplay binnedFrameWidthVD, win=ImagerView, value= _NUM:(iROIRight-iROILeft)/binWidth
-	ValDisplay binnedFrameHeightVD, win=ImagerView, value= _NUM:(iROIBottom-iROITop)/binHeight
-
 	// Restore the original DF
 	SetDataFolder savedDF
 End

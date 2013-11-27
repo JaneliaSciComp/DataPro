@@ -55,15 +55,15 @@ Function TestPulserViewConstructor() : Graph
 	Button startButton,win=TestPulserView,pos={18,10},size={80,20},proc=TestPulserContStartButton,title="Start"
 	TitleBox proTipTitleBox,win=TestPulserView,pos={10,30+4},frame=0,title="(hit ESC key to stop)",disable=1
 
-	SetVariable adcIndexSV,win=TestPulserView,pos={110+30,10},size={70,1},title="ADC #"
+	SetVariable adcIndexSV,win=TestPulserView,pos={110+30,10},size={60,1},title="ADC:"
 	SetVariable adcIndexSV,win=TestPulserView,limits={0,7,1},value= root:DP_TestPulser:adcIndex
-	SetVariable dacIndexSV,win=TestPulserView,pos={110+30,30},size={70,1},title="DAC #",proc=TestPulserContDacIndexTwiddled
+	SetVariable dacIndexSV,win=TestPulserView,pos={110+30,30},size={60,1},title="DAC:",proc=TestPulserContDacIndexTwiddled
 	SetVariable dacIndexSV,win=TestPulserView,limits={0,3,1},value= root:DP_TestPulser:dacIndex
 
-	SetVariable testPulseAmplitudeSetVariable,win=TestPulserView,pos={200+30,10},size={100,1},title="Amplitude"
+	SetVariable testPulseAmplitudeSetVariable,win=TestPulserView,pos={200+30,10},size={100,1},title="Amplitude:"
 	SetVariable testPulseAmplitudeSetVariable,win=TestPulserView,limits={-1000,1000,1},value= root:DP_TestPulser:amplitude
 	TitleBox amplitudeTitleBox,win=TestPulserView,pos={330+4,10+2},frame=0
-	SetVariable durationSV,win=TestPulserView,pos={200+30,30},size={100,1},title="Duration  "
+	SetVariable durationSV,win=TestPulserView,pos={200+30,30},size={100,1},title="Duration: "
 	SetVariable durationSV,win=TestPulserView,limits={1,1000,1},value= root:DP_TestPulser:duration
 	TitleBox msTitleBox,win=TestPulserView,pos={300+30+4,30+2},frame=0,title="ms"
 	
@@ -71,9 +71,9 @@ Function TestPulserViewConstructor() : Graph
 	Checkbox testPulseBaseSubCheckbox,win=TestPulserView
 	Checkbox testPulseBaseSubCheckbox,win=TestPulserView,proc=TestPulserBaseSubCheckboxUsed
 
-	CheckBox ttlOutputCheckbox,win=TestPulserView,pos={200+30+20,56},size={58,14},title="TTL Output"
+	CheckBox ttlOutputCheckbox,win=TestPulserView,pos={200+30+20+6,56},size={58,14},title="TTL Output:"
 	CheckBox ttlOutputCheckbox,win=TestPulserView,proc=TestPulserContTTLOutputCheckBox
-	SetVariable ttlOutChannelSetVariable,win=TestPulserView,pos={280+30+20,56-1},size={44,1},title="#"
+	SetVariable ttlOutChannelSetVariable,win=TestPulserView,pos={280+30+20+6,56-1},size={36,1},title=" "
 	SetVariable ttlOutChannelSetVariable,win=TestPulserView,limits={0,3,1},value= root:DP_TestPulser:ttlOutIndex
 	SetVariable ttlOutChannelSetVariable,win=TestPulserView,disable=2-2*ttlOutput
 
