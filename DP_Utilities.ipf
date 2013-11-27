@@ -200,7 +200,7 @@ End
 Function /S BrowserTitleFromNumber(browserNumber)
 	Variable browserNumber
 	String browserTitle
-	sprintf browserTitle "DataPro Browser %d" browserNumber
+	sprintf browserTitle "Signal Browser %d" browserNumber
 	return browserTitle
 End
 

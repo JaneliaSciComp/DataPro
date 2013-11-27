@@ -406,7 +406,7 @@ End
 ////			if (iFrame==1)
 ////				ModifyImage $imageWaveName ctab= {blackCount,whiteCount,Grays,0}
 ////			endif
-////			ControlInfo autoscaleCB
+////			ControlInfo autoscaleToDataCB
 ////			if (V_Value>0)
 ////				AutoGrayScaleButtonProc("scaleButton")
 ////			endif

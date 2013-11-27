@@ -22,9 +22,16 @@ Function ImageBrowserModelConstructor()
 	Variable /G iFrame=nan		// Frame index to show in the browser
 	Variable /G blackCount=0		// the CCD count that gets mapped to black
 	Variable /G whiteCount=2^16-1		// the CCD count that gets mapped to white
-	String /G imageWaveName=""
-	Variable /G autoscale=0
+	String /G imageWaveName=""		// the current wave being shown in the browser
+	Variable /G autoscaleToData=0
 		// Whether to automatically set blackCount, whiteCount to min/max of image/video
+
+	// If there are any video wave around, make one of them the current one, make the first frame the current one
+	String allVideoWaveNames=ImagerGetAllVideoWaveNames()
+	if ( ItemsInList(allVideoWaveNames)>0 )
+		imageWaveName=StringFromList(0,allVideoWaveNames)
+		iFrame=0
+	endif
 	
 	// Sync the internal ROI boxes to the ROIs in the Imager
 	ImageBrowserUpdateROIs()
@@ -34,15 +41,15 @@ Function ImageBrowserModelConstructor()
 End
 
 
-Function ImageBrowserModGetAutoscale()
+Function ImageBrowserModGetAutoscToData()
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_ImageBrowserModel
 	
 	// Declare instance vars
-	NVAR autoscale
+	NVAR autoscaleToData
 
-	Variable value=autoscale
+	Variable value=autoscaleToData
 
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -52,7 +59,7 @@ End
 
 
 
-Function ImageBrowserModSetAutoscale(newValue)
+Function ImageBrowserModSetAutoscToData(newValue)
 	Variable newValue
 
 	// Switch to the data folder
@@ -60,14 +67,14 @@ Function ImageBrowserModSetAutoscale(newValue)
 	SetDataFolder root:DP_ImageBrowserModel
 	
 	// Declare instance vars
-	NVAR autoscale
+	NVAR autoscaleToData
 
 	// Set the field
-	autoscale=newValue
+	autoscaleToData=newValue
 	
 	// Auto-scale now, if needed
-	if (autoscale)
-		ImageBrowserModelScale()
+	if (autoscaleToData)
+		ImageBrowserModelScaleToData()
 	endif
 
 	// Restore the original DF
@@ -165,9 +172,9 @@ Function ImageBrowserModelSetBlackCount(newValue)
 	// Declare instance vars
 	NVAR blackCount
 	NVAR whiteCount	
-	NVAR autoscale
+	NVAR autoscaleToData
 
-	if (!autoscale)	// Can only set the black count if not auto-auto-scaling
+	if (!autoscaleToData)	// Can only set the black count if not auto-auto-scaling
 		if (newValue<whiteCount)
 			blackCount=newValue
 		endif
@@ -207,9 +214,9 @@ Function ImageBrowserModelSetWhiteCount(newValue)
 	// Declare instance vars
 	NVAR whiteCount
 	NVAR blackCount
-	NVAR autoscale
+	NVAR autoscaleToData
 
-	if (!autoscale)	// Can only set the white count if not auto-auto-scaling
+	if (!autoscaleToData)	// Can only set the white count if not auto-auto-scaling
 		if (newValue>blackCount)
 			whiteCount=newValue
 		endif
@@ -233,13 +240,13 @@ Function ImageBrowserModelSetVideo(imageWaveNameNew)
 	// Declare instance vars
 	NVAR iFrame
 	SVAR imageWaveName
-	NVAR autoscale
+	NVAR autoscaleToData
 	
 	// Set instance vars appropriately
 	imageWaveName=imageWaveNameNew
 	iFrame=0
-	if (autoscale)
-		ImageBrowserModelScale()
+	if (autoscaleToData)
+		ImageBrowserModelScaleToData()
 	endif
 
 	// Restore the original DF
@@ -249,7 +256,7 @@ End
 
 
 
-Function ImageBrowserModelScale()
+Function ImageBrowserModelScaleToData()
 	// This sets blackCount and whiteCount to the min and max of the current frame
 
 	// Switch to the data folder
@@ -265,6 +272,31 @@ Function ImageBrowserModelScale()
 	ImageStats /M=1 root:DP_Imager:$imageWaveName
 	blackCount=V_min
 	whiteCount=V_max
+
+	// Restore the original DF
+	SetDataFolder savedDF			
+End
+
+
+
+
+Function ImageBrowserModelFullScale()
+	// This sets blackCount and whiteCount to the min and max possible values
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_ImageBrowserModel
+	
+	// Declare instance vars
+	NVAR autoscaleToData
+	NVAR blackCount
+	NVAR whiteCount
+
+	// Set 'em
+	if (!autoscaleToData)	// If autoscaling to data is checked, don't mess with the scale
+		blackCount=0
+		whiteCount=2^16-1
+	endif
 
 	// Restore the original DF
 	SetDataFolder savedDF			

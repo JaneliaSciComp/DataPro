@@ -17,7 +17,7 @@ Function ImageBrowserViewConstructor()
 	endif
 
 	// Create the graph window, widgets
-	Display /W=(45,40,45+310,40+300) /K=1 /N=ImageBrowserView as "Image Browser"
+	Display /W=(45,40,45+360,40+360) /K=1 /N=ImageBrowserView as "Image Browser"
 
 	ControlBar /T /W=ImageBrowserView 56
 
@@ -32,10 +32,17 @@ Function ImageBrowserViewConstructor()
 	SetVariable gray_setvar1,win=ImageBrowserView,pos={126,30},size={130,16},proc=WhiteCountSetVarProc,title="White Count:"
 	SetVariable gray_setvar1,win=ImageBrowserView,limits={0,2^16-1,1024}
 
-	Button scaleButton,win=ImageBrowserView,pos={280,8},size={100,20},proc=ImageBrowserContScaleButton,title="Scale to Data"
+	Variable xOffset=268
+	Button fullScaleButton,win=ImageBrowserView,pos={xOffset,18},size={80,20},proc=ImageBrowserContFullScale,title="Full Scale"
 
-	CheckBox autoscaleCB,win=ImageBrowserView,pos={280,32},size={111,14},title="Autoscale to Data"
-	CheckBox autoscaleCB,win=ImageBrowserView, proc=ImageBrowserContAutoscaleCB
+	xOffset+=94
+	Button scaleToDataButton,win=ImageBrowserView,pos={xOffset,8},size={100,20},proc=ImageBrowserContScaleToData,title="Scale to Data"
+
+	CheckBox autoscaleToDataCB,win=ImageBrowserView,pos={xOffset,32},size={112,14},title="Autoscale to Data"
+	CheckBox autoscaleToDataCB,win=ImageBrowserView, proc=ImageBrowserContAutoscToData
+	
+	// Update the view to sync to the model
+	ImageBrowserViewUpdate()
 End
 
 
@@ -53,6 +60,10 @@ End
 
 
 
+//
+// Private methods
+//
+
 Function ImageBrowserViewUpdate()
 	// If the view doesn't exist, nothing to do
 	if (!GraphExists("ImageBrowserView"))
@@ -64,8 +75,8 @@ Function ImageBrowserViewUpdate()
 	SetDataFolder root:DP_ImageBrowserModel
 
 	// Update the autoscaleOnFly checkbox
-	Variable autoscale=ImageBrowserModGetAutoscale()
-	CheckBox autoscaleCB, win=ImageBrowserView, value=autoscale
+	Variable autoscaleToData=ImageBrowserModGetAutoscToData()
+	CheckBox autoscaleToDataCB, win=ImageBrowserView, value=autoscaleToData
 	
 	// Update the image popup
 	String imageWaveName=ImageBrowserModGetImWaveName()
@@ -78,16 +89,26 @@ Function ImageBrowserViewUpdate()
 	// Update the frame selector
 	Variable nFrames=DimSize($imageWaveNameAbs, 2)
 	Variable iFrame=ImageBrowserModelGetIFrame()
-	SetVariable plane_setvar0,win=ImageBrowserView,limits={0,nFrames-1,1}, value=_NUM:iFrame
+	if (nFrames==0)
+		SetVariable plane_setvar0,win=ImageBrowserView, value=_STR:"NA"
+	else
+		SetVariable plane_setvar0,win=ImageBrowserView,limits={0,nFrames-1,1}, value=_NUM:iFrame
+	endif
 
 	// Update the blackCount SetVariable
 	Variable blackCount=ImageBrowserModelGetBlackCount()
-	SetVariable gray_setvar0,win=ImageBrowserView, value= _NUM:blackCount
+	SetVariable gray_setvar0,win=ImageBrowserView, value= _NUM:blackCount, disable=(autoscaleToData ? 2 : 0)
 	
 	// Update the whiteCount SetVariable
 	Variable whiteCount=ImageBrowserModelGetWhiteCount()	
-	SetVariable gray_setvar1, win=ImageBrowserView, value= _NUM:whiteCount
+	SetVariable gray_setvar1, win=ImageBrowserView, value= _NUM:whiteCount, disable=(autoscaleToData ? 2 : 0)
+
+	// Update the enablement of the "Full Scale" button
+	Button fullScaleButton, win=ImageBrowserView, disable=(autoscaleToData ? 2 : 0)
 	
+	// Update the enablement of the "Scale to Data" button: Don't need it if autoscale to data is on
+	Button scaleToDataButton, win=ImageBrowserView, disable=(autoscaleToData ? 2 : 0)
+
 	// Update the image
 	//String oldImageName=ImageNameList("ImageBrowserView",";")
 	//printf "oldImageName: %s\r", oldImageName

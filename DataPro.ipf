@@ -64,7 +64,10 @@ Menu "DataPro"
 	"-"
 	"Sweeper Controls",SweeperContConstructor()
 	"Digitizer Controls",DigitizerContConstructor()
-	"New Browser",BrowserContConstructor("New")
+	"Imager Controls", ImagerContConstructor()
+	"-"
+	"New Signal Browser",BrowserContConstructor("New")
+	"Image Browser",ImageBrowserContConstructor()
 	"-"
 	"Test Pulser",TestPulserContConstructor()
 	"-"
@@ -83,28 +86,26 @@ Menu "DataPro"
 	"-"
 	"Switcher",SwitcherContConstructor()
 	"Axon Switcher",ASwitcherContConstructor()
-	"-"
-	"Imager Controls", ImagerContConstructor()
 End
 
-Menu "DataPro Image"
-//	"Data Pro_Menu"
+//Menu "DataPro Image"
+////	"Data Pro_Menu"
+////	"-"
+//	//"Imager Controls", ImagerContConstructor()
+//	//"-"
+////	"Focus_Image"
+////	"Acquire_Full_Image"
+//	"Load_Full_Image"
+//	"Load_Image_Stack"
 //	"-"
-	//"Imager Controls", ImagerContConstructor()
-	//"-"
-//	"Focus_Image"
-//	"Acquire_Full_Image"
-	"Load_Full_Image"
-	"Load_Image_Stack"
-	"-"
-	"Image_Display"
-	"DFF_From_Stack"
-	"-"
-	"Show_DFoverF"
-	"Append_DFoverF"
-	"Quick_Append"
-	//"Get_SIDX_Image"
-End
+//	"Image_Display"
+//	"DFF_From_Stack"
+//	"-"
+//	"Show_DFoverF"
+//	"Append_DFoverF"
+//	"Quick_Append"
+//	//"Get_SIDX_Image"
+//End
 
 // This adds it to the marquee pop-up menu in a graph window
 Menu "GraphMarquee"

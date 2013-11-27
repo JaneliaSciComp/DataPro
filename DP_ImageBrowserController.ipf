@@ -6,6 +6,11 @@
 
 #pragma rtGlobals=3		// Use modern global access method and strict wave access
 
+Function ImageBrowserContConstructor()
+	ImageBrowserModelConstructor()
+	ImageBrowserViewConstructor()
+End
+
 Function ImagePlaneSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName
 	Variable varNum
@@ -37,12 +42,21 @@ Function WhiteCountSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContr
 	ImageBrowserViewModelEtcChanged()
 End
 
-Function ImageBrowserContScaleButton(ctrlName) : ButtonControl
+Function ImageBrowserContScaleToData(ctrlName) : ButtonControl
 	String ctrlName
 	
-	ImageBrowserModelScale()
+	ImageBrowserModelScaleToData()
 	ImageBrowserViewModelEtcChanged()
 End
+
+
+Function ImageBrowserContFullScale(ctrlName) : ButtonControl
+	String ctrlName
+	
+	ImageBrowserModelFullScale()
+	ImageBrowserViewModelEtcChanged()
+End
+
 
 Function ImagePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
@@ -54,13 +68,12 @@ Function ImagePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 End
 
 
-Function ImageBrowserContAutoscaleCB(ctrlName,isChecked): CheckboxControl
+Function ImageBrowserContAutoscToData(ctrlName,isChecked): CheckboxControl
 	String ctrlName
 	Variable isChecked
 	
-	ImageBrowserModSetAutoscale(isChecked)
+	ImageBrowserModSetAutoscToData(isChecked)
 	ImageBrowserViewModelEtcChanged()	
-
 End
 
 
