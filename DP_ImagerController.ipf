@@ -118,6 +118,9 @@ Function ImagerContFocus()
 	iFocusWave=iFullFrameWave
 	//printf "%s: Focus Image done\r", wave_image
 
+	// Call this to make sure the image gets auto-scaled properly if needed
+	ImageBrowserContSetVideo(imageWaveNameRel)
+
 	// Restore the data folder
 	SetDataFolder savedDF
 End
