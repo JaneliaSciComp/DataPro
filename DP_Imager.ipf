@@ -22,7 +22,9 @@ Function ImagerConstructor()
 	//String /G allVideoWaveNames		// a semicolon-separated list of all the video wave names
 	//Variable /G wheelPositionForEpiLightOn=1	// Setting of something that results in epi-illumination being on
 	//Variable /G wheelPositionForEpiLightOff=0	// Setting of something that results in epi-illumination being off
-	Variable /G isTriggered		// boolean, true iff the image acquisition will be triggerd (as opposed to free-running)
+	Variable /G isTriggered		// boolean, true iff the image acquisition will be triggered (as opposed to free-running)
+	Variable /G isFocusing=0		// boolean, whether or not we're currently focusing
+	Variable /G isAcquiringVideo=0		// boolean, whether or not we're currently taking video
 	//Variable /G image_focus	// image_focus may be unnecessary if there is a separate focus routine
 	Variable /G isROI=0		// is there a ROI? (false=>full frame)
 	Variable /G isBackgroundROIToo=0		// if isROI, is there a background ROI too? (if full-frame, this is unused)
@@ -39,8 +41,8 @@ Function ImagerConstructor()
 	//Variable /G iFullFrameWave=1	// The "sweep number" to use for the next full-frame image
 	//Variable /G iFocusWave=1		// The "sweep number" to use for the next focus image
 	//Variable /G iVideoWave=1		// The "sweep number" to use for the video 
-	Variable /G binWidth=10	// CCD bins per pixel in x dimension
-	Variable /G binHeight=20	// CCD bins per pixel in y dimension
+	Variable /G binWidth=8	// CCD bins per pixel in x dimension
+	Variable /G binHeight=8	// CCD bins per pixel in y dimension
 	Variable /G iROI=nan		// indicates the current ROI
 	//Variable /G binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth	// Width of the binned ROI image
 	//Variable /G binnedFrameHeight=(iROIBottom-iROITop+1)/binHeight		// Height of the binned ROI image
@@ -503,5 +505,83 @@ Function ImagerSetIsTriggered(newValue)
 End
 
 
+
+Function ImagerGetIsFocusing()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+
+	// Declare instance vars
+	NVAR isFocusing
+
+	// Get the value
+	Variable value=isFocusing
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End
+
+
+
+
+Function ImagerSetIsFocusing(newValue)
+	Variable newValue
+	
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR isFocusing
+
+	// Set the value
+	isFocusing=newValue
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+
+Function ImagerGetIsAcquiringVideo()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+
+	// Declare instance vars
+	NVAR isAcquiringVideo
+
+	// Get the value
+	Variable value=isAcquiringVideo
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End
+
+
+
+
+Function ImagerSetIsAcquiringVideo(newValue)
+	Variable newValue
+	
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR isAcquiringVideo
+
+	// Set the value
+	isAcquiringVideo=newValue
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
 
 

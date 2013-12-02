@@ -32,6 +32,10 @@ Function ImagerContSetupAndAcquireVideo(isTriggered)
 	NVAR binWidth
 	NVAR binHeight
 	
+	ImagerSetIsAcquiringVideo(1)
+	ImagerViewModelChanged()
+	DoUpdate	
+	
 	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTriggered,videoExposure,ccdTargetTemperature,binWidth,binHeight)
 	EpiLightSetIsOn(1)
 	ImagerContAcquireVideo()
@@ -40,6 +44,10 @@ Function ImagerContSetupAndAcquireVideo(isTriggered)
 	//Get_DFoverF_from_Stack(previouswave)
 	//Append_DFoverF(previouswave)
 	//printf "%s%d: Image with EPhys done\r", videoWaveBaseName, previouswave
+
+	ImagerSetIsAcquiringVideo(0)
+	ImagerViewModelChanged()
+	DoUpdate	
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -63,7 +71,8 @@ Function ImagerContFocus()
 	Variable binWidth=1
 	Variable binHeight=1
 
-	ImagerViewSetIsProTipShowing(1)
+	ImagerSetIsFocusing(1)
+	ImagerViewModelChanged()
 	DoUpdate
 
 	//Variable status, canceled
@@ -87,8 +96,6 @@ Function ImagerContFocus()
 	Variable	nFrames=1
 	//Variable isTriggered=0		// Just want the camera to free-run
 	
-	ImagerViewSetIsProTipShowing(1)
-	DoUpdate
 	FancyCameraArm(nFrames)
 	Variable iFrame=0
 	do
@@ -110,7 +117,8 @@ Function ImagerContFocus()
 		printf "."
 		DoUpdate
 	while (!EscapeKeyWasPressed())	
-	ImagerViewSetIsProTipShowing(0)
+	ImagerSetIsFocusing(0)
+	ImagerViewModelChanged()
 	DoUpdate
 	FancyCameraDisarm()	
 		
@@ -129,7 +137,7 @@ Function ImagerContFocus()
 	SetDataFolder savedDF
 End
 
-Function ImagerContAcquireFullFrameImage()
+Function ImagerContAcquireSnapshot()
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
@@ -205,6 +213,8 @@ Function ImagerContAcquireVideo()
 	MoveWave imageWave, $imageWaveName 	// Cage the once-free wave
 	EpiLightSetIsOn(0)
 	ImageBrowserContSetVideo(imageWaveName)
+	SweeperIncrementNextSweepIndex()
+	SweeperViewSweeperChanged()
 	//	might want to add code to make an empty data wave if the image stack is taken on its own
 	
 	// Restore the original DF
@@ -283,7 +293,7 @@ Function FullButtonProc(ctrlName) : ButtonControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 
-	ImagerContAcquireFullFrameImage()
+	ImagerContAcquireSnapshot()
 	
 	// Restore the original DF
 	SetDataFolder savedDF

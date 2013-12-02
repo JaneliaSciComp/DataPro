@@ -45,8 +45,8 @@ Function ImagerViewConstructor() : Panel
 	Variable groupBoxHeight=54
 	GroupBox illuminationGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Illumination"
 	
-	Variable width=130
-	Variable height=30
+	Variable width=140
+	Variable height=26
 	xOffset=(panelWidth-width)/2
 	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-height)/2
 	Button EpiLightToggleButton,win=ImagerView,pos={xOffset,yOffset},size={width,height},proc=ImagerContEpiLightToggle
@@ -106,7 +106,7 @@ Function ImagerViewConstructor() : Panel
 	TitleBox snapshotExposureUnitsTitleBox,win=ImagerView,pos={xOffset+width+2,yOffset+2},frame=0,title="ms"
 
 	// "(hit ESC key to stop)" title box
-	TitleBox proTipTitleBox, win=ImagerView, pos={106,focusYOffset+3}, frame=0, title="(hit ESC key to stop)",disable=1
+	TitleBox focusingEscapeTB, win=ImagerView, pos={106,focusYOffset+3}, frame=0, title="(hit ESC key to stop)",disable=1
 
 
 	//
@@ -123,6 +123,9 @@ Function ImagerViewConstructor() : Panel
 	width=80
 	height=20
 	Button takeVideoButton,win=ImagerView,pos={xOffset,yOffset},size={width,height},proc=ICTakeVideoButtonPressed,title="Acquire"
+
+	// "(hit ESC key to stop)" title box
+	TitleBox videoEscapeTB, win=ImagerView, pos={xOffset+1,yOffset+24}, frame=0, title="(hit ESC to stop)"
 
 	// Video name SV
 	xOffset=106
@@ -244,14 +247,25 @@ Function ImagerViewUpdate()
 	WAVE roisWave
 
 	// Update the Epi light toggle button
-	String titleStr = stringFif(EpiLightGetIsOn(),"Turn Epi Light Off","Turn Epi Light On")
+	String titleStr = stringFif(EpiLightGetIsOn(),"Turn Epiillumination Off","Turn Epiillumination On")
 	Button EpiLightToggleButton, win=ImagerView, title=titleStr
 
+	// Update the enablement of the "Focus" button
+	Variable isFocusing=ImagerGetIsFocusing()
+	Button focusButton,win=ImagerView,disable=(isFocusing?2:0)
+
+	// Update the "(hit ESC to Cancel)" message for focusing
+	TitleBox focusingEscapeTB,win=ImagerView,disable=(!isFocusing)
+
 	// Update the enablement of the "Take Video" button
-	Button takeVideoButton,win=ImagerView,disable=(ImagerGetIsTriggered()?2:0)
+	Variable isAcquiringVideo=ImagerGetIsAcquiringVideo()
+	Button takeVideoButton,win=ImagerView,disable=(ImagerGetIsTriggered()&&!isAcquiringVideo?2:0)
+
+	// Update the "(hit ESC to Cancel)" message for video
+	TitleBox videoEscapeTB,win=ImagerView,disable=(!isAcquiringVideo)
 
 	// Update the isTriggered checkbox
-	CheckBox isTriggeredCB, value=ImagerGetIsTriggered()
+	CheckBox isTriggeredCB, win=ImagerView, value=ImagerGetIsTriggered()
 
 	// Update the CCD temperature
 	Variable ccdTemperature=FancyCameraGetTemperature()
@@ -301,5 +315,5 @@ End
 Function ImagerViewSetIsProTipShowing(isProTipShowing)
 	Variable isProTipShowing
 
-	TitleBox proTipTitleBox,win=ImagerView,disable=(!isProTipShowing)
+	TitleBox focusingEscapeTB,win=ImagerView,disable=(!isProTipShowing)
 End

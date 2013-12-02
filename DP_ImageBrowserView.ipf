@@ -175,11 +175,11 @@ Function ImageBrowserViewDrawROI(iROI,iROICurrent)
 	Wave yBox=$yBoxName
 	AppendToGraph /W=ImageBrowserView yBox vs xBox
 	//Print TraceNameList("ImageBrowserView",";",3)
-	//ModifyGraph /W=ImageBrowserView lsize($yBoxName)=1.5
+	ModifyGraph /W=ImageBrowserView rgb($yBoxName)=(0,0,65535)
 	if (iROI==iROICurrent)
-		ModifyGraph /W=ImageBrowserView rgb($yBoxName)=(0,0.7*65535,65535)
+		ModifyGraph /W=ImageBrowserView lsize($yBoxName)=1.5
 	else
-		ModifyGraph /W=ImageBrowserView rgb($yBoxName)=(0,0,65535)
+		ModifyGraph /W=ImageBrowserView lsize($yBoxName)=1
 	endif
 
 	// Restore the original DF
