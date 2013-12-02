@@ -38,14 +38,14 @@ Function SweeperViewConstructor() : Panel
 	SetVariable nSweepsPerTrialSV,win=SweeperView,value= root:DP_Sweeper:nSweepsPerTrial, proc=SweeperControllerSVTwiddled
 	
 	xOffset=140
-	SetVariable sweepIntervalSetVariable,win=SweeperView,pos={xOffset,50},size={120,15},title="Sweep interval:"
+	SetVariable sweepIntervalSetVariable,win=SweeperView,pos={xOffset,50},size={120,15},title="Sweep Interval:"
 	SetVariable sweepIntervalSetVariable,win=SweeperView,limits={0.1,10000,1},value= root:DP_Sweeper:sweepInterval, proc=SweeperControllerSVTwiddled
 	TitleBox intervalTitleBox,win=SweeperView,pos={220-138+xOffset+40,50+2},frame=0,title="s"
 	
 	Variable width=140
 	yOffset=75
 	xOffset=70
-	SetVariable totalDurationSV,win=SweeperView,pos={xOffset,yOffset},size={width,15},title="Total duration:"
+	SetVariable totalDurationSV,win=SweeperView,pos={xOffset,yOffset},size={width,15},title="Total Duration:"
 	SetVariable totalDurationSV,win=SweeperView,limits={10,200000,100},value= _NUM:totalDuration, proc=SweepContTotalDurationSVTwid
 	TitleBox totalDurationUnitsTitleBox,win=SweeperView,pos={xOffset+width+2,yOffset+2},frame=0,title="ms"
 
@@ -196,7 +196,7 @@ Function SweeperViewConstructor() : Panel
 	SetVariable synPulseDelaySetVariable,win=SweeperView,limits={0,200000,10},value= root:DP_Sweeper:synPulseDelay, proc=SweeperControllerSVTwiddled
 	TitleBox delayUnitsTitleBox,win=SweeperView,pos={xOffset+87,yOffset+2},frame=0,title="ms"
 	xOffset+=120
-	SetVariable synPulseDurationSetVariable,win=SweeperView,pos={xOffset,yOffset},size={120,15},title="Pulse duration:"
+	SetVariable synPulseDurationSetVariable,win=SweeperView,pos={xOffset,yOffset},size={120,15},title="Pulse Duration:"
 	SetVariable synPulseDurationSetVariable,win=SweeperView,limits={0.001,100,0.1},value= root:DP_Sweeper:synPulseDuration, proc=SweeperControllerSVTwiddled
 	TitleBox pulseDurationUnitsTitleBox,win=SweeperView,pos={xOffset+122,yOffset+2},frame=0,title="ms"
 	

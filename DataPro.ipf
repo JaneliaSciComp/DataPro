@@ -178,3 +178,6 @@ Function MainContConstructors()
 	ImagerContConstructor()
 End
 
+Function IsImagingModuleInUse()
+	return 1		// Change to zero if you don't want to use the imaging module
+End

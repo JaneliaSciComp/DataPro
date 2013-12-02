@@ -25,73 +25,154 @@ Function ImagerViewConstructor() : Panel
 	
 	Variable xOffset=1550
 	Variable yOffset=54
-	Variable panelWidth=310
-	Variable panelHeight=472
+	Variable panelWidth=330
+	Variable panelHeight=410
 	NewPanel /W=(xOffset,yOffset,xOffset+panelWidth,yOffset+panelHeight)  /N=ImagerView /K=1 as "Imager Controls"
 	ModifyPanel /W=ImagerView fixedSize=1
 
-	Button EpiLightToggleButton,win=ImagerView,pos={10,20},size={130,20},proc=ImagerContEpiLightToggle
-	//Button flu_off,win=ImagerView,pos={10,10},size={130,40},proc=FluOFFButtonProc,title="Epi Light Off"
-	//CheckBox imaging_check0,win=ImagerView,pos={14,244},size={114,14},proc=ImagingCheckProc,title="trigger filter wheel"
-	//CheckBox imaging_check0,win=ImagerView,value= 1
-	//Button button0,win=ImagerView,pos={215,283},size={80,20},proc=AppendDFFButtonProc,title="Append DF/F"
-	Button button1,win=ImagerView,pos={9,190},size={130,20},proc=EphysImageButtonProc,title="Triggered Video"
-	SetVariable setimagename0,win=ImagerView,pos={141,223},size={80,15},title="Name:"
-	SetVariable setimagename0,win=ImagerView,value= videoWaveBaseName
-	//CheckBox bkgndcheck0,win=ImagerView,pos={14,265},size={71,14},title="Bkgnd Sub.",value= 1
-	SetVariable numimages_setvar0,win=ImagerView,pos={11,223},size={100,15},title="# Frames:"
-	SetVariable numimages_setvar0,win=ImagerView,limits={1,10000,1},value= nFramesForVideo
-	SetVariable ccdtemp_setvar0,win=ImagerView,pos={13,311},size={140,15},proc=SetCCDTempVarProc,title="CCD Temp Setpoint:"
-	SetVariable ccdtemp_setvar0,win=ImagerView,limits={-50,20,5},value= ccdTargetTemperature
-	//CheckBox showimageavg_check0,win=ImagerView,pos={14,286},size={84,14},title="Show Average"
-	//CheckBox showimageavg_check0,win=ImagerView,value= 0
-	//Button resetavg_button2,win=ImagerView,pos={212,253},size={80,20},proc=ResetAvgButtonProc,title="Reset Avg"
+	// Params common to all group boxes
+	Variable groupBoxTitleHeight=6
+	Variable groupBoxWidth=panelWidth-10
+	Variable groupBoxXOffset=(panelWidth-groupBoxWidth)/2
+	Variable groupBoxSpaceHeight=8
 	
-	Button focus,win=ImagerView,pos={10,70},size={130,20},proc=FocusButtonProc,title="Focus"
-	TitleBox proTipTitleBox,win=ImagerView,pos={26,94},frame=0,title="(hit ESC key to stop)",disable=1
 	
-	Button full_frame,win=ImagerView,pos={10,130},size={130,20},proc=FullButtonProc,title="Snapshot"
-	//SetVariable fluo_on_set,win=ImagerView,pos={178,40},size={120,15},title="ON   position"
-	//SetVariable fluo_on_set,win=ImagerView,limits={0,9,1},value= wheelPositionForEpiLightOn
-	//SetVariable fluo_off_set,win=ImagerView,pos={177,10},size={120,15},title="OFF position"
-	//SetVariable fluo_off_set,win=ImagerView,limits={0,9,1},value= wheelPositionForEpiLightOff
-	//SetVariable focusnum_set,win=ImagerView,pos={229,98},size={70,15},title="no."
-	//SetVariable focusnum_set,win=ImagerView,limits={0,1000,1},value= iFocusWave
-	SetVariable fulltime_set,win=ImagerView,pos={152,130},size={100,15},title="Exposure:"
-	SetVariable fulltime_set,win=ImagerView,limits={0,10000,100},value= exposure
-	SetVariable imagetime_setvar0,win=ImagerView,pos={149,193},size={100,15},title="Exposure:"
-	SetVariable imagetime_setvar0,win=ImagerView,limits={0,10000,10},value= videoExposure
-	SetVariable setfullname0,win=ImagerView,pos={137,158},size={80,15},title="Name:"
-	SetVariable setfullname0,win=ImagerView,value= fullFrameWaveBaseName
-	//SetVariable setfocusname0,win=ImagerView,pos={139,99},size={80,15},title="name"
-	//SetVariable setfocusname0,win=ImagerView,value= focusWaveBaseName
+	//
+	// Illumination Group
+	//
 	
-	absVarName=AbsoluteVarName("root:DP_Imager","ccdTemperature")
-	ValDisplay tempdisp0,win=ImagerView,pos={194,311},size={100,14},title="CCD Temp:"
-	ValDisplay tempdisp0,win=ImagerView,format="%3.1f",limits={0,0,0},barmisc={0,1000}
-	ValDisplay tempdisp0,win=ImagerView,value= #absVarName
+	Variable groupBoxYOffset=3
+	Variable groupBoxHeight=54
+	GroupBox illuminationGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Illumination"
 	
-	SetVariable focustime_set,win=ImagerView,pos={151,70},size={100,15},title="Exposure:"
-	SetVariable focustime_set,win=ImagerView,limits={0,10000,100},value= focusingExposure
-	//SetVariable fullnum_set,win=ImagerView,pos={230,159},size={70,15},title="Next:"
-	//SetVariable fullnum_set,win=ImagerView,limits={0,1000,1},value= iFullFrameWave
-	//SetVariable imageseqnum_set,win=ImagerView,pos={227,223},size={70,15},title="Next:"
-	//SetVariable imageseqnum_set,win=ImagerView,limits={0,10000,1},value= iVideoWave
-	
-	SetVariable binWidthSV,win=ImagerView,pos={55,338},size={90,15},proc=SetROIProc,title="Bin Width:"
-	SetVariable binWidthSV,win=ImagerView,format="%d"
-	SetVariable binHeightSV,win=ImagerView,pos={174,338},size={90,15},proc=SetROIProc,title="Bin Height:"
-	SetVariable binHeightSV,win=ImagerView,format="%d"
+	Variable width=130
+	Variable height=30
+	xOffset=(panelWidth-width)/2
+	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-height)/2
+	Button EpiLightToggleButton,win=ImagerView,pos={xOffset,yOffset},size={width,height},proc=ImagerContEpiLightToggle
 
+
+	//
+	// Temperature Group
+	//
+	groupBoxYOffset+=groupBoxHeight+groupBoxSpaceHeight
+	groupBoxHeight=44
+	GroupBox temperatureGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="CCD Temperature"
+	
+	height=14
+	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-height)/2
+	SetVariable ccdTemperatureSetpointSV,win=ImagerView,pos={50,yOffset},size={96,height},proc=SetCCDTempVarProc,title="Setpoint:"
+	SetVariable ccdTemperatureSetpointSV, win=ImagerView, limits={-50,20,5}, format="%0.1f", value= ccdTargetTemperature
+
+	ValDisplay ccdTemperatureVD,win=ImagerView,pos={184,yOffset},size={76,height},title="Current:"
+	ValDisplay ccdTemperatureVD,win=ImagerView,format="%0.1f",limits={0,0,0},barmisc={0,1000}
+
+
+	//
+	// Snapshots Group
+	//
+	groupBoxYOffset+=groupBoxHeight+groupBoxSpaceHeight
+	groupBoxHeight=80
+	GroupBox fullFrameGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Snapshots"
+
+	xOffset=16
+	Variable buttonWidth=80
+	Variable buttonHeight=20
+	Variable buttonSpacerHeight=8
+	Variable nButtons=2
+	Variable buttonGroupHeight=nButtons*buttonHeight+(nButtons-1)*buttonSpacerHeight
+	
+	// Snapshot button
+	Variable snapshotYOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-buttonGroupHeight)/2
+	yOffset=snapshotYOffset	
+	Button snapshotButton,win=ImagerView,pos={xOffset,yOffset},size={buttonWidth,buttonHeight},proc=FullButtonProc,title="Take"
+
+	// Focus button
+	Variable focusYOffset=snapshotYOffset+buttonHeight+buttonSpacerHeight
+	yOffset=focusYOffset
+	Button focusButton,win=ImagerView,pos={xOffset,yOffset},size={buttonWidth,buttonHeight},proc=FocusButtonProc,title="Focus"
+
+	// Snapshot name SV
+	SetVariable snapshotNameSV, win=ImagerView, pos={106,snapshotYOffset+2}, size={80,14}, title="Name:"
+	SetVariable snapshotNameSV, win=ImagerView, value=fullFrameWaveBaseName
+	
+	// Snapshot exposure SV
+	xOffset=200
+	yOffset=snapshotYOffset+2
+	width=100
+	height=14
+	SetVariable snapshotExposureSV,win=ImagerView,pos={xOffset,yOffset},size={width,height},title="Exposure:"
+	SetVariable snapshotExposureSV,win=ImagerView,limits={0,10000,100},value= snapshotExposure
+	TitleBox snapshotExposureUnitsTitleBox,win=ImagerView,pos={xOffset+width+2,yOffset+2},frame=0,title="ms"
+
+	// "(hit ESC key to stop)" title box
+	TitleBox proTipTitleBox, win=ImagerView, pos={106,focusYOffset+3}, frame=0, title="(hit ESC key to stop)",disable=1
+
+
+	//
+	// Video Group
+	//
+	groupBoxYOffset+=groupBoxHeight+groupBoxSpaceHeight
+	groupBoxHeight=200
+	GroupBox videoGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Video"
+
+	// Take video button
+	Variable videoYOffset=groupBoxYOffset+groupBoxTitleHeight+15
+	xOffset=16
+	yOffset=videoYOffset
+	width=80
+	height=20
+	Button takeVideoButton,win=ImagerView,pos={xOffset,yOffset},size={width,height},proc=ICTakeVideoButtonPressed,title="Acquire"
+
+	// Video name SV
+	xOffset=106
+	yOffset=videoYOffset+2
+	width=80
+	height=15
+	SetVariable videoNameSV,win=ImagerView,pos={xOffset,yOffset},size={width,height},title="Name:"
+	SetVariable videoNameSV,win=ImagerView,value= videoWaveBaseName
+
+	// Video exposure SV
+	xOffset=200
+	yOffset=videoYOffset+2
+	width=100
+	height=14
+	SetVariable videoExposureSV, win=ImagerView, pos={xOffset,yOffset}, size={width,height}, title="Exposure:"
+	SetVariable videoExposureSV, win=ImagerView, limits={0,10000,10}, value=videoExposure
+	TitleBox videoExposureUnitsTitleBox,win=ImagerView,pos={xOffset+width+2,yOffset+2},frame=0,title="ms"
+
+	// # frames SV	
+	xOffset=106
+	yOffset=videoYOffset+26
+	width=100
+	height=14
+	SetVariable nFramesSV, win=ImagerView, pos={xOffset,yOffset}, size={width,height}, title="# Frames:"
+	SetVariable nFramesSV, win=ImagerView, limits={1,10000,1}, value=nFramesForVideo
+
+	// is triggered SV
+	xOffset=240
+	yOffset=yOffset+1
+	width=40
+	CheckBox isTriggeredCB, win=ImagerView, pos={xOffset,yOffset}, size={width,height}, proc=ImagerContIsTriggeredCB, title="Triggered"
+
+	// bin width SV
+	yOffset=276
+	SetVariable binWidthSV,win=ImagerView,pos={55,yOffset},size={90,14},proc=SetROIProc,title="Bin Width:"
+	SetVariable binWidthSV,win=ImagerView,format="%d"
+
+	// bin height SV
+	SetVariable binHeightSV,win=ImagerView,pos={174,yOffset},size={90,14},proc=SetROIProc,title="Bin Height:"
+	SetVariable binHeightSV,win=ImagerView,format="%d"
+	
 	// ROI Index
-	yOffset=341+25+4
-	Variable width=66
-	Variable height=16
+	yOffset=yOffset+30
+	width=66
+	height=16
 	SetVariable roinum_set,win=ImagerView,pos={(panelWidth-width)/2,yOffset},size={width,height},proc=ImagerContiROISVTwiddled,title="ROI:"
 
 	// The four ROI borders
 	Variable xCenter=panelWidth/2
-	Variable yCenter=(370+395)/2+25+8
+	Variable yCenter=yOffset+44
 	Variable dx=56	// horzontal distance from center to closest edge of right/left SV
 	Variable dy=4	// vertical distance from center to closest edge of top/bottom SV
 	
@@ -113,7 +194,7 @@ Function ImagerViewConstructor() : Panel
 	SetVariable iROIBottomSV,win=ImagerView,format="%d"
 
 	// Binned width, height
-	yOffset=450
+	yOffset=yCenter+32
 	dx=10	// horzontal distance from center to closest edge of right/left VD
 	width=136
 	ValDisplay binnedFrameWidthVD,win=ImagerView,pos={xCenter-dx-width,yOffset},size={width,height},title="Width / Bin Width:",format="%4.2f"
@@ -122,10 +203,6 @@ Function ImagerViewConstructor() : Panel
 	//absVarName=AbsoluteVarName("root:DP_Imager","binnedFrameHeight")
 	ValDisplay binnedFrameHeightVD,win=ImagerView,pos={xCenter+dx,yOffset},size={width,height},title="Height / Bin Height:",format="%4.2f"
 	ValDisplay binnedFrameHeightVD,win=ImagerView,limits={0,0,0},barmisc={0,1000}
-	
-	Button getstac_button,win=ImagerView,pos={125,253},size={80,20},proc=StackButtonProc,title="Take Video"
-	//CheckBox show_roi_check0,win=ImagerView,pos={109,286},size={94,14},title="Show ROI Image"
-	//CheckBox show_roi_check0,win=ImagerView,value= 0
 	
 	// Sync the view to the model
 	ImagerViewUpdate()
@@ -170,6 +247,17 @@ Function ImagerViewUpdate()
 	String titleStr = stringFif(EpiLightGetIsOn(),"Turn Epi Light Off","Turn Epi Light On")
 	Button EpiLightToggleButton, win=ImagerView, title=titleStr
 
+	// Update the enablement of the "Take Video" button
+	Button takeVideoButton,win=ImagerView,disable=(ImagerGetIsTriggered()?2:0)
+
+	// Update the isTriggered checkbox
+	CheckBox isTriggeredCB, value=ImagerGetIsTriggered()
+
+	// Update the CCD temperature
+	Variable ccdTemperature=FancyCameraGetTemperature()
+	ValDisplay ccdTemperatureVD, win=ImagerView, value= _NUM:ccdTemperature
+	WhiteOutIffNan("ccdTemperatureVD","ImagerView",ccdTemperature)
+
 	// Calculate things we need
 	Variable ccdWidth=CameraCCDWidthGet()
 	Variable ccdHeight=CameraCCDHeightGet()
@@ -187,17 +275,17 @@ Function ImagerViewUpdate()
 	SetVariable binWidthSV,win=ImagerView,limits={1,ccdWidth,1},value= _NUM:binWidth
 	SetVariable binHeightSV,win=ImagerView,limits={1,ccdHeight,1},value= _NUM:binHeight
 	if (nROIs==0)
-		SetVariable roinum_set, win=ImagerView, value= _STR:"(none)"
-		SetVariable iROILeftSV,win=ImagerView,value= _STR:"NA"
-		SetVariable iROIRightSV,win=ImagerView,value= _STR:"NA"
-		SetVariable iROITopSV,win=ImagerView,value= _STR:"NA"
-		SetVariable iROIBottomSV,win=ImagerView,value= _STR:"NA"
+		SetVariable roinum_set, win=ImagerView, value= _STR:"(none)", disable=2
+		SetVariable iROILeftSV,win=ImagerView,value= _STR:"", disable=2
+		SetVariable iROIRightSV,win=ImagerView,value= _STR:"", disable=2
+		SetVariable iROITopSV,win=ImagerView,value= _STR:"", disable=2
+		SetVariable iROIBottomSV,win=ImagerView,value= _STR:"", disable=2
 	else
-		SetVariable roinum_set, win=ImagerView, format="%d", limits={1,nROIs,1}, value= _NUM:(iROI+1)
-		SetVariable iROILeftSV,win=ImagerView,limits={0,ccdWidth-1,1},value= _NUM:iROILeft
-		SetVariable iROIRightSV,win=ImagerView,limits={0,ccdWidth-1,1},value= _NUM:iROIRight
-		SetVariable iROITopSV,win=ImagerView,limits={0,ccdHeight-1,1},value= _NUM:iROITop
-		SetVariable iROIBottomSV,win=ImagerView,limits={0,ccdHeight-1,1},value= _NUM:iROIBottom
+		SetVariable roinum_set, win=ImagerView, format="%d", limits={1,nROIs,1}, value= _NUM:(iROI+1), disable=0
+		SetVariable iROILeftSV,win=ImagerView,limits={0,ccdWidth-1,1},value= _NUM:iROILeft, disable=0
+		SetVariable iROIRightSV,win=ImagerView,limits={0,ccdWidth-1,1},value= _NUM:iROIRight, disable=0
+		SetVariable iROITopSV,win=ImagerView,limits={0,ccdHeight-1,1},value= _NUM:iROITop, disable=0
+		SetVariable iROIBottomSV,win=ImagerView,limits={0,ccdHeight-1,1},value= _NUM:iROIBottom, disable=0
 	endif
 	
 	ValDisplay binnedFrameWidthVD, win=ImagerView, value= _NUM:roiWidthInBins

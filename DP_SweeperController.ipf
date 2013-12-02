@@ -56,7 +56,13 @@ End
 
 Function SCGetDataButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
-	SweeperControllerAcquireTrial()
+	
+	if ( IsImagingModuleInUse() )
+		Variable isTriggered=1
+		ImagerContSetupAndAcquireVideo(isTriggered)	// This will call SweeperControllerAcquireTrial()
+	else
+		SweeperControllerAcquireTrial()
+	endif
 End
 
 Function SweeperControllerADCCheckbox(ctrlName,checked) : CheckBoxControl

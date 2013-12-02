@@ -22,15 +22,15 @@ Function ImagerConstructor()
 	//String /G allVideoWaveNames		// a semicolon-separated list of all the video wave names
 	//Variable /G wheelPositionForEpiLightOn=1	// Setting of something that results in epi-illumination being on
 	//Variable /G wheelPositionForEpiLightOff=0	// Setting of something that results in epi-illumination being off
-	Variable /G isImagingTriggered		// boolean, true iff the image acquisition will be triggerd (as opposed to free-running)
+	Variable /G isTriggered		// boolean, true iff the image acquisition will be triggerd (as opposed to free-running)
 	//Variable /G image_focus	// image_focus may be unnecessary if there is a separate focus routine
 	Variable /G isROI=0		// is there a ROI? (false=>full frame)
 	Variable /G isBackgroundROIToo=0		// if isROI, is there a background ROI too? (if full-frame, this is unused)
 	Variable /G ccdTargetTemperature= -20		// the setpoint CCD temperature
-	Variable /G ccdTemperature=nan			// the current CCD temperature
+	//Variable /G ccdTemperature=nan			// the current CCD temperature
 	Variable /G nFramesForVideo=56	// number of frames to acquire
-	Variable /G focusingExposure=100		// duration of each exposure when focusing, in ms
-	Variable /G exposure=100		// duration of each frame exposure for full-frame images, in ms
+	//Variable /G focusingExposure=100		// duration of each exposure when focusing, in ms
+	Variable /G snapshotExposure=100		// duration of each frame exposure for full-frame images, in ms
 	Variable /G videoExposure=50	// duration of each frame for triggered video, in ms
 	//Variable /G iFrame		// Frame index to show in the browser
 	String /G fullFrameWaveBaseName="snap"		// the base name of the full-frame image waves, including the underscore
@@ -460,4 +460,48 @@ Function ImagerAddROI(iROILeft, iROIRight, iROITop, iROIBottom)
 	// Restore the original DF
 	SetDataFolder savedDF	
 End
+
+
+
+
+Function ImagerGetIsTriggered()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+
+	// Declare instance vars
+	NVAR isTriggered
+
+	// Get the value
+	Variable value=isTriggered
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End
+
+
+
+
+Function ImagerSetIsTriggered(newValue)
+	Variable newValue
+	
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR isTriggered
+
+	// Set the value
+	isTriggered=newValue
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+
 

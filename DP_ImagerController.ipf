@@ -12,7 +12,9 @@ Function ImagerContConstructor()
 End
 
 
-Function ImagerContAcquireTriggeredVideo()
+Function ImagerContSetupAndAcquireVideo(isTriggered)
+	Variable isTriggered
+
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
@@ -25,16 +27,14 @@ Function ImagerContAcquireTriggeredVideo()
 	NVAR isBackgroundROIToo
 	//SVAR videoWaveBaseName
 	WAVE roisWave
-	NVAR exposure
+	NVAR videoExposure
 	NVAR ccdTargetTemperature	
 	NVAR binWidth
 	NVAR binHeight
 	
-	Variable isImagingTriggered=1
-	Variable doDisplay=0
-	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,exposure,ccdTargetTemperature,binWidth,binHeight)
+	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTriggered,videoExposure,ccdTargetTemperature,binWidth,binHeight)
 	EpiLightSetIsOn(1)
-	ImagerContAcquireVideo(isImagingTriggered,doDisplay)
+	ImagerContAcquireVideo()
 	EpiLightSetIsOn(0)
 	// These next two lines may need to come back in some form, but I'm not really clear on what they do
 	//Get_DFoverF_from_Stack(previouswave)
@@ -55,7 +55,7 @@ Function ImagerContFocus()
 	//NVAR iFocusWave
 	//NVAR iFullFrameWave
 	WAVE roisWave
-	NVAR exposure
+	NVAR snapshotExposure
 	NVAR ccdTargetTemperature
 
 	Variable isROI=0
@@ -75,7 +75,7 @@ Function ImagerContFocus()
 	Variable frames_per_sequence=1
 	Variable frames=1
 	Variable isImagingTriggered=0			// set to one for triggered images
-	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,exposure,ccdTargetTemperature,binWidth,binHeight)
+	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,snapshotExposure,ccdTargetTemperature,binWidth,binHeight)
 	//printf "Focusing (press Esc key to stop) ..."
 	EpiLightSetIsOn(1)
 	Sleep /S 0.1
@@ -136,12 +136,12 @@ Function ImagerContAcquireFullFrameImage()
 
 	// Declare the object vars
 	SVAR fullFrameWaveBaseName
-	NVAR isImagingTriggered
+	NVAR isTriggered
 	//NVAR iFullFrameWave
 	//SVAR allVideoWaveNames
 	SVAR videoWaveBaseName
 	WAVE roisWave
-	NVAR exposure
+	NVAR snapshotExposure
 	NVAR ccdTargetTemperature
 	
 	Variable binWidth=1
@@ -156,9 +156,9 @@ Function ImagerContAcquireFullFrameImage()
 	Variable isROI=0
 	Variable isBackgroundROIToo=0	// Irrelevant
 	frames=1
-	isImagingTriggered=0		// set to one for triggered images
+	isTriggered=0		// set to one for triggered images
 	binWidth=1; binHeight=1
-	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,exposure,ccdTargetTemperature,binWidth,binHeight) 
+	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTriggered,snapshotExposure,ccdTargetTemperature,binWidth,binHeight) 
 	EpiLightSetIsOn(1)
 	//Sleep /S 0.1
 	//Make /O /N=(512,512) $imageWaveName
@@ -182,44 +182,29 @@ Function ImagerContAcquireFullFrameImage()
 	SetDataFolder savedDF
 End
 
-Function ImagerContAcquireVideo(isImagingTriggered, doDisplay)
-	Variable isImagingTriggered, doDisplay
-	//	isImagingTriggered: one=triggered, zero=not triggered
-	//	doDisplay: one=display stack, zero=don't display stack
-	
+Function ImagerContAcquireVideo()
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 	
 	// instance vars
 	SVAR videoWaveBaseName
-	NVAR wavenumber
 	NVAR nFramesForVideo
-	//NVAR isImagingTriggered
-	NVAR iFrame
 	
 	Variable status, exposure, canceled
 	String message
 	String imageWaveName, datawavename
 	Variable frames_per_sequence, frames
-	sprintf imageWaveName, "%s_%d", videoWaveBaseName, wavenumber
+	Variable iSweep=SweeperGetNextSweepIndex()
+	sprintf imageWaveName, "%s_%d", videoWaveBaseName, iSweep
 	frames_per_sequence=nFramesForVideo
 	frames=nFramesForVideo
-	//isImagingTriggered=isImagingTriggered		// set to one for triggered images
 	EpiLightSetIsOn(1)
 	Sleep /S 0.1
-	iFrame=0
-	//Wave imageWave=FancyCameraArmAcquireDisarm(frames,isImagingTriggered)
 	Wave imageWave=FancyCameraArmAcquireDisarm(frames)	// trigger mode is now set during camera setup
-	MoveWave imageWave, imageWaveName 	// Cage the once-free wave
+	MoveWave imageWave, $imageWaveName 	// Cage the once-free wave
 	EpiLightSetIsOn(0)
-	if ( doDisplay>0 )
-		ImageBrowserContSetVideo(imageWaveName)
-	endif
-	//printf "%s%d: Image Stack done\r", videoWaveBaseName, wavenumber
-	if (!isImagingTriggered)
-		wavenumber+=1		
-	endif
+	ImageBrowserContSetVideo(imageWaveName)
 	//	might want to add code to make an empty data wave if the image stack is taken on its own
 	
 	// Restore the original DF
@@ -277,21 +262,19 @@ Function SetCCDTempVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	SetDataFolder savedDF
 End
 
-Function StackButtonProc(ctrlName) : ButtonControl
-	String ctrlName
-
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-
-	Variable isImagingTriggered=0
-	Variable doDisplay=0
-	
-	ImagerContAcquireVideo(isImagingTriggered,doDisplay)
-	
-	// Restore the original DF
-	SetDataFolder savedDF
-End
+//Function ImagerContTakeVideoButtPressed(ctrlName) : ButtonControl
+//	String ctrlName
+//
+//	// Switch to the imaging data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Imager
+//
+//	Variable isTriggered=0
+//	ImagerContSetupAndAcquireVideo(isTriggered)
+//	
+//	// Restore the original DF
+//	SetDataFolder savedDF
+//End
 
 Function FullButtonProc(ctrlName) : ButtonControl
 	String ctrlName
@@ -319,11 +302,21 @@ Function FocusButtonProc(ctrlName) : ButtonControl
 	SetDataFolder savedDF
 End
 
-Function EphysImageButtonProc(ctrlName) : ButtonControl
+Function ICTakeVideoButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 
-	ImagerContAcquireTriggeredVideo()
+	Variable isTriggered=0
+	ImagerContSetupAndAcquireVideo(isTriggered)
 End
+
+Function ImagerContIsTriggeredCB(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	ImagerSetIsTriggered(checked)
+	ImagerViewModelChanged()
+End
+
 
 //--------------------------------------- END OF BUTTON AND SETVAR PROCEDURES---------------------------------------//
 
