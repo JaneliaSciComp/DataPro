@@ -179,7 +179,7 @@ Function ImageBrowserViewDrawROI(iROI,iROICurrent)
 	//Print TraceNameList("ImageBrowserView",";",3)
 	ModifyGraph /W=ImageBrowserView rgb($yBoxName)=(0,0,65535)
 	if (iROI==iROICurrent)
-		ModifyGraph /W=ImageBrowserView lsize($yBoxName)=2
+		ModifyGraph /W=ImageBrowserView lsize($yBoxName)=1.5
 	else
 		ModifyGraph /W=ImageBrowserView lsize($yBoxName)=1
 	endif

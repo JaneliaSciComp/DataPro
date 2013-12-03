@@ -607,3 +607,11 @@ End
 
 
 
+Function ICDeleteROIButtonPressed(ctrlName) : ButtonControl
+	String ctrlName
+
+	ImagerDeleteCurrentROI()
+	ImageBrowserModelImagerChanged()
+	ImagerViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
+End

@@ -171,7 +171,13 @@ Function ImagerViewConstructor() : Panel
 	yOffset=yOffset+30
 	width=66
 	height=16
-	SetVariable roinum_set,win=ImagerView,pos={(panelWidth-width)/2,yOffset},size={width,height},proc=ImagerContiROISVTwiddled,title="ROI:"
+	SetVariable iROISV,win=ImagerView,pos={(panelWidth-width)/2,yOffset},size={width,height},proc=ImagerContiROISVTwiddled,title="ROI:"
+
+	// Delete current ROI button
+	xOffset=206
+	width=60
+	height=18
+	Button deleteROIButton,win=ImagerView,pos={xOffset,yOffset-1},size={width,height},proc=ICDeleteROIButtonPressed,title="Delete"
 
 	// The four ROI borders
 	Variable xCenter=panelWidth/2
@@ -289,13 +295,15 @@ Function ImagerViewUpdate()
 	SetVariable binWidthSV,win=ImagerView,limits={1,ccdWidth,1},value= _NUM:binWidth
 	SetVariable binHeightSV,win=ImagerView,limits={1,ccdHeight,1},value= _NUM:binHeight
 	if (nROIs==0)
-		SetVariable roinum_set, win=ImagerView, value= _STR:"(none)", disable=2
+		SetVariable iROISV, win=ImagerView, value= _STR:"(none)", disable=2
+		Button deleteROIButton, win=ImagerView, disable=2
 		SetVariable iROILeftSV,win=ImagerView,value= _STR:"", disable=2
 		SetVariable iROIRightSV,win=ImagerView,value= _STR:"", disable=2
 		SetVariable iROITopSV,win=ImagerView,value= _STR:"", disable=2
 		SetVariable iROIBottomSV,win=ImagerView,value= _STR:"", disable=2
 	else
-		SetVariable roinum_set, win=ImagerView, format="%d", limits={1,nROIs,1}, value= _NUM:(iROI+1), disable=0
+		SetVariable iROISV, win=ImagerView, format="%d", limits={1,nROIs,1}, value= _NUM:(iROI+1), disable=0
+		Button deleteROIButton, win=ImagerView, disable=0
 		SetVariable iROILeftSV,win=ImagerView,limits={0,ccdWidth,1},value= _NUM:iROILeft, disable=0
 		SetVariable iROIRightSV,win=ImagerView,limits={0,ccdWidth,1},value= _NUM:iROIRight, disable=0
 		SetVariable iROITopSV,win=ImagerView,limits={0,ccdHeight,1},value= _NUM:iROITop, disable=0

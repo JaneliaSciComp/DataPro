@@ -329,16 +329,16 @@ Function ImageBrowserUpdateROIs()
 	Variable nROIs=DimSize(roisWave,1)
 	Variable iROI
 	for (iROI=0; iROI<nROIs; iROI+=1)
-		Variable iROILeft=roisWave[0][iROI]
-		Variable iROITop=roisWave[1][iROI]
-		Variable iROIRight=roisWave[2][iROI]
-		Variable iROIBottom=roisWave[3][iROI]
+		Variable xROILeft=roisWave[0][iROI]
+		Variable yROITop=roisWave[1][iROI]
+		Variable xROIRight=roisWave[2][iROI]
+		Variable yROIBottom=roisWave[3][iROI]
 		// Make a wave holding the x-coords of this ROI, for plotting
 		String xBoxName=sprintf1v("xBox%d",iROI)
-		Make /O $xBoxName={iROILeft, iROIRight, iROIRight, iROILeft, iROILeft}
+		Make /O $xBoxName={xROILeft, xROIRight, xROIRight, xROILeft, xROILeft}
 		// Make a wave holding the y-coords of this ROI, for plotting
 		String yBoxName=sprintf1v("yBox%d",iROI)
-		Make /O $yBoxName={iROITop, iROITop, iROIBottom, iROIBottom, iROITop}
+		Make /O $yBoxName={yROITop, yROITop, yROIBottom, yROIBottom, yROITop}
 	endfor
 	
 	// Restore the original DF

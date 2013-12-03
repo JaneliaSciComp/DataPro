@@ -594,3 +594,28 @@ Function ImagerSetIsAcquiringVideo(newValue)
 End
 
 
+
+
+
+Function ImagerDeleteCurrentROI()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE roisWave
+	NVAR iROI
+
+	// Delete the current ROI
+	Variable nROIsOriginal=ImagerGetNROIs()
+	Variable iROIToDelete=iROI
+	DeletePoints /M=1 iROIToDelete, 1, roisWave
+
+	// If we just deleted the highest-numbered ROI in the list, adjust iROI
+	if (iROIToDelete==nROIsOriginal-1)
+		iROI=nROIsOriginal-2
+	endif
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
