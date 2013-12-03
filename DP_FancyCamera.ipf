@@ -41,12 +41,11 @@ End
 
 
 
-Function FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTriggered,exposure,targetTemperature,nBinWidth,nBinHeight)
+Function FancyCameraSetupAcquisition(isBinnedAndROIed,roisWave,isTriggered,exposure,targetTemperature,nBinWidth,nBinHeight)
 	// This sets up the camera for a single acquisition.  (A single aquisition could be a single frame, or it could be a video.)  
 	// This is typically called once per acquisition, just before the acquisition.
 	//Variable image_roi
-	Variable isROI
-	Variable isBackgroundROIToo
+	Variable isBinnedAndROIed	// if true, do binning, and limit acquire to bounding box of all ROIs.  If false, don't bin, do full frames
 	Wave roisWave
 	Variable isTriggered
 	Variable exposure	// frame exposure duration, in ms
@@ -61,19 +60,27 @@ Function FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTrigger
 	// Declare instance variables
 	
 	// Set up stuff
+	Variable nROIs=DimSize(roisWave,1)
 	CameraROIClear()
-	Variable jLeft, iTop, jRight, iBottom	
-	if (isROI)
-		Variable iROI=0  // the foreground ROI
-		jLeft=roisWave[0][iROI]; iTop=roisWave[3][iROI]; jRight=roisWave[1][iROI]; iBottom=roisWave[2][iROI]
-		CameraROISet(jLeft, iTop, jRight, iBottom)
-		if (isBackgroundROIToo)	// add bkgnd ROI
-			iROI=1  // the background ROI
-			jLeft=roisWave[0][iROI]; iTop=roisWave[3][iROI]; jRight=roisWave[1][iROI]; iBottom=roisWave[2][iROI]
-			CameraROISet(jLeft, iTop, jRight, iBottom)
+	if (isBinnedAndROIed)
+		// Compute the camera ROI, which is a bounding box that contains all of the individual ROIs
+		if (nROIs>0)
+			Make /FREE /N=(nROIs) temp
+			temp=roisWave[0][p]
+			Variable jLeft=WaveMin(temp)
+			temp=roisWave[1][p]
+			Variable jRight=WaveMax(temp)
+			temp=roisWave[2][p]
+			Variable jTop=WaveMin(temp)
+			temp=roisWave[3][p]
+			Variable jBottom=WaveMax(temp)
+			// Now set things in the camera
+			CameraROISet(jLeft, jTop, jRight, jBottom)
 		endif
+		CameraBinningSet(nBinWidth, nBinHeight)
+	else
+		CameraBinningSet(1, 1)
 	endif
-	CameraBinningSet(nBinWidth, nBinHeight)
 
 	// Set the trigger mode
 	Variable NO_TRIGGER=0	// start immediately

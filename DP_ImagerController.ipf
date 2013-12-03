@@ -23,20 +23,21 @@ Function ImagerContSetupAndAcquireVideo(isTriggered)
 	//SVAR focusWaveBaseName
 	//NVAR iFocusWave
 	//NVAR iFullFrameWave
-	NVAR isROI
-	NVAR isBackgroundROIToo
+	//NVAR isROI
+	//NVAR isBackgroundROIToo
 	//SVAR videoWaveBaseName
 	WAVE roisWave
 	NVAR videoExposure
 	NVAR ccdTargetTemperature	
 	NVAR binWidth
 	NVAR binHeight
+	Variable isBinnedAndROIed=1
 	
 	ImagerSetIsAcquiringVideo(1)
 	ImagerViewModelChanged()
 	DoUpdate	
 	
-	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTriggered,videoExposure,ccdTargetTemperature,binWidth,binHeight)
+	FancyCameraSetupAcquisition(isBinnedAndROIed,roisWave,isTriggered,videoExposure,ccdTargetTemperature,binWidth,binHeight)
 	EpiLightSetIsOn(1)
 	ImagerContAcquireVideo()
 	EpiLightSetIsOn(0)
@@ -66,8 +67,8 @@ Function ImagerContFocus()
 	NVAR snapshotExposure
 	NVAR ccdTargetTemperature
 
-	Variable isROI=0
-	Variable isBackgroundROIToo=0
+	Variable isBinnedAndROIed=0
+	//Variable isBackgroundROIToo=0
 	Variable binWidth=1
 	Variable binHeight=1
 
@@ -84,7 +85,7 @@ Function ImagerContFocus()
 	Variable frames_per_sequence=1
 	Variable frames=1
 	Variable isImagingTriggered=0			// set to one for triggered images
-	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isImagingTriggered,snapshotExposure,ccdTargetTemperature,binWidth,binHeight)
+	FancyCameraSetupAcquisition(isBinnedAndROIed,roisWave,isImagingTriggered,snapshotExposure,ccdTargetTemperature,binWidth,binHeight)
 	//printf "Focusing (press Esc key to stop) ..."
 	EpiLightSetIsOn(1)
 	Sleep /S 0.1
@@ -161,12 +162,11 @@ Function ImagerContAcquireSnapshot()
 	Variable iFullFrameWave=SweeperGetNextSweepIndex()
 	String imageWaveName=sprintf2sv("%s_%d", fullFrameWaveBaseName, iFullFrameWave)
 	//Variable image_roi=0		// means there is no ROI
-	Variable isROI=0
-	Variable isBackgroundROIToo=0	// Irrelevant
+	Variable isBinnedAndROIed=0
 	frames=1
 	isTriggered=0		// set to one for triggered images
 	binWidth=1; binHeight=1
-	FancyCameraSetupAcquisition(isROI,isBackgroundROIToo,roisWave,isTriggered,snapshotExposure,ccdTargetTemperature,binWidth,binHeight) 
+	FancyCameraSetupAcquisition(isBinnedAndROIed,roisWave,isTriggered,snapshotExposure,ccdTargetTemperature,binWidth,binHeight) 
 	EpiLightSetIsOn(1)
 	//Sleep /S 0.1
 	//Make /O /N=(512,512) $imageWaveName

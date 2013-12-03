@@ -26,8 +26,8 @@ Function ImagerConstructor()
 	Variable /G isFocusing=0		// boolean, whether or not we're currently focusing
 	Variable /G isAcquiringVideo=0		// boolean, whether or not we're currently taking video
 	//Variable /G image_focus	// image_focus may be unnecessary if there is a separate focus routine
-	Variable /G isROI=0		// is there a ROI? (false=>full frame)
-	Variable /G isBackgroundROIToo=0		// if isROI, is there a background ROI too? (if full-frame, this is unused)
+	//Variable /G isROI=0		// is there a ROI? (false=>full frame)
+	//Variable /G isBackgroundROIToo=0		// if isROI, is there a background ROI too? (if full-frame, this is unused)
 	Variable /G ccdTargetTemperature= -20		// the setpoint CCD temperature
 	//Variable /G ccdTemperature=nan			// the current CCD temperature
 	Variable /G nFramesForVideo=56	// number of frames to acquire
