@@ -330,8 +330,8 @@ Function ImageBrowserUpdateROIs()
 	Variable iROI
 	for (iROI=0; iROI<nROIs; iROI+=1)
 		Variable iROILeft=roisWave[0][iROI]
-		Variable iROIRight=roisWave[1][iROI]
-		Variable iROITop=roisWave[2][iROI]
+		Variable iROITop=roisWave[1][iROI]
+		Variable iROIRight=roisWave[2][iROI]
 		Variable iROIBottom=roisWave[3][iROI]
 		// Make a wave holding the x-coords of this ROI, for plotting
 		String xBoxName=sprintf1v("xBox%d",iROI)

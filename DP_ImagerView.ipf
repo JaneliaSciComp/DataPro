@@ -26,7 +26,7 @@ Function ImagerViewConstructor() : Panel
 	Variable xOffset=1550
 	Variable yOffset=54
 	Variable panelWidth=330
-	Variable panelHeight=410
+	Variable panelHeight=410-26
 	NewPanel /W=(xOffset,yOffset,xOffset+panelWidth,yOffset+panelHeight)  /N=ImagerView /K=1 as "Imager Controls"
 	ModifyPanel /W=ImagerView fixedSize=1
 
@@ -64,7 +64,7 @@ Function ImagerViewConstructor() : Panel
 	SetVariable ccdTemperatureSetpointSV,win=ImagerView,pos={50,yOffset},size={96,height},proc=SetCCDTempVarProc,title="Setpoint:"
 	SetVariable ccdTemperatureSetpointSV, win=ImagerView, limits={-50,20,5}, format="%0.1f", value= ccdTargetTemperature
 
-	ValDisplay ccdTemperatureVD,win=ImagerView,pos={184,yOffset},size={76,height},title="Current:"
+	ValDisplay ccdTemperatureVD,win=ImagerView,pos={184,yOffset+1},size={76,height},title="Current:"
 	ValDisplay ccdTemperatureVD,win=ImagerView,format="%0.1f",limits={0,0,0},barmisc={0,1000}
 
 
@@ -113,7 +113,7 @@ Function ImagerViewConstructor() : Panel
 	// Video Group
 	//
 	groupBoxYOffset+=groupBoxHeight+groupBoxSpaceHeight
-	groupBoxHeight=200
+	groupBoxHeight=174
 	GroupBox videoGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Video"
 
 	// Take video button
@@ -160,11 +160,11 @@ Function ImagerViewConstructor() : Panel
 
 	// bin width SV
 	yOffset=276
-	SetVariable binWidthSV,win=ImagerView,pos={55,yOffset},size={90,14},proc=SetROIProc,title="Bin Width:"
+	SetVariable binWidthSV,win=ImagerView,pos={55,yOffset},size={90,14},proc=ICBinOrROISVTwiddled,title="Bin Width:"
 	SetVariable binWidthSV,win=ImagerView,format="%d"
 
 	// bin height SV
-	SetVariable binHeightSV,win=ImagerView,pos={174,yOffset},size={90,14},proc=SetROIProc,title="Bin Height:"
+	SetVariable binHeightSV,win=ImagerView,pos={174,yOffset},size={90,14},proc=ICBinOrROISVTwiddled,title="Bin Height:"
 	SetVariable binHeightSV,win=ImagerView,format="%d"
 	
 	// ROI Index
@@ -180,32 +180,32 @@ Function ImagerViewConstructor() : Panel
 	Variable dy=4	// vertical distance from center to closest edge of top/bottom SV
 	
 	// Top
-	width=70
-	SetVariable iROITopSV,win=ImagerView,pos={xCenter-width/2,yCenter-dy-height},size={width,height},proc=SetROIProc,title="Top:"
-	SetVariable iROITopSV,win=ImagerView,format="%d"
+	width=72
+	SetVariable iROITopSV,win=ImagerView,pos={xCenter-width/2,yCenter-dy-height},size={width,height},proc=ICBinOrROISVTwiddled,title="Top:"
+	SetVariable iROITopSV,win=ImagerView,format="%0.1f"
 	
 	width=72
-	SetVariable iROILeftSV,win=ImagerView,pos={xCenter-dx-width,yCenter-height/2},size={width,height},proc=SetROIProc,title="Left:"
-	SetVariable iROILeftSV,win=ImagerView,format="%d"
+	SetVariable iROILeftSV,win=ImagerView,pos={xCenter-dx-width,yCenter-height/2},size={width,height},proc=ICBinOrROISVTwiddled,title="Left:"
+	SetVariable iROILeftSV,win=ImagerView,format="%0.1f"
 	
-	width=76
-	SetVariable iROIRightSV,win=ImagerView,pos={xCenter+dx,yCenter-height/2},size={width,height},proc=SetROIProc,title="Right:"
-	SetVariable iROIRightSV,win=ImagerView,format="%d"
+	width=78
+	SetVariable iROIRightSV,win=ImagerView,pos={xCenter+dx,yCenter-height/2},size={width,height},proc=ICBinOrROISVTwiddled,title="Right:"
+	SetVariable iROIRightSV,win=ImagerView,format="%0.1f"
 	
 	width=86
-	SetVariable iROIBottomSV,win=ImagerView,pos={xCenter-width/2,yCenter+dy},size={width,height},proc=SetROIProc,title="Bottom:"
-	SetVariable iROIBottomSV,win=ImagerView,format="%d"
+	SetVariable iROIBottomSV,win=ImagerView,pos={xCenter-width/2,yCenter+dy},size={width,height},proc=ICBinOrROISVTwiddled,title="Bottom:"
+	SetVariable iROIBottomSV,win=ImagerView,format="%0.1f"
 
-	// Binned width, height
-	yOffset=yCenter+32
-	dx=10	// horzontal distance from center to closest edge of right/left VD
-	width=136
-	ValDisplay binnedFrameWidthVD,win=ImagerView,pos={xCenter-dx-width,yOffset},size={width,height},title="Width / Bin Width:",format="%4.2f"
-	ValDisplay binnedFrameWidthVD,win=ImagerView,limits={0,0,0},barmisc={0,1000}
-	
-	//absVarName=AbsoluteVarName("root:DP_Imager","binnedFrameHeight")
-	ValDisplay binnedFrameHeightVD,win=ImagerView,pos={xCenter+dx,yOffset},size={width,height},title="Height / Bin Height:",format="%4.2f"
-	ValDisplay binnedFrameHeightVD,win=ImagerView,limits={0,0,0},barmisc={0,1000}
+//	// Binned width, height
+//	yOffset=yCenter+32
+//	dx=10	// horzontal distance from center to closest edge of right/left VD
+//	width=136
+//	ValDisplay binnedFrameWidthVD,win=ImagerView,pos={xCenter-dx-width,yOffset},size={width,height},title="Width / Bin Width:",format="%4.2f"
+//	ValDisplay binnedFrameWidthVD,win=ImagerView,limits={0,0,0},barmisc={0,1000}
+//	
+//	//absVarName=AbsoluteVarName("root:DP_Imager","binnedFrameHeight")
+//	ValDisplay binnedFrameHeightVD,win=ImagerView,pos={xCenter+dx,yOffset},size={width,height},title="Height / Bin Height:",format="%4.2f"
+//	ValDisplay binnedFrameHeightVD,win=ImagerView,limits={0,0,0},barmisc={0,1000}
 	
 	// Sync the view to the model
 	ImagerViewUpdate()
@@ -282,8 +282,8 @@ Function ImagerViewUpdate()
 	Variable binWidth=ImagerGetBinWidth()
 	Variable binHeight=ImagerGetBinHeight()
 	Variable nROIs=ImagerGetNROIs()
-	Variable roiWidthInBins=(iROIRight-iROILeft)/binWidth
-	Variable roiHeightInBins=(iROIBottom-iROITop)/binHeight
+	//Variable roiWidthInBins=(iROIRight-iROILeft)/binWidth
+	//Variable roiHeightInBins=(iROIBottom-iROITop)/binHeight
 
 	// Update stuff
 	SetVariable binWidthSV,win=ImagerView,limits={1,ccdWidth,1},value= _NUM:binWidth
@@ -296,17 +296,17 @@ Function ImagerViewUpdate()
 		SetVariable iROIBottomSV,win=ImagerView,value= _STR:"", disable=2
 	else
 		SetVariable roinum_set, win=ImagerView, format="%d", limits={1,nROIs,1}, value= _NUM:(iROI+1), disable=0
-		SetVariable iROILeftSV,win=ImagerView,limits={0,ccdWidth-1,1},value= _NUM:iROILeft, disable=0
-		SetVariable iROIRightSV,win=ImagerView,limits={0,ccdWidth-1,1},value= _NUM:iROIRight, disable=0
-		SetVariable iROITopSV,win=ImagerView,limits={0,ccdHeight-1,1},value= _NUM:iROITop, disable=0
-		SetVariable iROIBottomSV,win=ImagerView,limits={0,ccdHeight-1,1},value= _NUM:iROIBottom, disable=0
+		SetVariable iROILeftSV,win=ImagerView,limits={0,ccdWidth,1},value= _NUM:iROILeft, disable=0
+		SetVariable iROIRightSV,win=ImagerView,limits={0,ccdWidth,1},value= _NUM:iROIRight, disable=0
+		SetVariable iROITopSV,win=ImagerView,limits={0,ccdHeight,1},value= _NUM:iROITop, disable=0
+		SetVariable iROIBottomSV,win=ImagerView,limits={0,ccdHeight,1},value= _NUM:iROIBottom, disable=0
 	endif
 	
-	ValDisplay binnedFrameWidthVD, win=ImagerView, value= _NUM:roiWidthInBins
-	WhiteOutIffNan("binnedFrameWidthVD","ImagerView",roiWidthInBins)
-	
-	ValDisplay binnedFrameHeightVD, win=ImagerView, value= _NUM:roiHeightInBins
-	WhiteOutIffNan("binnedFrameHeightVD","ImagerView",roiHeightInBins)
+//	ValDisplay binnedFrameWidthVD, win=ImagerView, value= _NUM:roiWidthInBins
+//	WhiteOutIffNan("binnedFrameWidthVD","ImagerView",roiWidthInBins)
+//	
+//	ValDisplay binnedFrameHeightVD, win=ImagerView, value= _NUM:roiHeightInBins
+//	WhiteOutIffNan("binnedFrameHeightVD","ImagerView",roiHeightInBins)
 	
 	// Restore the original DF
 	SetDataFolder savedDF

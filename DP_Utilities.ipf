@@ -768,3 +768,10 @@ Function /S stringFif(test,trueString,falseString)
 	endif
 	return result
 End
+
+Function IsInteger(x)
+	Variable x
+	return (abs(x-round(x))<0.001)
+
+End
+

@@ -62,24 +62,16 @@ Function FancyCameraSetupAcquisition(isBinnedAndROIed,roisWave,isTriggered,expos
 	// Set up stuff
 	Variable nROIs=DimSize(roisWave,1)
 	CameraROIClear()
+	// Set the binning
 	if (isBinnedAndROIed)
-		// Compute the camera ROI, which is a bounding box that contains all of the individual ROIs
-		if (nROIs>0)
-			Make /FREE /N=(nROIs) temp
-			temp=roisWave[0][p]
-			Variable jLeft=WaveMin(temp)
-			temp=roisWave[1][p]
-			Variable jRight=WaveMax(temp)
-			temp=roisWave[2][p]
-			Variable jTop=WaveMin(temp)
-			temp=roisWave[3][p]
-			Variable jBottom=WaveMax(temp)
-			// Now set things in the camera
-			CameraROISet(jLeft, jTop, jRight, jBottom)
-		endif
 		CameraBinningSet(nBinWidth, nBinHeight)
 	else
 		CameraBinningSet(1, 1)
+	endif
+	// Set the camera ROI
+	if (isBinnedAndROIed && (nROIs>0))
+		Wave cameraROI=FancyCameraROIFromROIs(roisWave)
+		CameraROISet(cameraROI[0], cameraROI[1], cameraROI[2], cameraROI[3])
 	endif
 
 	// Set the trigger mode
@@ -286,3 +278,51 @@ End
 
 
 
+
+
+Function /WAVE FancyCameraROIFromROIs(roisWave)
+	Wave roisWave
+	
+	Variable nROIs=DimSize(roisWave,1)
+	Make /FREE /N=(4) cameraROI
+	if (nROIs==0)
+		cameraROI={0,0,CameraCCDWidthGet(),CameraCCDHeightGet()}
+	else
+		Make /FREE /N=(nROIs) temp
+		temp=roisWave[0][p]
+		Variable xLeft=WaveMin(temp)
+		temp=roisWave[1][p]
+		Variable yTop=WaveMin(temp)
+		temp=roisWave[2][p]
+		Variable xRight=WaveMax(temp)
+		temp=roisWave[3][p]
+		Variable yBottom=WaveMax(temp)
+		// Now we have a bounding box, but need to align to the binning
+		Variable nBinWidth=CameraGetBinWidth();
+		Variable nBinHeight=CameraGetBinHeight();		
+		Variable iLeft=floor(xLeft/nBinWidth)*nBinWidth
+		Variable iTop=floor(yTop/nBinHeight)*nBinHeight
+		Variable iRight=ceil(xRight/nBinWidth)*nBinWidth
+		Variable iBottom=ceil(yBottom/nBinHeight)*nBinHeight		
+		cameraROI={iLeft,iTop,iRight,iBottom}		
+	endif
+	return cameraROI	
+End
+
+
+
+
+
+Function /WAVE FancyCameraAlignROIToBins(roiWave)
+	Wave roiWave
+	
+	Make /FREE /N=(4) alignedROI
+	Variable nBinWidth=CameraGetBinWidth()
+	Variable nBinHeight=CameraGetBinHeight()
+	Variable iLeft=floor(roiWave[0]/nBinWidth)*nBinWidth
+	Variable iTop=floor(roiWave[1]/nBinHeight)*nBinHeight
+	Variable iRight=ceil(roiWave[2]/nBinWidth)*nBinWidth
+	Variable iBottom=ceil(roiWave[3]/nBinHeight)*nBinHeight		
+	alignedROI={iLeft,iTop,iRight,iBottom}		
+	return alignedROI	
+End

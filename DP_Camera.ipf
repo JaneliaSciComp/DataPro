@@ -37,10 +37,10 @@ Function CameraConstructor()
 		Variable /G modeTriggerFake=0		// the trigger mode of the fake camera. 0=>free-running, 1=> each frame is triggered, and there are other settings
 		Variable /G widthBinFake=1
 		Variable /G heightBinFake=1
-		Variable /G offsetColumnROIFake=0
-		Variable /G offsetRowROIFake=0
-		Variable /G heightROIDesiredFake=heightCCDFake
-		Variable /G widthROIDesiredFake=widthCCDFake
+		Variable /G iLeftROIFake=0
+		Variable /G iTopROIFake=0
+		Variable /G iBottomROIFake=heightCCDFake
+		Variable /G iRightROIFake=widthCCDFake
 		Variable /G exposureFake=0.1	// exposure for the fake camera, in sec
 		Variable /G temperatureTargetFake=-20		// degC
 		Variable /G countFrameFake=1		// How many frames to acquire for the fake camera
@@ -73,9 +73,9 @@ Function CameraConstructor()
 			endif
 		endif
 		//printf "areWeForReal: %d\r", areWeForReal
-		if (!areWeForReal)
-			Redimension /N=(widthCCDFake,heightCCDFake,countFrameFake) bufferFrame		// sic: this is how Igor Pro organizes image data 
-		endif
+//		if (!areWeForReal)
+//			Redimension /N=(widthCCDFake,heightCCDFake,countFrameFake) bufferFrame		// sic: this is how Igor Pro organizes image data 
+//		endif
 	endif
 
 	// Restore the data folder
@@ -95,8 +95,8 @@ Function CameraROIClear()
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR offsetColumnROIFake, offsetRowROIFake
-	NVAR widthROIDesiredFake, heightROIDesiredFake	 	// the ROI boundaries
+	NVAR iLeftROIFake, iTopROIFake
+	NVAR iRightROIFake, iBottomROIFake	 	// the ROI boundaries
 	NVAR widthCCDFake, heightCCDFake
 
 	Variable sidxStatus
@@ -112,10 +112,10 @@ Function CameraROIClear()
 			Abort "Called CameraROIClear() before camera was created."
 		endif
 	else
-		offsetColumnROIFake=0
-		offsetRowROIFake=0
-		widthROIDesiredFake=widthCCDFake
-		heightROIDesiredFake=heightCCDFake
+		iLeftROIFake=0
+		iTopROIFake=0
+		iRightROIFake=widthCCDFake
+		iBottomROIFake=heightCCDFake
 	endif
 
 	// Restore the data folder
@@ -126,8 +126,17 @@ End
 
 
 
-Function CameraROISet(jLeft, iTop, jRight, iBottom)
-	Variable jLeft,iTop,jRight,iBottom
+Function CameraROISet(iLeft, iTop, iRight, iBottom)
+	// Set the camera ROI
+	// The ROI is specified in the unbinned pixel coordinates, which are image-style coordinates, 
+	// with the upper-left pels being (0,0)
+	// The ROI includes x coordinates [iLeft,iRight).  That is, the pixel with coord iRight is _not_ included.
+	// The ROI includes y coordinates [iTop,iBottom).  That is, the pixel with coord iBottom is _not_ included.
+	// iRight, iLeft must be an integer multiple of the current bin width
+	// iBottom, iTop must be an integer multiple of the current bin height
+	// The ROI will be (iRight-iLeft)/nBinWidth bins wide, and
+	// (iBottom-iTop)/nBinHeight bins high.	
+	Variable iLeft,iTop,iRight,iBottom
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
@@ -137,13 +146,34 @@ Function CameraROISet(jLeft, iTop, jRight, iBottom)
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR offsetColumnROIFake, offsetRowROIFake
-	NVAR heightROIDesiredFake, widthROIDesiredFake	 // the ROI boundaries
+	NVAR iLeftROIFake, iTopROIFake
+	NVAR iBottomROIFake, iRightROIFake	 // the ROI boundaries
 
+	// Check that the ROI dimensions are legal
+	Variable nBinWidth=CameraGetBinWidth()
+	if ( !IsInteger(iLeft/nBinWidth) )
+		SetDataFolder savedDF	
+		return 0
+	endif
+	if ( !IsInteger(iRight/nBinWidth) )
+		SetDataFolder savedDF	
+		return 0
+	endif
+	Variable nBinHeight=CameraGetBinHeight()
+	if ( !IsInteger(iTop/nBinHeight) )
+		SetDataFolder savedDF	
+		return 0
+	endif
+	if ( !IsInteger(iBottom/nBinHeight) )
+		SetDataFolder savedDF	
+		return 0
+	endif
+
+	// Actually set the ROI coordinates
 	Variable sidxStatus
 	if (areWeForReal)
 		if (isSidxCameraValid)
-			SIDXCameraROISet sidxCamera, jLeft, iTop, jRight, iBottom, sidxStatus
+			SIDXCameraROISet sidxCamera, iLeft, iTop, iRight, iBottom, sidxStatus
 			if (sidxStatus!=0)
 				String errorMessage
 				SIDXCameraGetLastError sidxCamera, errorMessage
@@ -153,10 +183,10 @@ Function CameraROISet(jLeft, iTop, jRight, iBottom)
 			Abort "Called CameraROISet() before camera was created."
 		endif
 	else
-		offsetColumnROIFake=jLeft
-		offsetRowROIFake=iTop
-		widthROIDesiredFake=jRight-jLeft+1
-		heightROIDesiredFake=iBottom-iTop+1
+		iLeftROIFake=iLeft
+		iTopROIFake=iTop
+		iRightROIFake=iRight
+		iBottomROIFake=iBottom
 	endif
 
 	// Restore the data folder
@@ -180,6 +210,20 @@ Function CameraBinningSet(nBinWidth,nBinHeight)
 	NVAR sidxCamera
 	NVAR widthBinFake, heightBinFake
 
+	// Check that the bin size is an integer fraction of the CCD size
+	// If not, return
+	Variable nBinsWide=CameraCCDWidthGet()/nBinWidth
+	if ( !IsInteger(nBinsWide) )
+		SetDataFolder savedDF	
+		return 0
+	endif
+	Variable nBinsHigh=CameraCCDHeightGet()/nBinHeight
+	if ( !IsInteger(nBinsHigh) )
+		SetDataFolder savedDF	
+		return 0
+	endif
+	
+	// Set the bin sizes
 	Variable sidxStatus
 	if (areWeForReal)
 		if (isSidxCameraValid)
@@ -488,9 +532,10 @@ Function CameraAcquireStop()
 	WAVE bufferFrame
 	NVAR widthCCDFake, heightCCDFake
 	NVAR widthBinFake, heightBinFake
-	NVAR offsetColumnROIFake, offsetRowROIFake
-	NVAR widthROIDesiredFake, heightROIDesiredFake	// the ROI boundaries
+	NVAR iLeftROIFake, iTopROIFake
+	NVAR iRightROIFake, iBottomROIFake	// the ROI boundaries
 	NVAR countFrameFake
+	NVAR countReadFrameFake
 
 	Variable sidxStatus
 	if (areWeForReal)
@@ -506,12 +551,18 @@ Function CameraAcquireStop()
 		endif
 	else
 		// Fill the framebuffer with fake data
-		Variable widthROIBinnedFake=floor(widthROIDesiredFake/widthBinFake)
-		Variable heightROIBinnedFake=floor(heightROIDesiredFake/heightBinFake)			
+		Variable widthROIFake=iRightROIFake-iLeftROIFake
+		Variable heightROIFake=iBottomROIFake-iTopROIFake
+		Variable widthROIBinnedFake=floor(widthROIFake/widthBinFake)
+		Variable heightROIBinnedFake=floor(heightROIFake/heightBinFake)			
 		Redimension /N=(widthROIBinnedFake,heightROIBinnedFake,countFrameFake) bufferFrame	// sic, this is how Igor Pro organizes image data
+		SetScale /P x, iLeftROIFake+0.5*widthBinFake, widthBinFake, bufferFrame		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
+		SetScale /P y, iTopROIFake+0.5*heightBinFake, heightBinFake, bufferFrame
+		SetScale /P z, 0.5, 1, bufferFrame		// Should probably incorporate timing info at some point
 		bufferFrame=2^15+(2^12)*gnoise(1)
+		countReadFrameFake=0
 		//bufferFrame=p
-				
+		
 		// Note that the acquisiton is done
 		isAcquisitionOngoingFake=0
 	endif
@@ -537,7 +588,8 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 	NVAR sidxAcquirer
 	NVAR isAcquisitionOngoingFake
 	WAVE bufferFrame
-	NVAR widthROIDesiredFake, heightROIDesiredFake
+	NVAR iLeftROIFake, iTopROIFake
+	NVAR iRightROIFake, iBottomROIFake
 	NVAR widthBinFake, heightBinFake
 	NVAR countReadFrameFake
 
@@ -557,8 +609,10 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 		if (isAcquisitionOngoingFake)
 			Abort "Have to stop the fake acquisition before reading the fake data."
 		endif
-		Variable widthROIBinnedFake=floor(widthROIDesiredFake/widthBinFake)
-		Variable heightROIBinnedFake=floor(heightROIDesiredFake/heightBinFake)			
+		Variable widthROIFake=iRightROIFake-iLeftROIFake
+		Variable heightROIFake=iBottomROIFake-iTopROIFake
+		Variable widthROIBinnedFake=floor(widthROIFake/widthBinFake)
+		Variable heightROIBinnedFake=floor(heightROIFake/heightBinFake)			
 		Duplicate /FREE /R=[][][countReadFrameFake,countReadFrameFake+nFramesToRead] bufferFrame frames
 		countReadFrameFake+=nFramesToRead
 	endif
@@ -755,6 +809,7 @@ Function CameraCCDWidthGet()
 	// Declare instance variables
 	NVAR areWeForReal
 	NVAR widthCCDFake
+	NVAR sidxCamera
 
 	if (areWeForReal)
 		value=nan	// need to fill this in
@@ -796,4 +851,88 @@ Function CameraCCDHeightGet()
 End
 
 
+
+Function CameraGetBinWidth()
+	Variable value
+	
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR widthBinFake
+
+	if (areWeForReal)
+		value=nan	// need to fill this in
+	else
+		value=widthBinFake
+	endif
+	
+	// Restore the data folder
+	SetDataFolder savedDF	
+	
+	return value
+End
+
+
+
+
+Function CameraGetBinHeight()
+	Variable value
+	
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR heightBinFake
+
+	if (areWeForReal)
+		value=nan	// need to fill this in
+	else
+		value=heightBinFake
+	endif
+	
+	// Restore the data folder
+	SetDataFolder savedDF	
+	
+	return value
+End
+
+
+
+
+Function CameraIsValidBinWidth(nBinWidth)
+	Variable nBinWidth
+	
+	Variable result
+	Variable ccdWidth=CameraCCDWidthGet()
+	if (1<=nBinWidth) && (nBinWidth<=ccdWidth) 
+		Variable nBins=ccdWidth/nBinWidth
+		result=IsInteger(nBins)
+	else
+		result=0
+	endif
+	return result
+End
+
+
+
+
+
+Function CameraIsValidBinHeight(nBinHeight)
+	Variable nBinHeight
+	
+	Variable result
+	Variable ccdHeight=CameraCCDHeightGet()
+	if (1<=nBinHeight) && (nBinHeight<=ccdHeight) 
+		Variable nBins=ccdHeight/nBinHeight
+		result=IsInteger(nBins)
+	else
+		result=0
+	endif
+	return result
+End
 

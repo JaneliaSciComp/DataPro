@@ -90,7 +90,7 @@ Function ImageBrowserViewUpdate()
 	Variable nFrames=DimSize($imageWaveNameAbs, 2)
 	Variable iFrame=ImageBrowserModelGetIFrame()
 	if (nFrames==0)
-		SetVariable plane_setvar0,win=ImageBrowserView, value=_STR:"NA"
+		SetVariable plane_setvar0,win=ImageBrowserView, value=_STR:""
 	else
 		SetVariable plane_setvar0,win=ImageBrowserView,limits={0,nFrames-1,1}, value=_NUM:iFrame
 	endif
@@ -119,8 +119,10 @@ Function ImageBrowserViewUpdate()
 	SetAxis /W=ImageBrowserView /A /R left
 	
 	// Position the plot	
-	ModifyGraph /W=ImageBrowserView gfSize=8,gmSize=8
-	ModifyGraph /W=ImageBrowserView manTick={0,64,0,0},manMinor={8,8}
+	ModifyGraph /W=ImageBrowserView gfSize=8	// Set font size to 8 pts
+	ModifyGraph /W=ImageBrowserView gmSize=8	// Set default size for markers in the graph (?)
+	ModifyGraph /W=ImageBrowserView manTick={0,64,0,0}, manMinor={8,8}	
+		// Major axis ticks every 64 units, 8 minor ticks per major, every 8th minor tick is emphasized
 
 	// Make the pixels square, with the height being auto-sized
 	//Variable widthInPels=DimSize($imageWaveNameAbs,0)
@@ -177,7 +179,7 @@ Function ImageBrowserViewDrawROI(iROI,iROICurrent)
 	//Print TraceNameList("ImageBrowserView",";",3)
 	ModifyGraph /W=ImageBrowserView rgb($yBoxName)=(0,0,65535)
 	if (iROI==iROICurrent)
-		ModifyGraph /W=ImageBrowserView lsize($yBoxName)=1.5
+		ModifyGraph /W=ImageBrowserView lsize($yBoxName)=2
 	else
 		ModifyGraph /W=ImageBrowserView lsize($yBoxName)=1
 	endif

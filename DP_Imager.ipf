@@ -50,7 +50,7 @@ Function ImagerConstructor()
 	//Variable /G whiteCount=2^16-1	// the CCD count that gets mapped to white
 	
 	Variable nROIs=0
-	Make /O /N=(4,nROIs) /I roisWave		// a 2D wave holding a ROI specification in each column
+	Make /O /N=(4,nROIs) roisWave		// a 2D wave holding a ROI specification in each column, order is : left, top, right, bottom
 	
 	// make average wave for imaging
 	Variable /G nFramesInAverage=0		// number of frames to average, I think for calculating dF/F
@@ -92,8 +92,8 @@ Function ImagerSetIROILeft(iROI,newValue)
 
 	// Set the value
 	Variable ccdWidth=CameraCCDWidthGet()
-	Variable iROIRight=roisWave[1][iROI]
-	if ( (0<=newValue) && (newValue<ccdWidth) && (newValue<=iROIRight) )
+	Variable iROIRight=roisWave[2][iROI]
+	if ( (0<=newValue) && (newValue<=ccdWidth) && (newValue<=iROIRight) )
 		roisWave[0][iROI]=newValue
 	endif
 	
@@ -144,58 +144,7 @@ Function ImagerSetIROIRight(iROI,newValue)
 	// Set the value
 	Variable ccdWidth=CameraCCDWidthGet()
 	Variable iROILeft=roisWave[0][iROI]
-	if ( (0<=newValue) && (newValue<ccdWidth) && (iROILeft<=newValue) )
-		roisWave[1][iROI]=newValue
-	endif
-	
-	// Restore the original DF
-	SetDataFolder savedDF	
-End
-
-
-
-Function ImagerGetIROIRight(iROI)
-	Variable iROI
-
-	// Switch to the data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-	
-	// Declare instance vars
-	WAVE roisWave
-
-	// Get the value
-	Variable value=nan
-	Variable nROIs=ImagerGetNROIs()
-	if ( (0<=iROI) && (iROI<nROIs) )
-		value=roisWave[1][iROI]
-	endif
-	
-	// Restore the original DF
-	SetDataFolder savedDF	
-
-	// Return the value
-	return value
-End
-
-
-
-
-Function ImagerSetIROITop(iROI,newValue)
-	Variable iROI
-	Variable newValue
-	
-	// Switch to the data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-	
-	// Declare instance vars
-	WAVE roisWave
-
-	// Set the value
-	Variable ccdWidth=CameraCCDWidthGet()
-	Variable iROIBottom=roisWave[1][iROI]
-	if ( (0<=newValue) && (newValue<ccdWidth) && (newValue<=iROIBottom) )
+	if ( (0<=newValue) && (newValue<=ccdWidth) && (iROILeft<=newValue) )
 		roisWave[2][iROI]=newValue
 	endif
 	
@@ -205,7 +154,7 @@ End
 
 
 
-Function ImagerGetIROITop(iROI)
+Function ImagerGetIROIRight(iROI)
 	Variable iROI
 
 	// Switch to the data folder
@@ -232,6 +181,57 @@ End
 
 
 
+Function ImagerSetIROITop(iROI,newValue)
+	Variable iROI
+	Variable newValue
+	
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE roisWave
+
+	// Set the value
+	Variable ccdHeight=CameraCCDHeightGet()
+	Variable iROIBottom=roisWave[3][iROI]
+	if ( (0<=newValue) && (newValue<=ccdHeight) && (newValue<=iROIBottom) )
+		roisWave[1][iROI]=newValue
+	endif
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+
+Function ImagerGetIROITop(iROI)
+	Variable iROI
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE roisWave
+
+	// Get the value
+	Variable value=nan
+	Variable nROIs=ImagerGetNROIs()
+	if ( (0<=iROI) && (iROI<nROIs) )
+		value=roisWave[1][iROI]
+	endif
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End
+
+
+
+
 Function ImagerSetIROIBottom(iROI,newValue)
 	Variable iROI
 	Variable newValue
@@ -244,9 +244,9 @@ Function ImagerSetIROIBottom(iROI,newValue)
 	WAVE roisWave
 
 	// Set the value
-	Variable ccdWidth=CameraCCDWidthGet()
-	Variable iROITop=roisWave[0][iROI]
-	if ( (0<=newValue) && (newValue<ccdWidth) && (iROITop<=newValue) )
+	Variable ccdHeight=CameraCCDHeightGet()
+	Variable iROITop=roisWave[1][iROI]
+	if ( (0<=newValue) && (newValue<=ccdHeight) && (iROITop<=newValue) )
 		roisWave[3][iROI]=newValue
 	endif
 	
@@ -295,8 +295,7 @@ Function ImagerSetBinWidth(newValue)
 	NVAR binWidth
 
 	// Set the value
-	Variable ccdWidth=CameraCCDWidthGet()
-	if ( (1<=newValue) && (newValue<=ccdWidth) )
+	if ( CameraIsvalidBinWidth(newValue) )
 		binWidth=newValue
 	endif
 	
@@ -338,8 +337,7 @@ Function ImagerSetBinHeight(newValue)
 	NVAR binHeight
 
 	// Set the value
-	Variable ccdHeight=CameraCCDHeightGet()
-	if ( (1<=newValue) && (newValue<=ccdHeight) )
+	if ( CameraIsvalidBinHeight(newValue) )
 		binHeight=newValue
 	endif
 	
@@ -435,11 +433,14 @@ End
 
 
 
-Function ImagerAddROI(iROILeft, iROIRight, iROITop, iROIBottom)
-	Variable iROILeft
-	Variable iROIRight
-	Variable iROITop
-	Variable iROIBottom
+Function ImagerAddROI(xROILeft, yROITop, xROIRight, yROIBottom)
+	// Add a ROI.  The coords are in a coordinate system where the upper left corner
+	// of the upper left pixel is at (0,0), and the lower right corner of the lower right pixel is at
+	// (ccdWidth,ccdHeight).
+	Variable xROILeft
+	Variable xROIRight
+	Variable yROITop
+	Variable yROIBottom
 	
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
@@ -448,16 +449,24 @@ Function ImagerAddROI(iROILeft, iROIRight, iROITop, iROIBottom)
 	// Declare instance vars
 	WAVE roisWave
 	NVAR iROI
+
+	// Constrain bounds to image bounds
+	Variable nWidthCCD=CameraCCDWidthGet()
+	Variable nHeightCCD=CameraCCDHeightGet()
+	xROILeft=max(0,min(xROILeft,nWidthCCD))
+	yROITop=max(0,min(yROITop,nHeightCCD))
+	xROIRight=max(0,min(xROIRight,nWidthCCD))
+	yROIBottom=max(0,min(yROIBottom,nHeightCCD))
 	
 	// Add the new ROI
 	Variable nROIsOriginal=ImagerGetNROIs()
 	Variable nROIs=nROIsOriginal+1
 	Redimension /N=(4,nROIs) roisWave
 	iROI=nROIs-1
-	roisWave[0][iROI]=iROILeft
-	roisWave[1][iROI]=iROIRight
-	roisWave[2][iROI]=iROITop
-	roisWave[3][iROI]=iROIBottom
+	roisWave[0][iROI]=xROILeft
+	roisWave[1][iROI]=yROITop
+	roisWave[2][iROI]=xROIRight
+	roisWave[3][iROI]=yROIBottom
 	
 	// Restore the original DF
 	SetDataFolder savedDF	

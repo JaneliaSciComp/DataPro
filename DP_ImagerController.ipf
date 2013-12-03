@@ -199,17 +199,11 @@ Function ImagerContAcquireVideo()
 	SVAR videoWaveBaseName
 	NVAR nFramesForVideo
 	
-	Variable status, exposure, canceled
-	String message
-	String imageWaveName, datawavename
-	Variable frames_per_sequence, frames
 	Variable iSweep=SweeperGetNextSweepIndex()
-	sprintf imageWaveName, "%s_%d", videoWaveBaseName, iSweep
-	frames_per_sequence=nFramesForVideo
-	frames=nFramesForVideo
+	String imageWaveName=sprintf2sv("%s_%d", videoWaveBaseName, iSweep)
 	EpiLightSetIsOn(1)
 	Sleep /S 0.1
-	Wave imageWave=FancyCameraArmAcquireDisarm(frames)	// trigger mode is now set during camera setup
+	Wave imageWave=FancyCameraArmAcquireDisarm(nFramesForVideo)	// trigger mode is now set during camera setup
 	MoveWave imageWave, $imageWaveName 	// Cage the once-free wave
 	EpiLightSetIsOn(0)
 	ImageBrowserContSetVideo(imageWaveName)
@@ -549,7 +543,7 @@ End
 
 
 
-Function SetROIProc(ctrlName,varNum,varStr,varName) : SetVariableControl
+Function ICBinOrROISVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName
 	Variable varNum
 	String varStr

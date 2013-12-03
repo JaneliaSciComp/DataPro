@@ -95,14 +95,13 @@ End
 
 Function ImagerBrowserContAddROI()
 	GetMarquee /W=ImageBrowserView /K left, bottom
-	Variable iROILeft=V_left
-	Variable iROIRight=V_right
-	Variable iROITop=V_top
-	Variable iROIBottom=V_bottom
-	ImagerAddROI(iROILeft, iROIRight, iROITop, iROIBottom)
+	Variable xROILeft=V_left
+	Variable yROITop=V_top
+	Variable xROIRight=V_right
+	Variable yROIBottom=V_bottom
+	ImagerAddROI(xROILeft, yROITop, xROIRight, yROIBottom)
 	ImageBrowserModelImagerChanged()
 	ImagerViewModelChanged()
 	ImageBrowserViewModelEtcChanged()
 End
-
 
