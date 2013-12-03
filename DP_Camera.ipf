@@ -909,7 +909,7 @@ Function CameraIsValidBinWidth(nBinWidth)
 	
 	Variable result
 	Variable ccdWidth=CameraCCDWidthGet()
-	if (1<=nBinWidth) && (nBinWidth<=ccdWidth) 
+	if ( (1<=nBinWidth) && (nBinWidth<=ccdWidth) )
 		Variable nBins=ccdWidth/nBinWidth
 		result=IsInteger(nBins)
 	else
@@ -927,7 +927,7 @@ Function CameraIsValidBinHeight(nBinHeight)
 	
 	Variable result
 	Variable ccdHeight=CameraCCDHeightGet()
-	if (1<=nBinHeight) && (nBinHeight<=ccdHeight) 
+	if ( (1<=nBinHeight) && (nBinHeight<=ccdHeight) )
 		Variable nBins=ccdHeight/nBinHeight
 		result=IsInteger(nBins)
 	else
