@@ -6,13 +6,9 @@
 
 #pragma rtGlobals=3		// Use modern global access method and strict wave access
 
-// The FancyCamera "object" wraps all the SIDX functions, so the Imager doesn't have to deal with 
-// them directly.
-
-// Note that these functions were originally based on example code provided by Lin Ci Brown 
-// of the Bruxton Corporation.
-
-
+// This "object" is, at least in spirit, a subclass of Camera that adds additional, generally higher-level methods for taking images and video.
+// Even though it creates its own data folder, at present it has no instance variables, so it really is just a collection of additional methods 
+// for the Camera object.
 
 
 
@@ -39,61 +35,6 @@ End
 
 
 
-
-
-//Function FancyCameraSetupAcquisition(isBinnedAndROIed,roisWave,isTriggered,exposure,targetTemperature,nBinWidth,nBinHeight)
-//	// This sets up the camera for a single acquisition.  (A single aquisition could be a single frame, or it could be a video.)  
-//	// This is typically called once per acquisition, just before the acquisition.
-//	//Variable image_roi
-//	Variable isBinnedAndROIed	// if true, do binning, and limit acquire to bounding box of all ROIs.  If false, don't bin, do full frames
-//	Wave roisWave
-//	Variable isTriggered
-//	Variable exposure	// frame exposure duration, in ms
-//	Variable targetTemperature
-//	Variable nBinWidth
-//	Variable nBinHeight
-//	
-//	// Switch to the imaging data folder
-//	String savedDF=GetDataFolder(1)
-//	SetDataFolder root:DP_FancyCamera
-//
-//	// Declare instance variables
-//	
-//	// Set up stuff
-//
-//	// Set the binning and ROI
-//	Variable nROIs=DimSize(roisWave,1)
-//	Variable isAtLeastOneROI=(nROIs>0)
-//	if (!isBinnedAndROIed)
-//		nBinWidth=1
-//		nBinHeight=1
-//	endif
-//	if (isBinnedAndROIed && isAtLeastOneROI)
-//		Wave cameraROI=FancyCameraROIFromROIs(roisWave,nBinWidth,nBinHeight)
-//	else
-//		Make /FREE cameraROI={nan,nan,nan,nan}
-//	endif
-//	FancyCameraBinningAndROISet(nBinWidth, nBinHeight, isAtLeastOneROI, cameraROI[0], cameraROI[1], cameraROI[2], cameraROI[3])
-//
-//	// Set the trigger mode
-//	Variable NO_TRIGGER=0	// start immediately
-//	Variable TRIGGER_EXPOSURE_START=1	// start of each frame is TTL-triggered
-//	Variable triggerMode=(isTriggered ? TRIGGER_EXPOSURE_START : NO_TRIGGER)
-//	CameraTriggerModeSet(triggerMode)
-//	
-//	// Set the exposure
-//	Variable exposureInSeconds=exposure/1000		// ms->s
-//	CameraExposeSet(exposureInSeconds)
-//	
-//	// Set the CCD temp, wait for it to stabilize
-//	FancyCameraSetTemperature(targetTemperature)
-//	
-//	// Restore the data folder
-//	SetDataFolder savedDF	
-//End
-
-
-
 Function FancyCameraSetupSnapshotAcq(exposure,targetTemperature)
 	// This sets up the camera for a single snapshot acquisition.
 	// This is typically called once per acquisition, just before the acquisition.
@@ -116,8 +57,9 @@ Function FancyCameraSetupSnapshotAcq(exposure,targetTemperature)
 	CameraExposeSet(exposureInSeconds)
 	
 	// Set the CCD temp, wait for it to stabilize
-	FancyCameraSetTemperature(targetTemperature)
+	FancyCameraSetTempAndWait(targetTemperature)
 End
+
 
 
 
@@ -151,7 +93,7 @@ Function FancyCameraSetupVideoAcq(nBinWidth,nBinHeight,roisWave,isTriggered,expo
 	CameraExposeSet(exposureInSeconds)
 	
 	// Set the CCD temp, wait for it to stabilize
-	FancyCameraSetTemperature(targetTemperature)
+	FancyCameraSetTempAndWait(targetTemperature)
 End
 
 
@@ -213,8 +155,8 @@ End
 
 
 Function FancyCameraArm(nFrames)
-	// Acquire nFrames, and store the resulting video in imageWaveName.
-	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
+	// Arm the camera for acquiring n frames.
+	// If isTriggered is true, each frame must be TTL triggered.  If false, the 
 	// acquisition is free-running.
 	Variable nFrames
 
@@ -335,7 +277,7 @@ End
 
 
 
-Function FancyCameraSetTemperature(targetTemperature)
+Function FancyCameraSetTempAndWait(targetTemperature)
 	// I would have thought this was to set the setpoint of the CCD temperature controller, but it doesn't really seem like that...
 	Variable targetTemperature
 

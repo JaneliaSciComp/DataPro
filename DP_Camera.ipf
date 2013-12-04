@@ -41,7 +41,7 @@ Function CameraConstructor()
 		Variable /G iTopROIFake=0
 		Variable /G iBottomROIFake=heightCCDFake
 		Variable /G iRightROIFake=widthCCDFake
-		Variable /G exposureFake=0.1	// exposure for the fake camera, in sec
+		Variable /G exposureFake=0.1		// exposure for the fake camera, in sec
 		Variable /G temperatureTargetFake=-20		// degC
 		Variable /G countFrameFake=1		// How many frames to acquire for the fake camera
 		Variable /G isAcquireOpenFake=0		// Whether acquisition is "armed"
@@ -502,7 +502,8 @@ Function CameraAcquireStop()
 	NVAR iRightROIFake, iBottomROIFake	// the ROI boundaries
 	NVAR countFrameFake
 	NVAR countReadFrameFake
-
+	NVAR exposureFake
+	
 	Variable sidxStatus
 	if (areWeForReal)
 		if (isSidxAcquirerValid)
@@ -522,9 +523,14 @@ Function CameraAcquireStop()
 		Variable widthROIBinnedFake=floor(widthROIFake/widthBinFake)
 		Variable heightROIBinnedFake=floor(heightROIFake/heightBinFake)			
 		Redimension /N=(widthROIBinnedFake,heightROIBinnedFake,countFrameFake) bufferFrame	// sic, this is how Igor Pro organizes image data
-		SetScale /P x, iLeftROIFake+0.5*widthBinFake, widthBinFake, bufferFrame		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
-		SetScale /P y, iTopROIFake+0.5*heightBinFake, heightBinFake, bufferFrame
-		SetScale /P z, 0.5, 1, bufferFrame		// Should probably incorporate timing info at some point
+		SetScale /P x, iLeftROIFake+0.5*widthBinFake, widthBinFake, "px", bufferFrame		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
+		SetScale /P y, iTopROIFake+0.5*heightBinFake, heightBinFake, "px", bufferFrame
+		Variable interExposureDelay=0.001		// s, could be shift time for FT camera, or readout time for non-FT camera
+		Variable frameInterval=exposureFake+interExposureDelay		// s, Add a millisecond of shift time, for fun
+		Variable frameOffset=exposureFake/2
+		// Assumes the first exposure starts at t==0, so the middle of it occurs at exposureFake/2.
+		// After that, the middle of the next exposure comes frameInterval later, etc.
+		SetScale /P z, 1000*frameOffset, 1000*frameInterval, "ms", bufferFrame		// s -> ms
 		bufferFrame=2^15+(2^12)*gnoise(1)
 		countReadFrameFake=0
 		//bufferFrame=p

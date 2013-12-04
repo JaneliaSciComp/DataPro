@@ -24,7 +24,7 @@ Function ICTempSetpointSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableC
 	String varStr
 	String varName
 
-	FancyCameraSetTemperature(varNum)
+	FancyCameraSetTempAndWait(varNum)
 End
 
 

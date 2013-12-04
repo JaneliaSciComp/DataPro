@@ -46,7 +46,7 @@ Function SweeperConstructor()
 	
 	// string variables for adc in wave names
 	Variable nADCChannels=DigitizerModelGetNumADCChans()
-	Make /O/T/N=(nADCChannels) adcBaseName={"ad0","ad1","ad2","ad3","ad4","ad5","ad6","ad7"}
+	Make /O /T /N=(nADCChannels) adcBaseName={"ad0","ad1","ad2","ad3","ad4","ad5","ad6","ad7"}
 
 	// wave names for DAC, TTL output channels
 	Make /O /T /N=(nDACChannels) dacWaveName
@@ -99,7 +99,13 @@ Function SweeperConstructor()
 	SetDataFolder root:DP_Sweeper
 	SweeperUpdateSynPulseWave()
 
-	// Do the usr customization
+	// If the imaging module is in use, add an analog input for the exposure signal
+	if ( IsImagingModuleInUse() )
+		adcBaseName[7]="exposure"
+		adcChannelOn[7]=1
+	endif
+ 
+	// Do the user customization
 	SetupSweeperForUser()  // Allows user to set desired channel gains, etc.
 		
 	// Restore the original data folder
