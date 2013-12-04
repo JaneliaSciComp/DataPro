@@ -60,19 +60,20 @@ Function FancyCameraSetupAcquisition(isBinnedAndROIed,roisWave,isTriggered,expos
 	// Declare instance variables
 	
 	// Set up stuff
+
+	// Set the binning and ROI
 	Variable nROIs=DimSize(roisWave,1)
-	CameraROIClear()
-	// Set the binning
-	if (isBinnedAndROIed)
-		CameraBinningSet(nBinWidth, nBinHeight)
+	Variable isAtLeastOneROI=(nROIs>0)
+	if (!isBinnedAndROIed)
+		nBinWidth=1
+		nBinHeight=1
+	endif
+	if (isBinnedAndROIed && isAtLeastOneROI)
+		Wave cameraROI=FancyCameraROIFromROIs(roisWave,nBinWidth,nBinHeight)
 	else
-		CameraBinningSet(1, 1)
+		Make /FREE cameraROI={nan,nan,nan,nan}
 	endif
-	// Set the camera ROI
-	if (isBinnedAndROIed && (nROIs>0))
-		Wave cameraROI=FancyCameraROIFromROIs(roisWave)
-		CameraROISet(cameraROI[0], cameraROI[1], cameraROI[2], cameraROI[3])
-	endif
+	FancyCameraBinningAndROISet(nBinWidth, nBinHeight, isAtLeastOneROI, cameraROI[0], cameraROI[1], cameraROI[2], cameraROI[3])
 
 	// Set the trigger mode
 	Variable NO_TRIGGER=0	// start immediately
@@ -90,6 +91,56 @@ Function FancyCameraSetupAcquisition(isBinnedAndROIed,roisWave,isTriggered,expos
 	// Restore the data folder
 	SetDataFolder savedDF	
 End
+
+
+
+Function FancyCameraBinningAndROISet(nBinWidth, nBinHeight, isROI, iLeft, iTop, iRight, iBottom)
+	Variable nBinWidth, nBinHeight
+	Variable isROI
+	Variable iLeft,iTop,iRight,iBottom
+	
+	// Check that the bin size is an integer fraction of the CCD size
+	// If not, return
+	Variable nBinsWide=CameraCCDWidthGet()/nBinWidth
+	if ( !IsInteger(nBinsWide) )
+		SetDataFolder savedDF	
+		return 0
+	endif
+	Variable nBinsHigh=CameraCCDHeightGet()/nBinHeight
+	if ( !IsInteger(nBinsHigh) )
+		SetDataFolder savedDF	
+		return 0
+	endif
+
+	// Check that the ROI dimensions are legal
+	if (isROI)
+		if ( !IsInteger(iLeft/nBinWidth) )
+			return 0
+		endif
+		if ( !IsInteger(iRight/nBinWidth) )
+			return 0
+		endif
+		if ( !IsInteger(iTop/nBinHeight) )
+			return 0
+		endif
+		if ( !IsInteger(iBottom/nBinHeight) )
+			return 0
+		endif
+	endif
+	
+	// Clear the ROI	
+	CameraROIClear()
+	
+	// Set the binning
+	CameraBinningSet(nBinWidth, nBinHeight)
+	// Set the camera ROI
+	if (isROI)
+		CameraROISet(iLeft, iTop, iRight, iBottom)
+	endif
+
+End
+
+
 
 
 
@@ -280,8 +331,9 @@ End
 
 
 
-Function /WAVE FancyCameraROIFromROIs(roisWave)
+Function /WAVE FancyCameraROIFromROIs(roisWave,nBinWidth,nBinHeight)
 	Wave roisWave
+	Variable nBinWidth, nBinHeight
 	
 	Variable nROIs=DimSize(roisWave,1)
 	Make /FREE /N=(4) cameraROI
@@ -298,8 +350,6 @@ Function /WAVE FancyCameraROIFromROIs(roisWave)
 		temp=roisWave[3][p]
 		Variable yBottom=WaveMax(temp)
 		// Now we have a bounding box, but need to align to the binning
-		Variable nBinWidth=CameraGetBinWidth();
-		Variable nBinHeight=CameraGetBinHeight();		
 		Variable iLeft=floor(xLeft/nBinWidth)*nBinWidth
 		Variable iTop=floor(yTop/nBinHeight)*nBinHeight
 		Variable iRight=ceil(xRight/nBinWidth)*nBinWidth

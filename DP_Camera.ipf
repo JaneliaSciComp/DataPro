@@ -149,26 +149,6 @@ Function CameraROISet(iLeft, iTop, iRight, iBottom)
 	NVAR iLeftROIFake, iTopROIFake
 	NVAR iBottomROIFake, iRightROIFake	 // the ROI boundaries
 
-	// Check that the ROI dimensions are legal
-	Variable nBinWidth=CameraGetBinWidth()
-	if ( !IsInteger(iLeft/nBinWidth) )
-		SetDataFolder savedDF	
-		return 0
-	endif
-	if ( !IsInteger(iRight/nBinWidth) )
-		SetDataFolder savedDF	
-		return 0
-	endif
-	Variable nBinHeight=CameraGetBinHeight()
-	if ( !IsInteger(iTop/nBinHeight) )
-		SetDataFolder savedDF	
-		return 0
-	endif
-	if ( !IsInteger(iBottom/nBinHeight) )
-		SetDataFolder savedDF	
-		return 0
-	endif
-
 	// Actually set the ROI coordinates
 	Variable sidxStatus
 	if (areWeForReal)
@@ -210,19 +190,6 @@ Function CameraBinningSet(nBinWidth,nBinHeight)
 	NVAR sidxCamera
 	NVAR widthBinFake, heightBinFake
 
-	// Check that the bin size is an integer fraction of the CCD size
-	// If not, return
-	Variable nBinsWide=CameraCCDWidthGet()/nBinWidth
-	if ( !IsInteger(nBinsWide) )
-		SetDataFolder savedDF	
-		return 0
-	endif
-	Variable nBinsHigh=CameraCCDHeightGet()/nBinHeight
-	if ( !IsInteger(nBinsHigh) )
-		SetDataFolder savedDF	
-		return 0
-	endif
-	
 	// Set the bin sizes
 	Variable sidxStatus
 	if (areWeForReal)
@@ -244,7 +211,6 @@ Function CameraBinningSet(nBinWidth,nBinHeight)
 	// Restore the data folder
 	SetDataFolder savedDF	
 End
-
 
 
 
