@@ -139,7 +139,7 @@ Function ImageBrowserViewUpdate()
 	// Update the ROIs
 	RemoveAllTracesFromGraph("ImageBrowserView")	
 	Variable nROIs=ImagerGetNROIs()
-	Variable iROICurrent=ImagerGetIROI()
+	Variable iROICurrent=ImagerGetCurrentROIIndex()
 	Variable iROI
 	for (iROI=0; iROI<nROIs; iROI+=1)
 		if (iROI==iROICurrent)	

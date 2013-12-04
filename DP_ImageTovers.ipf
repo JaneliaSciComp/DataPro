@@ -14,14 +14,14 @@ Function Load_Full_Image()
 	SetDataFolder root:DP_Imager
 
 	// instance vars
-	SVAR fullFrameWaveBaseName
+	SVAR snapshotWaveBaseName
 	//NVAR iFullFrameWave
 	//NVAR iFocusWave
 
 	//Silent 1; PauseUpdate
 	//Variable low, high
 	Variable iFullFrameWave=SweeperGetNextSweepIndex()
-	String newImageWaveName=sprintf2sv("%s_%d", fullFrameWaveBaseName, iFullFrameWave)
+	String newImageWaveName=sprintf2sv("%s_%d", snapshotWaveBaseName, iFullFrameWave)
 	GBLoadWave /B /T={80,80} /S=4100 /W=1 /N=temp
 	Rename temp0 $newImageWaveName
 	//Duplicate /O temp0 $newImageWaveName
@@ -29,7 +29,7 @@ Function Load_Full_Image()
 	Redimension /N=(512,512,1) $newImageWaveName
 	ImageBrowserContSetVideo(newImageWaveName)
 	ImageBrowserContScaleToData("scaleButton")
-	//printf "%s%d: Image loaded\r", fullFrameWaveBaseName, iFullFrameWave
+	//printf "%s%d: Image loaded\r", snapshotWaveBaseName, iFullFrameWave
 	SweeperIncrementNextSweepIndex()
 	SweeperViewSweeperChanged()
 	//iFocusWave=iFullFrameWave
@@ -271,12 +271,12 @@ Function DFF_From_Stack(imagestack)
 	SetDataFolder root:DP_Imager
 
 	// instance vars
-	SVAR fullFrameWaveBaseName
+	SVAR snapshotWaveBaseName
 	SVAR trig_name	
 
 	//String imagestack=gstack
-	//Prompt imagestack, "Enter image stack wave", popup, WaveList(fullFrameWaveBaseName+"*",";","");trig_name+"*";		// Not sure what this is supposed to be
-	Prompt imagestack, "Enter image stack wave", popup, WaveList(fullFrameWaveBaseName+"*",";","")
+	//Prompt imagestack, "Enter image stack wave", popup, WaveList(snapshotWaveBaseName+"*",";","");trig_name+"*";		// Not sure what this is supposed to be
+	Prompt imagestack, "Enter image stack wave", popup, WaveList(snapshotWaveBaseName+"*",";","")
 	//gstack=imagestack
 	//Silent 1
 	Variable numbaseline, numtest, low, high

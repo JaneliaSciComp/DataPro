@@ -22,7 +22,7 @@ Function ImagerConstructor()
 	//String /G allVideoWaveNames		// a semicolon-separated list of all the video wave names
 	//Variable /G wheelPositionForEpiLightOn=1	// Setting of something that results in epi-illumination being on
 	//Variable /G wheelPositionForEpiLightOff=0	// Setting of something that results in epi-illumination being off
-	Variable /G isTriggered		// boolean, true iff the image acquisition will be triggered (as opposed to free-running)
+	Variable /G isTriggered		// boolean, true iff the video acquisition will be triggered (as opposed to free-running)
 	Variable /G isFocusing=0		// boolean, whether or not we're currently focusing
 	Variable /G isAcquiringVideo=0		// boolean, whether or not we're currently taking video
 	//Variable /G image_focus	// image_focus may be unnecessary if there is a separate focus routine
@@ -35,7 +35,7 @@ Function ImagerConstructor()
 	Variable /G snapshotExposure=100		// duration of each frame exposure for full-frame images, in ms
 	Variable /G videoExposure=50	// duration of each frame for triggered video, in ms
 	//Variable /G iFrame		// Frame index to show in the browser
-	String /G fullFrameWaveBaseName="snap"		// the base name of the full-frame image waves, including the underscore
+	String /G snapshotWaveBaseName="snap"		// the base name of the full-frame image waves, including the underscore
 	//String /G focusWaveBaseName="full_"		// the base name of the focusing image waves, including the underscore
 	String /G videoWaveBaseName="video"	// the base name of the triggered video waves, including the underscore
 	//Variable /G iFullFrameWave=1	// The "sweep number" to use for the next full-frame image
@@ -66,11 +66,11 @@ Function /S ImagerGetAllVideoWaveNames()
 	SetDataFolder root:DP_Imager
 	
 	// Declare instance vars
-	SVAR fullFrameWaveBaseName
+	SVAR snapshotWaveBaseName
 	SVAR videoWaveBaseName
 
 	// Construct the value
-	String value=WaveList(fullFrameWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
+	String value=WaveList(snapshotWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
 
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -412,7 +412,7 @@ End
 
 
 
-Function ImagerGetIROI()
+Function ImagerGetCurrentROIIndex()
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
@@ -428,6 +428,28 @@ Function ImagerGetIROI()
 
 	// Return the value
 	return value
+End
+
+
+
+
+Function ImagerSetCurrentROIIndex(newValue)
+	Variable newValue
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR iROI
+
+	// Get the value
+	if ( (1<=newValue) && (newValue<=ImagerGetNROIs()) )
+		iROI=newValue
+	endif
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
 End
 
 

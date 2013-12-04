@@ -49,7 +49,7 @@ Function ImagerViewConstructor() : Panel
 	Variable height=26
 	xOffset=(panelWidth-width)/2
 	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-height)/2
-	Button EpiLightToggleButton,win=ImagerView,pos={xOffset,yOffset},size={width,height},proc=ImagerContEpiLightToggle
+	Button EpiLightToggleButton,win=ImagerView,pos={xOffset,yOffset},size={width,height},proc=ICEpiLightToggleButtonPressed
 
 
 	//
@@ -61,7 +61,7 @@ Function ImagerViewConstructor() : Panel
 	
 	height=14
 	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-height)/2
-	SetVariable ccdTemperatureSetpointSV,win=ImagerView,pos={50,yOffset},size={96,height},proc=SetCCDTempVarProc,title="Setpoint:"
+	SetVariable ccdTemperatureSetpointSV,win=ImagerView,pos={50,yOffset},size={96,height},proc=ICTempSetpointSVTwiddled,title="Setpoint:"
 	SetVariable ccdTemperatureSetpointSV, win=ImagerView, limits={-50,20,5}, format="%0.1f", value= ccdTargetTemperature
 
 	ValDisplay ccdTemperatureVD,win=ImagerView,pos={184,yOffset+1},size={76,height},title="Current:"
@@ -85,16 +85,16 @@ Function ImagerViewConstructor() : Panel
 	// Snapshot button
 	Variable snapshotYOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-buttonGroupHeight)/2
 	yOffset=snapshotYOffset	
-	Button snapshotButton,win=ImagerView,pos={xOffset,yOffset},size={buttonWidth,buttonHeight},proc=FullButtonProc,title="Take"
+	Button snapshotButton,win=ImagerView,pos={xOffset,yOffset},size={buttonWidth,buttonHeight},proc=ICTakeSnapshotButtonPressed,title="Take"
 
 	// Focus button
 	Variable focusYOffset=snapshotYOffset+buttonHeight+buttonSpacerHeight
 	yOffset=focusYOffset
-	Button focusButton,win=ImagerView,pos={xOffset,yOffset},size={buttonWidth,buttonHeight},proc=FocusButtonProc,title="Focus"
+	Button focusButton,win=ImagerView,pos={xOffset,yOffset},size={buttonWidth,buttonHeight},proc=ICFocusButtonPressed,title="Focus"
 
 	// Snapshot name SV
 	SetVariable snapshotNameSV, win=ImagerView, pos={106,snapshotYOffset+2}, size={80,14}, title="Name:"
-	SetVariable snapshotNameSV, win=ImagerView, value=fullFrameWaveBaseName
+	SetVariable snapshotNameSV, win=ImagerView, value=snapshotWaveBaseName
 	
 	// Snapshot exposure SV
 	xOffset=200
@@ -122,7 +122,7 @@ Function ImagerViewConstructor() : Panel
 	yOffset=videoYOffset
 	width=80
 	height=20
-	Button takeVideoButton,win=ImagerView,pos={xOffset,yOffset},size={width,height},proc=ICTakeVideoButtonPressed,title="Acquire"
+	Button takeVideoButton,win=ImagerView,pos={xOffset,yOffset},size={width,height},proc=ICAcquireVideoButtonPressed,title="Acquire"
 
 	// "(hit ESC key to stop)" title box
 	TitleBox videoEscapeTB, win=ImagerView, pos={xOffset+1,yOffset+24}, frame=0, title="(hit ESC to stop)"
@@ -156,7 +156,7 @@ Function ImagerViewConstructor() : Panel
 	xOffset=240
 	yOffset=yOffset+1
 	width=40
-	CheckBox isTriggeredCB, win=ImagerView, pos={xOffset,yOffset}, size={width,height}, proc=ImagerContIsTriggeredCB, title="Triggered"
+	CheckBox isTriggeredCB, win=ImagerView, pos={xOffset,yOffset}, size={width,height}, proc=ICTriggeredCBTwiddled, title="Triggered"
 
 	// bin width SV
 	yOffset=276
@@ -171,7 +171,7 @@ Function ImagerViewConstructor() : Panel
 	yOffset=yOffset+30
 	width=66
 	height=16
-	SetVariable iROISV,win=ImagerView,pos={(panelWidth-width)/2,yOffset},size={width,height},proc=ImagerContiROISVTwiddled,title="ROI:"
+	SetVariable iROISV,win=ImagerView,pos={(panelWidth-width)/2,yOffset},size={width,height},proc=ICCurrentROIIndexSVTwiddled,title="ROI:"
 
 	// Delete current ROI button
 	xOffset=206

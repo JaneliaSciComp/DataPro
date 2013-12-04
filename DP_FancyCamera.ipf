@@ -41,34 +41,99 @@ End
 
 
 
-Function FancyCameraSetupAcquisition(isBinnedAndROIed,roisWave,isTriggered,exposure,targetTemperature,nBinWidth,nBinHeight)
-	// This sets up the camera for a single acquisition.  (A single aquisition could be a single frame, or it could be a video.)  
+//Function FancyCameraSetupAcquisition(isBinnedAndROIed,roisWave,isTriggered,exposure,targetTemperature,nBinWidth,nBinHeight)
+//	// This sets up the camera for a single acquisition.  (A single aquisition could be a single frame, or it could be a video.)  
+//	// This is typically called once per acquisition, just before the acquisition.
+//	//Variable image_roi
+//	Variable isBinnedAndROIed	// if true, do binning, and limit acquire to bounding box of all ROIs.  If false, don't bin, do full frames
+//	Wave roisWave
+//	Variable isTriggered
+//	Variable exposure	// frame exposure duration, in ms
+//	Variable targetTemperature
+//	Variable nBinWidth
+//	Variable nBinHeight
+//	
+//	// Switch to the imaging data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_FancyCamera
+//
+//	// Declare instance variables
+//	
+//	// Set up stuff
+//
+//	// Set the binning and ROI
+//	Variable nROIs=DimSize(roisWave,1)
+//	Variable isAtLeastOneROI=(nROIs>0)
+//	if (!isBinnedAndROIed)
+//		nBinWidth=1
+//		nBinHeight=1
+//	endif
+//	if (isBinnedAndROIed && isAtLeastOneROI)
+//		Wave cameraROI=FancyCameraROIFromROIs(roisWave,nBinWidth,nBinHeight)
+//	else
+//		Make /FREE cameraROI={nan,nan,nan,nan}
+//	endif
+//	FancyCameraBinningAndROISet(nBinWidth, nBinHeight, isAtLeastOneROI, cameraROI[0], cameraROI[1], cameraROI[2], cameraROI[3])
+//
+//	// Set the trigger mode
+//	Variable NO_TRIGGER=0	// start immediately
+//	Variable TRIGGER_EXPOSURE_START=1	// start of each frame is TTL-triggered
+//	Variable triggerMode=(isTriggered ? TRIGGER_EXPOSURE_START : NO_TRIGGER)
+//	CameraTriggerModeSet(triggerMode)
+//	
+//	// Set the exposure
+//	Variable exposureInSeconds=exposure/1000		// ms->s
+//	CameraExposeSet(exposureInSeconds)
+//	
+//	// Set the CCD temp, wait for it to stabilize
+//	FancyCameraSetTemperature(targetTemperature)
+//	
+//	// Restore the data folder
+//	SetDataFolder savedDF	
+//End
+
+
+
+Function FancyCameraSetupSnapshotAcq(exposure,targetTemperature)
+	// This sets up the camera for a single snapshot acquisition.
 	// This is typically called once per acquisition, just before the acquisition.
-	//Variable image_roi
-	Variable isBinnedAndROIed	// if true, do binning, and limit acquire to bounding box of all ROIs.  If false, don't bin, do full frames
+	Variable exposure	// frame exposure duration, in ms
+	Variable targetTemperature
+	
+	// Set the binning and ROI
+	Variable nBinWidth=1
+	Variable nBinHeight=1
+	Variable isTriggered=0
+	Variable isAtLeastOneROI=0
+	FancyCameraBinningAndROISet(nBinWidth, nBinHeight, isAtLeastOneROI, nan, nan, nan, nan)
+
+	// Set the trigger mode
+	Variable NO_TRIGGER=0	// start immediately
+	CameraTriggerModeSet(NO_TRIGGER)
+	
+	// Set the exposure
+	Variable exposureInSeconds=exposure/1000		// ms->s
+	CameraExposeSet(exposureInSeconds)
+	
+	// Set the CCD temp, wait for it to stabilize
+	FancyCameraSetTemperature(targetTemperature)
+End
+
+
+
+Function FancyCameraSetupVideoAcq(nBinWidth,nBinHeight,roisWave,isTriggered,exposure,targetTemperature)
+	// This sets up the camera for a single video acquisition.
+	Variable nBinWidth
+	Variable nBinHeight
 	Wave roisWave
 	Variable isTriggered
 	Variable exposure	// frame exposure duration, in ms
 	Variable targetTemperature
-	Variable nBinWidth
-	Variable nBinHeight
 	
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FancyCamera
-
-	// Declare instance variables
-	
-	// Set up stuff
-
 	// Set the binning and ROI
 	Variable nROIs=DimSize(roisWave,1)
 	Variable isAtLeastOneROI=(nROIs>0)
-	if (!isBinnedAndROIed)
-		nBinWidth=1
-		nBinHeight=1
-	endif
-	if (isBinnedAndROIed && isAtLeastOneROI)
+	if (isAtLeastOneROI)
 		Wave cameraROI=FancyCameraROIFromROIs(roisWave,nBinWidth,nBinHeight)
 	else
 		Make /FREE cameraROI={nan,nan,nan,nan}
@@ -87,10 +152,10 @@ Function FancyCameraSetupAcquisition(isBinnedAndROIed,roisWave,isTriggered,expos
 	
 	// Set the CCD temp, wait for it to stabilize
 	FancyCameraSetTemperature(targetTemperature)
-	
-	// Restore the data folder
-	SetDataFolder savedDF	
 End
+
+
+
 
 
 
