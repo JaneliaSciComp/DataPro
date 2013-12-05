@@ -535,6 +535,25 @@ Function CameraAcquireStop()
 		countReadFrameFake=0
 		//bufferFrame=p
 		
+		// If there's a wave with base name "exposure" for this trial, overwrite it with a fake TTL exposure signal
+		Variable iSweep=SweeperGetLastAcqSweepIndex()
+		String exposureWaveNameRel=WaveNameFromBaseAndSweep("exposure",iSweep)
+		String exposureWaveNameAbs=sprintf1s("root:%s",exposureWaveNameRel)
+		if ( WaveExists($exposureWaveNameAbs) )
+			Wave exposure=$exposureWaveNameAbs
+			Variable dt=DimDelta(exposure,0)	// ms
+			Variable nScans=DimSize(exposure,0)
+			Variable delay=0	// ms
+			Variable duration=1000*(frameInterval*countFrameFake)	// s->ms
+			Variable pulseRate=1/frameInterval	// Hz
+			Variable pulseDuration=1000*exposureFake	// s->ms
+			Variable baseLevel=0		// V
+			Variable amplitude=5		// V, for a TTL signal
+			Make /FREE parameters={delay,duration,pulseRate,pulseDuration,baseLevel,amplitude}
+			Make /FREE /T parameterNames={"delay","duration","pulseRate","pulseDuration","baseLevel","amplitude"}
+			fillTrainFromParamsBang(exposure,dt,nScans,parameters,parameterNames)
+		endif
+		
 		// Note that the acquisiton is done
 		isAcquisitionOngoingFake=0
 	endif

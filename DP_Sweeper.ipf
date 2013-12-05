@@ -32,6 +32,7 @@ Function SweeperConstructor()
 	Variable /G runHookFunctionsChecked=0		// true iff "Run hook functions" checkbox is checked
 
 	// Variables controlling the trials and sweeps
+	Variable /G lastAcquiredSweepIndex=nan
 	Variable /G nextSweepIndex=1		// index of the next sweep to be acquired
 	Variable /G nSweepsPerTrial=1
 	Variable /G sweepInterval=10		// seconds
@@ -112,92 +113,21 @@ Function SweeperConstructor()
 	SetDataFolder savedDF
 End
 
-Function SweeperAddHistoryForSweep(sweepIndex,iSweepWithinTrial)
-  	Variable sweepIndex
+Function SweeperSweepJustAcquired(thisSweepIndex,iSweepWithinTrial)
+	Variable thisSweepIndex
   	Variable iSweepWithinTrial		// zero-based
-  	
+
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Sweeper
   	
-	WAVE /T history
-	Variable nHistoryRows=DimSize(history,0)
-	Variable iRow=nHistoryRows
-	Variable nNewRows= SweeperGetNumADCsOn()+SweeperGetNumDACsOn()+SweeperGetNumTTLOutputsOn()
-	NVAR nHistoryCols
-	Redimension /N=(nHistoryRows+nNewRows,nHistoryCols) history
-	
-	Variable nADCChannels=DigitizerModelGetNumADCChans()
-	NVAR nSweepsPerTrial
-	WAVE adcChannelOn
-	WAVE /T adcBaseName
-	Variable iChan	
-	for (iChan=0; iChan<nADCChannels; iChan+=1)
-		if (adcChannelOn[iChan])
-			history[iRow][ 0]=sprintf1v("%d",sweepIndex)
-			history[iRow][ 1]=sprintf1v("%d",nSweepsPerTrial)
-			history[iRow][ 2]=sprintf1v("%d",iSweepWithinTrial+1)			
-			history[iRow][ 3]="ADC"	// channel type name
-			history[iRow][ 4]=sprintf1v("%d",iChan)	// channel index
-			history[iRow][ 5]=DigitizerModelGetADCModeName(iChan)
-			history[iRow][ 6]=DigitizerModelGetADCUnitsString(iChan)			
-			history[iRow][ 7]=adcBaseName(iChan)
-			history[iRow][ 8]=""	// builder name
-			history[iRow][ 9]=""	//builder parameters
-			history[iRow][10]=""	// multiplier
-			history[iRow][11]=sprintf1v("%.17g",DigitizerModelGetADCGain(iChan))	// channel gain
-			history[iRow][12]=DigitizerModelADCGainUnits(iChan)	// channel gain units
-			iRow+=1
-		endif		
-	endfor
-	Variable nDACChannels=DigitizerModelGetNumDACChans()
-	WAVE dacChannelOn, dacMultiplier
-	WAVE /T dacWaveName
-	for (iChan=0; iChan<nDACChannels; iChan+=1)
-		if (dacChannelOn[iChan])
-			history[iRow][ 0]=sprintf1v("%d",sweepIndex)
-			history[iRow][ 1]=sprintf1v("%d",nSweepsPerTrial)
-			history[iRow][ 2]=sprintf1v("%d",iSweepWithinTrial+1)
-			history[iRow][ 3]="DAC"	// channel type name
-			history[iRow][ 4]=sprintf1v("%d",iChan)	// channel index
-			history[iRow][ 5]=DigitizerModelGetDACModeName(iChan)
-			history[iRow][ 6]=DigitizerModelGetDACUnitsString(iChan)			
-			history[iRow][ 7]=dacWaveName(iChan)
-			String waveNote=SweeperGetDACWaveNoteByName(dacWaveName(iChan))
-			String builderName=StringByKey("WAVETYPE", waveNote, "=", "\r", 1)  // 1 means match case
-			history[iRow][ 8]=builderName		// builder name
-			history[iRow][ 9]=extractBuilderParamsString(waveNote)	//builder parameters
-			history[iRow][10]=sprintf1v("%.17g",dacMultiplier(iChan))	// multiplier
-			history[iRow][11]=sprintf1v("%.17g",DigitizerModelGetDACGain(iChan))	// channel gain
-			history[iRow][12]=DigitizerModelDACGainUnits(iChan)	// channel gain units
-			iRow+=1
-		endif		
-	endfor
-	Variable nTTLChannels=DigitizerModelGetNumTTLChans()
-	WAVE ttlOutputChannelOn
-	WAVE /T ttlOutputWaveName
-	for (iChan=0; iChan<nTTLChannels; iChan+=1)
-		if (ttlOutputChannelOn[iChan])
-			history[iRow][ 0]=sprintf1v("%d",sweepIndex)
-			history[iRow][ 1]=sprintf1v("%d",nSweepsPerTrial)
-			history[iRow][ 2]=sprintf1v("%d",iSweepWithinTrial+1)
-			history[iRow][ 3]="TTL Output"	// channel type name
-			history[iRow][ 4]=sprintf1v("%d",iChan)	// channel index
-			history[iRow][ 5]=""
-			history[iRow][ 6]=""			
-			history[iRow][ 7]=ttlOutputWaveName(iChan)
-			waveNote=SweeperGetTTLWaveNoteByName(ttlOutputWaveName(iChan))
-			builderName=StringByKey("WAVETYPE", waveNote, "=", "\r", 1)  // 1 means match case
-			history[iRow][ 8]=builderName		// builder name
-			history[iRow][ 9]=extractBuilderParamsString(waveNote)	//builder parameters
-			history[iRow][10]=""	// multiplier
-			history[iRow][11]=""	// channel gain
-			history[iRow][12]=""	// channel gain units
-			iRow+=1
-		endif		
-	endfor
-	
-	SetDataFolder savedDF
-End		// method
+  	NVAR lastAcquiredSweepIndex
+  	NVAR nextSweepIndex
+  	
+	SweeperAddHistoryForSweep(thisSweepIndex,iSweepWithinTrial)
+	lastAcquiredSweepIndex=thisSweepIndex
+	nextSweepIndex=thisSweepIndex+1	
+End
+
 
 Function SweeperUpdateStepPulseWave()
 	// Updates the step pulse wave to be consistent with the rest of the model state.
@@ -629,6 +559,21 @@ Function SweeperGetTotalDuration()
 	return result
 End
 
+Function SweeperGetDoRunHookFunctions()
+	// Change to the Digitizer data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+
+	// Declare the DF vars we need
+	NVAR runHookFunctionsChecked
+	Variable result=runHookFunctionsChecked
+
+	// Restore the original DF
+	SetDataFolder savedDF
+
+	return result
+End
+
 Function SweeperGetNextSweepIndex()
 	// Change to the Digitizer data folder
 	String savedDF=GetDataFolder(1)
@@ -644,18 +589,70 @@ Function SweeperGetNextSweepIndex()
 	return result
 End
 
-Function SweeperIncrementNextSweepIndex()
+Function SweeperGetLastAcqSweepIndex()
+	// Change to the Digitizer data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+
+	// Declare the DF vars we need
+	NVAR lastAcquiredSweepIndex
+	Variable result=lastAcquiredSweepIndex
+
+	// Restore the original DF
+	SetDataFolder savedDF
+
+	return result
+End
+
+Function SweeperUnrenamedAverageJustDone(sweepIndex)
+	Variable sweepIndex		// the sweep index used for the average just calculated
+	
 	// Change to the Digitizer data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Sweeper
 
 	// Declare the DF vars we need
 	NVAR nextSweepIndex
-	nextSweepIndex+=1
+	nextSweepIndex=sweepIndex+1
 
 	// Restore the original DF
 	SetDataFolder savedDF
 End
+
+
+Function SweeperUntriggedVideoJustAcqd(sweepIndex)
+	Variable sweepIndex		// the sweep index used for the video/image just acquired
+	// Change to the Digitizer data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+
+	// Declare the DF vars we need
+	NVAR lastAcquiredSweepIndex
+	NVAR nextSweepIndex
+	lastAcquiredSweepIndex=sweepIndex	// Save this
+	nextSweepIndex=sweepIndex+1
+
+	// Restore the original DF
+	SetDataFolder savedDF
+End
+
+
+//Function SweeperIncrementNextSweepIndex()
+//	// Change to the Digitizer data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Sweeper
+//
+//	// Declare the DF vars we need
+//	NVAR lastAcquiredSweepIndex
+//	NVAR nextSweepIndex
+//	lastAcquiredSweepIndex=nextSweepIndex	// Save this
+//	nextSweepIndex+=1
+//
+//	// Restore the original DF
+//	SetDataFolder savedDF
+//End
+
+
 
 
 Function /WAVE SweeperGetWaveByFancyName(fancyWaveNameString)
@@ -816,40 +813,6 @@ Function SweeperAddTTLWave(w,waveNameString)
 	SetDataFolder savedDF
 End
 
-Function SweeperResampleNamedWave(waveNameString,dacOrTTLString)
-	// Private method, resamples the named wave to the current dt, totalDuration
-	String waveNameString
-	String dacOrTTLString		// either "DAC" or "TTL"
-	String savedDF=GetDataFolder(1)
-	String dataFolderName="root:DP_Sweeper:"+LowerStr(dacOrTTLString)+"Waves"
-	SetDataFolder $dataFolderName
-	Wave w=$waveNameString
-	SetDataFolder "root:DP_Sweeper"
-
-	NVAR totalDuration
-	
-	Variable dt=SweeperGetDt()	
-	String builderType=StringByKeyInWaveNote(w,"WAVETYPE")
-	resampleBang(builderType,w,dt,totalDuration)
-
-	SetDataFolder savedDF	
-End
-
-Function SweeperResampleWave(w)
-	// Private method, resamples the named wave to the current dt, totalDuration
-	Wave w
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sweeper
-
-	NVAR totalDuration
-	Variable dt=SweeperGetDt()	
-
-	String builderType=StringByKeyInWaveNote(w,"WAVETYPE")
-	resampleBang(builderType,w,dt,totalDuration)
-	
-	SetDataFolder savedDF	
-End
-
 Function SweeperSetDtWanted(newDtWanted)
 	Variable newDtWanted
 
@@ -962,6 +925,16 @@ Function /S SweeperGetTTLWaveNames()
 	String listOfWaveNames=Wavelist("*",";","")
 	SetDataFolder savedDF
 	return listOfWaveNames	
+End
+
+Function /S SweeperGetADCBaseName(i)
+	Variable i
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+	WAVE /T adcBaseName
+	String result=adcBaseName[i]
+	SetDataFolder savedDF
+	return result
 End
 
 Function /S SweeperGetTTLWaveNamesOfType(waveTypeString)
@@ -1133,3 +1106,134 @@ Function /T extractBuilderParamsString(waveNote)
 
 	return paramKVList
 End
+
+
+
+
+
+
+//
+// Private methods
+//
+Function SweeperAddHistoryForSweep(sweepIndex,iSweepWithinTrial)
+	// Adds a row to the history matrix, with the given sweepIndex and iSweepWithinTrial
+  	Variable sweepIndex
+  	Variable iSweepWithinTrial		// zero-based
+  	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+  	
+	WAVE /T history
+	Variable nHistoryRows=DimSize(history,0)
+	Variable iRow=nHistoryRows
+	Variable nNewRows= SweeperGetNumADCsOn()+SweeperGetNumDACsOn()+SweeperGetNumTTLOutputsOn()
+	NVAR nHistoryCols
+	Redimension /N=(nHistoryRows+nNewRows,nHistoryCols) history
+	
+	Variable nADCChannels=DigitizerModelGetNumADCChans()
+	NVAR nSweepsPerTrial
+	WAVE adcChannelOn
+	WAVE /T adcBaseName
+	Variable iChan	
+	for (iChan=0; iChan<nADCChannels; iChan+=1)
+		if (adcChannelOn[iChan])
+			history[iRow][ 0]=sprintf1v("%d",sweepIndex)
+			history[iRow][ 1]=sprintf1v("%d",nSweepsPerTrial)
+			history[iRow][ 2]=sprintf1v("%d",iSweepWithinTrial+1)			
+			history[iRow][ 3]="ADC"	// channel type name
+			history[iRow][ 4]=sprintf1v("%d",iChan)	// channel index
+			history[iRow][ 5]=DigitizerModelGetADCModeName(iChan)
+			history[iRow][ 6]=DigitizerModelGetADCUnitsString(iChan)			
+			history[iRow][ 7]=adcBaseName(iChan)
+			history[iRow][ 8]=""	// builder name
+			history[iRow][ 9]=""	//builder parameters
+			history[iRow][10]=""	// multiplier
+			history[iRow][11]=sprintf1v("%.17g",DigitizerModelGetADCGain(iChan))	// channel gain
+			history[iRow][12]=DigitizerModelADCGainUnits(iChan)	// channel gain units
+			iRow+=1
+		endif		
+	endfor
+	Variable nDACChannels=DigitizerModelGetNumDACChans()
+	WAVE dacChannelOn, dacMultiplier
+	WAVE /T dacWaveName
+	for (iChan=0; iChan<nDACChannels; iChan+=1)
+		if (dacChannelOn[iChan])
+			history[iRow][ 0]=sprintf1v("%d",sweepIndex)
+			history[iRow][ 1]=sprintf1v("%d",nSweepsPerTrial)
+			history[iRow][ 2]=sprintf1v("%d",iSweepWithinTrial+1)
+			history[iRow][ 3]="DAC"	// channel type name
+			history[iRow][ 4]=sprintf1v("%d",iChan)	// channel index
+			history[iRow][ 5]=DigitizerModelGetDACModeName(iChan)
+			history[iRow][ 6]=DigitizerModelGetDACUnitsString(iChan)			
+			history[iRow][ 7]=dacWaveName(iChan)
+			String waveNote=SweeperGetDACWaveNoteByName(dacWaveName(iChan))
+			String builderName=StringByKey("WAVETYPE", waveNote, "=", "\r", 1)  // 1 means match case
+			history[iRow][ 8]=builderName		// builder name
+			history[iRow][ 9]=extractBuilderParamsString(waveNote)	//builder parameters
+			history[iRow][10]=sprintf1v("%.17g",dacMultiplier(iChan))	// multiplier
+			history[iRow][11]=sprintf1v("%.17g",DigitizerModelGetDACGain(iChan))	// channel gain
+			history[iRow][12]=DigitizerModelDACGainUnits(iChan)	// channel gain units
+			iRow+=1
+		endif		
+	endfor
+	Variable nTTLChannels=DigitizerModelGetNumTTLChans()
+	WAVE ttlOutputChannelOn
+	WAVE /T ttlOutputWaveName
+	for (iChan=0; iChan<nTTLChannels; iChan+=1)
+		if (ttlOutputChannelOn[iChan])
+			history[iRow][ 0]=sprintf1v("%d",sweepIndex)
+			history[iRow][ 1]=sprintf1v("%d",nSweepsPerTrial)
+			history[iRow][ 2]=sprintf1v("%d",iSweepWithinTrial+1)
+			history[iRow][ 3]="TTL Output"	// channel type name
+			history[iRow][ 4]=sprintf1v("%d",iChan)	// channel index
+			history[iRow][ 5]=""
+			history[iRow][ 6]=""			
+			history[iRow][ 7]=ttlOutputWaveName(iChan)
+			waveNote=SweeperGetTTLWaveNoteByName(ttlOutputWaveName(iChan))
+			builderName=StringByKey("WAVETYPE", waveNote, "=", "\r", 1)  // 1 means match case
+			history[iRow][ 8]=builderName		// builder name
+			history[iRow][ 9]=extractBuilderParamsString(waveNote)	//builder parameters
+			history[iRow][10]=""	// multiplier
+			history[iRow][11]=""	// channel gain
+			history[iRow][12]=""	// channel gain units
+			iRow+=1
+		endif		
+	endfor
+	
+	SetDataFolder savedDF
+End		// method
+
+Function SweeperResampleNamedWave(waveNameString,dacOrTTLString)
+	// Private method, resamples the named wave to the current dt, totalDuration
+	String waveNameString
+	String dacOrTTLString		// either "DAC" or "TTL"
+	String savedDF=GetDataFolder(1)
+	String dataFolderName="root:DP_Sweeper:"+LowerStr(dacOrTTLString)+"Waves"
+	SetDataFolder $dataFolderName
+	Wave w=$waveNameString
+	SetDataFolder "root:DP_Sweeper"
+
+	NVAR totalDuration
+	
+	Variable dt=SweeperGetDt()	
+	String builderType=StringByKeyInWaveNote(w,"WAVETYPE")
+	resampleBang(builderType,w,dt,totalDuration)
+
+	SetDataFolder savedDF	
+End
+
+Function SweeperResampleWave(w)
+	// Private method, resamples the named wave to the current dt, totalDuration
+	Wave w
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+
+	NVAR totalDuration
+	Variable dt=SweeperGetDt()	
+
+	String builderType=StringByKeyInWaveNote(w,"WAVETYPE")
+	resampleBang(builderType,w,dt,totalDuration)
+	
+	SetDataFolder savedDF	
+End
+

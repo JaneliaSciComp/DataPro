@@ -775,3 +775,48 @@ Function IsInteger(x)
 
 End
 
+Function AddROIWavesToRoot(imageWave,roisWave,iSweep)
+	Wave imageWave
+	Wave roisWave
+	Variable iSweep
+	
+	// Get image dimensions --- these will be useful later
+	Variable nX=DimSize(imageWave,0)
+	Variable nY=DimSize(imageWave,1)
+	Variable nFrames=DimSize(imageWave,2)
+	Variable x0=DimOffset(imageWave,0)
+	Variable dx=DimDelta(imageWave,0)
+	Variable y0=DimOffset(imageWave,1)
+	Variable dy=DimDelta(imageWave,1)
+	
+	// Loop over ROIs, making one new wave per ROI
+	Variable nROIs=DimSize(roisWave,1)
+	Variable iROI
+	for (iROI=0; iROI<nROIs; iROI+=1)
+		// Make the signal wave for this ROI
+		String signalWaveNameRel=sprintf2vv("roi%d_%d", iROI, iSweep)
+		String signalWaveNameAbs="root:"+signalWaveNameRel
+		Make /O /N=(nFrames) $signalWaveNameAbs
+		Wave signalWave=$signalWaveNameAbs
+		// Determine the pixel bounds
+		Variable xMin=roisWave[0][iROI]
+		Variable yMin=roisWave[1][iROI]
+		Variable xMax=roisWave[2][iROI]
+		Variable yMax=roisWave[3][iROI]
+		Variable i0=ceil((xMin-x0)/dx)
+		Variable iff=floor((xMax-x0)/dx)
+		Variable j0=ceil((yMin-x0)/dx)
+		Variable jf=floor((yMax-x0)/dx)
+		// Do the triple-loop that sums up all the pixel values for each time point
+		Variable i, j, k
+		for (k=0; k<nFrames; k+=1)
+			Variable s=0
+			for (i=i0; i<=iff; i+=1)
+				for (j=j0; j<=jf; j+=1)
+					s+=imageWave[i][j]
+				endfor
+			endfor
+			signalWave[k]=s
+		endfor		
+	endfor
+End

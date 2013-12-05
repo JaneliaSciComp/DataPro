@@ -199,7 +199,7 @@ Function /WAVE FancyCameraAcquire(nFrames)
 	// Prep for the acquisition (this will also start the acquisition unless it's a triggered acquire)
 	CameraAcquireStart()
 
-	// If the acquisition is external trigger mode, start the data acq, which will provide the per-frame triggers
+	// If the acquisition is external trigger mode, start the data acq
 	Variable NO_TRIGGER=0		// start immediately
 	if (CameraTriggerModeGet()!=NO_TRIGGER)
 		SweeperControllerAcquireTrial()	

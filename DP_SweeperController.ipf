@@ -226,18 +226,9 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	// Get the number of all extant DP Browsers, so that we can tell them when sweeps get added
 	Wave browserNumbers=GetAllBrowserNumbers()  // returns a free wave
 	
-	// Save the current data folder, set it
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sweeper
-	
-	NVAR nextSweepIndex
-	WAVE /T adcBaseName
-	NVAR runHookFunctionsChecked
-
-	String thisWaveNameRel
-	//String savename
-	String thisstr, doit, whichadc
-	Variable leftmin, leftmax
+	//// Save the current data folder, set it
+	//String savedDF=GetDataFolder(1)
+	//SetDataFolder root:DP_Sweeper
 	
 	// Bring the sweeper forward
 	DoWindow /F SweepControl
@@ -247,7 +238,8 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	SweeperUpdateSynPulseWave()
 	
 	// If called for, run the pre-sweep hook function
-	Variable thisSweepIndex=nextSweepIndex	
+	Variable thisSweepIndex=SweeperGetNextSweepIndex()
+	Variable runHookFunctionsChecked=SweeperGetDoRunHookFunctions()
 	if (runHookFunctionsChecked)
 		PreSweepHook(thisSweepIndex)
 	endif
@@ -283,7 +275,7 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	String units
 	for (iTrace=0; iTrace<nADCInUse; iTrace+=1)
 		iADCChannel=str2num(adSequence[iTrace])
-		sprintf thisWaveNameRel "%s_%d", adcBaseName[iADCChannel], nextSweepIndex
+		String thisWaveNameRel=sprintf2sv("%s_%d", SweeperGetADCBaseName(iADCChannel), thisSweepIndex)
 		String thisWaveNameAbs="root:"+thisWaveNameRel
 		Make /O /N=(nSamplesPerTrace) $thisWaveNameAbs
 		WAVE thisWave=$thisWaveNameAbs
@@ -296,18 +288,17 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 		SetScale d 0, 0, units, thisWave
 	endfor
 	
-	// Record the sweep to the history
-	SweeperAddHistoryForSweep(nextSweepIndex,iSweepWithinTrial)
+	// Notify the sweeper model that a sweep has just been acquired
+	SweeperSweepJustAcquired(thisSweepIndex,iSweepWithinTrial)
+	//SweeperAddHistoryForSweep(thisSweepIndex,iSweepWithinTrial)
+	//SweeperIncrementNextSweepIndex()
 	
 	// Update the sweep number in the DP Browsers
 	Variable nBrowsers=numpnts(browserNumbers)
 	Variable i
-	for (i=0;i<nBrowsers;i+=1)
-		BrowserContSetCurSweepIndex(browserNumbers[i],nextSweepIndex)
+	for (i=0; i<nBrowsers; i+=1)
+		BrowserContSetCurSweepIndex(browserNumbers[i],thisSweepIndex)
 	endfor
-	
-	// Update some of the acquisition counters
-	nextSweepIndex+=1
 	
 	// Update the windows, so user can see the new sweep
 	DoUpdate
@@ -317,8 +308,8 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 		PostSweepHook(thisSweepIndex)
 	endif
 
-	// Restore the original data folder
-	SetDataFolder savedDF
+	//// Restore the original data folder
+	//SetDataFolder savedDF
 End
 
 Function SweeperControllerAddDACWave(w,waveNameString)
@@ -348,10 +339,10 @@ Function SweepControllerDigitizerChanged()
 	SweeperViewDigitizerChanged()
 End
 
-Function SweeperContIncrNextSweepIndex()
-	SweeperIncrementNextSweepIndex()
-	SweeperViewSweeperChanged()
-End
+//Function SweeperContIncrNextSweepIndex()
+//	SweeperIncrementNextSweepIndex()
+//	SweeperViewSweeperChanged()
+//End
 
 
 //

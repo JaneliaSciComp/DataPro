@@ -652,7 +652,7 @@ Function BrowserContAverageSweepsButton(bStruct) : ButtonControl
 	// increment the next sweep index for acquisition, if appropriate
 	Variable renameAverages=BrowserModelGetRenameAverages(browserNumber)
 	if (!renameAverages && (traceAChecked || traceBChecked) )
-		SweeperContIncrNextSweepIndex()
+		SweeperUnrenamedAverageJustDone(destSweepIndex)
 	endif
 	
 	// Notify the view, mainly because the valid range of the sweep index SV may have changed

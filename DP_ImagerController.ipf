@@ -149,11 +149,15 @@ Function ImagerContAcquireVideo()
 	EpiLightSetIsOn(1)
 	Wave imageWave=FancyCameraArmAcquireDisarm(nFramesForVideo)	// trigger mode is now set during camera setup
 	EpiLightSetIsOn(0)
-	Variable iSweep=SweeperGetNextSweepIndex()
+	Variable iSweep=SweeperGetNextSweepIndex()		// is this correct?  seems wrong...
 	String imageWaveName=sprintf2sv("%s_%d", videoWaveBaseName, iSweep)
 	MoveWave imageWave, $imageWaveName 	// Cage the once-free wave
+	
+	// Calculate ROI signals, store in root DF
+	AddROIWavesToRoot(imageWave,roisWave,iSweep)
+	
 	ImageBrowserContSetVideo(imageWaveName)
-	SweeperIncrementNextSweepIndex()
+	SweeperUntriggedVideoJustAcqd(iSweep)
 	SweeperViewSweeperChanged()
 	ImagerSetIsAcquiringVideo(0)
 	ImagerViewModelChanged()
@@ -222,7 +226,7 @@ Function ImagerContFocus()
 	DoUpdate
 	FancyCameraDisarm()	
 		
-	SweeperIncrementNextSweepIndex()
+	SweeperUntriggedVideoJustAcqd(iFullFrameWave)
 	SweeperViewSweeperChanged()
 
 	// Call this to make sure the image gets auto-scaled properly if needed
@@ -261,7 +265,7 @@ Function ImagerContAcquireSnapshot()
 	MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
 	ImageBrowserContSetVideo(imageWaveName) 
 	String allVideoWaveNames=WaveList(snapshotWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
-	SweeperIncrementNextSweepIndex()
+	SweeperUntriggedVideoJustAcqd(iFullFrameWave)
 	SweeperViewSweeperChanged()
 
 	// Restore the data folder

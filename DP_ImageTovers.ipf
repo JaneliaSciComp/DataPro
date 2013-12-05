@@ -30,7 +30,7 @@ Function Load_Full_Image()
 	ImageBrowserContSetVideo(newImageWaveName)
 	ImageBrowserContScaleToData("scaleButton")
 	//printf "%s%d: Image loaded\r", snapshotWaveBaseName, iFullFrameWave
-	SweeperIncrementNextSweepIndex()
+	SweeperUntriggedVideoJustAcqd(iFullFrameWave)
 	SweeperViewSweeperChanged()
 	//iFocusWave=iFullFrameWave
 	
