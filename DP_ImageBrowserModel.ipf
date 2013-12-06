@@ -22,6 +22,7 @@ Function ImageBrowserModelConstructor()
 	Variable /G iFrame=nan		// Frame index to show in the browser
 	Variable /G blackCount=0		// the CCD count that gets mapped to black
 	Variable /G whiteCount=2^16-1		// the CCD count that gets mapped to white
+	Variable /G isCurrentImageWave=0	// whether there is a current image wave
 	String /G imageWaveName=""		// the current wave being shown in the browser
 	Variable /G autoscaleToData=0
 		// Whether to automatically set blackCount, whiteCount to min/max of image/video
@@ -30,6 +31,7 @@ Function ImageBrowserModelConstructor()
 	String allVideoWaveNames=ImagerGetAllVideoWaveNames()
 	if ( ItemsInList(allVideoWaveNames)>0 )
 		imageWaveName=StringFromList(0,allVideoWaveNames)
+		isCurrentImageWave=1
 		iFrame=0
 	endif
 	
@@ -90,9 +92,10 @@ Function /S ImageBrowserModGetImWaveName()
 	SetDataFolder root:DP_ImageBrowserModel
 	
 	// Declare instance vars
+	NVAR isCurrentImageWave
 	SVAR imageWaveName
 
-	String value=imageWaveName
+	String value=stringFif(isCurrentImageWave,imageWaveName,"")
 
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -103,7 +106,20 @@ End
 
 
 Function /S ImageBrowserModGetImWaveNameAbs()
-	return "root:DP_Imager:"+ImageBrowserModGetImWaveName()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_ImageBrowserModel
+	
+	// Declare instance vars
+	NVAR isCurrentImageWave
+	SVAR imageWaveName
+
+	String value=stringFif(isCurrentImageWave,"root:DP_Imager:"+imageWaveName,"")
+
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	return value
 End
 
 
@@ -238,15 +254,22 @@ Function ImageBrowserModelSetVideo(imageWaveNameNew)
 	SetDataFolder root:DP_ImageBrowserModel
 	
 	// Declare instance vars
+	NVAR isCurrentImageWave
 	NVAR iFrame
 	SVAR imageWaveName
 	NVAR autoscaleToData
 	
 	// Set instance vars appropriately
-	imageWaveName=imageWaveNameNew
-	iFrame=0
-	if (autoscaleToData)
-		ImageBrowserModelScaleToData()
+	String imageWaveNameNewAbs="root:DP_Imager:"+imageWaveNameNew
+	if ( WaveExists($imageWaveNameNewAbs) )
+		isCurrentImageWave=1
+		imageWaveName=imageWaveNameNew
+		iFrame=0
+		if (autoscaleToData)
+			ImageBrowserModelScaleToData()
+		endif
+	else
+		isCurrentImageWave=0
 	endif
 
 	// Restore the original DF
@@ -264,14 +287,17 @@ Function ImageBrowserModelScaleToData()
 	SetDataFolder root:DP_ImageBrowserModel
 	
 	// Declare instance vars
+	NVAR isCurrentImageWave
 	NVAR blackCount
 	NVAR whiteCount
 	SVAR imageWaveName
 
 	// Find the min and max of the first frame
-	ImageStats /M=1 root:DP_Imager:$imageWaveName
-	blackCount=V_min
-	whiteCount=V_max
+	if (isCurrentImageWave)
+		ImageStats /M=1 root:DP_Imager:$imageWaveName
+		blackCount=V_min
+		whiteCount=V_max
+	endif
 
 	// Restore the original DF
 	SetDataFolder savedDF			
@@ -301,6 +327,26 @@ Function ImageBrowserModelFullScale()
 	// Restore the original DF
 	SetDataFolder savedDF			
 End
+
+
+
+
+Function IBModelGetIsCurrentImageWave()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_ImageBrowserModel
+	
+	// Declare instance vars
+	NVAR isCurrentImageWave
+
+	Variable value=isCurrentImageWave
+
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	return value
+End
+
 
 
 

@@ -63,8 +63,10 @@ Function ImagePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	Variable popNum
 	String popStr
 
-	ImageBrowserModelSetVideo(popStr)
-	ImageBrowserViewModelEtcChanged()
+	if ( !AreStringsEqual(popStr,"(none)") && !AreStringsEqual(popStr,"None Selected"))
+		ImageBrowserModelSetVideo(popStr)
+		ImageBrowserViewModelEtcChanged()
+	endif
 End
 
 

@@ -58,7 +58,12 @@ Function SCGetDataButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 	
 	if ( IsImagingModuleInUse() )
-		ImagerContAcquireVideo()	// This will call SweeperControllerAcquireTrial()
+		Variable isTriggered=ImagerGetIsTriggered()
+		if (isTriggered)
+			ImagerContAcquireVideo()		// This will call SweeperControllerAcquireTrial()
+		else
+			SweeperControllerAcquireTrial()
+		endif
 	else
 		SweeperControllerAcquireTrial()
 	endif

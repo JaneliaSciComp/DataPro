@@ -620,7 +620,7 @@ Function SweeperUnrenamedAverageJustDone(sweepIndex)
 End
 
 
-Function SweeperUntriggedVideoJustAcqd(sweepIndex)
+Function SweeperFreeRunVideoJustAcqd(sweepIndex)
 	Variable sweepIndex		// the sweep index used for the video/image just acquired
 	// Change to the Digitizer data folder
 	String savedDF=GetDataFolder(1)

@@ -788,6 +788,8 @@ Function AddROIWavesToRoot(imageWave,roisWave,iSweep)
 	Variable dx=DimDelta(imageWave,0)
 	Variable y0=DimOffset(imageWave,1)
 	Variable dy=DimDelta(imageWave,1)
+	Variable t0=DimOffset(imageWave,2)
+	Variable dt=DimDelta(imageWave,2)
 	
 	// Loop over ROIs, making one new wave per ROI
 	Variable nROIs=DimSize(roisWave,1)
@@ -797,6 +799,7 @@ Function AddROIWavesToRoot(imageWave,roisWave,iSweep)
 		String signalWaveNameRel=sprintf2vv("roi%d_%d", iROI, iSweep)
 		String signalWaveNameAbs="root:"+signalWaveNameRel
 		Make /O /N=(nFrames) $signalWaveNameAbs
+		SetScale /P x, t0, dt, "ms", $signalWaveNameAbs
 		Wave signalWave=$signalWaveNameAbs
 		// Determine the pixel bounds
 		Variable xMin=roisWave[0][iROI]
@@ -810,13 +813,16 @@ Function AddROIWavesToRoot(imageWave,roisWave,iSweep)
 		// Do the triple-loop that sums up all the pixel values for each time point
 		Variable i, j, k
 		for (k=0; k<nFrames; k+=1)
-			Variable s=0
+			Variable s=0		// Will hold sum of pel values in ROI
 			for (i=i0; i<=iff; i+=1)
 				for (j=j0; j<=jf; j+=1)
-					s+=imageWave[i][j]
+					s+=imageWave[i][j][k]
 				endfor
 			endfor
 			signalWave[k]=s
-		endfor		
+		endfor
+		// Convert sum to average
+		Variable nPixels=(iff-i0+1)*(jf-j0+1)
+		signalWave=signalWave/nPixels
 	endfor
 End

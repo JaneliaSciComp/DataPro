@@ -142,25 +142,44 @@ Function ImagerContAcquireVideo()
 	NVAR isTriggered
 	
 	// Do stuff
+	Variable iSweep=SweeperGetNextSweepIndex()
 	ImagerSetIsAcquiringVideo(1)
 	ImagerViewModelChanged()
 	DoUpdate	
 	FancyCameraSetupVideoAcq(binWidth,binHeight,roisWave,isTriggered,videoExposure,ccdTargetTemperature)
 	EpiLightSetIsOn(1)
-	Wave imageWave=FancyCameraArmAcquireDisarm(nFramesForVideo)	// trigger mode is now set during camera setup
+	Wave imageWave=FancyCameraArmAcquireDisarm(nFramesForVideo)		// This will call SweeperControllerAcquireTrial() if in triggered mode
 	EpiLightSetIsOn(0)
-	Variable iSweep=SweeperGetNextSweepIndex()		// is this correct?  seems wrong...
 	String imageWaveName=sprintf2sv("%s_%d", videoWaveBaseName, iSweep)
 	MoveWave imageWave, $imageWaveName 	// Cage the once-free wave
 	
 	// Calculate ROI signals, store in root DF
 	AddROIWavesToRoot(imageWave,roisWave,iSweep)
 	
+	// Tell the image browser controller to show the newly-acquired video
 	ImageBrowserContSetVideo(imageWaveName)
-	SweeperUntriggedVideoJustAcqd(iSweep)
+	
+	// If video acquisition is free-running, notify the Sweeper that free-running video was just acquired.
+	// This updates the next sweep index.  We don't need to do this for triggered video b/c the call to
+	// SweeperControllerAcquireTrial()
+	if (!isTriggered)
+		SweeperFreeRunVideoJustAcqd(iSweep)
+	endif
 	SweeperViewSweeperChanged()
+	
+	// Update the sweep number and signals in the DP Browsers
+	Wave browserNumbers=GetAllBrowserNumbers()  // returns a free wave	
+	Variable nBrowsers=numpnts(browserNumbers)
+	Variable i
+	for (i=0; i<nBrowsers; i+=1)
+		BrowserContSetCurSweepIndex(browserNumbers[i],iSweep)
+	endfor
+	
+	// Tell that model that we're done acquiring video, and update the view to reflect
 	ImagerSetIsAcquiringVideo(0)
 	ImagerViewModelChanged()
+	
+	// Make everything update itself
 	DoUpdate	
 	
 	// Restore the data folder
@@ -226,7 +245,7 @@ Function ImagerContFocus()
 	DoUpdate
 	FancyCameraDisarm()	
 		
-	SweeperUntriggedVideoJustAcqd(iFullFrameWave)
+	SweeperFreeRunVideoJustAcqd(iFullFrameWave)
 	SweeperViewSweeperChanged()
 
 	// Call this to make sure the image gets auto-scaled properly if needed
@@ -265,7 +284,7 @@ Function ImagerContAcquireSnapshot()
 	MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
 	ImageBrowserContSetVideo(imageWaveName) 
 	String allVideoWaveNames=WaveList(snapshotWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
-	SweeperUntriggedVideoJustAcqd(iFullFrameWave)
+	SweeperFreeRunVideoJustAcqd(iFullFrameWave)
 	SweeperViewSweeperChanged()
 
 	// Restore the data folder

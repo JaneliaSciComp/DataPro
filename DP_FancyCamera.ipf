@@ -265,7 +265,7 @@ Function /WAVE FancyCameraArmAcquireDisarm(nFrames)
 	Variable nFrames
 
 	FancyCameraArm(nFrames)
-	Wave imageWave=FancyCameraAcquire(nFrames)
+	Wave imageWave=FancyCameraAcquire(nFrames)		// This will call SweeperControllerAcquireTrial() if in triggered mode
 	FancyCameraDisarm()
 	return imageWave
 End

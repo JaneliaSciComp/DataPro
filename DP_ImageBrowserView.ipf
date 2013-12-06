@@ -77,22 +77,46 @@ Function ImageBrowserViewUpdate()
 	// Update the autoscaleOnFly checkbox
 	Variable autoscaleToData=ImageBrowserModGetAutoscToData()
 	CheckBox autoscaleToDataCB, win=ImageBrowserView, value=autoscaleToData
-	
-	// Update the image popup
+
+	// Get some info about the model that will be useful
+	Variable isCurrentImageWave=IBModelGetIsCurrentImageWave()
 	String imageWaveName=ImageBrowserModGetImWaveName()
 	String imageWaveNameAbs=ImageBrowserModGetImWaveNameAbs()
+	
+	// Update the image popup
 	String allVideoWaveNames=ImagerGetAllVideoWaveNames()
-	String allVideoWaveNamesFU="\""+allVideoWaveNames+"\""
-	Variable iVideo=WhichListItem(imageWaveName,allVideoWaveNames)
-	PopupMenu image_popup0, win=ImageBrowserView, mode=iVideo+1, value= #allVideoWaveNamesFU
+	Variable nVideoWaves=ItemsInList(allVideoWaveNames)
+	if (nVideoWaves==0)
+		PopupMenu image_popup0,win=ImageBrowserView,value="(none)",mode=1
+	else
+		String allVideoWaveNamesFU
+		if (isCurrentImageWave)	
+			Variable iVideo=WhichListItem(imageWaveName,allVideoWaveNames)
+			if (iVideo>=0)
+				allVideoWaveNamesFU="\""+allVideoWaveNames+"\""
+				PopupMenu image_popup0, win=ImageBrowserView, mode=iVideo+1, value= #allVideoWaveNamesFU
+			else
+				// This is an error condition---there's supposedly a current image, but the wave doesn't seem to be in the place where those live
+				Abort "The current image doesn't seem to be where it's supposed to be."
+			endif
+		else
+			// This is an odd situation---there's no current image wave, but there are videos available...
+			allVideoWaveNamesFU="\""+"None Selected;"+allVideoWaveNames+"\""
+			PopupMenu image_popup0, win=ImageBrowserView, mode=1, value= #allVideoWaveNamesFU			
+		endif
+	endif
 
 	// Update the frame selector
-	Variable nFrames=DimSize($imageWaveNameAbs, 2)
-	Variable iFrame=ImageBrowserModelGetIFrame()
-	if (nFrames==0)
-		SetVariable plane_setvar0,win=ImageBrowserView, value=_STR:""
+	if ( isCurrentImageWave )
+		Variable nFrames=DimSize($imageWaveNameAbs, 2)
+		Variable iFrame=ImageBrowserModelGetIFrame()
+		if (nFrames==0)
+			SetVariable plane_setvar0, win=ImageBrowserView, value=_STR:"", disable=2
+		else
+			SetVariable plane_setvar0, win=ImageBrowserView, limits={0,nFrames-1,1}, value=_NUM:iFrame, disable=0
+		endif
 	else
-		SetVariable plane_setvar0,win=ImageBrowserView,limits={0,nFrames-1,1}, value=_NUM:iFrame
+		SetVariable plane_setvar0, win=ImageBrowserView, value=_STR:"", disable=2
 	endif
 
 	// Update the blackCount SetVariable
@@ -107,13 +131,21 @@ Function ImageBrowserViewUpdate()
 	Button fullScaleButton, win=ImageBrowserView, disable=(autoscaleToData ? 2 : 0)
 	
 	// Update the enablement of the "Scale to Data" button: Don't need it if autoscale to data is on
-	Button scaleToDataButton, win=ImageBrowserView, disable=(autoscaleToData ? 2 : 0)
+	Button scaleToDataButton, win=ImageBrowserView, disable=( (!isCurrentImageWave||autoscaleToData) ? 2 : 0)
+
+	// Update the enablement of the autoscale checkbox
+	CheckBox autoscaleToDataCB,win=ImageBrowserView, value=(isCurrentImageWave&&autoscaleToData), disable=( !isCurrentImageWave ? 2 : 0 )
 
 	// Update the image
 	//String oldImageName=ImageNameList("ImageBrowserView",";")
 	//printf "oldImageName: %s\r", oldImageName
 	//RemoveImage /Z /W=ImageBrowserView $oldImageName
 	RemoveAllImagesFromGraph("ImageBrowserView")
+	if ( !isCurrentImageWave )
+		SetDataFolder savedDF	 	
+		return 0
+	endif
+
 	AppendImage /W=ImageBrowserView /G=1 $imageWaveNameAbs
 	ModifyImage /W=ImageBrowserView $imageWaveName ctab= {blackCount,whiteCount,Grays,0}, plane=iFrame
 	SetAxis /W=ImageBrowserView /A /R left
