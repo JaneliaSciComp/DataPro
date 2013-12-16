@@ -182,29 +182,61 @@ End
 
 
 
-Function /WAVE FancyCameraAcquire(nFrames)
-	// Acquire nFrames, and store the resulting video in imageWaveName.
-	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
-	// acquisition is free-running.
+//Function /WAVE FancyCameraAcquire(nFrames)
+//	// Acquire nFrames, and store the resulting video in imageWaveName.
+//	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
+//	// acquisition is free-running.
+//
+//	Variable nFrames
+//	//Variable isTriggered
+//
+//	// Change to the imaging data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_FancyCamera
+//
+//	// instance vars
+//	
+//	// Prep for the acquisition (this will also start the acquisition unless it's a triggered acquire)
+//	CameraAcquireStart()
+//
+//	// If the acquisition is external trigger mode, start the data acq
+//	Variable NO_TRIGGER=0		// start immediately
+//	if (CameraTriggerModeGet()!=NO_TRIGGER)
+//		SweeperControllerAcquireTrial()	
+//	endif
+//
+//	// Spin until the acquisition is done
+//	Variable isAcquiring
+//	do
+//		Sleep /S 0.1		// Sleep 0.1 seconds
+//		isAcquiring=CameraAcquireGetStatus()
+//	while (isAcquiring)
+//	
+//	// "Stop" the acquisition.  You're only supposed to call this after all frames are acquired...
+//	CameraAcquireStop()
+//	
+//	// Transfer images from acquisition buffer to IGOR wave
+//	Wave imageWave=CameraAcquireRead(nFrames)
+//	
+//	// Restore the original DF
+//	SetDataFolder savedDF
+//	
+//	// return
+//	return imageWave
+//End
 
-	Variable nFrames
-	//Variable isTriggered
 
-	// Change to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FancyCamera
 
-	// instance vars
-	
+Function FancyCameraStartAcquire()
 	// Prep for the acquisition (this will also start the acquisition unless it's a triggered acquire)
 	CameraAcquireStart()
+End
 
-	// If the acquisition is external trigger mode, start the data acq
-	Variable NO_TRIGGER=0		// start immediately
-	if (CameraTriggerModeGet()!=NO_TRIGGER)
-		SweeperControllerAcquireTrial()	
-	endif
 
+
+Function /WAVE FancyCameraWaitForFrames(nFrames)
+	Variable nFrames
+	
 	// Spin until the acquisition is done
 	Variable isAcquiring
 	do
@@ -218,12 +250,11 @@ Function /WAVE FancyCameraAcquire(nFrames)
 	// Transfer images from acquisition buffer to IGOR wave
 	Wave imageWave=CameraAcquireRead(nFrames)
 	
-	// Restore the original DF
-	SetDataFolder savedDF
-	
 	// return
 	return imageWave
 End
+
+
 
 
 
@@ -256,19 +287,19 @@ End
 
 
 
-Function /WAVE FancyCameraArmAcquireDisarm(nFrames)
-	// Acquire nFrames, and return the resulting video
-	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
-	// acquisition is free-running.  This also handles the allocation and de-allocation
-	// of the on-camera framebuffer.
-
-	Variable nFrames
-
-	FancyCameraArm(nFrames)
-	Wave imageWave=FancyCameraAcquire(nFrames)		// This will call SweeperControllerAcquireTrial() if in triggered mode
-	FancyCameraDisarm()
-	return imageWave
-End
+//Function /WAVE FancyCameraArmAcquireDisarm(nFrames)
+//	// Acquire nFrames, and return the resulting video
+//	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
+//	// acquisition is free-running.  This also handles the allocation and de-allocation
+//	// of the on-camera framebuffer.
+//
+//	Variable nFrames
+//
+//	FancyCameraArm(nFrames)
+//	Wave imageWave=FancyCameraAcquire(nFrames)		// This will call SweeperControllerAcquireTrial() if in triggered mode
+//	FancyCameraDisarm()
+//	return imageWave
+//End
 
 
 

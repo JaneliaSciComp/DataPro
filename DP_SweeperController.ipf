@@ -57,16 +57,17 @@ End
 Function SCGetDataButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 	
-	if ( IsImagingModuleInUse() )
-		Variable isTriggered=ImagerGetIsTriggered()
-		if (isTriggered)
-			ImagerContAcquireVideo()		// This will call SweeperControllerAcquireTrial()
-		else
-			SweeperControllerAcquireTrial()
-		endif
-	else
-		SweeperControllerAcquireTrial()
-	endif
+	//if ( IsImagingModuleInUse() )
+	//	Variable isTriggered=ImagerGetIsTriggered()
+	//	if (isTriggered)
+	//		ImagerContAcquireVideo()		// This will call SweeperControllerAcquireTrial()
+	//	else
+	//		SweeperControllerAcquireTrial()
+	//	endif
+	//else
+	//	SweeperControllerAcquireTrial()
+	//endif
+	SweeperControllerAcquireTrial()
 End
 
 Function SweeperControllerADCCheckbox(ctrlName,checked) : CheckBoxControl
@@ -261,6 +262,11 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	String adSequence=SweeperGetADCSequence()
 	//Variable seqLength=strlen(daSequence)		// both should be same length
 
+	// If doing imaging, and triggered acquistion, configure the camera
+	if ( IsImagingModuleInUse() && ImagerGetIsTriggered() )
+		ImagerContAcquireVideoStart()
+	endif
+
 	// Actually acquire the data for this sweep
 	Variable absoluteTime=DateTime	// "Unlike most Igor functions, DateTime is used without parentheses."
 	Wave FIFOin=SamplerSampleData(adSequence,daSequence,FIFOout) 
@@ -292,6 +298,11 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 		units=DigitizerModelGetADCUnitsString(iADCChannel)
 		SetScale d 0, 0, units, thisWave
 	endfor
+
+	// If doing imaging, and triggered acquistion, get the frames
+	if ( IsImagingModuleInUse() && ImagerGetIsTriggered() )
+		 ImagerContAcquireFinish(thisSweepIndex)
+	endif
 	
 	// Notify the sweeper model that a sweep has just been acquired
 	SweeperSweepJustAcquired(thisSweepIndex,iSweepWithinTrial)
