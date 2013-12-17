@@ -47,7 +47,7 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	absVarName=AbsoluteVarName(browserDFName,"iCurrentSweep")
 	SetVariable setSweepIndexSV,win=$browserName,pos={11,15},size={100,18},proc=BrowserContCurrentSweepIndexSV,title="Sweep:"
 	SetVariable setSweepIndexSV,win=$browserName,fSize=12
-	SetVariable setSweepIndexSV,win=$browserName,limits={1,100000,1},value=_NUM:1
+	//SetVariable setSweepIndexSV,win=$browserName,limits={1,100000,1},value=_NUM:1
 	
 	Variable yBaselineForTraceA=7
 	Variable yBaselineForTraceB=30

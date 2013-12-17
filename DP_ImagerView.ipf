@@ -222,6 +222,13 @@ End
 
 
 
+Function ImagerViewCameraChanged()
+	// Notify the ImagerView that the Camera (model) has changed.
+	// Currently, this calls the (private) ImagerViewUpdate method.
+	ImagerViewUpdate()
+End
+
+
 Function ImagerViewModelChanged()
 	// Notify the ImagerView that the Imager (model) has changed.
 	// Currently, this calls the (private) ImagerViewUpdate method.

@@ -30,7 +30,7 @@ Function ImagerConstructor()
 	//Variable /G isBackgroundROIToo=0		// if isROI, is there a background ROI too? (if full-frame, this is unused)
 	Variable /G ccdTargetTemperature= -20		// the setpoint CCD temperature
 	//Variable /G ccdTemperature=nan			// the current CCD temperature
-	Variable /G nFramesForVideo=56	// number of frames to acquire
+	Variable /G nFramesForVideo=4	// number of frames to acquire
 	//Variable /G focusingExposure=100		// duration of each exposure when focusing, in ms
 	Variable /G snapshotExposure=100		// duration of each frame exposure for full-frame images, in ms
 	Variable /G videoExposure=50	// duration of each frame for triggered video, in ms

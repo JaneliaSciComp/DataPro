@@ -309,7 +309,6 @@ End
 
 
 Function FancyCameraSetTempAndWait(targetTemperature)
-	// I would have thought this was to set the setpoint of the CCD temperature controller, but it doesn't really seem like that...
 	Variable targetTemperature
 
 	// Switch to the imaging data folder

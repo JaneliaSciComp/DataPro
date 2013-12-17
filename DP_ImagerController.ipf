@@ -25,6 +25,7 @@ Function ICTempSetpointSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableC
 	String varName
 
 	FancyCameraSetTempAndWait(varNum)
+	ImagerViewCameraChanged()
 End
 
 
