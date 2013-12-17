@@ -140,10 +140,14 @@ Function BrowserModelSetCurSweepIndex(browserNumber,newValue)
 	// Change to the right DF
 	String savedDFName=ChangeToBrowserDF(browserNumber)
 	
-	// Set iCurrentSweep, then update the measurements
+	// declare instance vars
 	NVAR iCurrentSweep
-	iCurrentSweep=newValue
-	BrowserModelUpdateMeasurements(browserNumber)
+	
+	// If valid sweep index, set iCurrentSweep, then update the measurements
+	if ( (SweeperGetLowestAcqSweepIndex()<=newValue) && (newValue<=SweeperGetHighestAcqSweepIndex()) )
+		iCurrentSweep=newValue
+		BrowserModelUpdateMeasurements(browserNumber)
+	endif
 	
 	// Restore the original DF
 	SetDataFolder savedDFName	

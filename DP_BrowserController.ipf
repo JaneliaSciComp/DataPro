@@ -130,7 +130,7 @@ Function BrowserContSetCurSweepIndex(browserNumber,iSweep)
 	BrowserViewUpdate(browserNumber)
 End
 
-Function BrowserContNextSweepIndexSV(svStruct) : SetVariableControl
+Function BrowserContCurrentSweepIndexSV(svStruct) : SetVariableControl
 	// Called when the user changes the sweep number in the DPBrowser, 
 	// which first changes iCurrentSweep.
 	STRUCT WMSetVariableAction &svStruct	

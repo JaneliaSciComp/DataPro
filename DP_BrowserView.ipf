@@ -45,7 +45,7 @@ Function BrowserViewConstructor(browserNumber) : Graph
 	CheckBox autoscaleXCheckbox,win=$browserName,value= 1, variable=$absVarName
 	
 	absVarName=AbsoluteVarName(browserDFName,"iCurrentSweep")
-	SetVariable setSweepIndexSV,win=$browserName,pos={11,15},size={100,18},proc=BrowserContNextSweepIndexSV,title="Sweep:"
+	SetVariable setSweepIndexSV,win=$browserName,pos={11,15},size={100,18},proc=BrowserContCurrentSweepIndexSV,title="Sweep:"
 	SetVariable setSweepIndexSV,win=$browserName,fSize=12
 	SetVariable setSweepIndexSV,win=$browserName,limits={1,100000,1},value=_NUM:1
 	
@@ -380,13 +380,16 @@ Function BrowserViewUpdate(browserNumber)
 	RemoveAllTracesFromGraph(browserName)
 	
 	// Update the viable range for the current sweep control, and the current sweep
-	Variable minSweepIndexA=minSweepIndexFromBaseName(baseNameA)
-	Variable minSweepIndexB=minSweepIndexFromBaseName(baseNameB)
-	Variable minSweepIndexOverall=min(minSweepIndexA,minSweepIndexB)
-	Variable maxSweepIndexA=maxSweepIndexFromBaseName(baseNameA)
-	Variable maxSweepIndexB=maxSweepIndexFromBaseName(baseNameB)
-	Variable maxSweepIndexOverall=max(maxSweepIndexA,maxSweepIndexB)
-	if ( maxSweepIndexOverall >=minSweepIndexOverall )
+	Variable nSweepsAcquired=SweeperGetNSweepsAcquired()
+	//Variable minSweepIndexA=minSweepIndexFromBaseName(baseNameA)
+	//Variable minSweepIndexB=minSweepIndexFromBaseName(baseNameB)
+	//Variable minSweepIndexOverall=min(minSweepIndexA,minSweepIndexB)
+	//Variable maxSweepIndexA=maxSweepIndexFromBaseName(baseNameA)
+	//Variable maxSweepIndexB=maxSweepIndexFromBaseName(baseNameB)
+	//Variable maxSweepIndexOverall=max(maxSweepIndexA,maxSweepIndexB)
+	if ( nSweepsAcquired>0 )
+		Variable minSweepIndexOverall=SweeperGetLowestAcqSweepIndex()
+		Variable maxSweepIndexOverall=SweeperGetHighestAcqSweepIndex()
 		SetVariable setSweepIndexSV, win=$browserName, limits={minSweepIndexOverall,maxSweepIndexOverall,1}
 		SetVariable setSweepIndexSV, win=$browserName, value=_NUM:iCurrentSweep
 	else

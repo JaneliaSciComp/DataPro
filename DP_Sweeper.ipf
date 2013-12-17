@@ -32,6 +32,9 @@ Function SweeperConstructor()
 	Variable /G runHookFunctionsChecked=0		// true iff "Run hook functions" checkbox is checked
 
 	// Variables controlling the trials and sweeps
+	Variable /G nSweepsAcquired=0
+	Variable /G lowestAcquiredSweepIndex=inf
+	Variable /G highestAcquiredSweepIndex= -inf
 	Variable /G lastAcquiredSweepIndex=nan
 	Variable /G nextSweepIndex=1		// index of the next sweep to be acquired
 	Variable /G nSweepsPerTrial=1
@@ -122,9 +125,15 @@ Function SweeperSweepJustAcquired(thisSweepIndex,iSweepWithinTrial)
   	
   	NVAR lastAcquiredSweepIndex
   	NVAR nextSweepIndex
+  	NVAR nSweepsAcquired
+  	NVAR lowestAcquiredSweepIndex
+  	NVAR highestAcquiredSweepIndex  	
   	
 	SweeperAddHistoryForSweep(thisSweepIndex,iSweepWithinTrial)
 	lastAcquiredSweepIndex=thisSweepIndex
+	nSweepsAcquired+=1
+	lowestAcquiredSweepIndex=min(lowestAcquiredSweepIndex,thisSweepIndex)
+	highestAcquiredSweepIndex=max(highestAcquiredSweepIndex,thisSweepIndex)
 	nextSweepIndex=thisSweepIndex+1	
 End
 
@@ -604,6 +613,51 @@ Function SweeperGetLastAcqSweepIndex()
 	return result
 End
 
+Function SweeperGetNSweepsAcquired()
+	// Change to the Digitizer data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+
+	// Declare the DF vars we need
+	NVAR nSweepsAcquired
+	Variable result=nSweepsAcquired
+
+	// Restore the original DF
+	SetDataFolder savedDF
+
+	return result
+End
+
+Function SweeperGetLowestAcqSweepIndex()
+	// Change to the Digitizer data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+
+	// Declare the DF vars we need
+	NVAR lowestAcquiredSweepIndex
+	Variable result=lowestAcquiredSweepIndex
+
+	// Restore the original DF
+	SetDataFolder savedDF
+
+	return result
+End
+
+Function SweeperGetHighestAcqSweepIndex()
+	// Change to the Digitizer data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+
+	// Declare the DF vars we need
+	NVAR highestAcquiredSweepIndex
+	Variable result=highestAcquiredSweepIndex
+
+	// Restore the original DF
+	SetDataFolder savedDF
+
+	return result
+End
+
 Function SweeperUnrenamedAverageJustDone(sweepIndex)
 	Variable sweepIndex		// the sweep index used for the average just calculated
 	
@@ -628,8 +682,16 @@ Function SweeperFreeRunVideoJustAcqd(sweepIndex)
 
 	// Declare the DF vars we need
 	NVAR lastAcquiredSweepIndex
+	NVAR nSweepsAcquired
+	NVAR lowestAcquiredSweepIndex
+	NVAR highestAcquiredSweepIndex
 	NVAR nextSweepIndex
+	
+	// Update things as needed
 	lastAcquiredSweepIndex=sweepIndex	// Save this
+	nSweepsAcquired+=1
+	lowestAcquiredSweepIndex=min(lowestAcquiredSweepIndex,sweepIndex)
+	highestAcquiredSweepIndex=max(highestAcquiredSweepIndex,sweepIndex)
 	nextSweepIndex=sweepIndex+1
 
 	// Restore the original DF
