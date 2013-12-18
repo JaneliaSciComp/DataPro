@@ -122,6 +122,20 @@ Function ICDeleteROIButtonPressed(ctrlName) : ButtonControl
 End
 
 
+
+Function ICCalculationPMTouched(ctrlName,popNum,popStr) : PopupMenuControl
+	String ctrlName
+	Variable popNum
+	String popStr
+	Variable iChannel
+	
+	ImagerSetCalculationIndex(popNum-1)
+	ImagerViewModelChanged()
+End
+
+
+
+
 //
 // The routines that do substantial stuff are below
 //
@@ -245,7 +259,8 @@ Function ImagerContAcquireFinish(iSweep)
 	MoveWave imageWave, $imageWaveName 	// Cage the once-free wave
 	
 	// Calculate ROI signals, store in root DF
-	AddROIWavesToRoot(imageWave,roisWave,iSweep)
+	String calculationName=ImagerGetCalculationName()
+	AddROIWavesToRoot(imageWave,roisWave,iSweep,calculationName)
 	
 	// Tell the image browser controller to show the newly-acquired video
 	ImageBrowserContSetVideo(imageWaveName)

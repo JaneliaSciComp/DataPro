@@ -168,16 +168,25 @@ Function ImagerViewConstructor() : Panel
 	SetVariable binHeightSV,win=ImagerView,format="%d"
 	
 	// ROI Index
+	xOffset=20
 	yOffset=yOffset+30
 	width=66
 	height=16
-	SetVariable iROISV,win=ImagerView,pos={(panelWidth-width)/2,yOffset},size={width,height},proc=ICCurrentROIIndexSVTwiddled,title="ROI:"
+	SetVariable iROISV,win=ImagerView,pos={xOffset,yOffset},size={width,height},proc=ICCurrentROIIndexSVTwiddled,title="ROI:"
 
 	// Delete current ROI button
-	xOffset=206
+	xOffset+=(width+10)
 	width=60
 	height=18
 	Button deleteROIButton,win=ImagerView,pos={xOffset,yOffset-1},size={width,height},proc=ICDeleteROIButtonPressed,title="Delete"
+
+	// What is calculated for each ROI popup and label
+	xOffset+=(width+30)
+	Variable labelWidth=80
+	Variable yShimPopup=-4
+	TitleBox CalculationTB, win=ImagerView, pos={xOffset,yOffset}, size={labelWidth,14}, frame=0, title="Calculation:"
+	PopupMenu CalculationPM, win=ImagerView, pos={xOffset+labelWidth,yOffset+yShimPopup}, bodyWidth=70
+	PopupMenu CalculationPM, win=ImagerView, proc=ICCalculationPMTouched
 
 	// The four ROI borders
 	Variable xCenter=panelWidth/2
@@ -284,6 +293,12 @@ Function ImagerViewUpdate()
 	Variable ccdTemperature=FancyCameraGetTemperature()
 	ValDisplay ccdTemperatureVD, win=ImagerView, value= _NUM:ccdTemperature
 	WhiteOutIffNan("ccdTemperatureVD","ImagerView",ccdTemperature)
+
+	// Update the calculation popup
+	String calculationList=ImagerGetCalculationList()
+	String calculationListFU="\""+calculationList+"\""	
+	PopupMenu CalculationPM, win=ImagerView, value=#calculationListFU
+	PopupMenu CalculationPM, win=ImagerView, mode=ImagerGetCalculationIndex()+1
 
 	// Calculate things we need
 	Variable ccdWidth=CameraCCDWidthGet()

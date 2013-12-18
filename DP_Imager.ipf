@@ -49,6 +49,10 @@ Function ImagerConstructor()
 	//Variable /G blackCount=0		// the CCD count that gets mapped to black
 	//Variable /G whiteCount=2^16-1	// the CCD count that gets mapped to white
 	
+	// the list of possible calculations
+	Make /O /T calculationList={"Mean","Sum","DF/F"}	
+	Variable /G calculationIndex=0		// default is mean
+	
 	Variable nROIs=0
 	Make /O /N=(4,nROIs) roisWave		// a 2D wave holding a ROI specification in each column, order is : left, top, right, bottom
 	
@@ -58,6 +62,86 @@ Function ImagerConstructor()
 	
 	// Restore the original data folder
 	SetDataFolder savedDF	
+End
+
+Function /S ImagerGetCalculationList()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE /T calculationList
+	
+	Variable nCalculations=numpnts(calculationList)
+	String result=""
+	Variable i
+	for (i=0; i<nCalculations; i+=1)
+		result+=(calculationList[i]+";")
+	endfor
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return result
+End
+
+Function ImagerGetCalculationIndex()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR calculationIndex
+	
+	// get the value
+	Variable value=calculationIndex
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End
+
+Function ImagerSetCalculationIndex(newValue)
+	Variable newValue
+	
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR calculationIndex
+	WAVE /T calculationList
+	
+	// Set the value
+	Variable nCalculations=numpnts(calculationList)
+	if ( 0<=newValue && newValue<nCalculations )
+		calculationIndex=newValue
+	endif
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+Function /S ImagerGetCalculationName()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE /T calculationList
+	NVAR calculationIndex
+	
+	// get the value
+	String value=calculationList[calculationIndex]
+
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
 End
 
 Function /S ImagerGetAllVideoWaveNames()

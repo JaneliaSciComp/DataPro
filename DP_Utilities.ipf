@@ -775,10 +775,11 @@ Function IsInteger(x)
 
 End
 
-Function AddROIWavesToRoot(imageWave,roisWave,iSweep)
+Function AddROIWavesToRoot(imageWave,roisWave,iSweep,calculationName)
 	Wave imageWave
 	Wave roisWave
 	Variable iSweep
+	String calculationName
 	
 	// Get image dimensions --- these will be useful later
 	Variable nX=DimSize(imageWave,0)
@@ -790,6 +791,11 @@ Function AddROIWavesToRoot(imageWave,roisWave,iSweep)
 	Variable dy=DimDelta(imageWave,1)
 	Variable t0=DimOffset(imageWave,2)
 	Variable dt=DimDelta(imageWave,2)
+	
+	// Process the calculationName
+	Variable doMean=AreStringsEqual(calculationName,"Mean")
+	Variable doDff=AreStringsEqual(calculationName,"DF/F")
+	// if both these are false, we end up with the sum across pixels
 	
 	// Loop over ROIs, making one new wave per ROI
 	Variable nROIs=DimSize(roisWave,1)
@@ -822,7 +828,13 @@ Function AddROIWavesToRoot(imageWave,roisWave,iSweep)
 			signalWave[k]=s
 		endfor
 		// Convert sum to average
-		Variable nPixels=(iff-i0+1)*(jf-j0+1)
-		signalWave=signalWave/nPixels
+		if (doMean)
+			Variable nPixels=(iff-i0+1)*(jf-j0+1)
+			signalWave=signalWave/nPixels
+		endif
+		if (doDff)
+			Variable F=mean(signalWave)
+			signalWave=signalWave/F-1
+		endif
 	endfor
 End
