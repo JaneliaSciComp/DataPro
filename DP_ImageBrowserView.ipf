@@ -172,16 +172,17 @@ Function ImageBrowserViewUpdate()
 	RemoveAllTracesFromGraph("ImageBrowserView")	
 	Variable nROIs=ImagerGetNROIs()
 	Variable iROICurrent=ImagerGetCurrentROIIndex()
+	Variable iROIBackground=ImagerGetBackgroundROIIndex()
 	Variable iROI
 	for (iROI=0; iROI<nROIs; iROI+=1)
 		if (iROI==iROICurrent)	
 			continue
 		endif
-		ImageBrowserViewDrawROI(iROI,iROICurrent)
+		ImageBrowserViewDrawROI(iROI,iROICurrent,iROIBackground)
 	endfor
 	// Draw the current ROI last, so that it's on top
 	if (nROIs>0)
-		ImageBrowserViewDrawROI(iROICurrent,iROICurrent)
+		ImageBrowserViewDrawROI(iROICurrent,iROICurrent,iROIBackground)
 	endif
 	
 	// Restore the original DF
@@ -194,10 +195,11 @@ End
 
 
 // Private methods
-Function ImageBrowserViewDrawROI(iROI,iROICurrent)
+Function ImageBrowserViewDrawROI(iROI,iROICurrent,iROIBackground)
 	// Draws the indicated ROI.  If iROI==iROICurrent, draws it a different color to indicate this
 	Variable iROI
 	Variable iROICurrent
+	Variable iROIBackground	
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
@@ -215,7 +217,12 @@ Function ImageBrowserViewDrawROI(iROI,iROICurrent)
 	else
 		ModifyGraph /W=ImageBrowserView lsize($yBoxName)=1
 	endif
-
+	if (iROI==iROIBackground)
+		ModifyGraph /W=ImageBrowserView lstyle($yBoxName)=2
+	else
+		ModifyGraph /W=ImageBrowserView lstyle($yBoxName)=0
+	endif
+	
 	// Restore the original DF
 	SetDataFolder savedDF	 	
 End

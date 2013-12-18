@@ -96,8 +96,8 @@ Function ICCurrentROIIndexSVTwiddled(svStruct) : SetVariableControl
 	endif	
 
 	// Do stuff
-	Variable iROIPlusOne=svStruct.dval
-	ImagerSetCurrentROIIndex(iROIPlusOne-1)
+	Variable iROINew=svStruct.dval
+	ImagerSetCurrentROIIndex(iROINew)
 	ImagerViewModelChanged()
 	ImageBrowserViewModelEtcChanged()
 End
@@ -131,6 +131,7 @@ Function ICBackgroundCBTouched(ctrlName,isChecked) : CheckBoxControl
 	Variable isChecked
 	ImagerSetCurrentROIIsBackground(isChecked)
 	ImagerViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
 End
 
 
@@ -233,6 +234,7 @@ Function ImagerContAcquireFinish(iSweep)
 
 	// Declare the instance vars
 	WAVE roisWave
+	WAVE isBackgroundROI
 	NVAR videoExposure
 	NVAR ccdTargetTemperature	
 	NVAR binWidth
@@ -262,7 +264,7 @@ Function ImagerContAcquireFinish(iSweep)
 	
 	// Calculate ROI signals, store in root DF
 	String calculationName=ImagerGetCalculationName()
-	AddROIWavesToRoot(imageWave,roisWave,iSweep,calculationName)
+	AddROIWavesToRoot(imageWave,roisWave,iSweep,calculationName,isBackgroundROI)
 	
 	// Tell the image browser controller to show the newly-acquired video
 	ImageBrowserContSetVideo(imageWaveName)

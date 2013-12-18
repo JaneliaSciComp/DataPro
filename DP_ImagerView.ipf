@@ -333,7 +333,7 @@ Function ImagerViewUpdate()
 		SetVariable iROIBottomSV,win=ImagerView,value= _STR:"", disable=2
 		CheckBox backgroundCB, win=ImagerView, value=0, disable=2
 	else
-		SetVariable iROISV, win=ImagerView, format="%d", limits={1,nROIs,1}, value= _NUM:(iROI+1), disable=0
+		SetVariable iROISV, win=ImagerView, format="%d", limits={0,nROIs-1,1}, value= _NUM:(iROI), disable=0
 		Button deleteROIButton, win=ImagerView, disable=0
 		SetVariable iROILeftSV,win=ImagerView,limits={0,ccdWidth,1},value= _NUM:iROILeft, disable=0
 		SetVariable iROIRightSV,win=ImagerView,limits={0,ccdWidth,1},value= _NUM:iROIRight, disable=0

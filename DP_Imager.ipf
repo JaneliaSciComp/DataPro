@@ -55,7 +55,7 @@ Function ImagerConstructor()
 	
 	Variable nROIs=0
 	Make /O /N=(4,nROIs) roisWave		// a 2D wave holding a ROI specification in each column, order is : left, top, right, bottom
-	Make /O /N=(nROIs) isBackgroundROI		// a 1D boolean wave indicating whether each ROI is a background ROI.  This should have at most one true element.
+	Make /O /I /U /N=(nROIs) isBackgroundROI		// a 1D boolean wave indicating whether each ROI is a background ROI.  This should have at most one true element.
 	
 	// make average wave for imaging
 	Variable /G nFramesInAverage=0		// number of frames to average, I think for calculating dF/F
@@ -761,6 +761,9 @@ Function ImagerSetCurrentROIIsBackground(isThisROIBackgroundNew)
 	SetDataFolder savedDF	
 End
 
+
+
+
 Function ImagerGetCurrentROIIsBackground()
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
@@ -784,3 +787,26 @@ Function ImagerGetCurrentROIIsBackground()
 	
 	return value
 End
+
+
+
+Function ImagerGetBackgroundROIIndex()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE isBackgroundROI
+
+	// Get the value to return
+	Variable value
+	FindValue /I=1 isBackgroundROI
+	Variable backgroundROIIndex=V_value
+	backgroundROIIndex = (backgroundROIIndex<0) ? nan : backgroundROIIndex
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+	
+	return backgroundROIIndex
+End
+
