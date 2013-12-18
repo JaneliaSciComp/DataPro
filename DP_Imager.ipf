@@ -55,6 +55,7 @@ Function ImagerConstructor()
 	
 	Variable nROIs=0
 	Make /O /N=(4,nROIs) roisWave		// a 2D wave holding a ROI specification in each column, order is : left, top, right, bottom
+	Make /O /N=(nROIs) isBackgroundROI		// a 1D boolean wave indicating whether each ROI is a background ROI.  This should have at most one true element.
 	
 	// make average wave for imaging
 	Variable /G nFramesInAverage=0		// number of frames to average, I think for calculating dF/F
@@ -554,6 +555,7 @@ Function ImagerAddROI(xROILeft, yROITop, xROIRight, yROIBottom)
 	
 	// Declare instance vars
 	WAVE roisWave
+	WAVE isBackgroundROI
 	NVAR iROI
 
 	// Constrain bounds to image bounds
@@ -573,7 +575,11 @@ Function ImagerAddROI(xROILeft, yROITop, xROIRight, yROIBottom)
 	roisWave[1][iROI]=yROITop
 	roisWave[2][iROI]=xROIRight
 	roisWave[3][iROI]=yROIBottom
-	
+
+	// Add a new entry to isBackgroundROI
+	Redimension /N=(nROIs) isBackgroundROI
+	isBackgroundROI[iROI]=0	
+
 	// Restore the original DF
 	SetDataFolder savedDF	
 End
@@ -711,11 +717,13 @@ Function ImagerDeleteCurrentROI()
 	// Declare instance vars
 	WAVE roisWave
 	NVAR iROI
+	WAVE isBackgroundROI
 
 	// Delete the current ROI
 	Variable nROIsOriginal=ImagerGetNROIs()
 	Variable iROIToDelete=iROI
 	DeletePoints /M=1 iROIToDelete, 1, roisWave
+	DeletePoints /M=1 iROIToDelete, 1, isBackgroundROI
 
 	// If we just deleted the highest-numbered ROI in the list, adjust iROI
 	if (iROIToDelete==nROIsOriginal-1)
@@ -724,4 +732,55 @@ Function ImagerDeleteCurrentROI()
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
+End
+
+
+
+
+
+Function ImagerSetCurrentROIIsBackground(isThisROIBackgroundNew)
+	Variable isThisROIBackgroundNew
+	
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR iROI
+	WAVE isBackgroundROI
+
+	// Update the isBackgroundROI array, making sure no more than one element is true on exit
+	if (isThisROIBackgroundNew)
+		isBackgroundROI=0		// Set all elements to false
+		isBackgroundROI[iROI]=1
+	else
+		isBackgroundROI[iROI]=0
+	endif	
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+Function ImagerGetCurrentROIIsBackground()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE isBackgroundROI
+	NVAR iROI
+
+	// Get the value to return
+	Variable value
+	Variable nROIs=numpnts(isBackgroundROI)
+	if (nROIs>0)
+		value=isBackgroundROI[iROI]
+	else
+		value=nan
+	endif
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+	
+	return value
 End

@@ -51,15 +51,6 @@ End
 
 
 
-Function ICTriggeredCBTwiddled(ctrlName,checked) : CheckBoxControl
-	String ctrlName
-	Variable checked
-	ImagerSetIsTriggered(checked)
-	ImagerViewModelChanged()
-End
-
-
-
 Function ICEpiLightToggleButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 	
@@ -132,6 +123,17 @@ Function ICCalculationPMTouched(ctrlName,popNum,popStr) : PopupMenuControl
 	ImagerSetCalculationIndex(popNum-1)
 	ImagerViewModelChanged()
 End
+
+
+
+Function ICBackgroundCBTouched(ctrlName,isChecked) : CheckBoxControl
+	String ctrlName
+	Variable isChecked
+	ImagerSetCurrentROIIsBackground(isChecked)
+	ImagerViewModelChanged()
+End
+
+
 
 
 

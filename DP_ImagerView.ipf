@@ -26,7 +26,7 @@ Function ImagerViewConstructor() : Panel
 	Variable xOffset=1550
 	Variable yOffset=54
 	Variable panelWidth=330
-	Variable panelHeight=410-26
+	Variable panelHeight=410-26+8
 	NewPanel /W=(xOffset,yOffset,xOffset+panelWidth,yOffset+panelHeight)  /N=ImagerView /K=1 as "Imager Controls"
 	ModifyPanel /W=ImagerView fixedSize=1
 
@@ -113,7 +113,7 @@ Function ImagerViewConstructor() : Panel
 	// Video Group
 	//
 	groupBoxYOffset+=groupBoxHeight+groupBoxSpaceHeight
-	groupBoxHeight=174
+	groupBoxHeight=174+8
 	GroupBox videoGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Video"
 
 	// Take video button
@@ -190,7 +190,7 @@ Function ImagerViewConstructor() : Panel
 
 	// The four ROI borders
 	Variable xCenter=panelWidth/2
-	Variable yCenter=yOffset+44
+	Variable yCenter=yOffset+48
 	Variable dx=56	// horzontal distance from center to closest edge of right/left SV
 	Variable dy=4	// vertical distance from center to closest edge of top/bottom SV
 	
@@ -226,7 +226,7 @@ Function ImagerViewConstructor() : Panel
 	width=84
 	height=14
 	xOffset=panelWidth-width-20
-	yOffset=yCenter+dy+6
+	yOffset=yCenter+dy+10
 	CheckBox backgroundCB, win=ImagerView, pos={xOffset,yOffset},size={width,height},title="Background?"
 	CheckBox backgroundCB, win=ImagerView, proc=ICBackgroundCBTouched
 	
@@ -331,6 +331,7 @@ Function ImagerViewUpdate()
 		SetVariable iROIRightSV,win=ImagerView,value= _STR:"", disable=2
 		SetVariable iROITopSV,win=ImagerView,value= _STR:"", disable=2
 		SetVariable iROIBottomSV,win=ImagerView,value= _STR:"", disable=2
+		CheckBox backgroundCB, win=ImagerView, value=0, disable=2
 	else
 		SetVariable iROISV, win=ImagerView, format="%d", limits={1,nROIs,1}, value= _NUM:(iROI+1), disable=0
 		Button deleteROIButton, win=ImagerView, disable=0
@@ -338,6 +339,7 @@ Function ImagerViewUpdate()
 		SetVariable iROIRightSV,win=ImagerView,limits={0,ccdWidth,1},value= _NUM:iROIRight, disable=0
 		SetVariable iROITopSV,win=ImagerView,limits={0,ccdHeight,1},value= _NUM:iROITop, disable=0
 		SetVariable iROIBottomSV,win=ImagerView,limits={0,ccdHeight,1},value= _NUM:iROIBottom, disable=0
+		CheckBox backgroundCB, win=ImagerView, value=ImagerGetCurrentROIIsBackground(), disable=0
 	endif
 	
 //	ValDisplay binnedFrameWidthVD, win=ImagerView, value= _NUM:roiWidthInBins
