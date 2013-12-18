@@ -221,6 +221,14 @@ Function ImagerViewConstructor() : Panel
 //	//absVarName=AbsoluteVarName("root:DP_Imager","binnedFrameHeight")
 //	ValDisplay binnedFrameHeightVD,win=ImagerView,pos={xCenter+dx,yOffset},size={width,height},title="Height / Bin Height:",format="%4.2f"
 //	ValDisplay binnedFrameHeightVD,win=ImagerView,limits={0,0,0},barmisc={0,1000}
+
+	// Background checkbox
+	width=84
+	height=14
+	xOffset=panelWidth-width-20
+	yOffset=yCenter+dy+6
+	CheckBox backgroundCB, win=ImagerView, pos={xOffset,yOffset},size={width,height},title="Background?"
+	CheckBox backgroundCB, win=ImagerView, proc=ICBackgroundCBTouched
 	
 	// Sync the view to the model
 	ImagerViewUpdate()
