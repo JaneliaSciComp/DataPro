@@ -181,11 +181,11 @@ Function ImagerViewConstructor() : Panel
 	Button deleteROIButton,win=ImagerView,pos={xOffset,yOffset-1},size={width,height},proc=ICDeleteROIButtonPressed,title="Delete"
 
 	// What is calculated for each ROI popup and label
-	xOffset+=(width+30)
-	Variable labelWidth=80
+	xOffset+=(width+40)
+	Variable labelWidth=70
 	Variable yShimPopup=-4
-	TitleBox CalculationTB, win=ImagerView, pos={xOffset,yOffset}, size={labelWidth,14}, frame=0, title="Calculation:"
-	PopupMenu CalculationPM, win=ImagerView, pos={xOffset+labelWidth,yOffset+yShimPopup}, bodyWidth=70
+	TitleBox CalculationTB, win=ImagerView, pos={xOffset,yOffset}, frame=0, title="Calculation:"
+	PopupMenu CalculationPM, win=ImagerView, pos={xOffset+labelWidth,yOffset+yShimPopup}, bodyWidth=62
 	PopupMenu CalculationPM, win=ImagerView, proc=ICCalculationPMTouched
 
 	// The four ROI borders

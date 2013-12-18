@@ -528,7 +528,7 @@ Function ImagerSetCurrentROIIndex(newValue)
 	NVAR iROI
 
 	// Get the value
-	if ( (1<=newValue) && (newValue<=ImagerGetNROIs()) )
+	if ( (0<=newValue) && (newValue<ImagerGetNROIs()) )
 		iROI=newValue
 	endif
 	
