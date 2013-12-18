@@ -822,6 +822,7 @@ Function AddROIWavesToRoot(imageWave,roisWave,iSweep,calculationName,isBackgroun
 			Wave signalWave2=$signalWaveNameAbs
 			// Divide out the background signal
 			signalWave2 = signalWave2[p]/bgWave[p]
+			SetScale d 0, 0, "pure", signalWave2
 		endfor
 	endif
 	
@@ -835,6 +836,7 @@ Function AddROIWavesToRoot(imageWave,roisWave,iSweep,calculationName,isBackgroun
 			// Divide out the mean signal, subtract one
 			Variable xbar=mean(signalWave3)
 			signalWave3 = signalWave3/xbar-1
+			SetScale d 0, 0, "pure", signalWave3
 		endfor
 	endif
 End
@@ -857,8 +859,9 @@ Function computeROISignalBang(signalWave,imageWave,roisWave,iROI,doMean)
 	Variable dt=DimDelta(imageWave,2)	
 	Variable nFrames=DimSize(imageWave,2)
 
-	// Set the time scale
+	// Set the scales
 	SetScale /P x, t0, dt, "ms", signalWave
+	SetScale d 0, 0, "counts", signalWave
 
 	// Determine the pixel bounds
 	Variable xMin=roisWave[0][iROI]
