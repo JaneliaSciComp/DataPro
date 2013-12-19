@@ -26,7 +26,7 @@ Function ImagerViewConstructor() : Panel
 	Variable xOffset=1550
 	Variable yOffset=54
 	Variable panelWidth=330
-	Variable panelHeight=410-26+8
+	Variable panelHeight=560
 	NewPanel /W=(xOffset,yOffset,xOffset+panelWidth,yOffset+panelHeight)  /N=ImagerView /K=1 as "Imager Controls"
 	ModifyPanel /W=ImagerView fixedSize=1
 
@@ -113,7 +113,7 @@ Function ImagerViewConstructor() : Panel
 	// Video Group
 	//
 	groupBoxYOffset+=groupBoxHeight+groupBoxSpaceHeight
-	groupBoxHeight=174+8
+	groupBoxHeight=94
 	GroupBox videoGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Video"
 
 	// Take video button
@@ -167,9 +167,18 @@ Function ImagerViewConstructor() : Panel
 	SetVariable binHeightSV,win=ImagerView,pos={174,yOffset},size={90,14},proc=ICBinOrROISVTwiddled,title="Bin Height:"
 	SetVariable binHeightSV,win=ImagerView,format="%d"
 	
+	
+	//
+	// ROI Group
+	//
+	groupBoxYOffset+=groupBoxHeight+groupBoxSpaceHeight
+	groupBoxHeight=250
+	GroupBox roisGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Regions of Interest"
+	
 	// ROI Index
+	Variable roisYOffset=groupBoxYOffset+groupBoxTitleHeight+15
 	xOffset=20
-	yOffset=yOffset+30
+	yOffset=roisYOffset
 	width=66
 	height=16
 	SetVariable iROISV,win=ImagerView,pos={xOffset,yOffset},size={width,height},proc=ICCurrentROIIndexSVTwiddled,title="ROI:"
@@ -184,13 +193,20 @@ Function ImagerViewConstructor() : Panel
 	xOffset+=(width+40)
 	Variable labelWidth=70
 	Variable yShimPopup=-4
-	TitleBox CalculationTB, win=ImagerView, pos={xOffset,yOffset}, frame=0, title="Calculation:"
-	PopupMenu CalculationPM, win=ImagerView, pos={xOffset+labelWidth,yOffset+yShimPopup}, bodyWidth=62
+	TitleBox CalculationTB, win=ImagerView, pos={xOffset,yOffset+2}, frame=0, title="Calculation:"
+	PopupMenu CalculationPM, win=ImagerView, pos={xOffset+labelWidth,yOffset+2+yShimPopup}, bodyWidth=62
 	PopupMenu CalculationPM, win=ImagerView, proc=ICCalculationPMTouched
 
+	// Background checkbox
+	width=84
+	height=14
+	xOffset=54
+	CheckBox backgroundCB, win=ImagerView, pos={xOffset,yOffset+22},size={width,height},title="Background?"
+	CheckBox backgroundCB, win=ImagerView, proc=ICBackgroundCBTouched
+	
 	// The four ROI borders
 	Variable xCenter=panelWidth/2
-	Variable yCenter=yOffset+48
+	Variable yCenter=yOffset+70
 	Variable dx=56	// horzontal distance from center to closest edge of right/left SV
 	Variable dy=4	// vertical distance from center to closest edge of top/bottom SV
 	
@@ -199,17 +215,51 @@ Function ImagerViewConstructor() : Panel
 	SetVariable iROITopSV,win=ImagerView,pos={xCenter-width/2,yCenter-dy-height},size={width,height},proc=ICBinOrROISVTwiddled,title="Top:"
 	SetVariable iROITopSV,win=ImagerView,format="%0.1f"
 	
+	// Left
 	width=72
 	SetVariable iROILeftSV,win=ImagerView,pos={xCenter-dx-width,yCenter-height/2},size={width,height},proc=ICBinOrROISVTwiddled,title="Left:"
 	SetVariable iROILeftSV,win=ImagerView,format="%0.1f"
 	
+	// Right
 	width=78
 	SetVariable iROIRightSV,win=ImagerView,pos={xCenter+dx,yCenter-height/2},size={width,height},proc=ICBinOrROISVTwiddled,title="Right:"
 	SetVariable iROIRightSV,win=ImagerView,format="%0.1f"
 	
+	// Bottom
 	width=86
 	SetVariable iROIBottomSV,win=ImagerView,pos={xCenter-width/2,yCenter+dy},size={width,height},proc=ICBinOrROISVTwiddled,title="Bottom:"
 	SetVariable iROIBottomSV,win=ImagerView,format="%0.1f"
+
+	// Arrow buttons to move the current ROI
+	xCenter=panelWidth/2
+	yCenter+=94
+	width=20
+	height=20
+	Variable spacerWidth=2
+	Variable spacerHeight=2
+
+	//xOffset=xCenter-width/2-spacerWidth-width-spacerWidth-width-spacerWidth-30
+	//yOffset=yCenter-height/2-spacerHeight-height-spacerHeight-height-spacerHeight
+	//TitleBox moveROITB, win=ImagerView, pos={xOffset,yOffset}, frame=0, title="Move ROI:"
+	
+	Button nudgeUpButton, win=ImagerView, pos={xCenter-width/2,yCenter-height/2-spacerHeight-height}, size={width,height}, title="\\W606", proc=ICNudgeUpButtonPressed
+	Button moveUpButton, win=ImagerView, pos={xCenter-width/2,yCenter-height/2-spacerHeight-height-spacerHeight-height-spacerHeight}, size={width,height}, title="\\W617", proc=ICMoveUpButtonPressed
+
+	Button nudgeDownButton, win=ImagerView, pos={xCenter-width/2,yCenter+height/2+spacerHeight}, size={width,height}, title="\\W622", proc=ICNudgeDownButtonPressed
+	Button moveDownButton, win=ImagerView, pos={xCenter-width/2,yCenter+height/2+spacerHeight+height+spacerHeight}, size={width,height}, title="\\W623", proc=ICMoveDownButtonPressed
+
+	Button nudgeLeftButton, win=ImagerView, pos={xCenter-width/2-spacerWidth-width,yCenter-height/2}, size={width,height}, title="\\W645", proc=ICNudgeLeftButtonPressed
+	Button moveLeftButton, win=ImagerView, pos={xCenter-width/2-spacerWidth-width-spacerWidth-width-spacerWidth,yCenter-height/2}, size={width,height}, title="\\W646", proc=ICMoveLeftButtonPressed
+
+	Button nudgeRightButton, win=ImagerView, pos={xCenter+width/2+spacerWidth,yCenter-height/2}, size={width,height}, title="\\W648", proc=ICNudgeRightButtonPressed
+	Button moveRightButton, win=ImagerView, pos={xCenter+width/2+spacerWidth+width+spacerWidth,yCenter-height/2}, size={width,height}, title="\\W649", proc=ICMoveRightButtonPressed
+
+	// Move all checkbox
+	xOffset=xCenter+width/2+spacerWidth+width	// these are the wdith/height of the D-pad buttons
+	yOffset=yCenter+height/2+spacerHeight+height
+	CheckBox moveAllCB, win=ImagerView, pos={xOffset,yOffset}, title="Move All"
+	CheckBox moveAllCB, win=ImagerView, proc=ICMoveAllCBTouched
+	
 
 //	// Binned width, height
 //	yOffset=yCenter+32
@@ -222,14 +272,6 @@ Function ImagerViewConstructor() : Panel
 //	ValDisplay binnedFrameHeightVD,win=ImagerView,pos={xCenter+dx,yOffset},size={width,height},title="Height / Bin Height:",format="%4.2f"
 //	ValDisplay binnedFrameHeightVD,win=ImagerView,limits={0,0,0},barmisc={0,1000}
 
-	// Background checkbox
-	width=84
-	height=14
-	xOffset=panelWidth-width-20
-	yOffset=yCenter+dy+10
-	CheckBox backgroundCB, win=ImagerView, pos={xOffset,yOffset},size={width,height},title="Background?"
-	CheckBox backgroundCB, win=ImagerView, proc=ICBackgroundCBTouched
-	
 	// Sync the view to the model
 	ImagerViewUpdate()
 	
@@ -341,6 +383,15 @@ Function ImagerViewUpdate()
 		SetVariable iROIBottomSV,win=ImagerView,limits={0,ccdHeight,1},value= _NUM:iROIBottom, disable=0
 		CheckBox backgroundCB, win=ImagerView, value=ImagerGetCurrentROIIsBackground(), disable=0
 	endif
+	Button nudgeUpButton, win=ImagerView, disable=( (nROIs==0) ? 2 : 0 )
+	Button moveUpButton, win=ImagerView, disable=( (nROIs==0) ? 2 : 0 )
+	Button nudgeDownButton, win=ImagerView, disable=( (nROIs==0) ? 2 : 0 )
+	Button moveDownButton, win=ImagerView, disable=( (nROIs==0) ? 2 : 0 )
+	Button nudgeLeftButton, win=ImagerView, disable=( (nROIs==0) ? 2 : 0 )
+	Button moveLeftButton, win=ImagerView, disable=( (nROIs==0) ? 2 : 0 )
+	Button nudgeRightButton, win=ImagerView, disable=( (nROIs==0) ? 2 : 0 )
+	Button moveRightButton, win=ImagerView, disable=( (nROIs==0) ? 2 : 0 )
+	CheckBox moveAllCB, win=ImagerView, disable=( (nROIs==0) ? 2 : 0 )
 	
 //	ValDisplay binnedFrameWidthVD, win=ImagerView, value= _NUM:roiWidthInBins
 //	WhiteOutIffNan("binnedFrameWidthVD","ImagerView",roiWidthInBins)

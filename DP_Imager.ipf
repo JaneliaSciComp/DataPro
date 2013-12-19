@@ -48,9 +48,10 @@ Function ImagerConstructor()
 	//Variable /G binnedFrameHeight=(iROIBottom-iROITop+1)/binHeight		// Height of the binned ROI image
 	//Variable /G blackCount=0		// the CCD count that gets mapped to black
 	//Variable /G whiteCount=2^16-1	// the CCD count that gets mapped to white
+	Variable /G moveAllROIs=0		// Whether to move all the ROIs when ImagerTranslateCurrentROIOrAll() is called
 	
 	// the list of possible calculations
-	Make /O /T calculationList={"Mean","Sum","DF/F"}	
+	Make /O /T calculationList={"Mean","Sum","DF/F"}
 	Variable /G calculationIndex=0		// default is mean
 	
 	Variable nROIs=0
@@ -810,3 +811,73 @@ Function ImagerGetBackgroundROIIndex()
 	return backgroundROIIndex
 End
 
+
+
+Function ImagerTranslateCurrentROIOrAll(dx,dy)
+	Variable dx, dy
+	
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR iROI
+	NVAR moveAllROIs
+
+	// Do stuff
+	if (moveAllROIs)
+		Variable nROIs=ImagerGetNROIs()
+		Variable i
+		for (i=0; i<nROIs; i+=1)
+			ImagerTranslateROI(i,dx,dy)			
+		endfor
+	else
+		ImagerTranslateROI(iROI,dx,dy)
+	endif
+	
+	// Restore the original DF
+	SetDataFolder savedDF		
+End
+
+
+
+Function ImagerTranslateROI(iROI,dx,dy)
+	// Translate the ROI iROI.  We assume it exists.
+	Variable iROI
+	Variable dx, dy
+	
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE roisWave		// a 2D wave holding a ROI specification in each column, order is : left, top, right, bottom
+
+	// Do stuff
+	roisWave[0][iROI]+=dx
+	roisWave[1][iROI]+=dy
+	roisWave[2][iROI]+=dx
+	roisWave[3][iROI]+=dy
+	
+	// Restore the original DF
+	SetDataFolder savedDF		
+End
+
+
+
+Function ImagerSetMoveAllROIs(moveAllROIsNew)
+	Variable moveAllROIsNew
+	
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR moveAllROIs
+
+	// Set the variable
+	moveAllROIs=moveAllROIsNew
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End

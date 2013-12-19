@@ -6,7 +6,8 @@
 
 #pragma rtGlobals=3		// Use modern global access method and strict wave access
 
-
+static constant moveSize=5	// pixels in the full-CCD frame
+static constant nudgeSize=1	// pixels in the full-CCD frame
 
 Function ImagerContConstructor()
 	ImagerConstructor()
@@ -133,6 +134,105 @@ Function ICBackgroundCBTouched(ctrlName,isChecked) : CheckBoxControl
 	ImagerViewModelChanged()
 	ImageBrowserViewModelEtcChanged()
 End
+
+
+
+Function ICNudgeUpButtonPressed(ctrlName) : ButtonControl
+	String ctrlName
+
+	ImagerTranslateCurrentROIOrAll(0,-nudgeSize)
+	ImageBrowserModelImagerChanged()
+	ImagerViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
+End
+
+
+
+Function ICMoveUpButtonPressed(ctrlName) : ButtonControl
+	String ctrlName
+
+	ImagerTranslateCurrentROIOrAll(0,-moveSize)
+	ImageBrowserModelImagerChanged()
+	ImagerViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
+End
+
+
+
+Function ICNudgeDownButtonPressed(ctrlName) : ButtonControl
+	String ctrlName
+
+	ImagerTranslateCurrentROIOrAll(0,+nudgeSize)
+	ImageBrowserModelImagerChanged()
+	ImagerViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
+End
+
+
+
+Function ICMoveDownButtonPressed(ctrlName) : ButtonControl
+	String ctrlName
+
+	ImagerTranslateCurrentROIOrAll(0,+moveSize)
+	ImageBrowserModelImagerChanged()
+	ImagerViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
+End
+
+
+
+Function ICNudgeLeftButtonPressed(ctrlName) : ButtonControl
+	String ctrlName
+
+	ImagerTranslateCurrentROIOrAll(-nudgeSize,0)
+	ImageBrowserModelImagerChanged()
+	ImagerViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
+End
+
+
+
+Function ICMoveLeftButtonPressed(ctrlName) : ButtonControl
+	String ctrlName
+
+	ImagerTranslateCurrentROIOrAll(-moveSize,0)
+	ImageBrowserModelImagerChanged()
+	ImagerViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
+End
+
+
+
+Function ICNudgeRightButtonPressed(ctrlName) : ButtonControl
+	String ctrlName
+
+	ImagerTranslateCurrentROIOrAll(+nudgeSize,0)
+	ImageBrowserModelImagerChanged()
+	ImagerViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
+End
+
+
+
+Function ICMoveRightButtonPressed(ctrlName) : ButtonControl
+	String ctrlName
+
+	ImagerTranslateCurrentROIOrAll(+moveSize,0)
+	ImageBrowserModelImagerChanged()
+	ImagerViewModelChanged()
+	ImageBrowserViewModelEtcChanged()
+End
+
+
+
+Function ICMoveAllCBTouched(ctrlName,isChecked) : CheckBoxControl
+	String ctrlName
+	Variable isChecked
+
+	ImagerSetMoveAllROIs(isChecked)
+	ImagerViewModelChanged()
+End
+
 
 
 
