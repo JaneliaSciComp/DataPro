@@ -405,9 +405,9 @@ Function /WAVE SweeperGetMultiplexedTTLOutput()
 			if (firstActiveChannel)
 				firstActiveChannel=0
 				Duplicate /FREE /O thisTTLWave multiplexedTTL
-				multiplexedTTL=0
+				multiplexedTTL=SamplerGetTTLBackground()	// Set all values to the background settings
 			endif
-			multiplexedTTL+=(2^i)*thisTTLWave
+			multiplexedTTL= (multiplexedTTL & ~(2^i)) + thisTTLWave*(2^i)		// Overwrite bit i with values from thisTTLWave
 		endif
 	endfor
 

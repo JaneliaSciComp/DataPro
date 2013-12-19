@@ -20,20 +20,25 @@ Function EpiLightConstructor()
 
 	// Instance vars
 	Variable /G isOn=0	// boolean
+	Variable /G ttlOutputIndex=3	// the TTL channel to which the light is hooked up
 	
 	// Restore the original data folder
 	SetDataFolder savedDF	
 End
 
 
+
 Function EpiLightSetIsOn(value)
 	Variable value
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_EpiLight
-	NVAR isOn	
+	NVAR isOn
+	NVAR ttlOutputIndex
 	isOn=value
+	SamplerSetTTLOutput(ttlOutputIndex,isOn)
 	SetDataFolder savedDF	
 End
+
 
 
 Function EpiLightGetIsOn()	
@@ -46,3 +51,25 @@ Function EpiLightGetIsOn()
 End
 
 
+
+Function EpiLightSetTTLOutputIndex(newValue)
+	Variable newValue
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_EpiLight
+	NVAR ttlOutputIndex
+	NVAR isOn
+	ttlOutputIndex=newValue
+	SamplerSetTTLOutput(ttlOutputIndex,isOn)
+	SetDataFolder savedDF	
+End
+
+
+
+Function EpiLightGetTTLOutputIndex()	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_EpiLight
+	NVAR ttlOutputIndex
+	Variable value=ttlOutputIndex
+	SetDataFolder savedDF	
+	return value
+End

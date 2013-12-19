@@ -51,11 +51,22 @@ Function ICAcquireVideoButtonPressed(ctrlName) : ButtonControl
 End
 
 
+Function ICEpiTTLChannelSVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum
+	String varStr
+	String varName
+	
+	EpiLightSetTTLOutputIndex(varNum)
+	ImagerViewEpiLightChanged()	
+End
+
+
 
 Function ICEpiLightToggleButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 	
-	EpiLightSetIsOn(~EpiLightGetIsOn())
+	EpiLightSetIsOn(!EpiLightGetIsOn())
 	ImagerViewEpiLightChanged()
 End
 

@@ -44,10 +44,14 @@ Function ImagerViewConstructor() : Panel
 	Variable groupBoxYOffset=3
 	Variable groupBoxHeight=54
 	GroupBox illuminationGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Illumination"
-	
-	Variable width=140
+		
+	Variable width=140	// Size of the button
 	Variable height=26
-	xOffset=(panelWidth-width)/2
+	xOffset=30
+	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-14)/2
+	SetVariable ttlOutputChannelSV,win=ImagerView,pos={xOffset,yOffset},size={90,1},limits={0,3,1},title="TTL Output:"
+	SetVariable ttlOutputChannelSV,win=ImagerView,proc=ICEpiTTLChannelSVTouched	
+	xOffset=156
 	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-height)/2
 	Button EpiLightToggleButton,win=ImagerView,pos={xOffset,yOffset},size={width,height},proc=ICEpiLightToggleButtonPressed
 
@@ -319,6 +323,7 @@ Function ImagerViewUpdate()
 	WAVE roisWave
 
 	// Update the Epi light toggle button
+	SetVariable ttlOutputChannelSV, win=ImagerView, value= _NUM:EpiLightGetTTLOutputIndex()
 	String titleStr = stringFif(EpiLightGetIsOn(),"Turn Epiillumination Off","Turn Epiillumination On")
 	Button EpiLightToggleButton, win=ImagerView, title=titleStr
 

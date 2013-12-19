@@ -17,10 +17,14 @@ Function SamplerConstructor()
 	// If neither is present, DataPro runs in "demo" mode.
 	Variable /G itc=detectITCVersion()
 	Variable /G usPerDigitizerClockTick=((itc<18)?1:1.25)
+	Variable /G ttlBackground=0		// How the TTLs will be set when not actively sampling
+		// This is interpreted as a 16-bit unsigned integer
 
 	// Restore the original data folder
 	SetDataFolder savedDF
 End
+
+
 
 Function SamplerGetNearestPossibleDt(dtWanted,sequenceLength)
 	// Get the closest dt to the given one that can be performed by the hardware,
@@ -45,6 +49,8 @@ Function SamplerGetNearestPossibleDt(dtWanted,sequenceLength)
 	SetDataFolder savedDF
 	return dtDoable
 End
+
+
 
 Function /WAVE SamplerSampleData(adSequence,daSequence,FIFOoutFree)
 	// The heart of the data acquisition.
@@ -103,11 +109,93 @@ Function /WAVE SamplerSampleData(adSequence,daSequence,FIFOoutFree)
 		// do nothing
 	endif
 	
+	// Set the TTL signals back to the background settings
+	SamplerSyncTTLOutputToBG()
+	
 	// Copy the FIFOin wave to a free wave, then delete the non-free wave
 	Duplicate /FREE FIFOin, FIFOinFree
 	KillWaves FIFOin, FIFOout
 	
 	SetDataFolder savedDF
 	return FIFOinFree
+End
+
+
+
+Function SamplerSetTTLOutput(ttlOutputIndex,newValue)
+	// Sets a TTL output to a set level (which should be either 0 or 1)
+	Variable ttlOutputIndex
+	Variable newValue
+
+	// Save, set DF
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sampler
+
+	// Declare the instance variables we need
+	NVAR itc
+	NVAR ttlBackground
+
+	// Modify ttlBackground
+	ttlBackground = (ttlBackground & ~(2^ttlOutputIndex)) + newValue*(2^ttlOutputIndex)
+		// Part before the + clears the bit, then we add back what we want
+	
+	// Set the output, using the method appropriate for the current amp
+	SamplerSyncTTLOutputToBG()
+
+	// Restore the original DF	
+	SetDataFolder savedDF
+End
+
+
+
+Function SamplerGetTTLBackground()
+	// Save, set DF
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sampler
+
+	// Declare the instance variables we need
+	NVAR ttlBackground
+
+	// Get the value
+	Variable value=ttlBackground
+
+	// Restore the original DF	
+	SetDataFolder savedDF
+	
+	// Return the value
+	return ttlBackground
+End
+
+
+
+//
+// Private methods
+//
+Function SamplerSyncTTLOutputToBG()
+	// This tells the digitizer to set it's TTL outputs to match the ttlBackground instance var
+	Variable ttlOutputIndex
+	Variable newValue
+
+	// Save, set DF
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sampler
+
+	// Declare the instance variables we need
+	NVAR itc
+	NVAR ttlBackground
+
+	// Set the output, using the method appropriate for the current amp
+	if (itc==0)
+		// Do nothing
+	elseif (itc== 16)
+		Execute sprintf1v("ITC16WriteDigital1 %d",ttlBackground)	// Hopefully this operator exists
+	elseif (itc==18)
+		Execute sprintf1v("ITC18WriteDigital1 %d",ttlBackground)
+	else
+		Abort "Internal error when trying to set a TTL output.  Contact the DataPro developer(s)."
+	endif
+
+	// Restore the original DF	
+	SetDataFolder savedDF
 End
 
