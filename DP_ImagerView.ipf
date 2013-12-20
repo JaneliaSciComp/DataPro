@@ -44,17 +44,28 @@ Function ImagerViewConstructor() : Panel
 	Variable groupBoxYOffset=3
 	Variable groupBoxHeight=54
 	GroupBox illuminationGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Illumination"
-		
-	Variable width=140	// Size of the button
-	Variable height=26
+
+	// TTL Output SetVariable		
 	xOffset=30
 	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-14)/2
 	SetVariable ttlOutputChannelSV,win=ImagerView,pos={xOffset,yOffset},size={90,1},limits={0,3,1},title="TTL Output:"
 	SetVariable ttlOutputChannelSV,win=ImagerView,proc=ICEpiTTLChannelSVTouched	
-	xOffset=156
+	
+	// On/Off Button
+	Variable width=140	// Size of the button
+	Variable height=26
+	xOffset=146
 	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-height)/2
 	Button EpiLightToggleButton,win=ImagerView,pos={xOffset,yOffset},size={width,height},proc=ICEpiLightToggleButtonPressed
 
+	// On/Off ValDisplay
+	xOffset=310
+	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-14)/2
+	ValDisplay EpiLightStatusVD, win=ImagerView, pos={xOffset,yOffset}, size={0,14}, bodyWidth=14, mode=1, limits={0,1,0.5}
+	ValDisplay EpiLightStatusVD, win=ImagerView, barmisc={0,0}, highColor=(0,65535,0), lowColor=(0,0,0)
+
+//ValDisplay ld501_1 title="round LED",size={65,13},bodyWidth=10,mode=1;DelayUpdate
+//ValDisplay ld501_1 barmisc={0,0},limits={-50,100,0}
 
 	//
 	// Temperature Group
@@ -324,9 +335,11 @@ Function ImagerViewUpdate()
 
 	// Update the Epi light toggle button
 	SetVariable ttlOutputChannelSV, win=ImagerView, value= _NUM:EpiLightGetTTLOutputIndex()
-	String titleStr = stringFif(EpiLightGetIsOn(),"Turn Epiillumination Off","Turn Epiillumination On")
+	Variable isLightOn=EpiLightGetIsOn()
+	String titleStr = stringFif(isLightOn,"Turn Epiillumination Off","Turn Epiillumination On")
 	Button EpiLightToggleButton, win=ImagerView, title=titleStr
-
+	ValDisplay EpiLightStatusVD, win=ImagerView, value= _NUM:isLightOn
+	
 	// Update the enablement of the "Focus" button
 	Variable isFocusing=ImagerGetIsFocusing()
 	Button focusButton,win=ImagerView,disable=(isFocusing?2:0)
