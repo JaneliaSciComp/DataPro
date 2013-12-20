@@ -51,6 +51,16 @@ Function ICAcquireVideoButtonPressed(ctrlName) : ButtonControl
 End
 
 
+
+Function ICTriggeredCBTwiddled(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	ImagerSetIsTriggered(checked)
+	ImagerViewModelChanged()
+End
+
+
+
 Function ICEpiTTLChannelSVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName
 	Variable varNum
