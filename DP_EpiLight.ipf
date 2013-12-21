@@ -54,12 +54,22 @@ End
 
 Function EpiLightSetTTLOutputIndex(newValue)
 	Variable newValue
+	
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_EpiLight
+	
 	NVAR ttlOutputIndex
 	NVAR isOn
+	
+	// Check that the new TTL output is not in use by the sweeper or the test pulser
+	if ( SweeperIsTTLInUse(newValue) || TestPulserIsTTLInUse(newValue) )
+		SetDataFolder savedDF	
+		return 0
+	endif			
+	
 	ttlOutputIndex=newValue
 	SamplerSetTTLOutput(ttlOutputIndex,isOn)
+	
 	SetDataFolder savedDF	
 End
 
@@ -73,3 +83,5 @@ Function EpiLightGetTTLOutputIndex()
 	SetDataFolder savedDF	
 	return value
 End
+
+

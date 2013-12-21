@@ -1299,3 +1299,27 @@ Function SweeperResampleWave(w)
 	SetDataFolder savedDF	
 End
 
+Function SweeperIsTTLInUse(ttlOutputIndex)
+	Variable ttlOutputIndex
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+
+	WAVE ttlOutputChannelOn  	// all TTL outputs off by default
+
+	Variable nTTLOutputs=DigitizerModelGetNumTTLChans()
+	Variable value 	// return value
+	if (ttlOutputIndex<0)
+		// If arg less than zero, we're not using those channels, because they don't exist
+		value=0
+	elseif (ttlOutputIndex<nTTLOutputs)
+		value=ttlOutputChannelOn[ttlOutputIndex]
+	else
+		// if the output index is GTE the number of TTL outputs on the front panel, then we're not using it
+		value=0
+	endif
+
+	SetDataFolder savedDF	
+	
+	return value
+End

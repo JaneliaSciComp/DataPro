@@ -19,6 +19,8 @@
 #include ":DP_SweeperView"
 #include ":DP_SweeperController"
 #include ":DP_TestPulser"
+#include ":DP_TestPulserView"
+#include ":DP_TestPulserController"
 #include ":DP_SineBuilder"
 #include ":DP_ChirpBuilder"
 #include ":DP_WNoiseBuilder"

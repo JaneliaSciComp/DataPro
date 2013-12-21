@@ -219,6 +219,10 @@ Function SweeperViewDigitizerChanged()
 	SweeperViewUpdate()
 End
 
+Function SweeperViewEpiLightChanged()
+	SweeperViewUpdate()
+End
+
 Function SweeperViewUpdate()
 	// This is intended to be a private method in SweeperView.
 	// It updates pretty much the whole view, using values in the model and
@@ -327,8 +331,11 @@ Function SweeperViewTTLEnablementChanged(i)
 
 	WAVE ttlOutputChannelOn
 	
+	// If using the imaging module, have to disable the TTL channel entirely if it is being used for epi-illumination control
+	Variable inUseForEpi= ( IsImagingModuleInUse() && (i==EpiLightGetTTLOutputIndex() )
+	
 	String controlName=sprintf1v("TTL%dCheckbox", i)
-	CheckBox $controlName, win=SweeperView, value=ttlOutputChannelOn[i]
+	CheckBox $controlName, win=SweeperView, value=ttlOutputChannelOn[i], disable = (inUseForEpi?2:0)
 	controlName=sprintf1v("TTL%dWavePopupMenu", i)
 	PopupMenu $controlName,win=SweeperView,disable=(ttlOutputChannelOn[i]?0:2)
 	controlName=sprintf1v("TTL%dUnitsTitleBox", i)
