@@ -57,7 +57,7 @@ Function /WAVE SamplerSampleData(adSequence,daSequence,FIFOoutFree)
 
 	NVAR itc
 	NVAR usPerDigitizerClockTick
-	WAVE FIFOout, FIFOin	// wave references to bound waves that don't exist yet.
+	//WAVE FIFOout, FIFOin	// wave references to bound waves that don't exist yet.
 
 	// Duplicate FIFOoutFree into a bound wave
 	Duplicate /O FIFOoutFree, FIFOout
