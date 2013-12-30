@@ -739,7 +739,7 @@ Function /WAVE SweeperGetDACWaveByName(waveNameString)
 	SetDataFolder root:DP_Sweeper:dacWaves
 
 	// Duplicate the wave to a free wave
-	Wave exportedWave
+	//Wave exportedWave
 	Duplicate /FREE $waveNameString exportedWave
 
 	// Restore the original DF
@@ -772,7 +772,7 @@ Function /WAVE SweeperGetTTLWaveByName(waveNameString)
 	SetDataFolder root:DP_Sweeper:ttlWaves
 
 	// Duplicate the wave to a free wave
-	Wave exportedWave
+	//Wave exportedWave
 	Duplicate /FREE $waveNameString exportedWave
 
 	// Restore the original DF
