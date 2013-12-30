@@ -260,7 +260,7 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	// Get the ADC and DAC sequences from the model
 	String daSequence=SweeperGetDACSequence()
 	String adSequence=SweeperGetADCSequence()
-	//Variable seqLength=strlen(daSequence)		// both should be same length
+	Variable seqLength=strlen(daSequence)		// both should be same length
 
 	// If doing imaging, and triggered acquistion, configure the camera
 	if ( IsImagingModuleInUse() && ImagerGetIsTriggered() )
@@ -275,12 +275,16 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	// Get the number of ADC channels in use
 	Variable nADCInUse=SweeperGetNumADCsOn()
 	
+	// One subtle point is that that if there are multiple cycles through the ADC channels in the sequence,
+	// all the repeats of the same ADC channel in the sequence will have the same sampled value.  Thus we 
+	// the value of seqLength below in several places where naively you might think one would use nADCInUse.
+	
 	// Extract individual traces from FIFOin, store them in the appropriate waves
 	//String nameOfVarHoldingADCWaveBaseName
 	Variable iADCChannel		// index of the relevant ADC channel
 	String stepAsString=StringByKeyInWaveNote(FIFOout,"STEP")	// will add to ADC waves	
-	Variable nSamplesPerTrace=numpnts(FIFOin)/nADCInUse
-	Variable ingain
+	Variable nSamplesPerTrace=numpnts(FIFOin)/seqLength
+	Variable adcNativesPerPoint
 	Variable iTrace
 	Variable dtFIFOin=deltax(FIFOin)
 	String units
@@ -291,10 +295,10 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 		Make /O /N=(nSamplesPerTrace) $thisWaveNameAbs
 		WAVE thisWave=$thisWaveNameAbs
 		annotateADCWaveBang(thisWave,stepAsString,comment,absoluteTime)
-		ingain=DigitizerModelGetADCNtvsPerPnt(iADCChannel)
-		thisWave=FIFOin[nADCInUse*p+iTrace]*ingain
+		adcNativesPerPoint=DigitizerModelGetADCNtvsPerPnt(iADCChannel)
+		thisWave=FIFOin[seqLength*p+iTrace]*adcNativesPerPoint
 			// copy this trace out of the FIFO, and scale it by the gain
-		Setscale /P x, 0, nADCInUse*dtFIFOin, "ms", thisWave
+		Setscale /P x, 0, seqLength*dtFIFOin, "ms", thisWave
 		units=DigitizerModelGetADCUnitsString(iADCChannel)
 		SetScale d 0, 0, units, thisWave
 	endfor
