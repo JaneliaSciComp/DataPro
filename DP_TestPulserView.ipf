@@ -20,7 +20,7 @@ Function TestPulserViewConstructor() : Graph
 	SetDataFolder root:DP_TestPulser
 	
 	// Declare instance variables
-	NVAR ttlOutput
+	NVAR isTTLOutputEnabled
 	NVAR doBaselineSubtraction	
 	NVAR RSeal
 	NVAR updateRate
@@ -70,9 +70,9 @@ Function TestPulserViewConstructor() : Graph
 
 	CheckBox ttlOutputCheckbox,win=TestPulserView,pos={200+30+20+6,56},size={58,14},title="TTL Output:"
 	CheckBox ttlOutputCheckbox,win=TestPulserView,proc=TestPulserContTTLOutputCheckBox
-	SetVariable ttlOutChannelSetVariable,win=TestPulserView,pos={280+30+20+6,56-1},size={36,1},title=" "
-	SetVariable ttlOutChannelSetVariable,win=TestPulserView,limits={0,3,1},value= root:DP_TestPulser:ttlOutIndex
-	SetVariable ttlOutChannelSetVariable,win=TestPulserView,disable=2-2*ttlOutput
+	SetVariable ttlOutputIndexSV,win=TestPulserView,pos={280+30+20+6,56-1},size={36,1},title=" "
+	SetVariable ttlOutputIndexSV,win=TestPulserView,limits={0,3,1},proc=TPContTTLOutputIndexSVTouched
+	SetVariable ttlOutputIndexSV,win=TestPulserView,disable=2-2*isTTLOutputEnabled
 
 	// Draw the bottom "panel"
 	ControlBar /B /W=TestPulserView 30
@@ -111,8 +111,7 @@ Function TestPulserViewUpdate()
 	SetDataFolder root:DP_TestPulser
 
 	NVAR doBaselineSubtraction
-	NVAR ttlOutput
-	NVAR ttlOutIndex
+	NVAR isTTLOutputEnabled
 	NVAR RSeal
 	NVAR updateRate
 	NVAR dacIndex
@@ -138,8 +137,12 @@ Function TestPulserViewUpdate()
 	TitleBox amplitudeTitleBox,win=TestPulserView,title=amplitudeUnits
 	CheckBox testPulseBaseSubCheckbox,win=TestPulserView,value=doBaselineSubtraction
 
-	Variable inUseForEpi= ( IsImagingModuleInUse() && (ttlOutIndex==EpiLightGetTTLOutputIndex() )
-	CheckBox ttlOutputCheckbox,win=TestPulserView,value=ttlOutput, disable=(inUseForEpi?2:0)
+	Variable ttlOutputIndex=TestPulserGetTTLOutputIndex()
+	Variable inUseForEpi= ( IsImagingModuleInUse() && (ttlOutputIndex==EpiLightGetTTLOutputIndex() )
+	CheckBox ttlOutputCheckbox,win=TestPulserView,value=isTTLOutputEnabled, disable=(inUseForEpi?2:0)
+
+	SetVariable ttlOutputIndexSV, win=TestPulserView, value= _NUM:ttlOutputIndex
+	SetVariable ttlOutputIndexSV, win=TestPulserView, disable=(isTTLOutputEnabled ? 0 : 2)
 
 	// Widgets for showing the seal resistance
 	ValDisplay RSealValDisplay,win=TestPulserView,value= _NUM:RSeal

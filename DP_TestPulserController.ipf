@@ -4,6 +4,7 @@
 //	Northwestern University
 //	project began 10/27/1998
 
+
 //----------------------------------------------------------------------------------------------------------------------------
 Function TestPulserContConstructor() : Graph
 	TestPulserConstructor()
@@ -61,8 +62,8 @@ Function TestPulserContStart()
 	NVAR adcIndex	// index of ADC channel to use for test pulse
 	NVAR amplitude, duration
 	NVAR dt
-	NVAR ttlOutput		// boolean, true iff we're to also have a TTL output go high when pulsing
-	NVAR ttlOutIndex		// index of the TTL output channel to use
+	NVAR isTTLOutputEnabled		// boolean, true iff we're to also have a TTL output go high when pulsing
+	NVAR ttlOutputIndex		// index of the TTL output channel to use
 	NVAR doBaselineSubtraction
 	NVAR RSeal
 	NVAR updateRate
@@ -81,8 +82,8 @@ Function TestPulserContStart()
 	DoWindow /F TestPulserView
 	
 	// Multiplex the TTL wave, if called for
-	if (ttlOutput)
-		testPulseTTL=(2^ttlOutIndex)*testPulseTTL	// multiplexing
+	if (isTTLOutputEnabled)
+		testPulseTTL=(2^ttlOutputIndex)*testPulseTTL	// multiplexing
 	endif
 	
 	// Build FIFOout for the test pulse
@@ -90,7 +91,7 @@ Function TestPulserContStart()
 	Variable inGain=DigitizerModelGetADCNtvsPerPnt(adcIndex)
 	String daSequence=num2str(dacIndex)
 	String adSequence=num2str(adcIndex)
-	if (ttlOutput)
+	if (isTTLOutputEnabled)
 		daSequence+="D"
 		adSequence+=num2str(adcIndex)
 		Make /FREE /N=(nScans*2) FIFOout
@@ -130,7 +131,7 @@ Function TestPulserContStart()
 		// execute the sample sequence
 		Wave FIFOin=SamplerSampleData(adSequence,daSequence,FIFOout)
 		// extract TestPulse_ADC from FIFOin
-		if (ttlOutput)
+		if (isTTLOutputEnabled)
 			TestPulse_ADC=FIFOin[2*p]*inGain
 		else
 			TestPulse_ADC=FIFOin*inGain
@@ -233,9 +234,9 @@ Function TestPulserContTTLOutputCheckBox(ctrlName,checked) : CheckBoxControl
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_TestPulser
 
-	NVAR ttlOutput
-	ttlOutput=checked
-	SetVariable ttlOutChannelSetVariable, win=TestPulserView, disable=(ttlOutput?0:2)
+	NVAR isTTLOutputEnabled
+	isTTLOutputEnabled=checked
+	SetVariable ttlOutputIndexSV, win=TestPulserView, disable=(isTTLOutputEnabled?0:2)
 	
 	SetDataFolder savedDF
 End
@@ -266,5 +267,17 @@ Function TestPulserContYLimitsToTrace()
 
 	SetDataFolder savedDF
 End
+
+
+//----------------------------------------------------------------------------------------------------------------------------
+Function TPContTTLOutputIndexSVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum
+	String varStr
+	String varName
+	
+	TestPulserSetTTLOutputIndex(varNum)
+	TestPulserViewUpdate()	
+End	
 
 

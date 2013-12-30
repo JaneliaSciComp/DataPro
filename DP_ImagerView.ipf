@@ -317,8 +317,6 @@ End
 
 Function ImagerViewUpdate()
 	// This is intended to be a private method in ImagerView.
-	// Currently it updates only one SetVariable, but that should change
-	// in the future
 
 	// If the window doesn't exist, nothing to do
 	if (!PanelExists("ImagerView"))
@@ -334,8 +332,9 @@ Function ImagerViewUpdate()
 	WAVE roisWave
 
 	// Update the Epi light toggle button
-	SetVariable ttlOutputChannelSV, win=ImagerView, value= _NUM:EpiLightGetTTLOutputIndex()
 	Variable isLightOn=EpiLightGetIsOn()
+	SetVariable ttlOutputChannelSV, win=ImagerView, value= _NUM:EpiLightGetTTLOutputIndex()
+	SetVariable ttlOutputChannelSV, win=ImagerView, disable= (isLightOn ? 2 : 0)
 	String titleStr = stringFif(isLightOn,"Turn Epiillumination Off","Turn Epiillumination On")
 	Button EpiLightToggleButton, win=ImagerView, title=titleStr
 	ValDisplay EpiLightStatusVD, win=ImagerView, value= _NUM:isLightOn
@@ -420,6 +419,7 @@ Function ImagerViewUpdate()
 	// Restore the original DF
 	SetDataFolder savedDF
 End
+
 
 Function ImagerViewSetIsProTipShowing(isProTipShowing)
 	Variable isProTipShowing

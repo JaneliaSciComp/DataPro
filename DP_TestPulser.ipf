@@ -16,8 +16,8 @@ Function TestPulserConstructor()
 		Variable /G dt=0.02		// sample interval for the test pulse, ms
 		Variable /G adcIndex=0		// index of the ADC channel to be used for the test pulse
 		Variable /G dacIndex=0		// index of the DAC channel to be used for the test pulse	
-		Variable /G ttlOutput=0		// whether or not to do a TTL output during test pulse
-		Variable /G ttlOutIndex=0	   // index of the TTL used for gate output, if ttlOutput is true
+		Variable /G isTTLOutputEnabled=0		// whether or not to do a TTL output during test pulse
+		Variable /G ttlOutputIndex=0	   // index of the TTL used for gate output, if isTTLOutputEnabled is true
 		Variable /G doBaselineSubtraction=1	// whether to do baseline subtraction
 		Variable /G RSeal=nan	// GOhm
 		Variable /G updateRate=nan		// Hz	
@@ -61,13 +61,50 @@ Function TestPulserIsTTLInUse(ttlOutputIndexInQuestion)
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_TestPulser
 
-	NVAR ttlOutput		// whether or not to do a TTL output during test pulse
-	NVAR ttlOutIndex	   // index of the TTL used for gate output, if ttlOutput is true
+	NVAR isTTLOutputEnabled		// whether or not to do a TTL output during test pulse
+	NVAR ttlOutputIndex	   // index of the TTL used for gate output, if isTTLOutputEnabled is true
 
-	Variable value=( ttlOutput && (ttlOutIndex==ttlOutputIndexInQuestion) )
+	Variable value=( isTTLOutputEnabled && (ttlOutputIndex==ttlOutputIndexInQuestion) )
 
 	SetDataFolder savedDF	
 	
 	return value
 End
+
+
+//----------------------------------------------------------------------------------------------------------------------------
+Function TestPulserSetTTLOutputIndex(newValue)
+	Variable newValue
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_TestPulser
+	
+	NVAR ttlOutputIndex
+	if ( IsImagingModuleInUse() )
+		// If using imaging module, need to make sure TestPulser doesn't collide with EpiLight
+		if (newValue != EpiLightGetTTLOutputIndex())
+			ttlOutputIndex=newValue	
+		endif
+	else
+		// If not using imaging module, no checks needed
+		ttlOutputIndex=newValue		
+	endif
+
+	SetDataFolder savedDF
+End	
+
+
+//----------------------------------------------------------------------------------------------------------------------------
+Function TestPulserGetTTLOutputIndex()
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_TestPulser
+	
+	NVAR ttlOutputIndex
+	Variable result=ttlOutputIndex
+
+	SetDataFolder savedDF
+	
+	return result
+End	
+
 
