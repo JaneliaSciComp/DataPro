@@ -110,12 +110,12 @@ Function FancyCameraBinningAndROISet(nBinWidth, nBinHeight, isROI, iLeft, iTop, 
 	// If not, return
 	Variable nBinsWide=CameraCCDWidthGet()/nBinWidth
 	if ( !IsInteger(nBinsWide) )
-		SetDataFolder savedDF	
+		//SetDataFolder savedDF	
 		return 0
 	endif
 	Variable nBinsHigh=CameraCCDHeightGet()/nBinHeight
 	if ( !IsInteger(nBinsHigh) )
-		SetDataFolder savedDF	
+		//SetDataFolder savedDF	
 		return 0
 	endif
 

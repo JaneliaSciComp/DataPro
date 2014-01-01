@@ -56,11 +56,24 @@ Function CameraConstructor()
 		//printf "isSidxRootValid: %d\r" isSidxRootValid
 		Variable nCameras
 		if (isSidxRootValid)
-			SIDXRootCameraScanGetCount sidxRoot, nCameras,sidxStatus
+			SIDXRootCameraScan sidxRoot, sidxStatus
 			if (sidxStatus != 0)
+				// Scan didn't work
 				nCameras=0
+			else
+				// Scan worked
+				
+				// For debugging purposes
+				String report
+				SIDXRootCameraScanGetReport sidxRoot, report, sidxStatus
+				Print report
+				
+				SIDXRootCameraScanGetCount sidxRoot, nCameras,sidxStatus
+				if (sidxStatus != 0)
+					nCameras=0
+				endif
 			endif
-			//Printf "# of cameras: %d\r", nCameras
+			Printf "# of cameras: %d\r", nCameras
 			if (nCameras>0)
 				// Create the SIDX camera object, referenced by sidxCamera
 				SIDXRootCameraOpenName sidxRoot, "", sidxCamera, sidxStatus
@@ -720,7 +733,9 @@ Function CameraCoolingGetValue()
 			if (sidxStatus!=0)
 				String errorMessage
 				SIDXCameraGetLastError sidxCamera, errorMessage
-				Abort sprintf1s("Error in SIDXCameraCoolingGetValue: %s",errorMessage)
+				//Abort sprintf1s("Error in SIDXCameraCoolingGetValue: %s",errorMessage)
+				Printf "Error in SIDXCameraCoolingGetValue: %s\r", errorMessage
+				temperature=nan
 			endif
 		else
 			Abort "Called CameraCoolingGetValue() before camera was created."
