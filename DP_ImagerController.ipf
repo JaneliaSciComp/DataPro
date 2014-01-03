@@ -25,8 +25,9 @@ Function ICTempSetpointSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableC
 	String varStr
 	String varName
 
-	FancyCameraSetTempAndWait(varNum)
-	ImagerViewCameraChanged()
+	//FancyCameraSetTempAndWait(varNum)
+	ImagerSetCCDTargetTemp(varNum)
+	ImagerViewModelChanged()
 End
 
 
@@ -256,7 +257,11 @@ Function ICMoveAllCBTouched(ctrlName,isChecked) : CheckBoxControl
 	ImagerViewModelChanged()
 End
 
-
+Function ICUpdateTempButtonPressed(ctrlName) : ButtonControl
+	String ctrlName
+	ImagerUpdateCCDTemperature()	
+	ImagerViewModelChanged()
+End
 
 
 

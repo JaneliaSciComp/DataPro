@@ -57,7 +57,7 @@ Function FancyCameraSetupSnapshotAcq(exposure,targetTemperature)
 	CameraExposeSet(exposureInSeconds)
 	
 	// Set the CCD temp, wait for it to stabilize
-	FancyCameraSetTempAndWait(targetTemperature)
+	//FancyCameraSetTempAndWait(targetTemperature)
 End
 
 
@@ -93,7 +93,7 @@ Function FancyCameraSetupVideoAcq(nBinWidth,nBinHeight,roisWave,isTriggered,expo
 	CameraExposeSet(exposureInSeconds)
 	
 	// Set the CCD temp, wait for it to stabilize
-	FancyCameraSetTempAndWait(targetTemperature)
+	//FancyCameraSetTempAndWait(targetTemperature)
 End
 
 
@@ -308,7 +308,49 @@ End
 
 
 
-Function FancyCameraSetTempAndWait(targetTemperature)
+//Function FancyCameraSetTempAndWait(targetTemperature)
+//	Variable targetTemperature
+//
+//	// Switch to the imaging data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_FancyCamera
+//
+//	// Declare instance variables
+//
+//	// Set the target temperature	
+//	CameraCoolingSet(targetTemperature)
+//
+//	// Spin until the actual temperature reaches the target, and stays there for a while
+//	Variable temperature
+//	Variable temperatureTolerance=0.1		// degC
+//	Variable secondsAtTargetMinimum=0.1
+//	Variable secondsBetweenChecks=0.1
+//	Variable itersAtTargetMinimum=ceil(secondsAtTargetMinimum/secondsBetweenChecks)
+//	Variable itersAtTarget=0
+//	do
+//		Sleep /S secondsBetweenChecks
+//		temperature=FancyCameraGetTemperature()
+//		if ( abs(temperature-targetTemperature)<temperatureTolerance ) 
+//			itersAtTarget+=1
+//		else
+//			itersAtTarget=0
+//		endif
+//	while (itersAtTarget<itersAtTargetMinimum)
+//	
+//	// Restore the data folder
+//	SetDataFolder savedDF	
+//	
+//	// Return the final temperature
+//	return temperature
+//End
+
+
+
+
+
+
+
+Function FancyCameraSetTemp(targetTemperature)
 	Variable targetTemperature
 
 	// Switch to the imaging data folder
@@ -320,28 +362,8 @@ Function FancyCameraSetTempAndWait(targetTemperature)
 	// Set the target temperature	
 	CameraCoolingSet(targetTemperature)
 
-	// Spin until the actual temperature reaches the target, and stays there for a while
-	Variable temperature
-	Variable temperatureTolerance=0.1		// degC
-	Variable secondsAtTargetMinimum=0.1
-	Variable secondsBetweenChecks=0.1
-	Variable itersAtTargetMinimum=ceil(secondsAtTargetMinimum/secondsBetweenChecks)
-	Variable itersAtTarget=0
-	do
-		Sleep /S secondsBetweenChecks
-		temperature=FancyCameraGetTemperature()
-		if ( abs(temperature-targetTemperature)<temperatureTolerance ) 
-			itersAtTarget+=1
-		else
-			itersAtTarget=0
-		endif
-	while (itersAtTarget<itersAtTargetMinimum)
-	
 	// Restore the data folder
-	SetDataFolder savedDF	
-	
-	// Return the final temperature
-	return temperature
+	SetDataFolder savedDF		
 End
 
 

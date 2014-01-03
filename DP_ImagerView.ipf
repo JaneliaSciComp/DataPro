@@ -76,11 +76,15 @@ Function ImagerViewConstructor() : Panel
 	
 	height=14
 	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-height)/2
-	SetVariable ccdTemperatureSetpointSV,win=ImagerView,pos={50,yOffset},size={96,height},proc=ICTempSetpointSVTwiddled,title="Setpoint:"
+	SetVariable ccdTemperatureSetpointSV,win=ImagerView,pos={30,yOffset},size={96,height},proc=ICTempSetpointSVTwiddled,title="Setpoint:"
 	SetVariable ccdTemperatureSetpointSV, win=ImagerView, limits={-50,20,5}, format="%0.1f", value= ccdTargetTemperature
 
-	ValDisplay ccdTemperatureVD,win=ImagerView,pos={184,yOffset+1},size={76,height},title="Current:"
+	ValDisplay ccdTemperatureVD,win=ImagerView,pos={154,yOffset+1},size={76,height},title="Current:"
 	ValDisplay ccdTemperatureVD,win=ImagerView,format="%0.1f",limits={0,0,0},barmisc={0,1000}
+
+	Variable buttonWidth=70
+	Variable buttonHeight=20
+	Button updateTempButton,win=ImagerView,pos={240,yOffset-2},size={buttonWidth,buttonHeight},proc=ICUpdateTempButtonPressed,title="Update"
 
 
 	//
@@ -91,13 +95,12 @@ Function ImagerViewConstructor() : Panel
 	GroupBox fullFrameGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Snapshots"
 
 	xOffset=16
-	Variable buttonWidth=80
-	Variable buttonHeight=20
 	Variable buttonSpacerHeight=8
 	Variable nButtons=2
 	Variable buttonGroupHeight=nButtons*buttonHeight+(nButtons-1)*buttonSpacerHeight
 	
 	// Snapshot button
+	buttonWidth=80
 	Variable snapshotYOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-buttonGroupHeight)/2
 	yOffset=snapshotYOffset	
 	Button snapshotButton,win=ImagerView,pos={xOffset,yOffset},size={buttonWidth,buttonHeight},proc=ICTakeSnapshotButtonPressed,title="Take"
@@ -357,7 +360,7 @@ Function ImagerViewUpdate()
 	CheckBox isTriggeredCB, win=ImagerView, value=ImagerGetIsTriggered()
 
 	// Update the CCD temperature
-	Variable ccdTemperature=FancyCameraGetTemperature()
+	Variable ccdTemperature=ImagerGetCCDTemperature()
 	ValDisplay ccdTemperatureVD, win=ImagerView, value= _NUM:ccdTemperature
 	WhiteOutIffNan("ccdTemperatureVD","ImagerView",ccdTemperature)
 

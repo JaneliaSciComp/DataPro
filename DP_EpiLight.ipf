@@ -20,7 +20,7 @@ Function EpiLightConstructor()
 
 	// Instance vars
 	Variable /G isOn=0	// boolean
-	Variable /G ttlOutputIndex=3	// the TTL channel to which the light is hooked up
+	Variable /G ttlOutputIndex=1	// the TTL channel to which the light is hooked up
 	
 	// Restore the original data folder
 	SetDataFolder savedDF	
