@@ -49,25 +49,31 @@ Function CameraConstructor()
 		Variable /G countReadFrameFake=0		// the first frame to be read by subsequent read commands
 
 		// Create the SIDX root object, referenced by sidxRoot
+		String errorMessage
 		String license=""	// License file is stored in C:/Program Files/Bruxton/SIDX
 		Variable sidxStatus
 		SIDXRootOpen sidxRoot, license, sidxStatus
+		if (sidxStatus!=0)
+			SIDXRootGetLastError sidxRoot, errorMessage
+			printf "Error in SIDXRootOpen: %s\r" errorMessage
+		endif
 		isSidxRootValid=(sidxStatus==0)
 		//printf "isSidxRootValid: %d\r" isSidxRootValid
 		Variable nCameras
 		if (isSidxRootValid)
+			Printf "Scanning for cameras..."
 			SIDXRootCameraScan sidxRoot, sidxStatus
+			Printf "done.\r"
 			if (sidxStatus != 0)
 				// Scan didn't work
 				nCameras=0
 			else
-				// Scan worked
-				
+				// Scan worked				
 				// For debugging purposes
 				String report
 				SIDXRootCameraScanGetReport sidxRoot, report, sidxStatus
 				Print report
-				
+				// Get the number of cameras
 				SIDXRootCameraScanGetCount sidxRoot, nCameras,sidxStatus
 				if (sidxStatus != 0)
 					nCameras=0
@@ -76,7 +82,18 @@ Function CameraConstructor()
 			Printf "# of cameras: %d\r", nCameras
 			if (nCameras>0)
 				// Create the SIDX camera object, referenced by sidxCamera
-				SIDXRootCameraOpenName sidxRoot, "", sidxCamera, sidxStatus
+				String cameraName
+				SIDXRootCameraScanGetName sidxRoot, 0, cameraName, sidxStatus
+				if (sidxStatus!=0)
+					SIDXRootGetLastError sidxRoot, errorMessage
+					printf "Error in SIDXRootCameraScanGetName: %s\r" errorMessage
+				endif
+				printf "cameraName: %s\r", cameraName
+				SIDXRootCameraOpenName sidxRoot, cameraName, sidxCamera, sidxStatus
+				if (sidxStatus!=0)
+					SIDXRootGetLastError sidxRoot, errorMessage
+					printf "Error in SIDXRootCameraOpenName: %s\r" errorMessage
+				endif	
 				isSidxCameraValid= (sidxStatus==0)
 				printf "isSidxCameraValid: %d\r", isSidxCameraValid
 				areWeForReal=isSidxCameraValid		// if no valid camera, then we fake
