@@ -167,6 +167,7 @@ Function FancyCameraArm(nFrames)
 	// instance vars
 
 	// Allocate space in the frame buffer
+	CameraAcquireImageSetLimit(nFrames)
 	CameraBufferCountSet(nFrames)
 
 	// Arm the acquisition

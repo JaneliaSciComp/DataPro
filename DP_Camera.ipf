@@ -43,7 +43,8 @@ Function CameraConstructor()
 		Variable /G iRightROIFake=widthCCDFake
 		Variable /G exposureFake=0.1		// exposure for the fake camera, in sec
 		Variable /G temperatureTargetFake=-20		// degC
-		Variable /G countFrameFake=1		// How many frames to acquire for the fake camera
+		Variable /G nFramesBufferFake=1		// How many frames in the fake on-camera frame buffer
+		Variable /G nFramesToAcquireFake=1		
 		Variable /G isAcquireOpenFake=0		// Whether acquisition is "armed"
 		Variable /G isAcquisitionOngoingFake=0
 		Variable /G countReadFrameFake=0		// the first frame to be read by subsequent read commands
@@ -104,7 +105,7 @@ Function CameraConstructor()
 		endif
 		//printf "areWeForReal: %d\r", areWeForReal
 //		if (!areWeForReal)
-//			Redimension /N=(widthCCDFake,heightCCDFake,countFrameFake) bufferFrame		// sic: this is how Igor Pro organizes image data 
+//			Redimension /N=(widthCCDFake,heightCCDFake,nFramesBufferFake) bufferFrame		// sic: this is how Igor Pro organizes image data 
 //		endif
 	endif
 
@@ -361,6 +362,43 @@ End
 
 
 
+Function CameraAcquireImageSetLimit(nFrames)
+	Variable nFrames
+	
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxCameraValid
+	NVAR sidxCamera
+	NVAR nFramesToAcquireFake
+
+	Variable sidxStatus
+	if (areWeForReal)
+		if (isSidxCameraValid)
+			SIDXCameraAcquireImageSetLimit sidxCamera, nFrames, sidxStatus
+			if (sidxStatus!=0)
+				String errorMessage
+				SIDXCameraGetLastError sidxCamera, errorMessage
+				Abort sprintf1s("Error in SIDXCameraAcquireImageSetLimit: %s",errorMessage)
+			endif
+		else
+			Abort "Called CameraAcquireImageSetLimit() before camera was created."
+		endif
+	else
+		 nFramesToAcquireFake=nFrames
+	endif
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+End
+
+
+
+
+
 
 Function CameraBufferCountSet(nFrames)
 	Variable nFrames
@@ -373,7 +411,7 @@ Function CameraBufferCountSet(nFrames)
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR  countFrameFake
+	NVAR  nFramesBufferFake
 
 	Variable sidxStatus
 	if (areWeForReal)
@@ -388,7 +426,7 @@ Function CameraBufferCountSet(nFrames)
 			Abort "Called CameraBufferCountSet() before camera was created."
 		endif
 	else
-		 countFrameFake=nFrames
+		 nFramesBufferFake=nFrames
 	endif
 
 	// Restore the data folder
@@ -420,11 +458,12 @@ Function CameraAcquireArm()
 		if (isSidxCameraValid)
 			SIDXCameraAcquireOpen sidxCamera, sidxAcquirer, sidxStatus
 			if (sidxStatus!=0)
+				isSidxAcquirerValid=0
 				String errorMessage
 				SIDXCameraGetLastError sidxCamera, errorMessage
 				Abort sprintf1s("Error in SIDXCameraAcquireOpen: %s",errorMessage)
 			else
-				isSidxAcquirerValid=0
+				isSidxAcquirerValid=1
 			endif
 		else
 			Abort "Called CameraAcquireArm() before camera was created."
@@ -530,7 +569,8 @@ Function CameraAcquireStop()
 	NVAR widthBinFake, heightBinFake
 	NVAR iLeftROIFake, iTopROIFake
 	NVAR iRightROIFake, iBottomROIFake	// the ROI boundaries
-	NVAR countFrameFake
+	NVAR nFramesBufferFake
+	NVAR nFramesToAcquireFake
 	NVAR countReadFrameFake
 	NVAR exposureFake
 	
@@ -552,7 +592,7 @@ Function CameraAcquireStop()
 		Variable heightROIFake=iBottomROIFake-iTopROIFake
 		Variable widthROIBinnedFake=floor(widthROIFake/widthBinFake)
 		Variable heightROIBinnedFake=floor(heightROIFake/heightBinFake)			
-		Redimension /N=(widthROIBinnedFake,heightROIBinnedFake,countFrameFake) bufferFrame	// sic, this is how Igor Pro organizes image data
+		Redimension /N=(widthROIBinnedFake,heightROIBinnedFake,nFramesBufferFake) bufferFrame	// sic, this is how Igor Pro organizes image data
 		SetScale /P x, iLeftROIFake+0.5*widthBinFake, widthBinFake, "px", bufferFrame		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
 		SetScale /P y, iTopROIFake+0.5*heightBinFake, heightBinFake, "px", bufferFrame
 		Variable interExposureDelay=0.001		// s, could be shift time for FT camera, or readout time for non-FT camera
@@ -574,7 +614,7 @@ Function CameraAcquireStop()
 			Variable dt=DimDelta(exposure,0)	// ms
 			Variable nScans=DimSize(exposure,0)
 			Variable delay=0	// ms
-			Variable duration=1000*(frameInterval*countFrameFake)	// s->ms
+			Variable duration=1000*(frameInterval*nFramesToAcquireFake)	// s->ms
 			Variable pulseRate=1/frameInterval	// Hz
 			Variable pulseDuration=1000*exposureFake	// s->ms
 			Variable baseLevel=0		// V
@@ -617,6 +657,9 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 	Variable sidxStatus
 	if (areWeForReal)
 		if (isSidxAcquirerValid)
+			// It seems I need to pre-allocate frames here...
+			Make /FREE /N=(512,512,1) frames			
+			// OK, done allocating frames
 			SIDXAcquireRead sidxAcquirer, nFramesToRead, frames, sidxStatus
 			if (sidxStatus!=0)
 				String errorMessage
@@ -673,6 +716,9 @@ Function CameraAcquireDisarm()
 				String errorMessage
 				SIDXAcquireGetLastError sidxAcquirer, errorMessage
 				Abort sprintf1s("Error in SIDXAcquireClose: %s",errorMessage)
+			else
+				// Successfully close the acquirer
+				isSidxAcquirerValid=0
 			endif
 		else
 			Abort "Called CameraAcquireDisarm() before acquisition was armed."
@@ -792,18 +838,30 @@ Function CameraDestructor()
 	// Close the SIDX Acquire object
 	if (isSidxAcquirerValid)
 		SIDXAcquireClose sidxAcquirer, sidxStatus
+		if (sidxStatus!=0)
+			SIDXAcquireGetLastError sidxAcquirer, errorMessage
+			Printf "Error in SIDXAcquireClose: %s\r", errorMessage
+		endif
 		isSidxAcquirerValid=0	
 	endif
 	
 	// Close the SIDX Camera object
 	if (isSidxCameraValid)
 		SIDXCameraClose sidxCamera, sidxStatus
+		if (sidxStatus!=0)
+			SIDXCameraGetLastError sidxCamera, errorMessage
+			Printf "Error in SIDXCameraClose: %s\r", errorMessage
+		endif
 		isSidxCameraValid=0	
 	endif
 	
 	// Close the SIDX root object
 	if (isSidxRootValid)
 		SIDXRootClose sidxRoot, errorMessage
+		if (sidxStatus!=0)
+			SIDXCameraGetLastError sidxRoot, errorMessage
+			Printf "Error in SIDXRootClose: %s\r", errorMessage
+		endif
 		isSidxRootValid=0
 	endif
 	

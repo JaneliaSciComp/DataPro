@@ -183,3 +183,11 @@ End
 Function IsImagingModuleInUse()
 	return 1		// Change to zero if you don't want to use the imaging module
 End
+
+Function IgorBeforeQuitHook(unsavedExp, unsavedNotebooks, unsavedProcedures)
+	Variable unsavedExp
+	Variable unsavedNotebooks
+	Variable unsavedProcedures
+	
+	CameraDestructor()
+End
