@@ -30,17 +30,17 @@ Function CameraConstructor()
 		Variable /G isSidxAcquirerValid=0	// boolean
 		Variable /G sidxAcquirer
 		Make /N=(0,0,0) bufferFrame	// Will hold the acquired frames
+		Variable /G widthCCD=nan		// width of the CCD
+		Variable /G heightCCD=nan	// height of the CCD
 
 		// This stuff is only needed/used if there's no camera and we're faking
-		Variable /G widthCCDFake=512	// width of the fake CCD
-		Variable /G heightCCDFake=512	// height of the fake CCD
 		Variable /G modeTriggerFake=0		// the trigger mode of the fake camera. 0=>free-running, 1=> each frame is triggered, and there are other settings
 		Variable /G widthBinFake=1
 		Variable /G heightBinFake=1
 		Variable /G iLeftROIFake=0
 		Variable /G iTopROIFake=0
-		Variable /G iBottomROIFake=heightCCDFake
-		Variable /G iRightROIFake=widthCCDFake
+		Variable /G iBottomROIFake=heightCCD
+		Variable /G iRightROIFake=widthCCD
 		Variable /G exposureFake=0.1		// exposure for the fake camera, in sec
 		Variable /G temperatureTargetFake=-20		// degC
 		Variable /G nFramesBufferFake=1		// How many frames in the fake on-camera frame buffer
@@ -98,14 +98,28 @@ Function CameraConstructor()
 				isSidxCameraValid= (sidxStatus==0)
 				printf "isSidxCameraValid: %d\r", isSidxCameraValid
 				areWeForReal=isSidxCameraValid		// if no valid camera, then we fake
+				if (isSidxCameraValid)
+					Variable x0, y0, xf, yf
+					SIDXCameraROIGet sidxCamera, x0, y0, xf, yf, sidxStatus
+					Printf "ROI: %d %d %d %d\r", x0, y0, xf, yf
+					widthCCD=xf-x0+1
+					heightCCD=yf-y0+1
+				else
+					// fake CCD size
+					widthCCD=512
+					heightCCD=512
+				endif
 			else
 				// if zero cameras, then we fake
 				areWeForReal=0;
+				// fake CCD size
+				widthCCD=512
+				heightCCD=512
 			endif
 		endif
 		//printf "areWeForReal: %d\r", areWeForReal
 //		if (!areWeForReal)
-//			Redimension /N=(widthCCDFake,heightCCDFake,nFramesBufferFake) bufferFrame		// sic: this is how Igor Pro organizes image data 
+//			Redimension /N=(widthCCD,heightCCD,nFramesBufferFake) bufferFrame		// sic: this is how Igor Pro organizes image data 
 //		endif
 	endif
 
@@ -128,7 +142,7 @@ Function CameraROIClear()
 	NVAR sidxCamera
 	NVAR iLeftROIFake, iTopROIFake
 	NVAR iRightROIFake, iBottomROIFake	 	// the ROI boundaries
-	NVAR widthCCDFake, heightCCDFake
+	NVAR widthCCD, heightCCD
 
 	Variable sidxStatus
 	if (areWeForReal)
@@ -145,8 +159,8 @@ Function CameraROIClear()
 	else
 		iLeftROIFake=0
 		iTopROIFake=0
-		iRightROIFake=widthCCDFake
-		iBottomROIFake=heightCCDFake
+		iRightROIFake=widthCCD
+		iBottomROIFake=heightCCD
 	endif
 
 	// Restore the data folder
@@ -565,7 +579,7 @@ Function CameraAcquireStop()
 	NVAR sidxAcquirer
 	NVAR isAcquisitionOngoingFake
 	WAVE bufferFrame
-	NVAR widthCCDFake, heightCCDFake
+	NVAR widthCCD, heightCCD
 	NVAR widthBinFake, heightBinFake
 	NVAR iLeftROIFake, iTopROIFake
 	NVAR iRightROIFake, iBottomROIFake	// the ROI boundaries
@@ -859,7 +873,7 @@ Function CameraDestructor()
 	if (isSidxRootValid)
 		SIDXRootClose sidxRoot, errorMessage
 		if (sidxStatus!=0)
-			SIDXCameraGetLastError sidxRoot, errorMessage
+			SIDXCameraGetLastError sidxCamera, errorMessage
 			Printf "Error in SIDXRootClose: %s\r", errorMessage
 		endif
 		isSidxRootValid=0
@@ -888,15 +902,9 @@ Function CameraCCDWidthGet()
 	SetDataFolder root:DP_Camera
 
 	// Declare instance variables
-	NVAR areWeForReal
-	NVAR widthCCDFake
-	NVAR sidxCamera
+	NVAR widthCCD
 
-	if (areWeForReal)
-		value=nan	// need to fill this in
-	else
-		value=widthCCDFake
-	endif
+	value=widthCCD
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -916,14 +924,9 @@ Function CameraCCDHeightGet()
 	SetDataFolder root:DP_Camera
 
 	// Declare instance variables
-	NVAR areWeForReal
-	NVAR heightCCDFake
+	NVAR heightCCD
 
-	if (areWeForReal)
-		value=nan	// need to fill this in
-	else
-		value=heightCCDFake
-	endif
+	value=heightCCD
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -943,9 +946,20 @@ Function CameraGetBinWidth()
 	// Declare instance variables
 	NVAR areWeForReal
 	NVAR widthBinFake
+	NVAR sidxCamera
 
 	if (areWeForReal)
-		value=nan	// need to fill this in
+		Variable binWidth, binHeight
+		Variable sidxStatus
+		SIDXCameraBinningGet sidxCamera, binWidth, binHeight, sidxStatus
+		if (sidxStatus==0)
+			value=binWidth
+		else
+			value=nan
+			String errorMessage
+			SIDXCameraGetLastError sidxCamera, errorMessage
+			Printf "Error in SIDXCameraBinningGet: %s", errorMessage
+		endif
 	else
 		value=widthBinFake
 	endif
@@ -969,9 +983,20 @@ Function CameraGetBinHeight()
 	// Declare instance variables
 	NVAR areWeForReal
 	NVAR heightBinFake
+	NVAR sidxCamera
 
 	if (areWeForReal)
-		value=nan	// need to fill this in
+		Variable binWidth, binHeight
+		Variable sidxStatus
+		SIDXCameraBinningGet sidxCamera, binWidth, binHeight, sidxStatus
+		if (sidxStatus==0)
+			value=binWidth
+		else
+			value=nan
+			String errorMessage			
+			SIDXCameraGetLastError sidxCamera, errorMessage
+			Printf "Error in SIDXCameraBinningGet: %s", errorMessage
+		endif
 	else
 		value=heightBinFake
 	endif
