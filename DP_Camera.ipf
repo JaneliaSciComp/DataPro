@@ -657,15 +657,15 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 	Variable sidxStatus
 	if (areWeForReal)
 		if (isSidxAcquirerValid)
-			// It seems I need to pre-allocate frames here...
-			Make /FREE /N=(512,512,1) frames			
+			Make /O framesCaged
 			// OK, done allocating frames
-			SIDXAcquireRead sidxAcquirer, nFramesToRead, frames, sidxStatus
+			SIDXAcquireRead sidxAcquirer, nFramesToRead, framesCaged, sidxStatus	// doesn't seem to work if frames is a free wave
 			if (sidxStatus!=0)
 				String errorMessage
 				SIDXAcquireGetLastError sidxAcquirer, errorMessage
 				Abort sprintf1s("Error in SIDXAcquireRead: %s",errorMessage)
 			endif
+			Duplicate /FREE framesCaged, frames
 		else
 			Abort "Called CameraAcquireRead() before acquisition was armed."
 		endif
