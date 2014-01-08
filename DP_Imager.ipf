@@ -41,8 +41,8 @@ Function ImagerConstructor()
 	//Variable /G iFullFrameWave=1	// The "sweep number" to use for the next full-frame image
 	//Variable /G iFocusWave=1		// The "sweep number" to use for the next focus image
 	//Variable /G iVideoWave=1		// The "sweep number" to use for the video 
-	Variable /G binWidth=8	// CCD bins per pixel in x dimension
-	Variable /G binHeight=8	// CCD bins per pixel in y dimension
+	Make /O /U binSizeList={1,2,4,8}		// CCD bin size, an unsigned int
+	Variable /G binSizeIndex=0
 	Variable /G iROI=nan		// indicates the current ROI
 	//Variable /G binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth	// Width of the binned ROI image
 	//Variable /G binnedFrameHeight=(iROIBottom-iROITop+1)/binHeight		// Height of the binned ROI image
@@ -373,7 +373,7 @@ End
 
 
 
-Function ImagerSetBinWidth(newValue)
+Function ImagerSetBinSizeIndex(newValue)
 	Variable newValue
 	
 	// Switch to the data folder
@@ -381,12 +381,10 @@ Function ImagerSetBinWidth(newValue)
 	SetDataFolder root:DP_Imager
 	
 	// Declare instance vars
-	NVAR binWidth
+	NVAR binSizeIndex
 
 	// Set the value
-	if ( CameraIsvalidBinWidth(newValue) )
-		binWidth=newValue
-	endif
+	binSizeIndex=newValue
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -400,10 +398,11 @@ Function ImagerGetBinWidth()
 	SetDataFolder root:DP_Imager
 	
 	// Declare instance vars
-	NVAR binWidth
+	NVAR binSizeIndex
+	WAVE binSizeList
 
 	// Get the value
-	Variable value=binWidth
+	Variable value=binSizeList[binSizeIndex]
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -415,7 +414,28 @@ End
 
 
 
-Function ImagerSetBinHeight(newValue)
+Function ImagerGetBinSizeIndex()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR binSizeIndex
+
+	// Get the value
+	Variable value=binSizeIndex
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End
+
+
+
+
+Function ImagerSetBinSize(newValue)
 	Variable newValue
 	
 	// Switch to the data folder
@@ -423,13 +443,15 @@ Function ImagerSetBinHeight(newValue)
 	SetDataFolder root:DP_Imager
 	
 	// Declare instance vars
-	NVAR binHeight
+	NVAR binSizeIndex
+	WAVE binSizeList
 
-	// Set the value
-	if ( CameraIsvalidBinHeight(newValue) )
-		binHeight=newValue
+	// Find the value in the list, and set
+	FindValue /I=(newValue) binSizeList
+	if (V_value>=0)
+		binSizeIndex=V_value
 	endif
-	
+
 	// Restore the original DF
 	SetDataFolder savedDF	
 End
@@ -443,10 +465,37 @@ Function ImagerGetBinHeight()
 	SetDataFolder root:DP_Imager
 	
 	// Declare instance vars
-	NVAR binHeight
+	NVAR binSizeIndex
+	WAVE binSizeList
 
 	// Get the value
-	Variable value=binHeight
+	Variable value=binSizeList[binSizeIndex]
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End
+
+
+
+
+Function /S ImagerGetBinSizeListAsString()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE binSizeList
+
+	// Build up the return value
+	Variable n=numpnts(binSizeList)
+	String value=""
+	Variable i
+	for (i=0; i<n; i+=1)
+		value+=sprintf1v("%d;",binSizeList[i])
+	endfor
 	
 	// Restore the original DF
 	SetDataFolder savedDF	

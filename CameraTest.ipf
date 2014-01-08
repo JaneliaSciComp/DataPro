@@ -6,6 +6,7 @@
 
 #pragma rtGlobals=3		// Use modern global access method and strict wave access
 
+
 Function RootTest()
 	// Create the SIDX root object, referenced by sidxRoot
 	String errorMessage
@@ -18,10 +19,17 @@ Function RootTest()
 		Printf "Error in SIDXRootOpen: %s\r", errorMessage
 		return -1
 	endif
+	Printf "sidxRoot: %d\r", sidxRoot
 	// Close the SIDX root object
-	SIDXRootClose sidxRoot, errorMessage
+	SIDXRootClose sidxRoot, sidxStatus
 	if (sidxStatus!=0)
-		SIDXCameraGetLastError sidxRoot, errorMessage
+		SIDXRootGetLastError sidxRoot, errorMessage
+		Printf "Error in SIDXRootClose: %s\r", errorMessage
+		return -1
+	endif
+	SIDXRootClose sidxRoot, sidxStatus 	// what happens if we close again?
+	if (sidxStatus!=0)
+		SIDXRootGetLastError sidxRoot, errorMessage
 		Printf "Error in SIDXRootClose: %s\r", errorMessage
 		return -1
 	endif
@@ -29,42 +37,22 @@ End
 
 
 
-// Construct the object
-Function CameraTest()
-	// Save the current DF
-	String savedDFLocal=GetDataFolder(1)
-
-	// if the DF already exists, switch to it
-	if (!DataFolderExists("root:DP_CameraTest"))
-		// Create a new DF
-		NewDataFolder /O /S root:DP_CameraTest
-		String /G savedDF=""
-		Variable /G isSidxRootValid=0		// boolean
-		Variable /G sidxRoot
-		Variable /G isSidxCameraValid=0	// boolean
-		Variable /G sidxCamera	
-		Variable /G isSidxAcquireValid=0	// boolean
-		Variable /G sidxAcquire
-		Make /N=(512,512,1) frames			
-	else
-		SetDataFolder root:DP_CameraTest
-	endif
-
-	// Store the old DF
-	savedDF=savedDFLocal
-
-	// Create the SIDX root object, referenced by sidxRoot
+Function SingleFrameTest()
+	Variable sidxRoot
+	Variable sidxCamera	
+	Variable sidxAcquire
 	String errorMessage
 	String license=""		// License file is stored in C:/Program Files/Bruxton/SIDX
 	Variable sidxStatus
+
+	// Create the SIDX root object
 	SIDXRootOpen sidxRoot, license, sidxStatus
 	if (sidxStatus!=0)
 		SIDXRootGetLastError sidxRoot, errorMessage
 		Printf "Error in SIDXRootOpen: %s\r" errorMessage
-		CameraTestCleanUp()
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
 		return -1		
 	endif
-	isSidxRootValid=1
 		
 	// Scan for cameras	
 	Variable nCameras
@@ -74,7 +62,7 @@ Function CameraTest()
 	if (sidxStatus != 0)
 		SIDXRootGetLastError sidxRoot, errorMessage
 		Printf "Error in SIDXRootCameraScan: %s\r" errorMessage
-		CameraTestCleanUp()
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
 		return -1
 	endif
 	
@@ -92,7 +80,7 @@ Function CameraTest()
 	if (sidxStatus != 0)
 		SIDXRootGetLastError sidxRoot, errorMessage
 		Printf "Error in SIDXRootCameraScanGetCount: %s\r" errorMessage
-		CameraTestCleanUp()
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
 		return -1		
 	endif
 	Printf "# of cameras: %d\r", nCameras
@@ -100,7 +88,7 @@ Function CameraTest()
 	// If no cameras, abort
 	if (nCameras==0)
 		Printf "No cameras found.  Aborting.\r"
-		CameraTestCleanUp()
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
 		return -1	
 	endif
 	
@@ -110,7 +98,7 @@ Function CameraTest()
 	if (sidxStatus!=0)
 		SIDXRootGetLastError sidxRoot, errorMessage
 		printf "Error in SIDXRootCameraScanGetName: %s\r" errorMessage
-		CameraTestCleanUp()
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
 		return -1	
 	endif
 	printf "cameraName: %s\r", cameraName
@@ -120,19 +108,17 @@ Function CameraTest()
 	if (sidxStatus!=0)
 		SIDXRootGetLastError sidxRoot, errorMessage
 		printf "Error in SIDXRootCameraOpenName: %s\r" errorMessage
-		CameraTestCleanUp()
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
 		return -1			
 	endif
-	isSidxCameraValid=1
 
 	// Set to no trigger
 	Variable triggerMode=0	// don't wait for trigger
 	SIDXCameraTriggerModeSet sidxCamera, triggerMode, sidxStatus
 	if (sidxStatus!=0)
-		isSidxAcquireValid=0
 		SIDXCameraGetLastError sidxCamera, errorMessage
 		Printf "Error in SIDXCameraTriggerModeSet: %s\r", errorMessage
-		CameraTestCleanUp()
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
 		return -1
 	endif
 	
@@ -140,10 +126,9 @@ Function CameraTest()
 	Variable exposureInSeconds=0.1
 	SIDXCameraExposeSet sidxCamera, exposureInSeconds, sidxStatus	
 	if (sidxStatus!=0)
-		isSidxAcquireValid=0
 		SIDXCameraGetLastError sidxCamera, errorMessage
 		Printf "Error in SIDXCameraExposeSet: %s\r", errorMessage
-		CameraTestCleanUp()
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
 		return -1
 	endif
 	
@@ -151,40 +136,136 @@ Function CameraTest()
 	Variable nFrames=1
 	SIDXCameraAcquireImageSetLimit sidxCamera, nFrames, sidxStatus
 	if (sidxStatus!=0)
-		isSidxAcquireValid=0
 		SIDXCameraGetLastError sidxCamera, errorMessage
 		Printf "Error in SIDXCameraAcquireImageSetLimit: %s\r", errorMessage
-		CameraTestCleanUp()
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
 		return -1
 	endif
 	
 	// Set buffer to hold a single frame
 	SIDXCameraBufferCountSet sidxCamera, nFrames, sidxStatus	
 	if (sidxStatus!=0)
-		isSidxAcquireValid=0
 		SIDXCameraGetLastError sidxCamera, errorMessage
 		Printf "Error in SIDXCameraAcquireImageSetLimit: %s\r", errorMessage
-		CameraTestCleanUp()
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+
+	// Get the current binning settings
+	Variable binWidth, binHeight
+	SIDXCameraBinningGet sidxCamera, binWidth, binHeight, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraBinningGet: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+	Printf "binWidth: %d\r", binWidth
+	Printf "binHeight: %d\r", binHeight
+
+	// Get the current binning "type"
+	// This tells you something about the possible binning settings
+	// Apparently SIDX has many places where you can probe for what kind of a setting a particualr setting is.
+	// So, for binning, some cameras might have a list of discrete possible settings, whereas some might let
+	// you set it to an arbitrary integer (within limits)
+	// 0==boolean
+	// 1==integer
+	// 2==list
+	// 3==none
+	// 4==real
+	// 5==sequence
+	// 6==string
+	// For SIDXCameraBinningGetType, the value is always either none, or list
+	// If none, that means the X and Y binning are independently settable, and one could call
+	// SIDXCameraBinningXGetType/SIDXCameraBinningYGetType to get the setting type of each
+	// If list, it means that the binning for X&Y must be set at the same time, and there's a discrete list
+	// of possible values (e.g., powers of two)
+	Variable binningType
+	SIDXCameraBinningGetType sidxCamera, binningType, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraBinningGetType: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+	Printf "binningType: %d\r", binningType
+
+	// Get the number of binning modes
+	Variable nBinningModes
+	SIDXCameraBinningItemGetCount sidxCamera, nBinningModes, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraBinningItemGetCount: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+	Printf "nBinningModes: %d\r", nBinningModes
+
+	// List the binning modes
+	Variable iBinningMode
+	Variable binWidthThis
+	Variable binHeightThis
+	for (iBinningMode=0; iBinningMode<nBinningModes; iBinningMode+=1)
+		SIDXCameraBinningItemGetEntry sidxCamera, iBinningMode, binWidthThis, binHeightThis, sidxStatus
+		if (sidxStatus!=0)
+			SIDXCameraGetLastError sidxCamera, errorMessage
+			Printf "Error in SIDXCameraBinningGetEntry: %s\r", errorMessage
+			CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+			return -1
+		endif
+		Printf "     iBinningMode: %d: binWidth: %d, binHeight: %d\r", iBinningMode,binWidthThis, binHeightThis
+	endfor
+	
+	// Get the current binning mode
+	Variable currentBinningModeIndex
+	SIDXCameraBinningItemGet sidxCamera, currentBinningModeIndex, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraBinningItemGet: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+	Printf "currentBinningModeIndex: %d\r", currentBinningModeIndex
+	
+	// Set the binning mode
+ 	Variable desiredBinningModeIndex=3	// 4x4 bins
+	SIDXCameraBinningItemSet sidxCamera, desiredBinningModeIndex, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraBinningItemSet: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
 		return -1
 	endif
 	
+	// Check that it got set
+	SIDXCameraBinningItemGet sidxCamera, currentBinningModeIndex, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraBinningItemGet: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+	Printf "currentBinningModeIndex (after setting to %d): %d\r", currentBinningModeIndex, desiredBinningModeIndex
+	
+	
+	// Make a wave to store frame	
+	Make /O frames
+
 	// Create the SIDX Acquire object
 	SIDXCameraAcquireOpen sidxCamera, sidxAcquire, sidxStatus
 	if (sidxStatus!=0)
-		isSidxAcquireValid=0
 		SIDXCameraGetLastError sidxCamera, errorMessage
 		Printf "Error in SIDXCameraAcquireOpen: %s\r", errorMessage
-		CameraTestCleanUp()
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
 		return -1
 	endif
-	isSidxAcquireValid=1
 
 	// Start the acquisition
 	SIDXAcquireStart sidxAcquire, sidxStatus
 	if (sidxStatus!=0)
 		SIDXAcquireGetLastError sidxAcquire, errorMessage
 		Printf "Error in SIDXAcquireStart: %s\r",errorMessage
-		CameraTestCleanUp()
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
 		return -1
 	endif
 
@@ -196,7 +277,7 @@ Function CameraTest()
 		if (sidxStatus!=0)
 			SIDXAcquireGetLastError sidxAcquire, errorMessage
 			Printf "Error in SIDXAcquireGetStatus: %s\r" errorMessage
-			CameraTestCleanUp()
+			CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
 			return -1
 		endif
 	while (isAcquiring)
@@ -206,7 +287,7 @@ Function CameraTest()
 	if (sidxStatus!=0)
 		SIDXAcquireGetLastError sidxAcquire, errorMessage
 		Printf "Error in SIDXAcquireStop: %s\r", errorMessage
-		CameraTestCleanUp()
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
 		return -1
 	endif
 
@@ -217,90 +298,318 @@ Function CameraTest()
 	if (sidxStatus!=0)
 		SIDXAcquireGetLastError sidxAcquire, errorMessage
 		Printf "Error in SIDXAcquireRead: %s\r", errorMessage
-		CameraTestCleanUp()
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
 		return -1
 	endif
 
 	// Show the image
 	NewImage frames
 
-	// Close the acquire object
+	// Clean up
 	SIDXAcquireClose sidxAcquire, sidxStatus
-	if (sidxStatus!=0)
-		SIDXAcquireGetLastError sidxAcquire, errorMessage
-		Printf "Error in SIDXAcquireClose: %s\r", errorMessage
-		CameraTestCleanUp()
-		return -1
-	endif
-	
-	// Close the SIDX Camera object
 	SIDXCameraClose sidxCamera, sidxStatus
-	if (sidxStatus!=0)
-		SIDXCameraGetLastError sidxCamera, errorMessage
-		Printf "Error in SIDXCameraClose: %s\r", errorMessage
-		CameraTestCleanUp()
-		return -1
-	endif
-	
-//	// Close the SIDX root object --- Currently this throws an error
-//	SIDXRootClose sidxRoot, errorMessage
-//	if (sidxStatus!=0)
-//		SIDXCameraGetLastError sidxRoot, errorMessage
-//		Printf "Error in SIDXRootClose: %s\r", errorMessage
-//		CameraTestCleanUp()
-//		return -1
-//	endif
-	
-	// Restore the original data folder
-	SetDataFolder savedDF
+	SIDXRootClose sidxRoot, sidxStatus
 End
 
 
 
-
-Function CameraTestCleanUp()
-	SVAR savedDF
-	NVAR isSidxRootValid		// boolean
-	NVAR sidxRoot
-	NVAR isSidxCameraValid		// boolean
-	NVAR sidxCamera	
-	NVAR isSidxAcquireValid		// boolean
-	NVAR sidxAcquire
+Function CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+	Variable sidxRoot
+	Variable sidxCamera	
+	Variable sidxAcquire
 
 	Variable sidxStatus
+
+	SIDXAcquireClose sidxAcquire, sidxStatus
+	SIDXCameraClose sidxCamera, sidxStatus
+	SIDXRootClose sidxRoot, sidxStatus
+End
+
+
+
+
+Function VideoTest()
+	Variable sidxRoot
+	Variable sidxCamera	
+	Variable sidxAcquire
 	String errorMessage
+	String license=""		// License file is stored in C:/Program Files/Bruxton/SIDX
+	Variable sidxStatus
 
-	if (isSidxAcquireValid)
-		SIDXAcquireClose sidxAcquire, sidxStatus
-		if (sidxStatus == 0)
-			isSidxAcquireValid=0
-		else
-			SIDXAcquireGetLastError sidxAcquire, errorMessage
-			Printf "Error in SIDXAcquireClose: %s\r" errorMessage
-		endif
+	// video parameters
+	Variable numberOfFrames=3	// Acquire fails if 3<=numberOfFrames<=8 (??)
+	Variable exposure=0.1	// s
+
+	// Create the SIDX root object
+	SIDXRootOpen sidxRoot, license, sidxStatus
+	if (sidxStatus!=0)
+		SIDXRootGetLastError sidxRoot, errorMessage
+		Printf "Error in SIDXRootOpen: %s\r" errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1		
 	endif
-
-	if (isSidxCameraValid)
-		SIDXCameraClose sidxCamera, sidxStatus
-		if (sidxStatus == 0)
-			isSidxCameraValid=0
-		else
-			SIDXCameraGetLastError sidxCamera, errorMessage
-			Printf "Error in SIDXCameraClose: %s\r" errorMessage
-		endif
-	endif
-
-	if (isSidxRootValid)
-		//SIDXRootClose sidxRoot, sidxStatus
-		sidxStatus=0
-		if (sidxStatus == 0)
-			isSidxRootValid=0
-		else
-			SIDXRootGetLastError sidxRoot, errorMessage
-			Printf "Error in SIDXRootClose: %s\r" errorMessage
-		endif
+		
+	// Scan for cameras	
+	Variable nCameras
+	Printf "Scanning for cameras..."
+	SIDXRootCameraScan sidxRoot, sidxStatus
+	Printf "done.\r"
+	if (sidxStatus != 0)
+		SIDXRootGetLastError sidxRoot, errorMessage
+		Printf "Error in SIDXRootCameraScan: %s\r" errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
 	endif
 	
-	// Restore the original data folder
-	SetDataFolder savedDF
+	// Print scan report
+	String report
+	SIDXRootCameraScanGetReport sidxRoot, report, sidxStatus
+	if (sidxStatus != 0)
+		SIDXRootGetLastError sidxRoot, errorMessage
+		Printf "Error in SIDXRootCameraScanGetReport: %s\r" errorMessage
+	endif
+	Print report
+
+	// Get the number of cameras
+	SIDXRootCameraScanGetCount sidxRoot, nCameras, sidxStatus
+	if (sidxStatus != 0)
+		SIDXRootGetLastError sidxRoot, errorMessage
+		Printf "Error in SIDXRootCameraScanGetCount: %s\r" errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1		
+	endif
+	Printf "# of cameras: %d\r", nCameras
+	
+	// If no cameras, abort
+	if (nCameras==0)
+		Printf "No cameras found.  Aborting.\r"
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1	
+	endif
+	
+	// Get the name of the first camera
+	String cameraName
+	SIDXRootCameraScanGetName sidxRoot, 0, cameraName, sidxStatus
+	if (sidxStatus!=0)
+		SIDXRootGetLastError sidxRoot, errorMessage
+		printf "Error in SIDXRootCameraScanGetName: %s\r" errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1	
+	endif
+	printf "cameraName: %s\r", cameraName
+
+	// Create the SIDX camera object
+	SIDXRootCameraOpenName sidxRoot, cameraName, sidxCamera, sidxStatus
+	if (sidxStatus!=0)
+		SIDXRootGetLastError sidxRoot, errorMessage
+		printf "Error in SIDXRootCameraOpenName: %s\r" errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1			
+	endif
+
+	// Clear the ROI (which shouldn't be set)
+	SIDXCameraROIClear sidxCamera, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraROIClear: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+
+	// Get the current binning settings
+	Variable binWidth, binHeight
+	SIDXCameraBinningGet sidxCamera, binWidth, binHeight, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraBinningGet: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+	Printf "binWidth: %d\r", binWidth
+	Printf "binHeight: %d\r", binHeight
+
+	// Get the current binning "type"
+	// This tells you something about the possible binning settings
+	// Apparently SIDX has many places where you can probe for what kind of a setting a particualr setting is.
+	// So, for binning, some cameras might have a list of discrete possible settings, whereas some might let
+	// you set it to an arbitrary integer (within limits)
+	// 0==boolean
+	// 1==integer
+	// 2==list
+	// 3==none
+	// 4==real
+	// 5==sequence
+	// 6==string
+	// For SIDXCameraBinningGetType, the value is always either none, or list
+	// If none, that means the X and Y binning are independently settable, and one could call
+	// SIDXCameraBinningXGetType/SIDXCameraBinningYGetType to get the setting type of each
+	// If list, it means that the binning for X&Y must be set at the same time, and there's a discrete list
+	// of possible values (e.g., powers of two)
+	Variable binningType
+	SIDXCameraBinningGetType sidxCamera, binningType, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraBinningGetType: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+	Printf "binningType: %d\r", binningType
+
+	// Get the number of binning modes
+	Variable nBinningModes
+	SIDXCameraBinningItemGetCount sidxCamera, nBinningModes, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraBinningItemGetCount: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+	Printf "nBinningModes: %d\r", nBinningModes
+
+	// List the binning modes
+	Variable iBinningMode
+	Variable binWidthThis
+	Variable binHeightThis
+	for (iBinningMode=0; iBinningMode<nBinningModes; iBinningMode+=1)
+		SIDXCameraBinningItemGetEntry sidxCamera, iBinningMode, binWidthThis, binHeightThis, sidxStatus
+		if (sidxStatus!=0)
+			SIDXCameraGetLastError sidxCamera, errorMessage
+			Printf "Error in SIDXCameraBinningGetEntry: %s\r", errorMessage
+			CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+			return -1
+		endif
+		Printf "     iBinningMode: %d: binWidth: %d, binHeight: %d\r", iBinningMode,binWidthThis, binHeightThis
+	endfor
+	
+	// Get the current binning mode
+	Variable currentBinningModeIndex
+	SIDXCameraBinningItemGet sidxCamera, currentBinningModeIndex, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraBinningItemGet: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+	Printf "currentBinningModeIndex: %d\r", currentBinningModeIndex
+	
+	// Set the binning mode
+ 	Variable desiredBinningModeIndex=3	// 4x4 bins
+	SIDXCameraBinningItemSet sidxCamera, desiredBinningModeIndex, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraBinningItemSet: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+	
+	// Check that it got set
+	SIDXCameraBinningItemGet sidxCamera, currentBinningModeIndex, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraBinningItemGet: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+	Printf "currentBinningModeIndex (after setting to %d): %d\r", currentBinningModeIndex, desiredBinningModeIndex
+	
+	
+	// Set to no trigger
+	Variable triggerMode=0	// don't wait for trigger
+	SIDXCameraTriggerModeSet sidxCamera, triggerMode, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraTriggerModeSet: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+	
+	// Set exposure duration
+	SIDXCameraExposeSet sidxCamera, exposure, sidxStatus	
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraExposeSet: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+	
+	// Set to acquire specified number of frames
+	SIDXCameraAcquireImageSetLimit sidxCamera, numberOfFrames, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraAcquireImageSetLimit: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+	
+	// Set buffer to hold a single frame
+	SIDXCameraBufferCountSet sidxCamera, numberOfFrames, sidxStatus	
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraAcquireImageSetLimit: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+
+	// Make a wave to store frame	
+	Make /O frames
+
+	// Create the SIDX Acquire object
+	SIDXCameraAcquireOpen sidxCamera, sidxAcquire, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		Printf "Error in SIDXCameraAcquireOpen: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+
+	// Start the acquisition
+	SIDXAcquireStart sidxAcquire, sidxStatus
+	if (sidxStatus!=0)
+		SIDXAcquireGetLastError sidxAcquire, errorMessage
+		Printf "Error in SIDXAcquireStart: %s\r",errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+
+	// Keep getting the status until done
+	Variable isAcquiring=1
+	do
+		Sleep /S 0.1		// Sleep 0.1 seconds
+		SIDXAcquireGetStatus sidxAcquire, isAcquiring, sidxStatus
+		if (sidxStatus!=0)
+			SIDXAcquireGetLastError sidxAcquire, errorMessage
+			Printf "Error in SIDXAcquireGetStatus: %s\r" errorMessage
+			CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+			return -1
+		endif
+	while (isAcquiring)
+
+	// Stop the acquire
+	SIDXAcquireStop sidxAcquire, sidxStatus
+	if (sidxStatus!=0)
+		SIDXAcquireGetLastError sidxAcquire, errorMessage
+		Printf "Error in SIDXAcquireStop: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+
+	// Read the frames
+	// It seems I need to pre-allocate frames here...
+	// OK, done allocating frames
+	SIDXAcquireRead sidxAcquire, numberOfFrames, frames, sidxStatus
+	if (sidxStatus!=0)
+		SIDXAcquireGetLastError sidxAcquire, errorMessage
+		Printf "Error in SIDXAcquireRead: %s\r", errorMessage
+		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+		return -1
+	endif
+
+	// Show the image
+	NewImage frames
+
+	// Clean up
+	SIDXAcquireClose sidxAcquire, sidxStatus
+	SIDXCameraClose sidxCamera, sidxStatus
+	SIDXRootClose sidxRoot, sidxStatus
 End
+

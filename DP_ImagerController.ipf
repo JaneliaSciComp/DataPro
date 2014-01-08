@@ -85,7 +85,7 @@ End
 
 
 
-Function ICBinOrROISVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
+Function ICROISVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName
 	Variable varNum
 	String varStr
@@ -100,17 +100,20 @@ Function ICBinOrROISVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableContr
 		ImagerSetIROITop(iROI,varNum)
 	elseif ( AreStringsEqual(ctrlName,"iROIBottomSV") )
 		ImagerSetIROIBottom(iROI,varNum)
-	elseif ( AreStringsEqual(ctrlName,"binWidthSV") )
-		ImagerSetBinWidth(varNum)
-	elseif ( AreStringsEqual(ctrlName,"binHeightSV") )
-		ImagerSetBinHeight(varNum)
 	endif
 	ImagerViewModelChanged()
 	ImageBrowserModelImagerChanged()
 	ImageBrowserViewModelEtcChanged()
 End
 
-
+Function ICBinSizePMTouched(ctrlName,popNum,popStr) : PopupMenuControl
+	String ctrlName
+	Variable popNum	// which item is currently selected (1-based)
+	String popStr		// contents of current popup item as string
+	
+	ImagerSetBinSizeIndex(popNum-1)
+	ImagerViewModelChanged()		
+End
 
 Function ICCurrentROIIndexSVTwiddled(svStruct) : SetVariableControl
 	STRUCT WMSetVariableAction &svStruct
@@ -290,11 +293,15 @@ Function ImagerContAcquireVideoStart()
 	WAVE roisWave
 	NVAR videoExposure
 	NVAR ccdTargetTemperature	
-	NVAR binWidth
-	NVAR binHeight
+	NVAR binSizeIndex
+	WAVE binSizeList
 	SVAR videoWaveBaseName
 	NVAR nFramesForVideo
 	NVAR isTriggered
+	
+	// Unpack the bin width, bin height
+	Variable binWidth=binSizeList[binSizeIndex]
+	Variable binHeight=binSizeList[binSizeIndex]
 	
 	// Do stuff
 	Variable iSweep=SweeperGetNextSweepIndex()

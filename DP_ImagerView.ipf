@@ -26,7 +26,7 @@ Function ImagerViewConstructor() : Panel
 	Variable xOffset=1550
 	Variable yOffset=54
 	Variable panelWidth=330
-	Variable panelHeight=560
+	Variable panelHeight=562
 	NewPanel /W=(xOffset,yOffset,xOffset+panelWidth,yOffset+panelHeight)  /N=ImagerView /K=1 as "Imager Controls"
 	ModifyPanel /W=ImagerView fixedSize=1
 
@@ -131,7 +131,7 @@ Function ImagerViewConstructor() : Panel
 	// Video Group
 	//
 	groupBoxYOffset+=groupBoxHeight+groupBoxSpaceHeight
-	groupBoxHeight=94
+	groupBoxHeight=96
 	GroupBox videoGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Video"
 
 	// Take video button
@@ -172,18 +172,28 @@ Function ImagerViewConstructor() : Panel
 
 	// is triggered SV
 	xOffset=240
-	yOffset=yOffset+1
+	//yOffset=yOffset+1
+	yOffset=yOffset+12
 	width=40
 	CheckBox isTriggeredCB, win=ImagerView, pos={xOffset,yOffset}, size={width,height}, proc=ICTriggeredCBTwiddled, title="Triggered"
 
-	// bin width SV
-	yOffset=276
-	SetVariable binWidthSV,win=ImagerView,pos={55,yOffset},size={90,14},proc=ICBinOrROISVTwiddled,title="Bin Width:"
-	SetVariable binWidthSV,win=ImagerView,format="%d"
+	// Bin Size Popup Menu
+	xOffset=106
+	yOffset=274
+	PopupMenu binSizePM, win=ImagerView, pos={xOffset,yOffset}, size={1,22}, proc=ICBinSizePMTouched, title="Bin Size:"
+	String binSizeListAsString=ImagerGetBinSizeListAsString()
+	Variable binSizeIndex=ImagerGetBinSizeIndex()
+	String binSizeListAsStringFU="\""+binSizeListAsString+"\""
+	PopupMenu binSizePM, win=ImagerView, value=#binSizeListAsStringFU, mode=binSizeIndex+1
 
-	// bin height SV
-	SetVariable binHeightSV,win=ImagerView,pos={174,yOffset},size={90,14},proc=ICBinOrROISVTwiddled,title="Bin Height:"
-	SetVariable binHeightSV,win=ImagerView,format="%d"
+//	// bin width SV
+//	yOffset=276
+//	SetVariable binWidthSV,win=ImagerView,pos={55,yOffset},size={90,14},proc=ICBinSVTwiddled,title="Bin Width:"
+//	SetVariable binWidthSV,win=ImagerView,format="%d"
+//
+//	// bin height SV
+//	SetVariable binHeightSV,win=ImagerView,pos={174,yOffset},size={90,14},proc=ICBinSVTwiddled,title="Bin Height:"
+//	SetVariable binHeightSV,win=ImagerView,format="%d"
 	
 	
 	//
@@ -230,22 +240,22 @@ Function ImagerViewConstructor() : Panel
 	
 	// Top
 	width=72
-	SetVariable iROITopSV,win=ImagerView,pos={xCenter-width/2,yCenter-dy-height},size={width,height},proc=ICBinOrROISVTwiddled,title="Top:"
+	SetVariable iROITopSV,win=ImagerView,pos={xCenter-width/2,yCenter-dy-height},size={width,height},proc=ICROISVTwiddled,title="Top:"
 	SetVariable iROITopSV,win=ImagerView,format="%0.1f"
 	
 	// Left
 	width=72
-	SetVariable iROILeftSV,win=ImagerView,pos={xCenter-dx-width,yCenter-height/2},size={width,height},proc=ICBinOrROISVTwiddled,title="Left:"
+	SetVariable iROILeftSV,win=ImagerView,pos={xCenter-dx-width,yCenter-height/2},size={width,height},proc=ICROISVTwiddled,title="Left:"
 	SetVariable iROILeftSV,win=ImagerView,format="%0.1f"
 	
 	// Right
 	width=78
-	SetVariable iROIRightSV,win=ImagerView,pos={xCenter+dx,yCenter-height/2},size={width,height},proc=ICBinOrROISVTwiddled,title="Right:"
+	SetVariable iROIRightSV,win=ImagerView,pos={xCenter+dx,yCenter-height/2},size={width,height},proc=ICROISVTwiddled,title="Right:"
 	SetVariable iROIRightSV,win=ImagerView,format="%0.1f"
 	
 	// Bottom
 	width=86
-	SetVariable iROIBottomSV,win=ImagerView,pos={xCenter-width/2,yCenter+dy},size={width,height},proc=ICBinOrROISVTwiddled,title="Bottom:"
+	SetVariable iROIBottomSV,win=ImagerView,pos={xCenter-width/2,yCenter+dy},size={width,height},proc=ICROISVTwiddled,title="Bottom:"
 	SetVariable iROIBottomSV,win=ImagerView,format="%0.1f"
 
 	// Arrow buttons to move the current ROI
@@ -384,8 +394,9 @@ Function ImagerViewUpdate()
 	//Variable roiHeightInBins=(iROIBottom-iROITop)/binHeight
 
 	// Update stuff
-	SetVariable binWidthSV,win=ImagerView,limits={1,ccdWidth,1},value= _NUM:binWidth
-	SetVariable binHeightSV,win=ImagerView,limits={1,ccdHeight,1},value= _NUM:binHeight
+	PopupMenu binSizePM, win=ImagerView, mode=ImagerGetBinSizeIndex()+1
+	//SetVariable binWidthSV,win=ImagerView,limits={1,ccdWidth,1},value= _NUM:binWidth
+	//SetVariable binHeightSV,win=ImagerView,limits={1,ccdHeight,1},value= _NUM:binHeight
 	if (nROIs==0)
 		SetVariable iROISV, win=ImagerView, value= _STR:"(none)", disable=2
 		Button deleteROIButton, win=ImagerView, disable=2

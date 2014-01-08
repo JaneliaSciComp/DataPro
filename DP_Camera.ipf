@@ -222,8 +222,8 @@ End
 
 
 
-Function CameraBinningSet(nBinWidth,nBinHeight)
-	Variable nBinWidth, nBinHeight
+Function CameraBinningItemSet(iBinningMode)
+	Variable iBinningMode
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
@@ -233,24 +233,23 @@ Function CameraBinningSet(nBinWidth,nBinHeight)
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR widthBinFake, heightBinFake
+	NVAR iBinningModeFake
 
 	// Set the bin sizes
 	Variable sidxStatus
 	if (areWeForReal)
 		if (isSidxCameraValid)
-			SIDXCameraBinningSet sidxCamera, nBinWidth, nBinHeight, sidxStatus
+			SIDXCameraBinningItemSet sidxCamera, iBinningMode, sidxStatus
 			if (sidxStatus!=0)
 				String errorMessage
 				SIDXCameraGetLastError sidxCamera, errorMessage
-				Abort sprintf1s("Error in SIDXCameraBinningSet: %s",errorMessage)
+				Abort sprintf1s("Error in SIDXCameraBinningItemSet: %s",errorMessage)
 			endif
 		else
-			Abort "Called CameraBinningSet() before camera was created."
+			Abort "Called CameraBinningItemSet() before camera was created."
 		endif
 	else
-		widthBinFake=nBinWidth
-		heightBinFake=nBinHeight
+		iBinningModeFake=iBinningMode
 	endif
 
 	// Restore the data folder
@@ -871,9 +870,9 @@ Function CameraDestructor()
 	
 	// Close the SIDX root object
 	if (isSidxRootValid)
-		SIDXRootClose sidxRoot, errorMessage
+		SIDXRootClose sidxRoot, sidxStatus
 		if (sidxStatus!=0)
-			SIDXCameraGetLastError sidxCamera, errorMessage
+			SIDXRootGetLastError sidxCamera, errorMessage
 			Printf "Error in SIDXRootClose: %s\r", errorMessage
 		endif
 		isSidxRootValid=0
@@ -990,7 +989,7 @@ Function CameraGetBinHeight()
 		Variable sidxStatus
 		SIDXCameraBinningGet sidxCamera, binWidth, binHeight, sidxStatus
 		if (sidxStatus==0)
-			value=binWidth
+			value=binHeight
 		else
 			value=nan
 			String errorMessage			

@@ -135,11 +135,27 @@ Function FancyCameraBinningAndROISet(nBinWidth, nBinHeight, isROI, iLeft, iTop, 
 		endif
 	endif
 	
+	// Translate the bin sizes into a binning mode
+	// This code is entirely Andor iXon Ultra-specific
+	Variable binningModeIndex
+	if ( (nBinWidth==1) && (nBinHeight==1) )
+		binningModeIndex=0
+	elseif ( (nBinWidth==2) && (nBinHeight==2) )
+		binningModeIndex=1
+	elseif ( (nBinWidth==4) && (nBinHeight==4) )
+		binningModeIndex=2
+	elseif ( (nBinWidth==8) && (nBinHeight==8) )
+		binningModeIndex=3
+	else
+		return 0
+	endif	
+	
 	// Clear the ROI	
 	CameraROIClear()
 	
 	// Set the binning
-	CameraBinningSet(nBinWidth, nBinHeight)
+	CameraBinningItemSet(binningModeIndex)
+	
 	// Set the camera ROI
 	if (isROI)
 		CameraROISet(iLeft, iTop, iRight, iBottom)
