@@ -337,7 +337,7 @@ Function VideoTest()
 	Variable sidxStatus
 
 	// video parameters
-	Variable numberOfFrames=3	// Acquire fails if 3<=numberOfFrames<=8 (??)
+	Variable numberOfFrames=5	// Acquire fails if 3<=numberOfFrames<=4 (??)
 	Variable exposure=0.1	// s
 
 	// Create the SIDX root object
@@ -407,93 +407,93 @@ Function VideoTest()
 		return -1			
 	endif
 
-	// Clear the ROI (which shouldn't be set)
-	SIDXCameraROIClear sidxCamera, sidxStatus
-	if (sidxStatus!=0)
-		SIDXCameraGetLastError sidxCamera, errorMessage
-		Printf "Error in SIDXCameraROIClear: %s\r", errorMessage
-		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
-		return -1
-	endif
+//	// Clear the ROI (which shouldn't be set)
+//	SIDXCameraROIClear sidxCamera, sidxStatus
+//	if (sidxStatus!=0)
+//		SIDXCameraGetLastError sidxCamera, errorMessage
+//		Printf "Error in SIDXCameraROIClear: %s\r", errorMessage
+//		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+//		return -1
+//	endif
 
-	// Get the current binning settings
-	Variable binWidth, binHeight
-	SIDXCameraBinningGet sidxCamera, binWidth, binHeight, sidxStatus
-	if (sidxStatus!=0)
-		SIDXCameraGetLastError sidxCamera, errorMessage
-		Printf "Error in SIDXCameraBinningGet: %s\r", errorMessage
-		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
-		return -1
-	endif
-	Printf "binWidth: %d\r", binWidth
-	Printf "binHeight: %d\r", binHeight
-
-	// Get the current binning "type"
-	// This tells you something about the possible binning settings
-	// Apparently SIDX has many places where you can probe for what kind of a setting a particualr setting is.
-	// So, for binning, some cameras might have a list of discrete possible settings, whereas some might let
-	// you set it to an arbitrary integer (within limits)
-	// 0==boolean
-	// 1==integer
-	// 2==list
-	// 3==none
-	// 4==real
-	// 5==sequence
-	// 6==string
-	// For SIDXCameraBinningGetType, the value is always either none, or list
-	// If none, that means the X and Y binning are independently settable, and one could call
-	// SIDXCameraBinningXGetType/SIDXCameraBinningYGetType to get the setting type of each
-	// If list, it means that the binning for X&Y must be set at the same time, and there's a discrete list
-	// of possible values (e.g., powers of two)
-	Variable binningType
-	SIDXCameraBinningGetType sidxCamera, binningType, sidxStatus
-	if (sidxStatus!=0)
-		SIDXCameraGetLastError sidxCamera, errorMessage
-		Printf "Error in SIDXCameraBinningGetType: %s\r", errorMessage
-		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
-		return -1
-	endif
-	Printf "binningType: %d\r", binningType
-
-	// Get the number of binning modes
-	Variable nBinningModes
-	SIDXCameraBinningItemGetCount sidxCamera, nBinningModes, sidxStatus
-	if (sidxStatus!=0)
-		SIDXCameraGetLastError sidxCamera, errorMessage
-		Printf "Error in SIDXCameraBinningItemGetCount: %s\r", errorMessage
-		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
-		return -1
-	endif
-	Printf "nBinningModes: %d\r", nBinningModes
-
-	// List the binning modes
-	Variable iBinningMode
-	Variable binWidthThis
-	Variable binHeightThis
-	for (iBinningMode=0; iBinningMode<nBinningModes; iBinningMode+=1)
-		SIDXCameraBinningItemGetEntry sidxCamera, iBinningMode, binWidthThis, binHeightThis, sidxStatus
-		if (sidxStatus!=0)
-			SIDXCameraGetLastError sidxCamera, errorMessage
-			Printf "Error in SIDXCameraBinningGetEntry: %s\r", errorMessage
-			CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
-			return -1
-		endif
-		Printf "     iBinningMode: %d: binWidth: %d, binHeight: %d\r", iBinningMode,binWidthThis, binHeightThis
-	endfor
-	
-	// Get the current binning mode
+//	// Get the current binning settings
+//	Variable binWidth, binHeight
+//	SIDXCameraBinningGet sidxCamera, binWidth, binHeight, sidxStatus
+//	if (sidxStatus!=0)
+//		SIDXCameraGetLastError sidxCamera, errorMessage
+//		Printf "Error in SIDXCameraBinningGet: %s\r", errorMessage
+//		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+//		return -1
+//	endif
+//	Printf "binWidth: %d\r", binWidth
+//	Printf "binHeight: %d\r", binHeight
+//
+//	// Get the current binning "type"
+//	// This tells you something about the possible binning settings
+//	// Apparently SIDX has many places where you can probe for what kind of a setting a particualr setting is.
+//	// So, for binning, some cameras might have a list of discrete possible settings, whereas some might let
+//	// you set it to an arbitrary integer (within limits)
+//	// 0==boolean
+//	// 1==integer
+//	// 2==list
+//	// 3==none
+//	// 4==real
+//	// 5==sequence
+//	// 6==string
+//	// For SIDXCameraBinningGetType, the value is always either none, or list
+//	// If none, that means the X and Y binning are independently settable, and one could call
+//	// SIDXCameraBinningXGetType/SIDXCameraBinningYGetType to get the setting type of each
+//	// If list, it means that the binning for X&Y must be set at the same time, and there's a discrete list
+//	// of possible values (e.g., powers of two)
+//	Variable binningType
+//	SIDXCameraBinningGetType sidxCamera, binningType, sidxStatus
+//	if (sidxStatus!=0)
+//		SIDXCameraGetLastError sidxCamera, errorMessage
+//		Printf "Error in SIDXCameraBinningGetType: %s\r", errorMessage
+//		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+//		return -1
+//	endif
+//	Printf "binningType: %d\r", binningType
+//
+//	// Get the number of binning modes
+//	Variable nBinningModes
+//	SIDXCameraBinningItemGetCount sidxCamera, nBinningModes, sidxStatus
+//	if (sidxStatus!=0)
+//		SIDXCameraGetLastError sidxCamera, errorMessage
+//		Printf "Error in SIDXCameraBinningItemGetCount: %s\r", errorMessage
+//		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+//		return -1
+//	endif
+//	Printf "nBinningModes: %d\r", nBinningModes
+//
+//	// List the binning modes
+//	Variable iBinningMode
+//	Variable binWidthThis
+//	Variable binHeightThis
+//	for (iBinningMode=0; iBinningMode<nBinningModes; iBinningMode+=1)
+//		SIDXCameraBinningItemGetEntry sidxCamera, iBinningMode, binWidthThis, binHeightThis, sidxStatus
+//		if (sidxStatus!=0)
+//			SIDXCameraGetLastError sidxCamera, errorMessage
+//			Printf "Error in SIDXCameraBinningGetEntry: %s\r", errorMessage
+//			CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+//			return -1
+//		endif
+//		Printf "     iBinningMode: %d: binWidth: %d, binHeight: %d\r", iBinningMode,binWidthThis, binHeightThis
+//	endfor
+//	
+//	// Get the current binning mode
 	Variable currentBinningModeIndex
-	SIDXCameraBinningItemGet sidxCamera, currentBinningModeIndex, sidxStatus
-	if (sidxStatus!=0)
-		SIDXCameraGetLastError sidxCamera, errorMessage
-		Printf "Error in SIDXCameraBinningItemGet: %s\r", errorMessage
-		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
-		return -1
-	endif
-	Printf "currentBinningModeIndex: %d\r", currentBinningModeIndex
+//	SIDXCameraBinningItemGet sidxCamera, currentBinningModeIndex, sidxStatus
+//	if (sidxStatus!=0)
+//		SIDXCameraGetLastError sidxCamera, errorMessage
+//		Printf "Error in SIDXCameraBinningItemGet: %s\r", errorMessage
+//		CameraCleanUp(sidxRoot,sidxCamera,sidxAcquire)
+//		return -1
+//	endif
+//	Printf "currentBinningModeIndex: %d\r", currentBinningModeIndex
 	
 	// Set the binning mode
- 	Variable desiredBinningModeIndex=3	// 4x4 bins
+ 	Variable desiredBinningModeIndex=2	// 4x4 bins
 	SIDXCameraBinningItemSet sidxCamera, desiredBinningModeIndex, sidxStatus
 	if (sidxStatus!=0)
 		SIDXCameraGetLastError sidxCamera, errorMessage
@@ -541,8 +541,10 @@ Function VideoTest()
 		return -1
 	endif
 	
-	// Set buffer to hold a single frame
-	SIDXCameraBufferCountSet sidxCamera, numberOfFrames, sidxStatus	
+	// Set buffer to hold the desired number of frames
+	Variable bufferDepth = max(numberOfFrames,50)
+	Printf "bufferDepth: %d\r", bufferDepth
+	SIDXCameraBufferCountSet sidxCamera, bufferDepth, sidxStatus	
 	if (sidxStatus!=0)
 		SIDXCameraGetLastError sidxCamera, errorMessage
 		Printf "Error in SIDXCameraAcquireImageSetLimit: %s\r", errorMessage
