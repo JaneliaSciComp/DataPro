@@ -35,12 +35,12 @@ Function CameraConstructor()
 
 		// This stuff is only needed/used if there's no camera and we're faking
 		Variable /G modeTriggerFake=0		// the trigger mode of the fake camera. 0=>free-running, 1=> each frame is triggered, and there are other settings
-		Variable /G widthBinFake=1
-		Variable /G heightBinFake=1
-		Variable /G iLeftROIFake=0
-		Variable /G iTopROIFake=0
-		Variable /G iBottomROIFake=heightCCD
-		Variable /G iRightROIFake=widthCCD
+		Variable /G binWidth=1		// We sometimes want to know this when the camera is armed, and it therefore won't tell us, so we store it
+		Variable /G binHeight=1
+		Variable /G iLeft=0		// The left bound of the ROI.  The includes the pels with this index.
+		Variable /G iTop=0
+		Variable /G iBottom=nan
+		Variable /G iRight=nan
 		Variable /G exposureFake=0.1		// exposure for the fake camera, in sec
 		Variable /G temperatureTargetFake=-20		// degC
 		Variable /G nFramesBufferFake=1		// How many frames in the fake on-camera frame buffer
@@ -100,15 +100,20 @@ Function CameraConstructor()
 				printf "isSidxCameraValid: %d\r", isSidxCameraValid
 				areWeForReal=isSidxCameraValid		// if no valid camera, then we fake
 				if (isSidxCameraValid)
-					Variable x0, y0, xf, yf
-					SIDXCameraROIGet sidxCamera, x0, y0, xf, yf, sidxStatus
-					Printf "ROI: %d %d %d %d\r", x0, y0, xf, yf
-					widthCCD=xf-x0+1
-					heightCCD=yf-y0+1
+					SIDXCameraROIGetValue sidxCamera, iLeft, iTop, iRight, iBottom, sidxStatus
+					if (sidxStatus!=0)
+						SIDXCameraGetLastError sidxCamera, errorMessage
+						Abort sprintf1s("Error in SIDXCameraROIGetValue: %s",errorMessage)
+					endif						
+					Printf "ROI: %d %d %d %d\r", iLeft, iTop, iRight, iBottom
+					widthCCD=iRight-iLeft+1
+					heightCCD=iBottom-iTop+1
 				else
 					// fake CCD size
 					widthCCD=512
 					heightCCD=512
+					iBottom=heightCCD-1
+					iRight=widthCCD-1
 				endif
 			else
 				// if zero cameras, then we fake
@@ -116,6 +121,8 @@ Function CameraConstructor()
 				// fake CCD size
 				widthCCD=512
 				heightCCD=512
+				iBottom=heightCCD-1
+				iRight=widthCCD-1
 			endif
 		endif
 		//printf "areWeForReal: %d\r", areWeForReal
@@ -141,27 +148,32 @@ Function CameraROIClear()
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR iLeftROIFake, iTopROIFake
-	NVAR iRightROIFake, iBottomROIFake	 	// the ROI boundaries
+	NVAR iLeft, iTop
+	NVAR iRight, iBottom	 	// the ROI boundaries
 	NVAR widthCCD, heightCCD
 
 	Variable sidxStatus
 	if (areWeForReal)
 		if (isSidxCameraValid)
+			String errorMessage
 			SIDXCameraROIClear sidxCamera, sidxStatus
 			if (sidxStatus!=0)
-				String errorMessage
 				SIDXCameraGetLastError sidxCamera, errorMessage
 				Abort sprintf1s("Error in SIDXCameraROIClear: %s",errorMessage)
+			endif	
+			SIDXCameraROIGetValue sidxCamera, iLeft, iTop, iRight, iBottom, sidxStatus
+			if (sidxStatus!=0)
+				SIDXCameraGetLastError sidxCamera, errorMessage
+				Abort sprintf1s("Error in SIDXCameraROIGetValue: %s",errorMessage)
 			endif	
 		else
 			Abort "Called CameraROIClear() before camera was created."
 		endif
 	else
-		iLeftROIFake=0
-		iTopROIFake=0
-		iRightROIFake=widthCCD
-		iBottomROIFake=heightCCD
+		iLeft=0
+		iTop=0
+		iRight=widthCCD-1
+		iBottom=heightCCD-1
 	endif
 
 	// Restore the data folder
@@ -172,17 +184,17 @@ End
 
 
 
-Function CameraROISet(iLeft, iTop, iRight, iBottom)
+Function CameraROISet(iLeftNew, iTopNew, iRightNew, iBottomNew)
 	// Set the camera ROI
 	// The ROI is specified in the unbinned pixel coordinates, which are image-style coordinates, 
 	// with the upper-left pels being (0,0)
-	// The ROI includes x coordinates [iLeft,iRight).  That is, the pixel with coord iRight is _not_ included.
-	// The ROI includes y coordinates [iTop,iBottom).  That is, the pixel with coord iBottom is _not_ included.
+	// The ROI includes x coordinates [iLeft,iRight].  That is, the pixel with coord iRight is included.
+	// The ROI includes y coordinates [iTop,iBottom].  That is, the pixel with coord iBottom is included.
 	// iRight, iLeft must be an integer multiple of the current bin width
 	// iBottom, iTop must be an integer multiple of the current bin height
-	// The ROI will be (iRight-iLeft)/nBinWidth bins wide, and
-	// (iBottom-iTop)/nBinHeight bins high.	
-	Variable iLeft,iTop,iRight,iBottom
+	// The ROI will be (iRight-iLeft+1)/nBinWidth bins wide, and
+	// (iBottom-iTop+1)/nBinHeight bins high.	
+	Variable iLeftNew,iTopNew,iRightNew,iBottomNew
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
@@ -192,27 +204,35 @@ Function CameraROISet(iLeft, iTop, iRight, iBottom)
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR iLeftROIFake, iTopROIFake
-	NVAR iBottomROIFake, iRightROIFake	 // the ROI boundaries
+	NVAR iLeft, iTop
+	NVAR iBottom, iRight	 // the ROI boundaries
 
 	// Actually set the ROI coordinates
 	Variable sidxStatus
 	if (areWeForReal)
 		if (isSidxCameraValid)
-			SIDXCameraROISet sidxCamera, iLeft, iTop, iRight, iBottom, sidxStatus
+			String errorMessage
+			SIDXCameraROISet sidxCamera, iLeftNew, iTopNew, iRightNew, iBottomNew, sidxStatus
 			if (sidxStatus!=0)
-				String errorMessage
 				SIDXCameraGetLastError sidxCamera, errorMessage
 				Abort sprintf1s("Error in SIDXCameraROISet: %s",errorMessage)
+			endif
+			SIDXCameraROIGetValue sidxCamera, iLeft, iTop, iRight, iBottom, sidxStatus
+			if (sidxStatus!=0)
+				SIDXCameraGetLastError sidxCamera, errorMessage
+				Abort sprintf1s("Error in SIDXCameraROIGetValue: %s",errorMessage)
+			endif			
+			if ( (iLeft!=iLeftNew) || (iTop!=iTopNew) || (iRight!=iRightNew) || (iBottom!=iBottomNew) )
+				Abort "ROI settings on camera do not match requested ROI settings."				
 			endif
 		else
 			Abort "Called CameraROISet() before camera was created."
 		endif
 	else
-		iLeftROIFake=iLeft
-		iTopROIFake=iTop
-		iRightROIFake=iRight
-		iBottomROIFake=iBottom
+		iLeft=iLeftNew
+		iTop=iTopNew
+		iRight=iRightNew
+		iBottom=iBottomNew
 	endif
 
 	// Restore the data folder
@@ -235,6 +255,8 @@ Function CameraBinningItemSet(iBinningMode)
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
 	NVAR iBinningModeFake
+	NVAR binWidth
+	NVAR binHeight
 
 	// Set the bin sizes
 	Variable sidxStatus
@@ -246,11 +268,15 @@ Function CameraBinningItemSet(iBinningMode)
 				SIDXCameraGetLastError sidxCamera, errorMessage
 				Abort sprintf1s("Error in SIDXCameraBinningItemSet: %s",errorMessage)
 			endif
+			CameraSyncBinWidthAndHeight()
 		else
 			Abort "Called CameraBinningItemSet() before camera was created."
 		endif
 	else
 		iBinningModeFake=iBinningMode
+		// This next is entirely Ander iXon Ultra-specific
+		binWidth=2^iBinningMode
+		binHeight=2^iBinningMode
 	endif
 
 	// Restore the data folder
@@ -589,9 +615,9 @@ Function CameraAcquireStop()
 	NVAR isAcquisitionOngoingFake
 	WAVE bufferFrame
 	NVAR widthCCD, heightCCD
-	NVAR widthBinFake, heightBinFake
-	NVAR iLeftROIFake, iTopROIFake
-	NVAR iRightROIFake, iBottomROIFake	// the ROI boundaries
+	NVAR binWidth, binHeight
+	NVAR iLeft, iTop
+	NVAR iRight, iBottom	// the ROI boundaries
 	NVAR nFramesBufferFake
 	NVAR nFramesToAcquireFake
 	NVAR countReadFrameFake
@@ -611,13 +637,13 @@ Function CameraAcquireStop()
 		endif
 	else
 		// Fill the framebuffer with fake data
-		Variable widthROIFake=iRightROIFake-iLeftROIFake
-		Variable heightROIFake=iBottomROIFake-iTopROIFake
-		Variable widthROIBinnedFake=floor(widthROIFake/widthBinFake)
-		Variable heightROIBinnedFake=floor(heightROIFake/heightBinFake)			
+		Variable widthROIFake=iRight-iLeft+1
+		Variable heightROIFake=iBottom-iTop+1
+		Variable widthROIBinnedFake=floor(widthROIFake/binWidth)
+		Variable heightROIBinnedFake=floor(heightROIFake/binHeight)			
 		Redimension /N=(widthROIBinnedFake,heightROIBinnedFake,nFramesBufferFake) bufferFrame	// sic, this is how Igor Pro organizes image data
-		SetScale /P x, iLeftROIFake+0.5*widthBinFake, widthBinFake, "px", bufferFrame		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
-		SetScale /P y, iTopROIFake+0.5*heightBinFake, heightBinFake, "px", bufferFrame
+		//SetScale /P x, iLeft+0.5*binWidth, binWidth, "px", bufferFrame		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
+		//SetScale /P y, iTop+0.5*binHeight, binHeight, "px", bufferFrame
 		Variable interExposureDelay=0.001		// s, could be shift time for FT camera, or readout time for non-FT camera
 		Variable frameInterval=exposureFake+interExposureDelay		// s, Add a millisecond of shift time, for fun
 		Variable frameOffset=exposureFake/2
@@ -668,23 +694,24 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 
 	// Declare instance variables
 	NVAR areWeForReal
+	NVAR sidxCamera
 	NVAR isSidxAcquirerValid
 	NVAR sidxAcquirer
 	NVAR isAcquisitionOngoingFake
 	WAVE bufferFrame
-	NVAR iLeftROIFake, iTopROIFake
-	NVAR iRightROIFake, iBottomROIFake
-	NVAR widthBinFake, heightBinFake
+	NVAR iLeft, iTop
+	NVAR iRight, iBottom
+	NVAR binWidth, binHeight
 	NVAR countReadFrameFake
 
 	Variable sidxStatus
+	String errorMessage
 	if (areWeForReal)
 		if (isSidxAcquirerValid)
 			Make /O framesCaged
 			// OK, done allocating frames
 			SIDXAcquireRead sidxAcquirer, nFramesToRead, framesCaged, sidxStatus	// doesn't seem to work if frames is a free wave
 			if (sidxStatus!=0)
-				String errorMessage
 				SIDXAcquireGetLastError sidxAcquirer, errorMessage
 				Abort sprintf1s("Error in SIDXAcquireRead: %s",errorMessage)
 			endif
@@ -696,13 +723,21 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 		if (isAcquisitionOngoingFake)
 			Abort "Have to stop the fake acquisition before reading the fake data."
 		endif
-		Variable widthROIFake=iRightROIFake-iLeftROIFake
-		Variable heightROIFake=iBottomROIFake-iTopROIFake
-		Variable widthROIBinnedFake=floor(widthROIFake/widthBinFake)
-		Variable heightROIBinnedFake=floor(heightROIFake/heightBinFake)			
+		Variable widthROIFake=iRight-iLeft+1
+		Variable heightROIFake=iBottom-iTop+1
+		Variable widthROIBinnedFake=floor(widthROIFake/binWidth)
+		Variable heightROIBinnedFake=floor(heightROIFake/binHeight)			
 		Duplicate /FREE /R=[][][countReadFrameFake,countReadFrameFake+nFramesToRead] bufferFrame frames
 		countReadFrameFake+=nFramesToRead
 	endif
+
+	//
+	// Set x, y, t axis for the frames
+	//
+		
+	// Set the x and y offset and scale
+	SetScale /P x, iLeft+0.5*binWidth, binWidth, "px", frames		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
+	SetScale /P y, iTop+0.5*binHeight, binHeight, "px", frames
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -946,36 +981,12 @@ End
 
 
 Function CameraGetBinWidth()
-	Variable value
-	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Camera
-
-	// Declare instance variables
-	NVAR areWeForReal
-	NVAR widthBinFake
-	NVAR sidxCamera
-
-	if (areWeForReal)
-		Variable binWidth, binHeight
-		Variable sidxStatus
-		SIDXCameraBinningGet sidxCamera, binWidth, binHeight, sidxStatus
-		if (sidxStatus==0)
-			value=binWidth
-		else
-			value=nan
-			String errorMessage
-			SIDXCameraGetLastError sidxCamera, errorMessage
-			Printf "Error in SIDXCameraBinningGet: %s", errorMessage
-		endif
-	else
-		value=widthBinFake
-	endif
-	
-	// Restore the data folder
-	SetDataFolder savedDF	
-	
+	NVAR binWidth
+	Variable value=binWidth
+	SetDataFolder savedDF		
 	return value
 End
 
@@ -983,36 +994,12 @@ End
 
 
 Function CameraGetBinHeight()
-	Variable value
-	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Camera
-
-	// Declare instance variables
-	NVAR areWeForReal
-	NVAR heightBinFake
-	NVAR sidxCamera
-
-	if (areWeForReal)
-		Variable binWidth, binHeight
-		Variable sidxStatus
-		SIDXCameraBinningGet sidxCamera, binWidth, binHeight, sidxStatus
-		if (sidxStatus==0)
-			value=binHeight
-		else
-			value=nan
-			String errorMessage			
-			SIDXCameraGetLastError sidxCamera, errorMessage
-			Printf "Error in SIDXCameraBinningGet: %s", errorMessage
-		endif
-	else
-		value=heightBinFake
-	endif
-	
-	// Restore the data folder
-	SetDataFolder savedDF	
-	
+	NVAR binHeight
+	Variable value=binHeight
+	SetDataFolder savedDF		
 	return value
 End
 
@@ -1088,6 +1075,41 @@ Function CameraIsValidBinHeight(nBinHeight)
 	endif
 	return result
 End
+
+
+
+
+
+
+// private methods
+Function CameraSyncBinWidthAndHeight()
+	// Set the instance var for bin width to the camera setting
+	Variable value
+	
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR sidxCamera
+	NVAR binWidth
+	NVAR binHeight
+
+	if (areWeForReal)
+		Variable sidxStatus
+		SIDXCameraBinningGet sidxCamera, binWidth, binHeight, sidxStatus
+		if (sidxStatus!=0)
+			String errorMessage
+			SIDXCameraGetLastError sidxCamera, errorMessage
+			Abort sprintf1s("Error in SIDXCameraBinningGet: %s", errorMessage)
+		endif
+	endif
+	
+	// Restore the data folder
+	SetDataFolder savedDF	
+End
+
 
 
 
