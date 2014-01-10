@@ -276,8 +276,13 @@ End
 
 
 Function ImagerContAcquireVideo()
-	Variable iSweep=ImagerContAcquireVideoStart()
-	ImagerContAcquireFinish(iSweep)
+	Variable iSweep=SweeperGetNextSweepIndex()
+	Variable wasVideoAcqStarted=ImagerContAcquireVideoStart()
+	if (wasVideoAcqStarted)
+		ImagerContAcquireFinish(iSweep)
+	else
+		Abort FancyCameraGetErrorMessage()
+	endif
 	// Make everything update itself
 	DoUpdate		
 End
@@ -304,58 +309,26 @@ Function ImagerContAcquireVideoStart()
 	Variable binHeight=binSizeList[binSizeIndex]
 	
 	// Do stuff
-	Variable iSweep=SweeperGetNextSweepIndex()
-	ImagerSetIsAcquiringVideo(1)
-	ImagerViewModelChanged()
-	DoUpdate	
+	//Variable iSweep=SweeperGetNextSweepIndex()
 	FancyCameraSetupVideoAcq(binWidth,binHeight,roisWave,isTriggered,videoExposure,ccdTargetTemperature)
-	EpiLightSetIsOn(1)
-	
-	//Wave imageWave=FancyCameraArmAcquireDisarm(nFramesForVideo)		// This will call SweeperControllerAcquireTrial() if in triggered mode
-	FancyCameraArm(nFramesForVideo)
-	//Wave imageWave=FancyCameraAcquire(nFrames)		// This will call SweeperControllerAcquireTrial() if in triggered mode
-	FancyCameraStartAcquire()
-//	Wave imageWave=FancyCameraWaitForFrames(nFramesForVideo)
-//	FancyCameraDisarm()
-//	
-//	EpiLightSetIsOn(0)
-//	String imageWaveName=sprintf2sv("%s_%d", videoWaveBaseName, iSweep)
-//	MoveWave imageWave, $imageWaveName 	// Cage the once-free wave
-//	
-//	// Calculate ROI signals, store in root DF
-//	AddROIWavesToRoot(imageWave,roisWave,iSweep)
-//	
-//	// Tell the image browser controller to show the newly-acquired video
-//	ImageBrowserContSetVideo(imageWaveName)
-//	
-//	// If video acquisition is free-running, notify the Sweeper that free-running video was just acquired.
-//	// This updates the next sweep index.  We don't need to do this for triggered video b/c the call to
-//	// SweeperControllerAcquireTrial()
-//	if (!isTriggered)
-//		SweeperFreeRunVideoJustAcqd(iSweep)
-//	endif
-//	SweeperViewSweeperChanged()
-//	
-//	// Update the sweep number and signals in the DP Browsers
-//	Wave browserNumbers=GetAllBrowserNumbers()  // returns a free wave	
-//	Variable nBrowsers=numpnts(browserNumbers)
-//	Variable i
-//	for (i=0; i<nBrowsers; i+=1)
-//		BrowserContSetCurSweepIndex(browserNumbers[i],iSweep)
-//	endfor
-//	
-//	// Tell that model that we're done acquiring video, and update the view to reflect
-//	ImagerSetIsAcquiringVideo(0)
-//	ImagerViewModelChanged()
-//	
-//	// Make everything update itself
-//	DoUpdate	
+	Variable wasVideoAcqStarted
+	Variable isCameraArmed=FancyCameraArm(nFramesForVideo)
+	if (isCameraArmed)
+		ImagerSetIsAcquiringVideo(1)
+		EpiLightSetIsOn(1)
+		ImagerViewSomethingChanged()
+		DoUpdate	
+		FancyCameraStartAcquire()
+		wasVideoAcqStarted=1
+	else
+		wasVideoAcqStarted=0
+	endif
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
 	
 	// Return the sweep index
-	return iSweep
+	return wasVideoAcqStarted
 End
 
 
@@ -378,18 +351,7 @@ Function ImagerContAcquireFinish(iSweep)
 	NVAR nFramesForVideo
 	NVAR isTriggered
 	
-//	// Do stuff
-//	Variable iSweep=SweeperGetNextSweepIndex()
-//	ImagerSetIsAcquiringVideo(1)
-//	ImagerViewModelChanged()
-//	DoUpdate	
-//	FancyCameraSetupVideoAcq(binWidth,binHeight,roisWave,isTriggered,videoExposure,ccdTargetTemperature)
-//	EpiLightSetIsOn(1)
-//	
-//	//Wave imageWave=FancyCameraArmAcquireDisarm(nFramesForVideo)		// This will call SweeperControllerAcquireTrial() if in triggered mode
-//	FancyCameraArm(nFramesForVideo)
-//	//Wave imageWave=FancyCameraAcquire(nFrames)		// This will call SweeperControllerAcquireTrial() if in triggered mode
-//	FancyCameraStartAcquire()
+	// Do stuff
 	Wave imageWave=FancyCameraWaitForFrames(nFramesForVideo)
 	FancyCameraDisarm()
 	
@@ -468,40 +430,49 @@ Function ImagerContFocus()
 	String imageWaveNameAbs=sprintf1s("root:DP_Imager:%s",imageWaveNameRel)	
 	EpiLightSetIsOn(1)
 	Variable	nFrames=1	
-	FancyCameraArm(nFrames)
-	Variable iFrame=0
-	do
-		// Start a sequence of images. In the current case, there is 
-		// only one frame in the sequence.
-		//Wave imageWaveFree=FancyCameraAcquire(nFrames)
-		FancyCameraStartAcquire()
-		Wave imageWaveFree=FancyCameraWaitForFrames(nFrames)
-		if (iFrame==0)
-			MoveWave imageWaveFree, $imageWaveNameAbs 	// Cage the once-free wave
-			Wave imageWaveCaged= $imageWaveNameAbs
-			ImageBrowserContSetVideo(imageWaveNameRel)
+	Variable isCameraArmed=FancyCameraArm(nFrames)
+	if (isCameraArmed)
+		Variable iFrame=0
+		do
+			// Start a sequence of images. In the current case, there is 
+			// only one frame in the sequence.
+			//Wave imageWaveFree=FancyCameraAcquire(nFrames)
+			FancyCameraStartAcquire()
+			Wave imageWaveFree=FancyCameraWaitForFrames(nFrames)
+			if (iFrame==0)
+				MoveWave imageWaveFree, $imageWaveNameAbs 	// Cage the once-free wave
+				Wave imageWaveCaged= $imageWaveNameAbs
+				ImageBrowserContSetVideo(imageWaveNameRel)
+				DoUpdate
+			else
+				// replace the wave data with the new data
+				imageWaveCaged=imageWaveFree[p][q]
+				DoUpdate
+			endif
+			iFrame+=1
+			printf "."
 			DoUpdate
-		else
-			// replace the wave data with the new data
-			imageWaveCaged=imageWaveFree[p][q]
-			DoUpdate
-		endif
-		iFrame+=1
-		printf "."
+		while (!EscapeKeyWasPressed())	
+		EpiLightSetIsOn(0)
+		ImagerSetIsFocusing(0)
+		ImagerViewModelChanged()
 		DoUpdate
-	while (!EscapeKeyWasPressed())	
-	EpiLightSetIsOn(0)
-	ImagerSetIsFocusing(0)
-	ImagerViewModelChanged()
-	DoUpdate
-	FancyCameraDisarm()	
-		
-	SweeperFreeRunVideoJustAcqd(iFullFrameWave)
-	SweeperViewSweeperChanged()
-
-	// Call this to make sure the image gets auto-scaled properly if needed
-	ImageBrowserModelSetVideo(imageWaveNameRel)
-	ImageBrowserViewModelEtcChanged()	
+		FancyCameraDisarm()	
+			
+		SweeperFreeRunVideoJustAcqd(iFullFrameWave)
+		SweeperViewSweeperChanged()
+	
+		// Call this to make sure the image gets auto-scaled properly if needed
+		ImageBrowserModelSetVideo(imageWaveNameRel)
+		ImageBrowserViewModelEtcChanged()	
+	else
+		// If unable to arm camera
+		EpiLightSetIsOn(0)
+		ImagerSetIsFocusing(0)
+		ImagerViewModelChanged()
+		SetDataFolder savedDF
+		Abort FancyCameraGetErrorMessage()
+	endif		
 
 	// Restore the data folder
 	SetDataFolder savedDF
@@ -525,27 +496,27 @@ Function ImagerContAcquireSnapshot()
 	FancyCameraSetupSnapshotAcq(snapshotExposure,ccdTargetTemperature)
 	EpiLightSetIsOn(1)
 	Variable nFrames=1
-	//Wave imageWave=FancyCameraArmAcquireDisarm(nFrames)
-	FancyCameraArm(nFrames)
-	FancyCameraStartAcquire()
-	Wave imageWave=FancyCameraWaitForFrames(nFrames)
-	FancyCameraDisarm()
-	
-	EpiLightSetIsOn(0)
-	Variable iFullFrameWave=SweeperGetNextSweepIndex()
-	String imageWaveName=sprintf2sv("%s_%d", snapshotWaveBaseName, iFullFrameWave)
-	if (WaveExists($imageWaveName))
-		 KillWaves $imageWaveName
-	endif
-	MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
-	ImageBrowserContSetVideo(imageWaveName) 
-	String allVideoWaveNames=WaveList(snapshotWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
-	SweeperFreeRunVideoJustAcqd(iFullFrameWave)
-	SweeperViewSweeperChanged()
+	Variable isCameraArmed=FancyCameraArm(nFrames)
+	if (isCameraArmed)
+		FancyCameraStartAcquire()
+		Wave imageWave=FancyCameraWaitForFrames(nFrames)
+		FancyCameraDisarm()
+		EpiLightSetIsOn(0)
+		Variable iFullFrameWave=SweeperGetNextSweepIndex()
+		String imageWaveName=sprintf2sv("%s_%d", snapshotWaveBaseName, iFullFrameWave)
+		if (WaveExists($imageWaveName))
+			 KillWaves $imageWaveName
+		endif
+		MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
+		ImageBrowserContSetVideo(imageWaveName) 
+		String allVideoWaveNames=WaveList(snapshotWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
+		SweeperFreeRunVideoJustAcqd(iFullFrameWave)
+		SweeperViewSweeperChanged()
+	else
+		EpiLightSetIsOn(0)
+		Abort FancyCameraGetErrorMessage()
+	endif			
 
 	// Restore the data folder
 	SetDataFolder savedDF
 End
-
-
-

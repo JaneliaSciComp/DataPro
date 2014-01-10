@@ -23,6 +23,8 @@ Function FancyCameraConstructor()
 		// IMAGING GLOBALS
 		NewDataFolder /O /S root:DP_FancyCamera
 		
+		// Instance variables
+		String /G mostRecentErrorMessage=""		// When errors occur, they get stored here.		
 	endif
 
 	// Initialize the camera
@@ -174,6 +176,7 @@ Function FancyCameraArm(nFrames)
 	// Arm the camera for acquiring n frames.
 	// If isTriggered is true, each frame must be TTL triggered.  If false, the 
 	// acquisition is free-running.
+	// This returns 1 is the camera was successfully armed, 0 otherwise.
 	Variable nFrames
 
 	// Change to the imaging data folder
@@ -187,10 +190,16 @@ Function FancyCameraArm(nFrames)
 	CameraBufferCountSet(nFrames)
 
 	// Arm the acquisition
-	CameraAcquireArm()
+	Variable success=CameraAcquireArm()
+	if (!success)
+		// If a problem, propagate the error message
+		FancyCameraSetErrorMessage(CameraGetErrorMessage())
+	endif
 	
 	// Restore the original DF
 	SetDataFolder savedDF
+	
+	return success
 End
 
 
@@ -296,27 +305,6 @@ Function FancyCameraDisarm()
 	// Restore the original DF
 	SetDataFolder savedDF
 End
-
-
-
-
-
-
-
-
-//Function /WAVE FancyCameraArmAcquireDisarm(nFrames)
-//	// Acquire nFrames, and return the resulting video
-//	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
-//	// acquisition is free-running.  This also handles the allocation and de-allocation
-//	// of the on-camera framebuffer.
-//
-//	Variable nFrames
-//
-//	FancyCameraArm(nFrames)
-//	Wave imageWave=FancyCameraAcquire(nFrames)		// This will call SweeperControllerAcquireTrial() if in triggered mode
-//	FancyCameraDisarm()
-//	return imageWave
-//End
 
 
 
@@ -451,4 +439,43 @@ Function /WAVE FancyCameraAlignROIToBins(roiWave)
 	Variable iBottom=ceil(roiWave[3]/nBinHeight)*nBinHeight		
 	alignedROI={iLeft,iTop,iRight,iBottom}		
 	return alignedROI	
+End
+
+
+
+
+
+Function /S FancyCameraGetErrorMessage()
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_FancyCamera
+
+	// Declare instance variables
+	SVAR mostRecentErrorMessage
+
+	String result=mostRecentErrorMessage
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+	
+	return result
+End
+
+
+
+
+Function FancyCameraSetErrorMessage(newValue)
+	String newValue
+
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_FancyCamera
+
+	// Declare instance variables
+	SVAR mostRecentErrorMessage
+
+	mostRecentErrorMessage=newValue
+
+	// Restore the data folder
+	SetDataFolder savedDF	
 End

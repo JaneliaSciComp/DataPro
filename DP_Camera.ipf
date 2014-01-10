@@ -48,6 +48,7 @@ Function CameraConstructor()
 		Variable /G isAcquireOpenFake=0		// Whether acquisition is "armed"
 		Variable /G isAcquisitionOngoingFake=0
 		Variable /G countReadFrameFake=0		// the first frame to be read by subsequent read commands
+		String /G mostRecentErrorMessage=""		// When errors occur, they get stored here.
 
 		// Create the SIDX root object, referenced by sidxRoot
 		String errorMessage
@@ -452,7 +453,8 @@ End
 
 
 Function CameraAcquireArm()
-	// This basically "arms" the camera for acquisition
+	// This basically "arms" the camera for acquisition.  It returns 1 if
+	// this was successful, 0 otherwise.
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
@@ -466,6 +468,7 @@ Function CameraAcquireArm()
 	NVAR sidxAcquirer
 	NVAR isAcquireOpenFake
 
+	Variable success
 	Variable sidxStatus
 	if (areWeForReal)
 		if (isSidxCameraValid)
@@ -474,19 +477,26 @@ Function CameraAcquireArm()
 				isSidxAcquirerValid=0
 				String errorMessage
 				SIDXCameraGetLastError sidxCamera, errorMessage
-				Abort sprintf1s("Error in SIDXCameraAcquireOpen: %s",errorMessage)
+				CameraSetErrorMessage(sprintf1s("Error in SIDXCameraAcquireOpen: %s",errorMessage))
+				//Abort sprintf1s("Error in SIDXCameraAcquireOpen: %s",errorMessage)
+				success=0
 			else
 				isSidxAcquirerValid=1
+				success=1
 			endif
 		else
-			Abort "Called CameraAcquireArm() before camera was created."
+			Printf "Called CameraAcquireArm() before camera was created.\r"
+			success=0
 		endif
 	else
 		isAcquireOpenFake=1
+		success=1
 	endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
+	
+	return success
 End
 
 
@@ -1009,6 +1019,44 @@ End
 
 
 
+Function /S CameraGetErrorMessage()
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	SVAR mostRecentErrorMessage
+
+	String result=mostRecentErrorMessage
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+	
+	return result
+End
+
+
+
+
+Function CameraSetErrorMessage(newValue)
+	String newValue
+
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	SVAR mostRecentErrorMessage
+
+	mostRecentErrorMessage=newValue
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+End
+
+
+
+
 Function CameraIsValidBinWidth(nBinWidth)
 	Variable nBinWidth
 	
@@ -1040,4 +1088,7 @@ Function CameraIsValidBinHeight(nBinHeight)
 	endif
 	return result
 End
+
+
+
 

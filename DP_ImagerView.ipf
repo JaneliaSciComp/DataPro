@@ -328,6 +328,12 @@ Function ImagerViewEpiLightChanged()
 End
 
 
+Function ImagerViewSomethingChanged()
+	ImagerViewUpdate()
+End
+
+
+
 Function ImagerViewUpdate()
 	// This is intended to be a private method in ImagerView.
 

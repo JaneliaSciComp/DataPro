@@ -239,7 +239,7 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	// Bring the sweeper forward
 	DoWindow /F SweepControl
 	
-	// Make sure the build-in stimuli are up-to-date	
+	// Make sure the built-in stimuli are up-to-date	
 	SweeperUpdateStepPulseWave()
 	SweeperUpdateSynPulseWave()
 	
@@ -264,7 +264,10 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 
 	// If doing imaging, and triggered acquistion, configure the camera
 	if ( IsImagingModuleInUse() && ImagerGetIsTriggered() )
-		ImagerContAcquireVideoStart()
+		Variable wasVideoAcqStarted=ImagerContAcquireVideoStart()
+		if (!wasVideoAcqStarted)
+			Abort FancyCameraGetErrorMessage()
+		endif
 	endif
 
 	// Actually acquire the data for this sweep
