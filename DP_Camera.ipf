@@ -511,7 +511,7 @@ Function CameraAcquireArm()
 				success=1
 			endif
 		else
-			Printf "Called CameraAcquireArm() before camera was created.\r"
+			CameraSetErrorMessage("Called CameraAcquireArm() before camera was created.")
 			success=0
 		endif
 	else
@@ -531,6 +531,9 @@ End
 
 
 Function CameraAcquireStart()
+	// This starts the acquisition.  It returns 1 if
+	// this was successful, 0 otherwise.
+
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Camera
@@ -541,6 +544,7 @@ Function CameraAcquireStart()
 	NVAR sidxAcquirer
 	NVAR isAcquisitionOngoingFake
 
+	Variable success
 	Variable sidxStatus
 	if (areWeForReal)
 		if (isSidxAcquirerValid)
@@ -548,17 +552,25 @@ Function CameraAcquireStart()
 			if (sidxStatus!=0)
 				String errorMessage
 				SIDXAcquireGetLastError sidxAcquirer, errorMessage
-				Abort sprintf1s("Error in SIDXAcquireStart: %s",errorMessage)
+				//Abort sprintf1s("Error in SIDXAcquireStart: %s",errorMessage)
+				CameraSetErrorMessage(sprintf1s("Error in SIDXAcquireStart: %s",errorMessage))
+				success=0
+			else
+				success=1
 			endif
 		else
-			Abort "Called CameraAcquireStart() before acquisition was armed."
+			CameraSetErrorMessage("Called CameraAcquireStart() before acquisition was armed.")
+			success=0
 		endif
 	else
 		isAcquisitionOngoingFake=1
+		success=1
 	endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
+	
+	return success
 End
 
 
@@ -583,7 +595,7 @@ Function CameraAcquireGetStatus()
 			if (sidxStatus!=0)
 				String errorMessage
 				SIDXAcquireGetLastError sidxAcquirer, errorMessage
-				Abort sprintf1s("Error in SIDXAcquireStart: %s",errorMessage)
+				Abort sprintf1s("Error in SIDXAcquireGetStatus: %s",errorMessage)
 			endif
 		else
 			Abort "Called CameraAcquireGetStatus() before acquisition was armed."

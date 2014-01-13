@@ -108,34 +108,34 @@ Function FancyCameraBinningAndROISet(nBinWidth, nBinHeight, isROI, iLeft, iTop, 
 	Variable isROI
 	Variable iLeft,iTop,iRight,iBottom
 	
-	// Check that the bin size is an integer fraction of the CCD size
-	// If not, return
-	Variable nBinsWide=CameraCCDWidthGet()/nBinWidth
-	if ( !IsInteger(nBinsWide) )
-		//SetDataFolder savedDF	
-		return 0
-	endif
-	Variable nBinsHigh=CameraCCDHeightGet()/nBinHeight
-	if ( !IsInteger(nBinsHigh) )
-		//SetDataFolder savedDF	
-		return 0
-	endif
-
-	// Check that the ROI dimensions are legal
-	if (isROI)
-		if ( !IsInteger(iLeft/nBinWidth) )
-			return 0
-		endif
-		if ( !IsInteger(iRight/nBinWidth) )
-			return 0
-		endif
-		if ( !IsInteger(iTop/nBinHeight) )
-			return 0
-		endif
-		if ( !IsInteger(iBottom/nBinHeight) )
-			return 0
-		endif
-	endif
+//	// Check that the bin size is an integer fraction of the CCD size
+//	// If not, return
+//	Variable nBinsWide=CameraCCDWidthGet()/nBinWidth
+//	if ( !IsInteger(nBinsWide) )
+//		//SetDataFolder savedDF	
+//		return 0
+//	endif
+//	Variable nBinsHigh=CameraCCDHeightGet()/nBinHeight
+//	if ( !IsInteger(nBinsHigh) )
+//		//SetDataFolder savedDF	
+//		return 0
+//	endif
+//
+//	// Check that the ROI dimensions are legal
+//	if (isROI)
+//		if ( !IsInteger(iLeft/nBinWidth) )
+//			return 0
+//		endif
+//		if ( !IsInteger(iRight/nBinWidth) )
+//			return 0
+//		endif
+//		if ( !IsInteger(iTop/nBinHeight) )
+//			return 0
+//		endif
+//		if ( !IsInteger(iBottom/nBinHeight) )
+//			return 0
+//		endif
+//	endif
 	
 	// Translate the bin sizes into a binning mode
 	// This code is entirely Andor iXon Ultra-specific
@@ -254,8 +254,15 @@ End
 
 
 Function FancyCameraStartAcquire()
-	// Prep for the acquisition (this will also start the acquisition unless it's a triggered acquire)
-	CameraAcquireStart()
+	// Prep for the acquisition (this will also start the acquisition unless it's a triggered acquire).
+	// Returns 1 on success, 0 on failure.
+	Variable success=CameraAcquireStart()
+	if (!success)
+		// If a problem, propagate the error message
+		FancyCameraSetErrorMessage(CameraGetErrorMessage())
+	endif
+	
+	return success
 End
 
 

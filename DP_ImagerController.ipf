@@ -298,15 +298,15 @@ Function ImagerContAcquireVideoStart()
 	WAVE roisWave
 	NVAR videoExposure
 	NVAR ccdTargetTemperature	
-	NVAR binSizeIndex
-	WAVE binSizeList
+	//NVAR binSizeIndex
+	//WAVE binSizeList
 	SVAR videoWaveBaseName
 	NVAR nFramesForVideo
 	NVAR isTriggered
 	
 	// Unpack the bin width, bin height
-	Variable binWidth=binSizeList[binSizeIndex]
-	Variable binHeight=binSizeList[binSizeIndex]
+	Variable binWidth=ImagerGetBinWidth()
+	Variable binHeight=ImagerGetBinHeight()
 	
 	// Do stuff
 	//Variable iSweep=SweeperGetNextSweepIndex()
@@ -318,8 +318,13 @@ Function ImagerContAcquireVideoStart()
 		EpiLightSetIsOn(1)
 		ImagerViewSomethingChanged()
 		DoUpdate	
-		FancyCameraStartAcquire()
-		wasVideoAcqStarted=1
+		wasVideoAcqStarted=FancyCameraStartAcquire()
+		if (!wasVideoAcqStarted)
+			// Do this if the acquire failed to start
+			EpiLightSetIsOn(0)
+			ImagerSetIsAcquiringVideo(0)
+			ImagerViewSomethingChanged()
+		endif
 	else
 		wasVideoAcqStarted=0
 	endif
@@ -437,21 +442,30 @@ Function ImagerContFocus()
 			// Start a sequence of images. In the current case, there is 
 			// only one frame in the sequence.
 			//Wave imageWaveFree=FancyCameraAcquire(nFrames)
-			FancyCameraStartAcquire()
-			Wave imageWaveFree=FancyCameraWaitForFrames(nFrames)
-			if (iFrame==0)
-				MoveWave imageWaveFree, $imageWaveNameAbs 	// Cage the once-free wave
-				Wave imageWaveCaged= $imageWaveNameAbs
-				ImageBrowserContSetVideo(imageWaveNameRel)
+			Variable wasAcqStarted=FancyCameraStartAcquire()
+			if (wasAcqStarted)
+				Wave imageWaveFree=FancyCameraWaitForFrames(nFrames)
+				if (iFrame==0)
+					MoveWave imageWaveFree, $imageWaveNameAbs 	// Cage the once-free wave
+					Wave imageWaveCaged= $imageWaveNameAbs
+					ImageBrowserContSetVideo(imageWaveNameRel)
+					DoUpdate
+				else
+					// replace the wave data with the new data
+					imageWaveCaged=imageWaveFree[p][q]
+					DoUpdate
+				endif
+				iFrame+=1
+				printf "."
 				DoUpdate
 			else
-				// replace the wave data with the new data
-				imageWaveCaged=imageWaveFree[p][q]
-				DoUpdate
-			endif
-			iFrame+=1
-			printf "."
-			DoUpdate
+				// if acquire failed to start
+				EpiLightSetIsOn(0)
+				ImagerSetIsFocusing(0)
+				ImagerViewModelChanged()
+				SetDataFolder savedDF
+				Abort FancyCameraGetErrorMessage()				
+			endif			
 		while (!EscapeKeyWasPressed())	
 		EpiLightSetIsOn(0)
 		ImagerSetIsFocusing(0)
@@ -498,21 +512,30 @@ Function ImagerContAcquireSnapshot()
 	Variable nFrames=1
 	Variable isCameraArmed=FancyCameraArm(nFrames)
 	if (isCameraArmed)
-		FancyCameraStartAcquire()
-		Wave imageWave=FancyCameraWaitForFrames(nFrames)
+		//FancyCameraStartAcquire()
+		Variable wasAcqStarted=FancyCameraStartAcquire()
+		if (wasAcqStarted)
+			Wave imageWave=FancyCameraWaitForFrames(nFrames)
+		endif
 		FancyCameraDisarm()
 		EpiLightSetIsOn(0)
-		Variable iFullFrameWave=SweeperGetNextSweepIndex()
-		String imageWaveName=sprintf2sv("%s_%d", snapshotWaveBaseName, iFullFrameWave)
-		if (WaveExists($imageWaveName))
-			 KillWaves $imageWaveName
+		if (wasAcqStarted)
+			Variable iFullFrameWave=SweeperGetNextSweepIndex()
+			String imageWaveName=sprintf2sv("%s_%d", snapshotWaveBaseName, iFullFrameWave)
+			if (WaveExists($imageWaveName))
+				 KillWaves $imageWaveName
+			endif
+			MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
+			ImageBrowserContSetVideo(imageWaveName) 
+			String allVideoWaveNames=WaveList(snapshotWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
+			SweeperFreeRunVideoJustAcqd(iFullFrameWave)
+			SweeperViewSweeperChanged()
+		else
+			// acquire failed to start
+			Abort FancyCameraGetErrorMessage()
 		endif
-		MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
-		ImageBrowserContSetVideo(imageWaveName) 
-		String allVideoWaveNames=WaveList(snapshotWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
-		SweeperFreeRunVideoJustAcqd(iFullFrameWave)
-		SweeperViewSweeperChanged()
 	else
+		// camera failed to arm
 		EpiLightSetIsOn(0)
 		Abort FancyCameraGetErrorMessage()
 	endif			
