@@ -51,8 +51,8 @@ Function FancyCameraSetupSnapshotAcq(exposure,targetTemperature)
 	FancyCameraBinningAndROISet(nBinWidth, nBinHeight, isAtLeastOneROI, nan, nan, nan, nan)
 
 	// Set the trigger mode
-	Variable NO_TRIGGER=0	// start immediately
-	CameraTriggerModeSet(NO_TRIGGER)
+	Variable ALWAYS=0	// start immediately
+	CameraTriggerModeSet(ALWAYS)
 	
 	// Set the exposure
 	Variable exposureInSeconds=exposure/1000		// ms->s
@@ -85,9 +85,10 @@ Function FancyCameraSetupVideoAcq(nBinWidth,nBinHeight,roisWave,isTriggered,expo
 	FancyCameraBinningAndROISet(nBinWidth, nBinHeight, isAtLeastOneROI, cameraROI[0], cameraROI[1], cameraROI[2], cameraROI[3])
 
 	// Set the trigger mode
-	Variable NO_TRIGGER=0	// start immediately
-	Variable TRIGGER_EXPOSURE_START=1	// start of each frame is TTL-triggered
-	Variable triggerMode=(isTriggered ? TRIGGER_EXPOSURE_START : NO_TRIGGER)
+	Variable ALWAYS=0	// start immediately
+	Variable EXPOSURE_START=1	// start of each frame is TTL-triggered
+	Variable SEQUENCE_START=3	// start of sequence is TTL-triggered
+	Variable triggerMode=(isTriggered ? SEQUENCE_START : ALWAYS)
 	CameraTriggerModeSet(triggerMode)
 	
 	// Set the exposure
