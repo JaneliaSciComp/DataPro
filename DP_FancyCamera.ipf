@@ -396,14 +396,22 @@ End
 
 
 Function /WAVE FancyCameraROIFromROIs(roisWave,nBinWidth,nBinHeight)
+	// Computes the camera given all the individual ROIs.  Roughly, the camera ROI is a single
+	// ROI that just includes all the individual ROIs.  But things are slightly more complicated b/c the 
+	// user ROIs are specified in "image Heckbertian" coordinates, and the camera ROI is specified in 
+	// "image pixel" coordinates.  That is, for the user ROIs, the upper left corner of the upper left pixel 
+	// is (0,0), and the lower right corner of the lower right pixel is (n_cols, n_rows).  Further, we consider
+	// the user ROI bounds to be infinitesimally thin.  The camera ROI is simply the index of the first/last 
+	// column/row to be included in the ROI, with the indices being zero-based.	
 	Wave roisWave
 	Variable nBinWidth, nBinHeight
 	
 	Variable nROIs=DimSize(roisWave,1)
 	Make /FREE /N=(4) cameraROI
 	if (nROIs==0)
-		cameraROI={0,0,CameraCCDWidthGet(),CameraCCDHeightGet()}
+		cameraROI={0,0,CameraCCDWidthGet()-1,CameraCCDHeightGet()-1}
 	else
+		// Compute the bounding ROI, in user coordinates
 		Make /FREE /N=(nROIs) temp
 		temp=roisWave[0][p]
 		Variable xLeft=WaveMin(temp)
@@ -416,8 +424,8 @@ Function /WAVE FancyCameraROIFromROIs(roisWave,nBinWidth,nBinHeight)
 		// Now we have a bounding box, but need to align to the binning
 		Variable iLeft=floor(xLeft/nBinWidth)*nBinWidth
 		Variable iTop=floor(yTop/nBinHeight)*nBinHeight
-		Variable iRight=ceil(xRight/nBinWidth)*nBinWidth
-		Variable iBottom=ceil(yBottom/nBinHeight)*nBinHeight		
+		Variable iRight=ceil(xRight/nBinWidth)*nBinWidth-1
+		Variable iBottom=ceil(yBottom/nBinHeight)*nBinHeight-1
 		cameraROI={iLeft,iTop,iRight,iBottom}		
 	endif
 	return cameraROI	
