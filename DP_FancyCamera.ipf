@@ -209,51 +209,6 @@ End
 
 
 
-//Function /WAVE FancyCameraAcquire(nFrames)
-//	// Acquire nFrames, and store the resulting video in imageWaveName.
-//	// If isTriggered is true, each-frame must be TTL triggered.  If false, the 
-//	// acquisition is free-running.
-//
-//	Variable nFrames
-//	//Variable isTriggered
-//
-//	// Change to the imaging data folder
-//	String savedDF=GetDataFolder(1)
-//	SetDataFolder root:DP_FancyCamera
-//
-//	// instance vars
-//	
-//	// Prep for the acquisition (this will also start the acquisition unless it's a triggered acquire)
-//	CameraAcquireStart()
-//
-//	// If the acquisition is external trigger mode, start the data acq
-//	Variable NO_TRIGGER=0		// start immediately
-//	if (CameraTriggerModeGet()!=NO_TRIGGER)
-//		SweeperControllerAcquireTrial()	
-//	endif
-//
-//	// Spin until the acquisition is done
-//	Variable isAcquiring
-//	do
-//		Sleep /S 0.1		// Sleep 0.1 seconds
-//		isAcquiring=CameraAcquireGetStatus()
-//	while (isAcquiring)
-//	
-//	// "Stop" the acquisition.  You're only supposed to call this after all frames are acquired...
-//	CameraAcquireStop()
-//	
-//	// Transfer images from acquisition buffer to IGOR wave
-//	Wave imageWave=CameraAcquireRead(nFrames)
-//	
-//	// Restore the original DF
-//	SetDataFolder savedDF
-//	
-//	// return
-//	return imageWave
-//End
-
-
-
 Function FancyCameraStartAcquire()
 	// Prep for the acquisition (this will also start the acquisition unless it's a triggered acquire).
 	// Returns 1 on success, 0 on failure.
@@ -269,6 +224,9 @@ End
 
 
 Function /WAVE FancyCameraWaitForFrames(nFrames)
+	// Block until the camera is done acquiring, then return the acquired frames.
+	// Note that the returned wave will not have an accurate time offset, the offset will just be zero.
+	// And the frame interval scaling for the time dimension will be whatever the camera tells us it was.
 	Variable nFrames
 	
 	// Spin until the acquisition is done

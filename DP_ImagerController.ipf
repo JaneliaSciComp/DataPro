@@ -356,17 +356,38 @@ Function ImagerContAcquireFinish(iSweep)
 	NVAR nFramesForVideo
 	NVAR isTriggered
 	
-	// Do stuff
-	Wave imageWave=FancyCameraWaitForFrames(nFramesForVideo)
+	// Get the video wave
+	Wave imageWaveFree=FancyCameraWaitForFrames(nFramesForVideo)
+	
+	// Let the camera relax
 	FancyCameraDisarm()
 	
+	// Turn off illumination
 	EpiLightSetIsOn(0)
+	
+	// Copy the free wave to a caged wave in the DP_Imager DF
 	String imageWaveName=sprintf2sv("%s_%d", videoWaveBaseName, iSweep)
-	MoveWave imageWave, $imageWaveName 	// Cage the once-free wave
+	MoveWave imageWaveFree, $imageWaveName 	// Cage the once-free wave
+	
+	// If is triggered, use the exposure signal to get more accurate frame offset and interval
+	if (isTriggered)
+		// Determine the time of each from from the exposure signal
+		String exposureWaveNameAbs=sprintf1v("root:exposure_d",iSweep)
+		WAVE exposureWave=$exposureWaveNameAbs
+		WAVE offsetEtc=offsetAndIntervalFromExposure(exposureWave)
+		Variable frameOffset=offsetEtc[0]
+		Variable frameInterval=offsetEtc[1]
+		Variable frameIntervalMin=offsetEtc[2]
+		Variable frameIntervalMax=offsetEtc[3]
+		if ((frameIntervalMax-frameIntervalMin)/frameInterval>0.01)
+			Printf "Highly variable frame intervals!\r"		// Need to handle better
+		endif
+		SetScale /P z, frameOffset, frameInterval, "ms", $imageWaveName
+	endif
 	
 	// Calculate ROI signals, store in root DF
 	String calculationName=ImagerGetCalculationName()
-	AddROIWavesToRoot(imageWave,roisWave,iSweep,calculationName,isBackgroundROI)
+	AddROIWavesToRoot($imageWaveName,roisWave,iSweep,calculationName,isBackgroundROI)
 	
 	// Tell the image browser controller to show the newly-acquired video
 	ImageBrowserContSetVideo(imageWaveName)

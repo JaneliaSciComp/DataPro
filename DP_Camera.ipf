@@ -8,7 +8,8 @@
 
 // The Camera "object" wraps all the SIDX functions, so the "FancyCamera" object doesn't have to deal 
 // with them directly.  It also deals with errors internally, so you don't have to worry about them 
-// at the next level up.  And it adds the ability to fake a camera, for when there is no camera attached.
+// at the next level up (where possible).  And it adds the ability to fake a camera, for when there is no 
+// camera attached.
 
 // Construct the object
 Function CameraConstructor()
@@ -698,6 +699,9 @@ End
 
 
 Function /WAVE CameraAcquireRead(nFramesToRead)
+	// Read the just-acquired frames from the camera.
+	// Note that the returned wave will not have an accurate time offset, the offset will just be zero.
+	// And the frame interval scaling for the time dimension will be whatever the camera tells us it was.
 	Variable nFramesToRead
 
 	// Switch to the imaging data folder
@@ -715,7 +719,9 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 	NVAR iRight, iBottom
 	NVAR binWidth, binHeight
 	NVAR countReadFrameFake
+	NVAR exposureFake
 
+	Variable frameIntervalInSeconds	
 	Variable sidxStatus
 	String errorMessage
 	if (areWeForReal)
@@ -728,6 +734,13 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 				Abort sprintf1s("Error in SIDXAcquireRead: %s",errorMessage)
 			endif
 			Duplicate /FREE framesCaged, frames
+			// Get the frame interval while we're here
+			SIDXAcquireGetImageInterval sidxAcquirer, frameIntervalInSeconds, sidxStatus
+			if (sidxStatus!=0)
+				SIDXAcquireGetLastError sidxAcquirer, errorMessage
+				Abort sprintf1s("Error in SIDXAcquireGetImageInterval: %s",errorMessage)
+			endif
+			
 		else
 			Abort "Called CameraAcquireRead() before acquisition was armed."
 		endif
@@ -741,6 +754,7 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 		Variable heightROIBinnedFake=floor(heightROIFake/binHeight)			
 		Duplicate /FREE /R=[][][countReadFrameFake,countReadFrameFake+nFramesToRead] bufferFrame frames
 		countReadFrameFake+=nFramesToRead
+		frameIntervalInSeconds=exposureFake		// in a real acquire, the frame interval is always longer than the exposure, but whatevs
 	endif
 
 	//
@@ -748,8 +762,10 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 	//
 		
 	// Set the x and y offset and scale
+	Variable frameInterval=1000*frameIntervalInSeconds	// ms
 	SetScale /P x, iLeft+0.5*binWidth, binWidth, "px", frames		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
 	SetScale /P y, iTop+0.5*binHeight, binHeight, "px", frames
+	SetScale /P z, 0, frameInterval, "ms", frames	
 
 	// Restore the data folder
 	SetDataFolder savedDF	

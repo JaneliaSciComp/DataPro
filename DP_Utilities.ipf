@@ -889,3 +889,49 @@ Function computeROISignalBang(signalWave,imageWave,roisWave,iROI,doMean)
 		signalWave=signalWave/nPixels
 	endif
 End
+
+
+
+Function /WAVE offsetAndIntervalFromExposure(exposure)
+	Wave exposure	// a TTL or CMOS signal, high when CCD is absorbing light for a frame
+	
+	// Convert the analog exposure wave to a boolean representation
+	Variable threshold=(WaveMax(exposure)-WaveMin(exposure))/2
+	
+	// Determine times of rising edges
+	Variable edgeDelayMin=1		// ms, could cause problems if someone does kHz imaging at some point
+	Make /FREE risingEdgeTimes
+	FindLevels /DEST=risingEdgeTimes /EDGE=1 /M=1 /Q exposure, threshold
+		
+	// Determine times of falling edges
+	Make /FREE fallingEdgeTimes		// ms
+	FindLevels /DEST=fallingEdgeTimes /EDGE=2 /M=1 /Q exposure, threshold
+	
+	// Compute the time at the center of each frame
+	Duplicate /FREE risingEdgeTimes, frameCenterTimes
+	frameCenterTimes+=fallingEdgeTimes
+	frameCenterTimes/=2
+	
+	// Compute the n-1 frame intervals
+	Variable n=numpnts(exposure)
+	Make /FREE /N=(n-1) frameIntervals
+	frameIntervals=frameCenterTimes[p+1]-frameCenterTimes[p]
+
+	// Compute min, max, and mean of the frame intervals
+	// We'll return the mean as our overall frame interval
+	Variable frameOffset=frameIntervals[0]
+	Variable frameIntervalMin=WaveMin(frameIntervals)
+	Variable frameIntervalMax=WaveMax(frameIntervals)
+	Variable frameInterval=mean(frameIntervals)
+
+	// Package results in a wave
+	Make /FREE /N=4 result
+	result[0]=frameOffset
+	result[1]=frameInterval
+	result[2]=frameIntervalMin
+	result[3]=frameIntervalMax
+	
+	// Return
+	return result
+End		
+
