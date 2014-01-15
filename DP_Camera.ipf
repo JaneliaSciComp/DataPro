@@ -503,6 +503,22 @@ Function CameraAcquireArm()
 	Variable sidxStatus
 	if (areWeForReal)
 		if (isSidxCameraValid)
+			// debug code here
+			String modeAsString
+			SIDXCameraOperateGet sidxCamera, modeAsString, sidxStatus
+			if (sidxStatus==0)
+				Printf "Camera mode is: %s\r", modeAsString
+			else
+				Printf "Unable to get camera mode.\r"
+			endif
+			Variable nModes
+			SIDXCameraOperateItemGetCount sidxCamera, nModes, sidxStatus
+			Variable modeIndex
+			for (modeIndex=0; modeIndex<nModes; modeIndex+=1)
+				SIDXCameraOperateItemGetLocal sidxCamera, modeIndex, modeAsString, sidxStatus
+				Printf "Camera mode %d is: %s\r", modeIndex, modeAsString
+			endfor
+			// real code starts here
 			SIDXCameraAcquireOpen sidxCamera, sidxAcquirer, sidxStatus
 			if (sidxStatus!=0)
 				isSidxAcquirerValid=0
