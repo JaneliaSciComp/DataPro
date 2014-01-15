@@ -893,6 +893,13 @@ End
 
 
 Function /WAVE offsetAndIntervalFromExposure(exposure)
+	// In most cases, this returns a 4-element wave like so:
+	// 	result[0]=frameOffset
+	// 	result[1]=frameInterval
+	// 	result[2]=frameIntervalMin
+	// 	result[3]=frameIntervalMax
+	// If there are <2 pulses in exposure, some of the above will be set to funny values like nan, -inf, +inf
+	// If there is a more serious problem, this function returns a zero-length wave
 	Wave exposure	// a TTL or CMOS signal, high when CCD is absorbing light for a frame
 	
 	// Convert the analog exposure wave to a boolean representation
@@ -907,22 +914,53 @@ Function /WAVE offsetAndIntervalFromExposure(exposure)
 	Make /FREE fallingEdgeTimes		// ms
 	FindLevels /DEST=fallingEdgeTimes /EDGE=2 /M=1 /Q exposure, threshold
 	
+	// Check that there are the same number of rising edges as falling edges
+	Variable nRisingEdges=numpnts(risingEdgeTimes)
+	Variable nFallingEdges=numpnts(fallingEdgeTimes)
+	if (nRisingEdges!=nFallingEdges)
+		// if not, signal an error condition (a length-zero return wave)
+		Make /FREE /N=0 result		
+		return result
+	endif
+	
 	// Compute the time at the center of each frame
 	Duplicate /FREE risingEdgeTimes, frameCenterTimes
 	frameCenterTimes+=fallingEdgeTimes
 	frameCenterTimes/=2
-	
-	// Compute the n-1 frame intervals
-	Variable n=numpnts(exposure)
-	Make /FREE /N=(n-1) frameIntervals
-	frameIntervals=frameCenterTimes[p+1]-frameCenterTimes[p]
 
-	// Compute min, max, and mean of the frame intervals
-	// We'll return the mean as our overall frame interval
-	Variable frameOffset=frameIntervals[0]
-	Variable frameIntervalMin=WaveMin(frameIntervals)
-	Variable frameIntervalMax=WaveMax(frameIntervals)
-	Variable frameInterval=mean(frameIntervals)
+	// Things we'll return
+	Variable frameOffset
+	Variable frameIntervalMin
+	Variable frameIntervalMax
+	Variable frameInterval
+	
+	// Check for zero edges
+	if (nRisingEdges==0)
+		frameOffset=nan
+		frameIntervalMin=+inf
+		frameIntervalMax=-inf
+		frameInterval=nan
+	else	
+		// At least one rising edge
+		frameOffset=frameCenterTimes[0]
+		
+		// Compute the n-1 frame intervals
+		Variable n=numpnts(exposure)
+		Make /FREE /N=(nRisingEdges-1) frameIntervals
+		frameIntervals=frameCenterTimes[p+1]-frameCenterTimes[p]
+	
+		// Compute min, max, and mean of the frame intervals
+		// We'll return the mean as our overall frame interval
+		if ( numpnts(frameIntervals)==0 )
+			frameIntervalMin=+inf
+			frameIntervalMax=-inf
+			frameInterval=nan
+		else	
+			frameIntervalMin=WaveMin(frameIntervals)
+			frameIntervalMax=WaveMax(frameIntervals)
+			frameInterval=mean(frameIntervals)
+		endif
+	endif
 
 	// Package results in a wave
 	Make /FREE /N=4 result

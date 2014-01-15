@@ -372,7 +372,7 @@ Function ImagerContAcquireFinish(iSweep)
 	// If is triggered, use the exposure signal to get more accurate frame offset and interval
 	if (isTriggered)
 		// Determine the time of each from from the exposure signal
-		String exposureWaveNameAbs=sprintf1v("root:exposure_d",iSweep)
+		String exposureWaveNameAbs=sprintf1v("root:exposure_%d",iSweep)
 		WAVE exposureWave=$exposureWaveNameAbs
 		WAVE offsetEtc=offsetAndIntervalFromExposure(exposureWave)
 		Variable frameOffset=offsetEtc[0]
