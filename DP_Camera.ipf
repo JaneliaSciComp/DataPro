@@ -30,7 +30,7 @@ Function CameraConstructor()
 		Variable /G sidxCamera	
 		Variable /G isSidxAcquirerValid=0	// boolean
 		Variable /G sidxAcquirer
-		Make /N=(0,0,0) bufferFrame	// Will hold the acquired frames
+		//Make /N=(0,0,0) bufferFrame	// Will hold the acquired frames
 		Variable /G widthCCD=nan		// width of the CCD
 		Variable /G heightCCD=nan	// height of the CCD
 
@@ -48,7 +48,7 @@ Function CameraConstructor()
 		Variable /G nFramesToAcquireFake=1		
 		Variable /G isAcquireOpenFake=0		// Whether acquisition is "armed"
 		Variable /G isAcquisitionOngoingFake=0
-		Variable /G countReadFrameFake=0		// the first frame to be read by subsequent read commands
+		//Variable /G countReadFrameFake=0		// the first frame to be read by subsequent read commands
 		String /G mostRecentErrorMessage=""		// When errors occur, they get stored here.
 
 		// Create the SIDX root object, referenced by sidxRoot
@@ -630,14 +630,14 @@ Function CameraAcquireStop()
 	NVAR isSidxAcquirerValid
 	NVAR sidxAcquirer
 	NVAR isAcquisitionOngoingFake
-	WAVE bufferFrame
+	//WAVE bufferFrame
 	NVAR widthCCD, heightCCD
 	NVAR binWidth, binHeight
 	NVAR iLeft, iTop
 	NVAR iRight, iBottom	// the ROI boundaries
 	NVAR nFramesBufferFake
 	NVAR nFramesToAcquireFake
-	NVAR countReadFrameFake
+	//NVAR countReadFrameFake
 	NVAR exposureInSeconds
 	
 	Variable sidxStatus
@@ -654,11 +654,11 @@ Function CameraAcquireStop()
 		endif
 	else
 		// Fill the framebuffer with fake data
-		Variable widthROIFake=iRight-iLeft+1
-		Variable heightROIFake=iBottom-iTop+1
-		Variable widthROIBinnedFake=floor(widthROIFake/binWidth)
-		Variable heightROIBinnedFake=floor(heightROIFake/binHeight)			
-		Redimension /N=(widthROIBinnedFake,heightROIBinnedFake,nFramesBufferFake) bufferFrame	// sic, this is how Igor Pro organizes image data
+		//Variable widthROIFake=iRight-iLeft+1
+		//Variable heightROIFake=iBottom-iTop+1
+		//Variable widthROIBinnedFake=round(widthROIFake/binWidth)
+		//Variable heightROIBinnedFake=round(heightROIFake/binHeight)
+		//Redimension /N=(widthROIBinnedFake,heightROIBinnedFake,nFramesBufferFake) bufferFrame	// sic, this is how Igor Pro organizes image data
 		//SetScale /P x, iLeft+0.5*binWidth, binWidth, "px", bufferFrame		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
 		//SetScale /P y, iTop+0.5*binHeight, binHeight, "px", bufferFrame
 		Variable interExposureDelay=0.001		// s, could be shift time for FT camera, or readout time for non-FT camera
@@ -667,8 +667,8 @@ Function CameraAcquireStop()
 		// Assumes the first exposure starts at t==0, so the middle of it occurs at exposureInSeconds/2.
 		// After that, the middle of the next exposure comes frameInterval later, etc.
 		//SetScale /P z, 1000*frameOffset, 1000*frameInterval, "ms", bufferFrame		// s -> ms
-		bufferFrame=2^15+(2^12)*gnoise(1)
-		countReadFrameFake=0
+		//bufferFrame=2^15+(2^12)*gnoise(1)
+		//countReadFrameFake=0
 		//bufferFrame=p
 		
 		// If there's a wave with base name "exposure" for this trial, overwrite it with a fake TTL exposure signal
@@ -702,10 +702,11 @@ End
 
 
 
-Function /WAVE CameraAcquireRead(nFramesToRead)
+Function CameraAcquireReadBang(framesCaged,nFramesToRead)
 	// Read the just-acquired frames from the camera.
 	// Note that the returned wave will not have an accurate time offset, the offset will just be zero.
 	// And the frame interval scaling for the time dimension will be whatever the camera tells us it was.
+	Wave framesCaged	// A ref to a caged (non-free) wave, where the result is stored
 	Variable nFramesToRead
 
 	// Switch to the imaging data folder
@@ -718,11 +719,11 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 	NVAR isSidxAcquirerValid
 	NVAR sidxAcquirer
 	NVAR isAcquisitionOngoingFake
-	WAVE bufferFrame
+	//WAVE bufferFrame
 	NVAR iLeft, iTop
 	NVAR iRight, iBottom
 	NVAR binWidth, binHeight
-	NVAR countReadFrameFake
+	//NVAR countReadFrameFake
 	NVAR exposureInSeconds
 
 	Variable frameIntervalInSeconds	
@@ -730,14 +731,16 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 	String errorMessage
 	if (areWeForReal)
 		if (isSidxAcquirerValid)
-			Make /O framesCaged
+			Make /O framesCagedTemp
+			//WAVE ref=$"framesCagedTemp"
 			// OK, done allocating frames
-			SIDXAcquireRead sidxAcquirer, nFramesToRead, framesCaged, sidxStatus	// doesn't seem to work if frames is a free wave
+			SIDXAcquireRead sidxAcquirer, nFramesToRead, framesCagedTemp, sidxStatus	
+				// doesn't seem to work if frames is a free wave, or a wave reference
 			if (sidxStatus!=0)
 				SIDXAcquireGetLastError sidxAcquirer, errorMessage
 				Abort sprintf1s("Error in SIDXAcquireRead: %s",errorMessage)
 			endif
-			Duplicate /FREE framesCaged, frames
+			Duplicate /O framesCagedTemp, framesCaged
 			// Get the frame interval while we're here
 			SIDXAcquireGetImageInterval sidxAcquirer, frameIntervalInSeconds, sidxStatus
 			if (sidxStatus!=0)
@@ -746,7 +749,7 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 			endif
 			
 		else
-			Abort "Called CameraAcquireRead() before acquisition was armed."
+			Abort "Called CameraAcquireReadBang() before acquisition was armed."
 		endif
 	else
 		if (isAcquisitionOngoingFake)
@@ -754,10 +757,10 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 		endif
 		Variable widthROIFake=iRight-iLeft+1
 		Variable heightROIFake=iBottom-iTop+1
-		Variable widthROIBinnedFake=floor(widthROIFake/binWidth)
-		Variable heightROIBinnedFake=floor(heightROIFake/binHeight)			
-		Duplicate /FREE /R=[][][countReadFrameFake,countReadFrameFake+nFramesToRead] bufferFrame frames
-		countReadFrameFake+=nFramesToRead
+		Variable widthROIBinnedFake=round(widthROIFake/binWidth)
+		Variable heightROIBinnedFake=round(heightROIFake/binHeight)
+		Redimension /N=(widthROIBinnedFake,heightROIBinnedFake,nFramesToRead) framesCaged
+		framesCaged=2^15+(2^12)*gnoise(1)	// fill with noise
 		frameIntervalInSeconds=exposureInSeconds		// in a real acquire, the frame interval is always longer than the exposure, but whatevs
 	endif
 
@@ -768,15 +771,12 @@ Function /WAVE CameraAcquireRead(nFramesToRead)
 	// Set the x and y offset and scale
 	Variable frameOffset=(1000*exposureInSeconds)/2	// ms, middle of the first exposure
 	Variable frameInterval=1000*frameIntervalInSeconds	// ms
-	SetScale /P x, iLeft+0.5*binWidth, binWidth, "px", frames		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
-	SetScale /P y, iTop+0.5*binHeight, binHeight, "px", frames
-	SetScale /P z, frameOffset, frameInterval, "ms", frames	
+	SetScale /P x, iLeft+0.5*binWidth, binWidth, "px", framesCaged		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
+	SetScale /P y, iTop+0.5*binHeight, binHeight, "px", framesCaged
+	SetScale /P z, frameOffset, frameInterval, "ms", framesCaged	
 
 	// Restore the data folder
-	SetDataFolder savedDF	
-	
-	// Return result
-	return frames
+	SetDataFolder savedDF		
 End
 
 

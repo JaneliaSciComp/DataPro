@@ -357,7 +357,10 @@ Function ImagerContAcquireFinish(iSweep)
 	NVAR isTriggered
 	
 	// Get the video wave
-	Wave imageWaveFree=FancyCameraWaitForFrames(nFramesForVideo)
+	String imageWaveName=sprintf2sv("%s_%d", videoWaveBaseName, iSweep)
+	Make /O /W /U /N=(0,0,0) $imageWaveName	// 16-bit unsigned wave to hold result
+	WAVE imageWave=$imageWaveName
+	FancyCameraWaitForFramesBang(imageWave,nFramesForVideo)
 	
 	// Let the camera relax
 	FancyCameraDisarm()
@@ -366,8 +369,8 @@ Function ImagerContAcquireFinish(iSweep)
 	EpiLightSetIsOn(0)
 	
 	// Copy the free wave to a caged wave in the DP_Imager DF
-	String imageWaveName=sprintf2sv("%s_%d", videoWaveBaseName, iSweep)
-	MoveWave imageWaveFree, $imageWaveName 	// Cage the once-free wave
+	//String imageWaveName=sprintf2sv("%s_%d", videoWaveBaseName, iSweep)
+	//MoveWave imageWaveFree, $imageWaveName 	// Cage the once-free wave
 	
 	// If is triggered, use the exposure signal to get more accurate frame offset and interval
 	if (isTriggered)
@@ -454,6 +457,8 @@ Function ImagerContFocus()
 	Variable iFullFrameWave=SweeperGetNextSweepIndex()
 	String imageWaveNameRel=sprintf2sv("%s_%d", snapshotWaveBaseName, iFullFrameWave)
 	String imageWaveNameAbs=sprintf1s("root:DP_Imager:%s",imageWaveNameRel)	
+	Make /O /W /U /N=(0,0,0) $imageWaveNameAbs
+	WAVE imageWaveCaged= $imageWaveNameAbs
 	EpiLightSetIsOn(1)
 	Variable	nFrames=1	
 	Variable isCameraArmed=FancyCameraArm(nFrames)
@@ -465,16 +470,9 @@ Function ImagerContFocus()
 			//Wave imageWaveFree=FancyCameraAcquire(nFrames)
 			Variable wasAcqStarted=FancyCameraStartAcquire()
 			if (wasAcqStarted)
-				Wave imageWaveFree=FancyCameraWaitForFrames(nFrames)
+				FancyCameraWaitForFramesBang(imageWaveCaged,nFrames)
 				if (iFrame==0)
-					MoveWave imageWaveFree, $imageWaveNameAbs 	// Cage the once-free wave
-					Wave imageWaveCaged= $imageWaveNameAbs
 					ImageBrowserContSetVideo(imageWaveNameRel)
-					DoUpdate
-				else
-					// replace the wave data with the new data
-					imageWaveCaged=imageWaveFree[p][q]
-					DoUpdate
 				endif
 				iFrame+=1
 				printf "."
@@ -536,23 +534,23 @@ Function ImagerContAcquireSnapshot()
 		//FancyCameraStartAcquire()
 		Variable wasAcqStarted=FancyCameraStartAcquire()
 		if (wasAcqStarted)
-			Wave imageWave=FancyCameraWaitForFrames(nFrames)
+			Variable iFullFrameWave=SweeperGetNextSweepIndex()
+			String imageWaveName=sprintf2sv("%s_%d", snapshotWaveBaseName, iFullFrameWave)
+			String imageWaveNameAbs="root:DP_Imager:"+imageWaveName
+			Make /O $imageWaveNameAbs
+			WAVE imageWave=$imageWaveNameAbs
+			FancyCameraWaitForFramesBang(imageWave,nFrames)
 		endif
 		FancyCameraDisarm()
 		EpiLightSetIsOn(0)
 		if (wasAcqStarted)
-			Variable iFullFrameWave=SweeperGetNextSweepIndex()
-			String imageWaveName=sprintf2sv("%s_%d", snapshotWaveBaseName, iFullFrameWave)
-			if (WaveExists($imageWaveName))
-				 KillWaves $imageWaveName
-			endif
-			MoveWave imageWave, root:DP_Imager:$imageWaveName 	// Cage the once-free wave
 			ImageBrowserContSetVideo(imageWaveName) 
 			String allVideoWaveNames=WaveList(snapshotWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
 			SweeperFreeRunVideoJustAcqd(iFullFrameWave)
 			SweeperViewSweeperChanged()
 		else
-			// acquire failed to start
+			// acquire failed to start, so delete just-created wave
+			KillWaves /Z $imageWaveName
 			Abort FancyCameraGetErrorMessage()
 		endif
 	else

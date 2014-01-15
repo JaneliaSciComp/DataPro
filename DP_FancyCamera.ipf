@@ -223,10 +223,11 @@ End
 
 
 
-Function /WAVE FancyCameraWaitForFrames(nFrames)
+Function /WAVE FancyCameraWaitForFramesBang(framesCaged,nFrames)
 	// Block until the camera is done acquiring, then return the acquired frames.
 	// Note that the returned wave will not have an accurate time offset, the offset will just be zero.
 	// And the frame interval scaling for the time dimension will be whatever the camera tells us it was.
+	Wave framesCaged	// a ref to a caged (non-free) wave, where the result is stored
 	Variable nFrames
 	
 	// Spin until the acquisition is done
@@ -240,19 +241,8 @@ Function /WAVE FancyCameraWaitForFrames(nFrames)
 	CameraAcquireStop()
 	
 	// Transfer images from acquisition buffer to IGOR wave
-	Wave imageWave=CameraAcquireRead(nFrames)
-	
-	// return
-	return imageWave
+	CameraAcquireReadBang(framesCaged,nFrames)
 End
-
-
-
-
-
-
-
-
 
 
 
