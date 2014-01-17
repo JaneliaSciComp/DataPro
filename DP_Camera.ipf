@@ -43,7 +43,7 @@ Function CameraConstructor()
 		Variable /G iBottom=nan
 		Variable /G iRight=nan
 		Variable /G exposureInSeconds=nan		// cached exposure for the camera, in sec
-		Variable /G temperatureTargetFake=-20		// degC
+		Variable /G temperatureTargetFake=-40		// degC
 		Variable /G nFramesBufferFake=1		// How many frames in the fake on-camera frame buffer
 		Variable /G nFramesToAcquireFake=1		
 		Variable /G isAcquireOpenFake=0		// Whether acquisition is "armed"
@@ -130,7 +130,13 @@ Function CameraConstructor()
 					if (sidxStatus!=0)
 						SIDXCameraGetLastError sidxCamera, errorMessage
 						DoAlert 0, sprintf1s("Error in SIDXCameraRotateSet: %s",errorMessage)
-					endif		
+					endif
+					// Set image reflection --- we need this only because SIDX tries to accomodate Igor weirdness a little too much
+					SIDXCameraRotateMirrorX sidxCamera, sidxStatus
+					if (sidxStatus!=0)
+						SIDXCameraGetLastError sidxCamera, errorMessage
+						DoAlert 0, sprintf1s("Error in SIDXCameraRotateMirrorY: %s",errorMessage)
+					endif					
 					// Report on the camera state
 					CameraProbeStatusAndPrintf(sidxCamera)
 				else

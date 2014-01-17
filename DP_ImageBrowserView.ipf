@@ -148,12 +148,12 @@ Function ImageBrowserViewUpdate()
 
 	AppendImage /W=ImageBrowserView /G=1 $imageWaveNameAbs
 	ModifyImage /W=ImageBrowserView $imageWaveName ctab= {blackCount,whiteCount,Grays,0}, plane=iFrame
-	//SetAxis /W=ImageBrowserView /A /R left
+	SetAxis /W=ImageBrowserView /A /R left
 	
 	// Position the plot	
 	ModifyGraph /W=ImageBrowserView gfSize=8	// Set font size to 8 pts
 	ModifyGraph /W=ImageBrowserView gmSize=8	// Set default size for markers in the graph (?)
-	ModifyGraph /W=ImageBrowserView manTick={0,64,0,0}, manMinor={8,8}	
+	//ModifyGraph /W=ImageBrowserView manTick={0,64,0,0}, manMinor={8,8}	
 		// Major axis ticks every 64 units, 8 minor ticks per major, every 8th minor tick is emphasized
 
 	// Make the pixels square, with the height being auto-sized
