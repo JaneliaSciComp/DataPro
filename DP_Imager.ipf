@@ -32,7 +32,7 @@ Function ImagerConstructor()
 	Variable /G ccdTemperature=nan			// the CCD temperature as of last check
 	Variable /G nFramesForVideo=4	// number of frames to acquire
 	//Variable /G focusingExposure=100		// duration of each exposure when focusing, in ms
-	Variable /G snapshotExposure=100		// duration of each frame exposure for full-frame images, in ms
+	Variable /G snapshotExposure=50		// duration of each frame exposure for full-frame images, in ms
 	Variable /G videoExposure=50	// duration of each frame for triggered video, in ms
 	//Variable /G iFrame		// Frame index to show in the browser
 	String /G snapshotWaveBaseName="snap"		// the base name of the full-frame image waves, including the underscore

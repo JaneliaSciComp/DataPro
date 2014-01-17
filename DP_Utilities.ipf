@@ -973,3 +973,22 @@ Function /WAVE offsetAndIntervalFromExposure(exposure)
 	return result
 End		
 
+
+
+Function /S stringFromIntegerWave(valueWave)
+	Wave valueWave
+	
+	String valueAsString="{ "
+	Variable n=numpnts(valueWave)
+	Variable i
+	for (i=0; i<n; i+=1)
+		if (i<n-1)
+			valueAsString+=sprintf1v("%d, ",valueWave[i])
+		else
+			valueAsString+=sprintf1v("%d ",valueWave[i])
+		endif
+	endfor
+	valueAsString+="}"
+	
+	return valueAsString
+End
