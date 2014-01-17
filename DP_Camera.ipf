@@ -109,6 +109,28 @@ Function CameraConstructor()
 					Printf "ROI: %d %d %d %d\r", iLeft, iTop, iRight, iBottom
 					widthCCD=iRight-iLeft+1
 					heightCCD=iBottom-iTop+1
+					// Set the EM gain to 100, the Solis default
+					Variable emGainSettingWant=100
+					SIDXCameraEMGainSet sidxCamera, emGainSettingWant, sidxStatus
+					if (sidxStatus!=0)
+						SIDXCameraGetLastError sidxCamera, errorMessage
+						DoAlert 0, sprintf1s("Error in SIDXCameraEMGainSet: %s",errorMessage)
+					endif		
+					// Set the vertical shift speed to the Solis default
+					Variable verticalShiftSpeedSettingIndex=15		
+					Variable verticalShiftSpeedValueIndex=2		// Corresponds to "[0.9]", whatever that means
+					SIDXDeviceExtraListSet sidxCamera, verticalShiftSpeedSettingIndex, verticalShiftSpeedValueIndex, sidxStatus
+					if (sidxStatus!=0)
+						SIDXCameraGetLastError sidxCamera, errorMessage
+						DoAlert 0, sprintf1s("Error in SIDXDeviceExtraListSet: %s",errorMessage)
+					endif		
+					// Set image rotation
+					Variable n90DegClockwiseRotations=1		// Appropriate for Yitzhak's rig
+					SIDXCameraRotateSet sidxCamera, n90DegClockwiseRotations, sidxStatus
+					if (sidxStatus!=0)
+						SIDXCameraGetLastError sidxCamera, errorMessage
+						DoAlert 0, sprintf1s("Error in SIDXCameraRotateSet: %s",errorMessage)
+					endif		
 					// Report on the camera state
 					CameraProbeStatusAndPrintf(sidxCamera)
 				else
@@ -503,93 +525,11 @@ Function CameraAcquireArm()
 
 	Variable success
 	Variable sidxStatus
+	String errorMessage
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			// debug code here
-			// Get the current operating mode, and the list of possible modes
-			String errorMessage
-			String modeAsString
-			SIDXCameraOperateGet sidxCamera, modeAsString, sidxStatus
-			if (sidxStatus==0)
-				Printf "Camera mode is: %s\r", modeAsString
-			else
-				Printf "Unable to get camera mode.\r"
-			endif
-			Variable nModes
-			SIDXCameraOperateItemGetCount sidxCamera, nModes, sidxStatus
-			Variable modeIndex
-			for (modeIndex=0; modeIndex<nModes; modeIndex+=1)
-				SIDXCameraOperateItemGetLocal sidxCamera, modeIndex, modeAsString, sidxStatus
-				Printf "Camera mode %d is: %s\r", modeIndex, modeAsString
-			endfor
-			// Probe the EM gain settings
-			Variable emGainTypeCode
-			SIDXCameraEMGainGetType sidxCamera, emGainTypeCode, sidxStatus
-			if (sidxStatus==0)
-				Printf "Camera EM gain type is %d, i.e. %s\r", emGainTypeCode, stringFromSIDXSettingTypeCode(emGainTypeCode)
-			else
-				Printf "Unable to get camera EM gain type.\r"
-			endif				
-			Variable minEMGain, maxEMGain
-			SIDXCameraEMGainGetRange sidxCamera, minEMGain, maxEMGain, sidxStatus
-			if (sidxStatus==0)
-				Printf "Camera EM gain range is %d--%d\r", minEMGain, maxEMGain
-			else
-				Printf "Unable to get camera EM gain range.\r"
-			endif							
-			Variable emGainSetting
-			SIDXCameraEMGainGet sidxCamera, emGainSetting, sidxStatus
-			if (sidxStatus==0)
-				Printf "Camera EM gain (as set) is %d\r", emGainSetting
-			else
-				Printf "Unable to get camera EM gain setting.\r"
-			endif							
-			Variable emGainActual
-			SIDXCameraEMGainGetValue sidxCamera, emGainActual, sidxStatus
-			if (sidxStatus==0)
-				Printf "Camera EM gain (actual) is %d\r", emGainActual
-			else
-				Printf "Unable to get camera EM gain.\r"
-			endif
-			// Probe device-specific settings
-			Variable nDeviceSpecificSettings
-			SIDXDeviceExtraGetCount sidxCamera, nDeviceSpecificSettings, sidxStatus
-			if (sidxStatus==0)
-				Printf "Number of extra settings is %d\r", nDeviceSpecificSettings
-			else
-				Printf "Unable to get number of extra settings.\r"
-			endif
-			Variable settingIndex, typeCode
-			String settingLabel
-			for (settingIndex=0; settingIndex<nDeviceSpecificSettings; settingIndex+=1)
-				SIDXDeviceExtraGetLabel sidxCamera, settingIndex, settingLabel, sidxStatus
-				SIDXDeviceExtraGetType sidxCamera, settingIndex, typeCode, sidxStatus
-				Printf "Camera device-specific setting %d is %s : %s\r", settingIndex, settingLabel,stringFromSIDXSettingTypeCode(typeCode)
-			endfor
-//			Make /FREE /T settingNames={"Accumulation count", "Frame transfer"}
-//			Variable nSettings=numpnts(settingNames)
-//			Variable i, settingValue
-//			for (i=0; i<nSettings; i+=1)
-//				String thisSettingName=settingNames[i]
-//				SIDXDeviceExtraGetByName sidxCamera, thisSettingName, settingValue, sidxStatus	// this doesn't work, or I'm not using it right...
-//				if (sidxStatus==0)
-//					Printf "Camera device-specific setting %s is: %d\r", thisSettingName, settingValue
-//				else
-//					SIDXCameraGetLastError sidxCamera, errorMessage
-//					Printf "Error in SIDXDeviceExtraGetByName: %s\r", errorMessage
-//				endif
-//			endfor
-			
-			Variable frameTransferSettingIndex=6
-			Variable isFrameTransferOn
-			SIDXDeviceExtraBooleanGet sidxCamera, frameTransferSettingIndex, isFrameTransferOn, sidxStatus
-			Printf "isFrameTransferOn: %d\r", isFrameTransferOn
-			
-			Variable accumulationCountSettingIndex=0
-			Variable accumulationCount
-			SIDXDeviceExtraIntegerGet sidxCamera, accumulationCountSettingIndex, accumulationCount, sidxStatus
-			Printf "accumulationCount: %d\r", accumulationCount
-
+			//CameraProbeStatusAndPrintf(sidxCamera)
 			// real code starts here
 			SIDXCameraAcquireOpen sidxCamera, sidxAcquirer, sidxStatus
 			if (sidxStatus!=0)

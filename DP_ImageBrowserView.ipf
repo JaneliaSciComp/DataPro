@@ -148,7 +148,7 @@ Function ImageBrowserViewUpdate()
 
 	AppendImage /W=ImageBrowserView /G=1 $imageWaveNameAbs
 	ModifyImage /W=ImageBrowserView $imageWaveName ctab= {blackCount,whiteCount,Grays,0}, plane=iFrame
-	SetAxis /W=ImageBrowserView /A /R left
+	//SetAxis /W=ImageBrowserView /A /R left
 	
 	// Position the plot	
 	ModifyGraph /W=ImageBrowserView gfSize=8	// Set font size to 8 pts
