@@ -50,7 +50,7 @@ Function CameraConstructor()
 		Variable /G isAcquisitionOngoingFake=0
 		//Variable /G countReadFrameFake=0		// the first frame to be read by subsequent read commands
 		String /G mostRecentErrorMessage=""		// When errors occur, they get stored here.
-
+		
 		// Create the SIDX root object, referenced by sidxRoot
 		String errorMessage
 		String license=""	// License file is stored in C:/Program Files/Bruxton/SIDX
@@ -124,19 +124,6 @@ Function CameraConstructor()
 						SIDXCameraGetLastError sidxCamera, errorMessage
 						DoAlert 0, sprintf1s("Error in SIDXDeviceExtraListSet: %s",errorMessage)
 					endif		
-					// Set image rotation
-					Variable n90DegClockwiseRotations=1		// Appropriate for Yitzhak's rig
-					SIDXCameraRotateSet sidxCamera, n90DegClockwiseRotations, sidxStatus
-					if (sidxStatus!=0)
-						SIDXCameraGetLastError sidxCamera, errorMessage
-						DoAlert 0, sprintf1s("Error in SIDXCameraRotateSet: %s",errorMessage)
-					endif
-					// Set image reflection --- we need this only because SIDX tries to accomodate Igor weirdness a little too much
-					SIDXCameraRotateMirrorX sidxCamera, sidxStatus
-					if (sidxStatus!=0)
-						SIDXCameraGetLastError sidxCamera, errorMessage
-						DoAlert 0, sprintf1s("Error in SIDXCameraRotateMirrorY: %s",errorMessage)
-					endif					
 					// Report on the camera state
 					CameraProbeStatusAndPrintf(sidxCamera)
 				else
@@ -170,6 +157,41 @@ Function CameraConstructor()
 End
 
 
+
+Function CameraSetUserFromCameraMatrix(userFromCameraMatrix)
+	// we assume the user from camera matrix is {{0,-1},{-1,0}}	// CCW 90 deg rotation+mirroring in X
+	// Need to generalize this--it's pretty embarassing at present.
+	// Also need to handle this properly for a fake camera
+	Wave userFromCameraMatrix
+
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR sidxCamera
+
+	// Set image rotation
+	Variable sidxStatus
+	String errorMessage
+	Variable n90DegClockwiseRotations=1		// Appropriate for Yitzhak's rig
+	SIDXCameraRotateSet sidxCamera, n90DegClockwiseRotations, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		DoAlert 0, sprintf1s("Error in SIDXCameraRotateSet: %s",errorMessage)
+	endif
+	// Set image reflection --- we need this only because SIDX tries to accomodate Igor weirdness a little too much
+	SIDXCameraRotateMirrorX sidxCamera, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxCamera, errorMessage
+		DoAlert 0, sprintf1s("Error in SIDXCameraRotateMirrorX: %s",errorMessage)
+	endif
+	// Record the corresponding user-coordinates-from-camera-coordinates transform
+	//userFromCameraMatrix={{0,-1},{-1,0}}	// CCW 90 deg rotation+mirroring in X					
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+End
 
 
 
@@ -227,7 +249,10 @@ Function CameraROISet(iLeftNew, iTopNew, iRightNew, iBottomNew)
 	// iRight, iLeft must be an integer multiple of the current bin width
 	// iBottom, iTop must be an integer multiple of the current bin height
 	// The ROI will be (iRight-iLeft+1)/nBinWidth bins wide, and
-	// (iBottom-iTop+1)/nBinHeight bins high.	
+	// (iBottom-iTop+1)/nBinHeight bins high.
+	// Note that all of these are in CCD coords, not user coords.  The idea is that the Camera knows nothing about
+	// the user<->CCD transform.  (But currently there's some abstraction leakage b/c it's easiest to have SIDX
+	// take care of transforming the frames as they come off the hardware.)
 	Variable iLeftNew,iTopNew,iRightNew,iBottomNew
 	
 	// Switch to the imaging data folder
@@ -944,7 +969,6 @@ End
 
 Function CameraDestructor()
 	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Camera
 
 	// Declare instance variables
@@ -989,9 +1013,6 @@ Function CameraDestructor()
 		isSidxRootValid=0
 	endif
 	
-	// Restore the data folder
-	SetDataFolder savedDF	
-
 	// Switch to the root data folder
 	SetDataFolder root:
 	
