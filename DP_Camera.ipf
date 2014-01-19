@@ -158,11 +158,14 @@ End
 
 
 
-Function CameraSetUserFromCameraMatrix(userFromCameraMatrix)
-	// we assume the user from camera matrix is {{0,-1},{-1,0}}	// CCW 90 deg rotation+mirroring in X
+//Function CameraSetUserFromCameraMatrix(userFromCameraMatrix)
+Function CameraSetTransform(userFromCameraSwapXandY,userFromCameraReflectX,userFromCameraReflectY)
+	// This is currently hardcoded to one specific transform.
 	// Need to generalize this--it's pretty embarassing at present.
 	// Also need to handle this properly for a fake camera
-	Wave userFromCameraMatrix
+	Variable userFromCameraReflectX	// boolean
+	Variable userFromCameraReflectY	// boolean
+	Variable userFromCameraSwapXandY	// boolean
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
@@ -827,10 +830,10 @@ Function CameraAcquireReadBang(framesCaged,nFramesToRead)
 	//
 		
 	// Set the x and y offset and scale
-	Variable frameOffset=(1000*exposureInSeconds)/2	// ms, middle of the first exposure
-	Variable frameInterval=1000*frameIntervalInSeconds	// ms
 	SetScale /P x, iLeft+0.5*binWidth, binWidth, "px", framesCaged		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
 	SetScale /P y, iTop+0.5*binHeight, binHeight, "px", framesCaged
+	Variable frameOffset=(1000*exposureInSeconds)/2	// ms, middle of the first exposure
+	Variable frameInterval=1000*frameIntervalInSeconds	// ms
 	SetScale /P z, frameOffset, frameInterval, "ms", framesCaged	
 
 	// Restore the data folder

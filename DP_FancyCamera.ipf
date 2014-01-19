@@ -25,28 +25,31 @@ Function FancyCameraConstructor()
 		
 		// Instance variables
 		String /G mostRecentErrorMessage=""		// When errors occur, they get stored here.		
-		//Variable userFromCameraReflectX=0	// boolean
-		//Variable userFromCameraReflectY=0	// boolean
-		//Variable userFromCameraSwapXandY=0	// boolean
+		Variable /G userFromCameraReflectX=0	// boolean
+		Variable /G userFromCameraReflectY=0	// boolean
+		Variable /G userFromCameraSwapXandY=0	// boolean
 		// To go from camera to user, we reflect X (or not), reflect Y (or not), and then swap X and Y (or not)
+		// In that order---(possible) reflections then (possible) swap
 		// This covers all 8 possible transforms, including rotations and anything else
-		
-		Make /O /N=(2,2) userFromCameraMatrix={{1,0},{0,1}}
 	else
 		// If it exists, switch to it
 		SetDataFolder root:DP_FancyCamera
 	endif
 
+	// instance vars
+	NVAR userFromCameraReflectX
+	NVAR userFromCameraReflectY
+	NVAR userFromCameraSwapXandY
+	
 	// Initialize the camera
 	CameraConstructor()
 	
 	// Tell the camera the userFromCameraMatrix, so it can properly transform the images
 	// when we read them
-	//Variable userFromCameraReflectX=0	// boolean
-	//Variable userFromCameraReflectY=0	// boolean
-	//Variable userFromCameraSwapXandY=0	// boolean
-	userFromCameraMatrix={{0,-1},{-1,0}}	// CCW 90 deg rotation+mirroring in X, specific to Yitzhak's rig
-	CameraSetUserFromCameraMatrix(userFromCameraMatrix)
+	userFromCameraReflectX=0	// boolean
+	userFromCameraReflectY=1	// boolean
+	userFromCameraSwapXandY=1	// boolean
+	CameraSetTransform(userFromCameraSwapXandY,userFromCameraReflectX,userFromCameraReflectY)
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -171,9 +174,6 @@ Function FancyCameraROISet(roisWave,nBinWidth,nBinHeight)
 		Wave alignedROIInCS=FancyCameraAlignCameraROIToGrid(boundingROIInCS,nBinWidth,nBinHeight)
 		CameraROISet(alignedROIInCS[0], alignedROIInCS[1], alignedROIInCS[2], alignedROIInCS[3])
 	endif
-
-	// Restore the original DF
-	SetDataFolder savedDF
 End
 
 
@@ -410,86 +410,43 @@ Function /WAVE FancyCameraCameraROIFromUserROI(roiInUS)
 	SetDataFolder root:DP_FancyCamera
 
 	// instance vars
-	WAVE userFromCameraMatrix
-	
-	Variable ccdWidthInUS, ccdHeightInUS
-	if (userFromCameraMatrix[0][0]==0)
-		// This means that x stays x, and y stays y, in going between camera and user spaces
-	 	ccdWidthInUS=CameraCCDWidthGet()
-	 	ccdHeightInUS=CameraCCDHeightGet()
-	else
-		// This means that x and y swap, in going between camera and user spaces
-	 	ccdWidthInUS=CameraCCDHeightGet()
-	 	ccdHeightInUS=CameraCCDWidthGet()
-	endif
-	
-	// Since the corners can move in terms of left/right, upper/lower, we label them in like so (in userspace):
-	//        1 *             * 2
-	//
-	//        3 *             * 4
+	NVAR userFromCameraReflectX	// boolean
+	NVAR userFromCameraReflectY	// boolean
+	NVAR userFromCameraSwapXandY	// boolean
 
-	Make /FREE /N=(2) ccdCorner1InUS={0,0}
-	Make /FREE /N=(2) ccdCorner2InUS={ccdWidthInUS,0}
-	Make /FREE /N=(2) ccdCorner3InUS={0,ccdHeightInUS}
-	Make /FREE /N=(2) ccdCorner4InUS={ccdWidthInUS,ccdHeightInUS}
+	// Get the CCD size in the camera sapce
+ 	Variable ccdWidthInCS=CameraCCDWidthGet()
+ 	Variable ccdHeightInCS=CameraCCDHeightGet()
+ 	Make /FREE /N=(2,2) farCornerReppedInCS={ {ccdWidthInCS,ccdHeightInCS}, {ccdWidthInCS,ccdHeightInCS} }
 
-	Make /FREE /N=(2) roiCorner1InUS={roiInUS[0], roiInUS[1]}
-	Make /FREE /N=(2) roiCorner2InUS={roiInUS[2], roiInUS[1]}
-	Make /FREE /N=(2) roiCorner3InUS={roiInUS[0], roiInUS[3]}
-	Make /FREE /N=(2) roiCorner4InUS={roiInUS[2], roiInUS[3]}
+	// Make a 2x2 matrix of the ROI corners in user space, with each corner a column
+	// In Igor,  { { a ,b } , { c , d } } means that a and b are in the first _column_
+	Make /FREE /N=(2,2) roiCornersInUS={ {roiInUS[0], roiInUS[1]} , {roiInUS[2], roiInUS[3]} }
+	
+	// Make the transformation matrices
+	Variable p=userFromCameraSwapXandY
+	Variable bx=userFromCameraReflectX
+	Variable by=userFromCameraReflectY
+	Variable sx=1-2*bx
+	Variable sy=1-2*by
+	Make /FREE /N=(2,2) Pwap={ { 1-p, p }, {p, 1-p} }		// Does the x-y swap, if called for
+	Make /FREE /N=(2,2) ScaleMatrix={ { sx, 0 }, {0, sy} }	// Scales x, y to do the appropriate reflections
+	Make /FREE /N=(2,2) B={ { bx, 0 }, {0, by} }		// Gates x, y depending on who is being reflected
+	
+	// Transform the ROI corners
+	MatrixOp /FREE roiCornersInCS = ScaleMatrix x (Pwap x roiCornersInUS - B x farCornerReppedInCS)
+	
+	Make /FREE /N=(2) xCornersInCS
+	xCornersInCS=roiCornersInCS[0][p]
+	Make /FREE /N=(2) yCornersInCS
+	yCornersInCS=roiCornersInCS[1][p]
+	Variable xMinInCS=WaveMin(xCornersInCS)
+	Variable yMinInCS=WaveMin(yCornersInCS)
+	Variable xMaxInCS=WaveMax(xCornersInCS)
+	Variable yMaxInCS=WaveMax(yCornersInCS)
 		
-	MatrixOp /FREE cameraFromUserMatrix=userFromCameraMatrix^t		// Transpose to invert, b/c orthogonal
-	
-	// Since the corners can move in terms of left/right, upper/lower, we label them in like so (in userspace):
-	//        1 *             * 2
-	//
-	//        3 *             * 4
-	
-	MatrixOp /FREE roiCorner1InCSAlmost=cameraFromUserMatrix x roiCorner1InUS
-	MatrixOp /FREE roiCorner2InCSAlmost=cameraFromUserMatrix x roiCorner2InUS
-	MatrixOp /FREE roiCorner3InCSAlmost=cameraFromUserMatrix x roiCorner3InUS
-	MatrixOp /FREE roiCorner4InCSAlmost=cameraFromUserMatrix x roiCorner4InUS
-	
-	// We've just done a linear transformation of the ROI corners, but we still need to do a translation.
-	// That's because if the ROI was the whole CCD (in userspace), we would now have a ROI where the corner at
-	// the origin wouldn't have moved, but some or all of the other corners could have negative coordinate values.
-	// So we need to translate everything to bring the upper-right corner of the CCD (in cameraspace) to the origin
-	
-	Variable xMinInCSAlmost=min(roiCorner1InCSAlmost[0],roiCorner4InCSAlmost[0])
-	Variable yMinInCSAlmost=min(roiCorner1InCSAlmost[1],roiCorner4InCSAlmost[1])
-	Variable xMaxInCSAlmost=max(roiCorner1InCSAlmost[0],roiCorner4InCSAlmost[0])
-	Variable yMaxInCSAlmost=max(roiCorner1InCSAlmost[1],roiCorner4InCSAlmost[1])
-	
-	Make /FREE /N=2 roiUpperLeftCornerInCSAlmost={xMinInCSAlmost,yMinInCSAlmost}
-	Make /FREE /N=2 roiLowerRightCornerInCSAlmost={xMaxInCSAlmost,yMaxInCSAlmost}
-
-	//MatrixOp ccdCorner1InCSAlmost=cameraFromUserMatrix x ccdCorner1InUS
-	//MatrixOp ccdCorner2InCSAlmost=cameraFromUserMatrix x ccdCorner2InUS
-	//MatrixOp ccdCorner3InCSAlmost=cameraFromUserMatrix x ccdCorner3InUS
-	//MatrixOp ccdCorner4InCSAlmost=cameraFromUserMatrix x ccdCorner4InUS
-		
-	Make /FREE /N=(2) pivotalCCDCornerInUS		// The coordinates of the corner that ends up being in the upper left in CS, but in US coords
-	if ( abs(roiCorner1InCSAlmost[0]-xMinInCSAlmost)<0.01 && abs(roiCorner1InCSAlmost[1]-yMinInCSAlmost)<0.01 )
-		// Corner one is now in upper left --- That means the cameraspace projection of (0,0) in userspace should
-		// be shifted to the origin
-		pivotalCCDCornerInUS=ccdCorner1InUS
-	elseif ( abs(roiCorner2InCSAlmost[0]-xMinInCSAlmost)<0.01 && abs(roiCorner2InCSAlmost[1]-yMinInCSAlmost)<0.01 )
-		pivotalCCDCornerInUS=ccdCorner2InUS
-	elseif ( abs(roiCorner3InCSAlmost[0]-xMinInCSAlmost)<0.01 && abs(roiCorner3InCSAlmost[1]-yMinInCSAlmost)<0.01 )
-		pivotalCCDCornerInUS=ccdCorner3InUS
-	elseif ( abs(roiCorner4InCSAlmost[0]-xMinInCSAlmost)<0.01 && abs(roiCorner4InCSAlmost[1]-yMinInCSAlmost)<0.01 )
-		pivotalCCDCornerInUS=ccdCorner4InUS
-	else
-		Abort "Internal error."
-	endif
-	
-	// Translate to get into camera coords
-	MatrixOp offset=cameraFromUserMatrix x pivotalCCDCornerInUS
-	Make /FREE /N=2 roiUpperLeftCornerInCS= roiUpperLeftCornerInCSAlmost-offset
-	Make /FREE /N=2  roiLowerRightCornerInCS=roiLowerRightCornerInCSAlmost-offset
-
 	// Package as a ROI
-	Make /FREE /N=(4) roiInCS={roiUpperLeftCornerInCS[0], roiUpperLeftCornerInCS[1], roiLowerRightCornerInCS[0], roiLowerRightCornerInCS[1]}
+	Make /FREE /N=(4) roiInCS={xMinInCS, yMinInCS, xMaxInCS, yMaxInCS}
 	
 	// Restore the data folder
 	SetDataFolder savedDF		
@@ -516,8 +473,8 @@ Function /WAVE FancyCameraAlignCameraROIToGrid(roiInCS,nBinWidth,nBinHeight)
 	// Now we have a bounding box, but need to align to the binning
 	Variable iLeft=floor(roiInCS[0]/nBinWidth)*nBinWidth
 	Variable iTop=floor(roiInCS[1]/nBinHeight)*nBinHeight
-	Variable iRight=ceil(roiInCS[3]/nBinWidth)*nBinWidth-1
-	Variable iBottom=ceil(roiInCS[4]/nBinHeight)*nBinHeight-1
+	Variable iRight=ceil(roiInCS[2]/nBinWidth)*nBinWidth-1
+	Variable iBottom=ceil(roiInCS[3]/nBinHeight)*nBinHeight-1
 	Make /FREE /N=4 roiInCSAligned={iLeft,iTop,iRight,iBottom}		
 	return roiInCSAligned
 End
