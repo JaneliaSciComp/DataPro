@@ -36,8 +36,8 @@ Function CameraConstructor()
 
 		// This stuff is only needed/used if there's no camera and we're faking
 		Variable /G modeTriggerFake=0		// the trigger mode of the fake camera. 0=>free-running, 1=> each frame is triggered, and there are other settings
-		Variable /G binWidth=nan		// We sometimes want to know this when the camera is armed, and it therefore won't tell us, so we store it
-		Variable /G binHeight=nan
+		Variable /G binSize=nan		// We sometimes want to know this when the camera is armed, and it therefore won't tell us, so we store it
+		//Variable /G binHeight=nan
 		Variable /G iLeft=0		// The left bound of the ROI.  The includes the pels with this index.
 		Variable /G iTop=0
 		Variable /G iBottom=nan
@@ -141,8 +141,8 @@ Function CameraConstructor()
 				heightCCD=512
 				iBottom=heightCCD-1
 				iRight=widthCCD-1
-				binWidth=1
-				binHeight=1
+				binSize=1
+				//binHeight=1
 				exposureInSeconds=0.05
 			endif
 		endif
@@ -251,8 +251,8 @@ Function CameraROISet(iLeftNew, iTopNew, iRightNew, iBottomNew)
 	// The ROI includes y coordinates [iTop,iBottom].  That is, the pixel with coord iBottom is included.
 	// iRight, iLeft must be an integer multiple of the current bin width
 	// iBottom, iTop must be an integer multiple of the current bin height
-	// The ROI will be (iRight-iLeft+1)/nBinWidth bins wide, and
-	// (iBottom-iTop+1)/nBinHeight bins high.
+	// The ROI will be (iRight-iLeft+1)/nBinSize bins wide, and
+	// (iBottom-iTop+1)/nBinSize bins high.
 	// Note that all of these are in CCD coords, not user coords.  The idea is that the Camera knows nothing about
 	// the user<->CCD transform.  (But currently there's some abstraction leakage b/c it's easiest to have SIDX
 	// take care of transforming the frames as they come off the hardware.)
@@ -317,8 +317,8 @@ Function CameraBinningItemSet(iBinningMode)
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
 	NVAR iBinningModeFake
-	NVAR binWidth
-	NVAR binHeight
+	NVAR binSize
+	//NVAR binHeight
 
 	// Set the bin sizes
 	Variable sidxStatus
@@ -330,15 +330,14 @@ Function CameraBinningItemSet(iBinningMode)
 				SIDXCameraGetLastError sidxCamera, errorMessage
 				Abort sprintf1s("Error in SIDXCameraBinningItemSet: %s",errorMessage)
 			endif
-			CameraSyncBinWidthAndHeight()
+			CameraSyncBinSize()
 		else
 			Abort "Called CameraBinningItemSet() before camera was created."
 		endif
 	else
 		iBinningModeFake=iBinningMode
 		// This next is entirely Ander iXon Ultra-specific
-		binWidth=2^iBinningMode
-		binHeight=2^iBinningMode
+		binSize=2^iBinningMode
 	endif
 
 	// Restore the data folder
@@ -693,7 +692,7 @@ Function CameraAcquireStop()
 	NVAR isAcquisitionOngoingFake
 	//WAVE bufferFrame
 	NVAR widthCCD, heightCCD
-	NVAR binWidth, binHeight
+	NVAR binSize
 	NVAR iLeft, iTop
 	NVAR iRight, iBottom	// the ROI boundaries
 	NVAR nFramesBufferFake
@@ -717,11 +716,11 @@ Function CameraAcquireStop()
 		// Fill the framebuffer with fake data
 		//Variable widthROIFake=iRight-iLeft+1
 		//Variable heightROIFake=iBottom-iTop+1
-		//Variable widthROIBinnedFake=round(widthROIFake/binWidth)
-		//Variable heightROIBinnedFake=round(heightROIFake/binHeight)
+		//Variable widthROIBinnedFake=round(widthROIFake/binSize)
+		//Variable heightROIBinnedFake=round(heightROIFake/binSize)
 		//Redimension /N=(widthROIBinnedFake,heightROIBinnedFake,nFramesBufferFake) bufferFrame	// sic, this is how Igor Pro organizes image data
-		//SetScale /P x, iLeft+0.5*binWidth, binWidth, "px", bufferFrame		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
-		//SetScale /P y, iTop+0.5*binHeight, binHeight, "px", bufferFrame
+		//SetScale /P x, iLeft+0.5*binSize, binSize, "px", bufferFrame		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
+		//SetScale /P y, iTop+0.5*binSize, binHeight, "px", bufferFrame
 		Variable interExposureDelay=0.001		// s, could be shift time for FT camera, or readout time for non-FT camera
 		Variable frameInterval=exposureInSeconds+interExposureDelay		// s, Add a millisecond of shift time, for fun
 		Variable frameOffset=exposureInSeconds/2
@@ -783,7 +782,7 @@ Function CameraAcquireReadBang(framesCaged,nFramesToRead)
 	//WAVE bufferFrame
 	NVAR iLeft, iTop
 	NVAR iRight, iBottom
-	NVAR binWidth, binHeight
+	NVAR binSize
 	//NVAR countReadFrameFake
 	NVAR exposureInSeconds
 
@@ -818,8 +817,8 @@ Function CameraAcquireReadBang(framesCaged,nFramesToRead)
 		endif
 		Variable widthROIFake=iRight-iLeft+1
 		Variable heightROIFake=iBottom-iTop+1
-		Variable widthROIBinnedFake=round(widthROIFake/binWidth)
-		Variable heightROIBinnedFake=round(heightROIFake/binHeight)
+		Variable widthROIBinnedFake=round(widthROIFake/binSize)
+		Variable heightROIBinnedFake=round(heightROIFake/binSize)
 		Redimension /N=(widthROIBinnedFake,heightROIBinnedFake,nFramesToRead) framesCaged
 		framesCaged=2^15+(2^12)*gnoise(1)	// fill with noise
 		frameIntervalInSeconds=exposureInSeconds		// in a real acquire, the frame interval is always longer than the exposure, but whatevs
@@ -830,8 +829,8 @@ Function CameraAcquireReadBang(framesCaged,nFramesToRead)
 	//
 		
 	// Set the x and y offset and scale
-	SetScale /P x, iLeft+0.5*binWidth, binWidth, "px", framesCaged		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
-	SetScale /P y, iTop+0.5*binHeight, binHeight, "px", framesCaged
+	SetScale /P x, iLeft+0.5*binSize, binSize, "px", framesCaged		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
+	SetScale /P y, iTop+0.5*binSize, binSize, "px", framesCaged
 	Variable frameOffset=(1000*exposureInSeconds)/2	// ms, middle of the first exposure
 	Variable frameInterval=1000*frameIntervalInSeconds	// ms
 	SetScale /P z, frameOffset, frameInterval, "ms", framesCaged	
@@ -1070,12 +1069,12 @@ End
 
 
 
-Function CameraGetBinWidth()
+Function CameraGetBinSize()
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Camera
-	NVAR binWidth
-	Variable value=binWidth
+	NVAR binSize
+	Variable value=binSize
 	SetDataFolder savedDF		
 	return value
 End
@@ -1083,15 +1082,15 @@ End
 
 
 
-Function CameraGetBinHeight()
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
-	NVAR binHeight
-	Variable value=binHeight
-	SetDataFolder savedDF		
-	return value
-End
+//Function CameraGetBinHeight()
+//	// Switch to the imaging data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Camera
+//	NVAR binSize
+//	Variable value=binSize
+//	SetDataFolder savedDF		
+//	return value
+//End
 
 
 
@@ -1134,13 +1133,13 @@ End
 
 
 
-Function CameraIsValidBinWidth(nBinWidth)
-	Variable nBinWidth
+Function CameraIsValidBinSize(nBinSize)
+	Variable nBinSize
 	
 	Variable result
 	Variable ccdWidth=CameraCCDWidthGet()
-	if ( (1<=nBinWidth) && (nBinWidth<=ccdWidth) )
-		Variable nBins=ccdWidth/nBinWidth
+	if ( (1<=nBinSize) && (nBinSize<=ccdWidth) )
+		Variable nBins=ccdWidth/nBinSize
 		result=IsInteger(nBins)
 	else
 		result=0
@@ -1152,19 +1151,19 @@ End
 
 
 
-Function CameraIsValidBinHeight(nBinHeight)
-	Variable nBinHeight
-	
-	Variable result
-	Variable ccdHeight=CameraCCDHeightGet()
-	if ( (1<=nBinHeight) && (nBinHeight<=ccdHeight) )
-		Variable nBins=ccdHeight/nBinHeight
-		result=IsInteger(nBins)
-	else
-		result=0
-	endif
-	return result
-End
+//Function CameraIsValidBinHeight(nBinHeight)
+//	Variable nBinHeight
+//	
+//	Variable result
+//	Variable ccdHeight=CameraCCDHeightGet()
+//	if ( (1<=nBinHeight) && (nBinHeight<=ccdHeight) )
+//		Variable nBins=ccdHeight/nBinHeight
+//		result=IsInteger(nBins)
+//	else
+//		result=0
+//	endif
+//	return result
+//End
 
 
 
@@ -1288,7 +1287,7 @@ End
 
 
 // private methods
-Function CameraSyncBinWidthAndHeight()
+Function CameraSyncBinSize()
 	// Copy the bin dims according to the hardware into the instance var
 
 	// Switch to the imaging data folder
@@ -1299,21 +1298,24 @@ Function CameraSyncBinWidthAndHeight()
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR binWidth
-	NVAR binHeight
+	NVAR binSize
 
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			Variable sidxStatus
+			Variable binWidth, binHeight
 			SIDXCameraBinningGet sidxCamera, binWidth, binHeight, sidxStatus
 			if (sidxStatus!=0)
 				String errorMessage
 				SIDXCameraGetLastError sidxCamera, errorMessage
 				Abort sprintf1s("Error in SIDXCameraBinningGet: %s", errorMessage)
 			endif
+			if (binWidth!=binHeight)
+				Abort "Internal Error: Bin width and height should always be the same."
+			endif
+			binSize=binWidth
 		else
-			binWidth=nan
-			binHeight=nan
+			binSize=nan
 		endif
 	endif
 	

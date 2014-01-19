@@ -65,10 +65,9 @@ Function FancyCameraSetupSnapshotAcq(exposure,targetTemperature)
 	Variable targetTemperature
 	
 	// Set the binning and ROI
-	Variable nBinWidth=1
-	Variable nBinHeight=1
+	Variable nBinSize=1
 	Variable isTriggered=0
-	FancyCameraBinningSet(nBinWidth, nBinHeight)
+	FancyCameraBinningSet(nBinSize)
 	FancyCameraROIClear()	// we don't use the rois for snapshots
 
 	// Set the trigger mode
@@ -86,25 +85,24 @@ End
 
 
 
-Function FancyCameraSetupVideoAcq(nBinWidth,nBinHeight,roisWave,isTriggered,exposure,targetTemperature)
+Function FancyCameraSetupVideoAcq(nBinSize,roisWave,isTriggered,exposure,targetTemperature)
 	// This sets up the camera for a single video acquisition.
-	Variable nBinWidth
-	Variable nBinHeight
+	Variable nBinSize
 	Wave roisWave
 	Variable isTriggered
 	Variable exposure	// frame exposure duration, in ms
 	Variable targetTemperature
 	
 	// Set the binning and ROI
-	FancyCameraBinningSet(nBinWidth, nBinHeight)
+	FancyCameraBinningSet(nBinSize)
 	//Variable nROIs=DimSize(roisWave,1)
 	//Variable isAtLeastOneROI=(nROIs>0)
 	//if (isAtLeastOneROI)
-	//	Wave cameraROI=FancyCameraROIFromROIs(roisWave,nBinWidth,nBinHeight)
+	//	Wave cameraROI=FancyCameraROIFromROIs(roisWave,nBinSize,nBinHeight)
 	//else
 	//	Make /FREE cameraROI={nan,nan,nan,nan}
 	//endif
-	FancyCameraROISet(roisWave,nBinWidth,nBinHeight)
+	FancyCameraROISet(roisWave,nBinSize)
 	//isAtLeastOneROI, cameraROI[0], cameraROI[1], cameraROI[2], cameraROI[3])
 
 	// Set the trigger mode
@@ -127,20 +125,20 @@ End
 
 
 
-Function FancyCameraBinningSet(nBinWidth, nBinHeight)
-	Variable nBinWidth, nBinHeight	
+Function FancyCameraBinningSet(nBinSize)
+	Variable nBinSize
 	// These are in user coordinate space, although currently it doesn't really matter
 	
 	// Translate the bin sizes into a binning mode
 	// This code is entirely Andor iXon Ultra-specific
 	Variable binningModeIndex
-	if ( (nBinWidth==1) && (nBinHeight==1) )
+	if ( (nBinSize==1) )
 		binningModeIndex=0
-	elseif ( (nBinWidth==2) && (nBinHeight==2) )
+	elseif ( (nBinSize==2) )
 		binningModeIndex=1
-	elseif ( (nBinWidth==4) && (nBinHeight==4) )
+	elseif ( (nBinSize==4) )
 		binningModeIndex=2
-	elseif ( (nBinWidth==8) && (nBinHeight==8) )
+	elseif ( (nBinSize==8) )
 		binningModeIndex=3
 	else
 		return 0
@@ -157,11 +155,11 @@ End
 
 
 
-Function FancyCameraROISet(roisWave,nBinWidth,nBinHeight)
+Function FancyCameraROISet(roisWave,nBinSize)
 	// Set the ROI for the camera, given the user ROIs.  Note that the input coords are in user coordinate space, so
 	// we have to translate them to CCD coordinate space.
 	Wave roisWave
-	Variable nBinWidth,nBinHeight
+	Variable nBinSize
 
 	// Clear the ROI	
 	CameraROIClear()
@@ -171,7 +169,7 @@ Function FancyCameraROISet(roisWave,nBinWidth,nBinHeight)
 		// Calc the ROI that just includes all the ROIs, in same (user image heckbertian) coords as the ROIs themselves
 		Wave boundingROIInUS=FancyCameraBoundingROIFromROIs(roisWave)
 		Wave boundingROIInCS=FancyCameraCameraROIFromUserROI(roisWave)
-		Wave alignedROIInCS=FancyCameraAlignCameraROIToGrid(boundingROIInCS,nBinWidth,nBinHeight)
+		Wave alignedROIInCS=FancyCameraAlignCameraROIToGrid(boundingROIInCS,nBinSize)
 		CameraROISet(alignedROIInCS[0], alignedROIInCS[1], alignedROIInCS[2], alignedROIInCS[3])
 	endif
 End
@@ -459,7 +457,7 @@ End
 
 
 
-Function /WAVE FancyCameraAlignCameraROIToGrid(roiInCS,nBinWidth,nBinHeight)
+Function /WAVE FancyCameraAlignCameraROIToGrid(roiInCS,nBinSize)
 	// Computes the camera given all the individual ROIs.  Roughly, the camera ROI is a single
 	// ROI that just includes all the individual ROIs.  But things are slightly more complicated b/c the 
 	// user ROIs are specified in "image Heckbertian" coordinates, and the camera ROI is specified in 
@@ -468,71 +466,34 @@ Function /WAVE FancyCameraAlignCameraROIToGrid(roiInCS,nBinWidth,nBinHeight)
 	// the user ROI bounds to be infinitesimally thin.  The camera ROI is simply the index of the first/last 
 	// column/row to be included in the ROI, with the indices being zero-based.	
 	Wave roiInCS
-	Variable nBinWidth, nBinHeight
+	Variable nBinSize
 	
 	// Now we have a bounding box, but need to align to the binning
-	Variable iLeft=floor(roiInCS[0]/nBinWidth)*nBinWidth
-	Variable iTop=floor(roiInCS[1]/nBinHeight)*nBinHeight
-	Variable iRight=ceil(roiInCS[2]/nBinWidth)*nBinWidth-1
-	Variable iBottom=ceil(roiInCS[3]/nBinHeight)*nBinHeight-1
+	Variable iLeft=floor(roiInCS[0]/nBinSize)*nBinSize
+	Variable iTop=floor(roiInCS[1]/nBinSize)*nBinSize
+	Variable iRight=ceil(roiInCS[2]/nBinSize)*nBinSize-1
+	Variable iBottom=ceil(roiInCS[3]/nBinSize)*nBinSize-1
 	Make /FREE /N=4 roiInCSAligned={iLeft,iTop,iRight,iBottom}		
 	return roiInCSAligned
 End
 
 
 
-//Function /WAVE FancyCameraROIFromROIs(roisWave,nBinWidth,nBinHeight)
-//	// Computes the camera given all the individual ROIs.  Roughly, the camera ROI is a single
-//	// ROI that just includes all the individual ROIs.  But things are slightly more complicated b/c the 
-//	// user ROIs are specified in "image Heckbertian" coordinates, and the camera ROI is specified in 
-//	// "image pixel" coordinates.  That is, for the user ROIs, the upper left corner of the upper left pixel 
-//	// is (0,0), and the lower right corner of the lower right pixel is (n_cols, n_rows).  Further, we consider
-//	// the user ROI bounds to be infinitesimally thin.  The camera ROI is simply the index of the first/last 
-//	// column/row to be included in the ROI, with the indices being zero-based.	
-//	Wave roisWave
-//	Variable nBinWidth, nBinHeight
+
+
+
+//Function /WAVE FancyCameraAlignROIToBins(roiWave)
+//	Wave roiWave
 //	
-//	Variable nROIs=DimSize(roisWave,1)
-//	Make /FREE /N=(4) cameraROI
-//	if (nROIs==0)
-//		cameraROI={0,0,CameraCCDWidthGet()-1,CameraCCDHeightGet()-1}
-//	else
-//		// Compute the bounding ROI, in user coordinates
-//		Make /FREE /N=(nROIs) temp
-//		temp=roisWave[0][p]
-//		Variable xLeft=WaveMin(temp)
-//		temp=roisWave[1][p]
-//		Variable yTop=WaveMin(temp)
-//		temp=roisWave[2][p]
-//		Variable xRight=WaveMax(temp)
-//		temp=roisWave[3][p]
-//		Variable yBottom=WaveMax(temp)
-//		// Now we have a bounding box, but need to align to the binning
-//		Variable iLeft=floor(xLeft/nBinWidth)*nBinWidth
-//		Variable iTop=floor(yTop/nBinHeight)*nBinHeight
-//		Variable iRight=ceil(xRight/nBinWidth)*nBinWidth-1
-//		Variable iBottom=ceil(yBottom/nBinHeight)*nBinHeight-1
-//		cameraROI={iLeft,iTop,iRight,iBottom}		
-//	endif
-//	return cameraROI	
+//	Variable nBinSize=CameraGetBinSize()
+//	Variable iLeft=floor(roiWave[0]/nBinSize)*nBinSize
+//	Variable iTop=floor(roiWave[1]/nBinSize)*nBinSize
+//	Variable iRight=ceil(roiWave[2]/nBinSize)*nBinSize
+//	Variable iBottom=ceil(roiWave[3]/nBinSize)*nBinHeight		
+//	Make /FREE /N=(4) alignedROI
+//	alignedROI={iLeft,iTop,iRight,iBottom}		
+//	return alignedROI	
 //End
-
-
-
-
-Function /WAVE FancyCameraAlignROIToBins(roiWave)
-	Wave roiWave
-	
-	Variable nBinWidth=CameraGetBinWidth()
-	Variable nBinHeight=CameraGetBinHeight()
-	Variable iLeft=floor(roiWave[0]/nBinWidth)*nBinWidth
-	Variable iTop=floor(roiWave[1]/nBinHeight)*nBinHeight
-	Variable iRight=ceil(roiWave[2]/nBinWidth)*nBinWidth
-	Variable iBottom=ceil(roiWave[3]/nBinHeight)*nBinHeight		
-	Make /FREE /N=(4) alignedROI
-	alignedROI={iLeft,iTop,iRight,iBottom}		
-	return alignedROI	
-End
 
 
 

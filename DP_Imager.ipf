@@ -44,8 +44,8 @@ Function ImagerConstructor()
 	Make /O /U binSizeList={1,2,4,8}		// CCD bin size, an unsigned int
 	Variable /G binSizeIndex=0
 	Variable /G iROI=nan		// indicates the current ROI
-	//Variable /G binnedFrameWidth=(iROIRight-iROILeft+1)/binWidth	// Width of the binned ROI image
-	//Variable /G binnedFrameHeight=(iROIBottom-iROITop+1)/binHeight		// Height of the binned ROI image
+	//Variable /G binnedFrameWidth=(iROIRight-iROILeft+1)/binSize	// Width of the binned ROI image
+	//Variable /G binnedFrameHeight=(iROIBottom-iROITop+1)/binSize		// Height of the binned ROI image
 	//Variable /G blackCount=0		// the CCD count that gets mapped to black
 	//Variable /G whiteCount=2^16-1	// the CCD count that gets mapped to white
 	Variable /G moveAllROIs=0		// Whether to move all the ROIs when ImagerTranslateCurrentROIOrAll() is called
@@ -392,7 +392,7 @@ End
 
 
 
-Function ImagerGetBinWidth()
+Function ImagerGetBinSize()
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
@@ -459,24 +459,24 @@ End
 
 
 
-Function ImagerGetBinHeight()
-	// Switch to the data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-	
-	// Declare instance vars
-	NVAR binSizeIndex
-	WAVE binSizeList
-
-	// Get the value
-	Variable value=binSizeList[binSizeIndex]
-	
-	// Restore the original DF
-	SetDataFolder savedDF	
-
-	// Return the value
-	return value
-End
+//Function ImagerGetBinHeight()
+//	// Switch to the data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Imager
+//	
+//	// Declare instance vars
+//	NVAR binSizeIndex
+//	WAVE binSizeList
+//
+//	// Get the value
+//	Variable value=binSizeList[binSizeIndex]
+//	
+//	// Restore the original DF
+//	SetDataFolder savedDF	
+//
+//	// Return the value
+//	return value
+//End
 
 
 

@@ -393,10 +393,10 @@ Function ImagerViewUpdate()
 	Variable iROIRight=ImagerGetIROIRight(iROI)
 	Variable iROITop=ImagerGetIROITop(iROI)
 	Variable iROIBottom=ImagerGetIROIBottom(iROI)
-	Variable binWidth=ImagerGetBinWidth()
-	Variable binHeight=ImagerGetBinHeight()
+	Variable binSize=ImagerGetBinSize()
+	//Variable binHeight=ImagerGetBinHeight()
 	Variable nROIs=ImagerGetNROIs()
-	//Variable roiWidthInBins=(iROIRight-iROILeft)/binWidth
+	//Variable roiWidthInBins=(iROIRight-iROILeft)/binSize
 	//Variable roiHeightInBins=(iROIBottom-iROITop)/binHeight
 
 	// Update stuff

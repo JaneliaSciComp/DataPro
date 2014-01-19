@@ -305,12 +305,12 @@ Function ImagerContAcquireVideoStart()
 	NVAR isTriggered
 	
 	// Unpack the bin width, bin height
-	Variable binWidth=ImagerGetBinWidth()
-	Variable binHeight=ImagerGetBinHeight()
+	Variable binSize=ImagerGetBinSize()
+	//Variable binHeight=ImagerGetBinHeight()
 	
 	// Do stuff
 	//Variable iSweep=SweeperGetNextSweepIndex()
-	FancyCameraSetupVideoAcq(binWidth,binHeight,roisWave,isTriggered,videoExposure,ccdTargetTemperature)
+	FancyCameraSetupVideoAcq(binSize,roisWave,isTriggered,videoExposure,ccdTargetTemperature)
 	Variable wasVideoAcqStarted
 	Variable isCameraArmed=FancyCameraArm(nFramesForVideo)
 	if (isCameraArmed)
@@ -350,8 +350,8 @@ Function ImagerContAcquireFinish(iSweep)
 	WAVE isBackgroundROI
 	NVAR videoExposure
 	NVAR ccdTargetTemperature	
-	NVAR binWidth
-	NVAR binHeight
+	NVAR binSize
+	//NVAR binHeight
 	SVAR videoWaveBaseName
 	NVAR nFramesForVideo
 	NVAR isTriggered
@@ -443,7 +443,7 @@ Function ImagerContFocus()
 
 	// Do stuff
 	//Variable isBinnedAndROIed=0
-	//Variable binWidth=1
+	//Variable binSize=1
 	//Variable binHeight=1
 
 	ImagerSetIsFocusing(1)
@@ -451,7 +451,7 @@ Function ImagerContFocus()
 	DoUpdate
 
 	//Variable isImagingTriggered=0			// set to one for triggered images
-	//FancyCameraSetupAcquisition(isBinnedAndROIed,roisWave,isImagingTriggered,snapshotExposure,ccdTargetTemperature,binWidth,binHeight)
+	//FancyCameraSetupAcquisition(isBinnedAndROIed,roisWave,isImagingTriggered,snapshotExposure,ccdTargetTemperature,binSize,binHeight)
 	FancyCameraSetupSnapshotAcq(snapshotExposure,ccdTargetTemperature)
 
 	Variable iFullFrameWave=SweeperGetNextSweepIndex()
