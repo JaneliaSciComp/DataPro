@@ -25,30 +25,21 @@ Function FancyCameraConstructor()
 		
 		// Instance variables
 		String /G mostRecentErrorMessage=""		// When errors occur, they get stored here.		
-		Variable /G userFromCameraReflectX=0	// boolean
-		Variable /G userFromCameraReflectY=0	// boolean
-		Variable /G userFromCameraSwapXandY=0	// boolean
-		// To go from camera to user, we reflect X (or not), reflect Y (or not), and then swap X and Y (or not)
-		// In that order---(possible) reflections then (possible) swap
-		// This covers all 8 possible transforms, including rotations and anything else
 	else
 		// If it exists, switch to it
 		SetDataFolder root:DP_FancyCamera
 	endif
 
 	// instance vars
-	NVAR userFromCameraReflectX
-	NVAR userFromCameraReflectY
-	NVAR userFromCameraSwapXandY
 	
 	// Initialize the camera
 	CameraConstructor()
 	
 	// Tell the camera the userFromCameraMatrix, so it can properly transform the images
 	// when we read them
-	userFromCameraReflectX=0	// boolean
-	userFromCameraReflectY=1	// boolean
-	userFromCameraSwapXandY=1	// boolean
+	Variable userFromCameraReflectX=0	// boolean
+	Variable userFromCameraReflectY=1	// boolean
+	Variable userFromCameraSwapXandY=1	// boolean
 	CameraSetTransform(userFromCameraSwapXandY,userFromCameraReflectX,userFromCameraReflectY)
 	
 	// Restore the data folder
@@ -67,8 +58,8 @@ Function FancyCameraSetupSnapshotAcq(exposure,targetTemperature)
 	// Set the binning and ROI
 	Variable nBinSize=1
 	Variable isTriggered=0
-	FancyCameraBinningSet(nBinSize)
-	FancyCameraROIClear()	// we don't use the rois for snapshots
+	//FancyCameraBinningSet(nBinSize)
+	FancyCameraROIClear(nBinSize)	// we don't use the rois for snapshots
 
 	// Set the trigger mode
 	Variable ALWAYS=0	// start immediately
@@ -94,7 +85,7 @@ Function FancyCameraSetupVideoAcq(nBinSize,roisWave,isTriggered,exposure,targetT
 	Variable targetTemperature
 	
 	// Set the binning and ROI
-	FancyCameraBinningSet(nBinSize)
+	//FancyCameraBinningSet(nBinSize)
 	//Variable nROIs=DimSize(roisWave,1)
 	//Variable isAtLeastOneROI=(nROIs>0)
 	//if (isAtLeastOneROI)
@@ -125,53 +116,13 @@ End
 
 
 
-Function FancyCameraBinningSet(nBinSize)
-	Variable nBinSize
-	// These are in user coordinate space, although currently it doesn't really matter
-	
-	// Translate the bin sizes into a binning mode
-	// This code is entirely Andor iXon Ultra-specific
-	Variable binningModeIndex
-	if ( (nBinSize==1) )
-		binningModeIndex=0
-	elseif ( (nBinSize==2) )
-		binningModeIndex=1
-	elseif ( (nBinSize==4) )
-		binningModeIndex=2
-	elseif ( (nBinSize==8) )
-		binningModeIndex=3
-	else
-		return 0
-	endif	
-	
-	// Set the binning
-	CameraBinningItemSet(binningModeIndex)	
-End
-
-
-
-
-
-
-
-
 Function FancyCameraROISet(roisWave,nBinSize)
 	// Set the ROI for the camera, given the user ROIs.  Note that the input coords are in user coordinate space, so
 	// we have to translate them to CCD coordinate space.
 	Wave roisWave
 	Variable nBinSize
 
-	// Clear the ROI	
-	CameraROIClear()
-	
-	Variable nROIs=DimSize(roisWave,1)
-	if (nROIs>0)
-		// Calc the ROI that just includes all the ROIs, in same (user image heckbertian) coords as the ROIs themselves
-		Wave boundingROIInUS=FancyCameraBoundingROIFromROIs(roisWave)
-		Wave boundingROIInCS=FancyCameraCameraROIFromUserROI(roisWave)
-		Wave alignedROIInCS=FancyCameraAlignCameraROIToGrid(boundingROIInCS,nBinSize)
-		CameraROISet(alignedROIInCS[0], alignedROIInCS[1], alignedROIInCS[2], alignedROIInCS[3])
-	endif
+	CameraROISetToROIsInUserSpace(roisWave,nBinSize)
 End
 
 
@@ -181,9 +132,11 @@ End
 
 
 
-Function FancyCameraROIClear()
+Function FancyCameraROIClear(nBinSize)
 	// Clear the ROI, i.e. set the camera to use the full CCD
-	CameraROIClear()
+	Variable nBinSize
+	
+	CameraROIClear(nBinSize)
 End
 
 
@@ -360,123 +313,6 @@ Function FancyCameraGetTemperature()
 	// Return the temp
 	return temperature
 End
-
-
-
-
-
-Function /WAVE FancyCameraBoundingROIFromROIs(roisWave)
-	// Computes the axis-aligned ROI that just includes all of the ROIs in roisWave.
-	// This doesn't do any aligning to the bin grid or translate the image-heckbertian userspace ROI coords
-	// into CCD-space row/col indices.  That can be done elsewhere if needed.
-	// It is an error to call this function if there are zero rois in roisWave.
-	Wave roisWave
-	
-	Variable nROIs=DimSize(roisWave,1)
-	Make /FREE /N=(4) boundingROI
-	if (nROIs==0)
-		Abort "Error: No ROIs in roisWave in  FancyCameraBoundingROIFromROIs()."
-	else
-		// Compute the bounding ROI, in user coordinates
-		Make /FREE /N=(nROIs) temp
-		temp=roisWave[0][p]
-		Variable xLeft=WaveMin(temp)
-		temp=roisWave[1][p]
-		Variable yTop=WaveMin(temp)
-		temp=roisWave[2][p]
-		Variable xRight=WaveMax(temp)
-		temp=roisWave[3][p]
-		Variable yBottom=WaveMax(temp)
-		boundingROI={xLeft,yTop,xRight,yBottom}		
-	endif
-	return boundingROI	
-End
-
-
-
-
-
-Function /WAVE FancyCameraCameraROIFromUserROI(roiInUS)
-	// Translates a userspace image heckbertian ROI into a cameraspace
-	// image heckbertian ROI.
-	// InUS == in userspace
-	// InCS == in cameraspace
-	Wave roiInUS
-	
-	// Change to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_FancyCamera
-
-	// instance vars
-	NVAR userFromCameraReflectX	// boolean
-	NVAR userFromCameraReflectY	// boolean
-	NVAR userFromCameraSwapXandY	// boolean
-
-	// Get the CCD size in the camera sapce
- 	Variable ccdWidthInCS=CameraCCDWidthGet()
- 	Variable ccdHeightInCS=CameraCCDHeightGet()
- 	Make /FREE /N=(2,2) farCornerReppedInCS={ {ccdWidthInCS,ccdHeightInCS}, {ccdWidthInCS,ccdHeightInCS} }
-
-	// Make a 2x2 matrix of the ROI corners in user space, with each corner a column
-	// In Igor,  { { a ,b } , { c , d } } means that a and b are in the first _column_
-	Make /FREE /N=(2,2) roiCornersInUS={ {roiInUS[0], roiInUS[1]} , {roiInUS[2], roiInUS[3]} }
-	
-	// Make the transformation matrices
-	Variable p=userFromCameraSwapXandY
-	Variable bx=userFromCameraReflectX
-	Variable by=userFromCameraReflectY
-	Variable sx=1-2*bx
-	Variable sy=1-2*by
-	Make /FREE /N=(2,2) Pwap={ { 1-p, p }, {p, 1-p} }		// Does the x-y swap, if called for
-	Make /FREE /N=(2,2) ScaleMatrix={ { sx, 0 }, {0, sy} }	// Scales x, y to do the appropriate reflections
-	Make /FREE /N=(2,2) B={ { bx, 0 }, {0, by} }		// Gates x, y depending on who is being reflected
-	
-	// Transform the ROI corners
-	MatrixOp /FREE roiCornersInCS = ScaleMatrix x (Pwap x roiCornersInUS - B x farCornerReppedInCS)
-	
-	Make /FREE /N=(2) xCornersInCS
-	xCornersInCS=roiCornersInCS[0][p]
-	Make /FREE /N=(2) yCornersInCS
-	yCornersInCS=roiCornersInCS[1][p]
-	Variable xMinInCS=WaveMin(xCornersInCS)
-	Variable yMinInCS=WaveMin(yCornersInCS)
-	Variable xMaxInCS=WaveMax(xCornersInCS)
-	Variable yMaxInCS=WaveMax(yCornersInCS)
-		
-	// Package as a ROI
-	Make /FREE /N=(4) roiInCS={xMinInCS, yMinInCS, xMaxInCS, yMaxInCS}
-	
-	// Restore the data folder
-	SetDataFolder savedDF		
-
-	return roiInCS
-End
-
-
-
-
-
-
-Function /WAVE FancyCameraAlignCameraROIToGrid(roiInCS,nBinSize)
-	// Computes the camera given all the individual ROIs.  Roughly, the camera ROI is a single
-	// ROI that just includes all the individual ROIs.  But things are slightly more complicated b/c the 
-	// user ROIs are specified in "image Heckbertian" coordinates, and the camera ROI is specified in 
-	// "image pixel" coordinates.  That is, for the user ROIs, the upper left corner of the upper left pixel 
-	// is (0,0), and the lower right corner of the lower right pixel is (n_cols, n_rows).  Further, we consider
-	// the user ROI bounds to be infinitesimally thin.  The camera ROI is simply the index of the first/last 
-	// column/row to be included in the ROI, with the indices being zero-based.	
-	Wave roiInCS
-	Variable nBinSize
-	
-	// Now we have a bounding box, but need to align to the binning
-	Variable iLeft=floor(roiInCS[0]/nBinSize)*nBinSize
-	Variable iTop=floor(roiInCS[1]/nBinSize)*nBinSize
-	Variable iRight=ceil(roiInCS[2]/nBinSize)*nBinSize-1
-	Variable iBottom=ceil(roiInCS[3]/nBinSize)*nBinSize-1
-	Make /FREE /N=4 roiInCSAligned={iLeft,iTop,iRight,iBottom}		
-	return roiInCSAligned
-End
-
 
 
 

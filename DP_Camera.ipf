@@ -51,6 +51,13 @@ Function CameraConstructor()
 		//Variable /G countReadFrameFake=0		// the first frame to be read by subsequent read commands
 		String /G mostRecentErrorMessage=""		// When errors occur, they get stored here.
 		
+		Variable /G userFromCameraReflectX=0	// boolean
+		Variable /G userFromCameraReflectY=0	// boolean
+		Variable /G userFromCameraSwapXandY=0	// boolean
+		// To go from camera to user, we reflect X (or not), reflect Y (or not), and then swap X and Y (or not)
+		// In that order---(possible) reflections then (possible) swap
+		// This covers all 8 possible transforms, including rotations and anything else
+		
 		// Create the SIDX root object, referenced by sidxRoot
 		String errorMessage
 		String license=""	// License file is stored in C:/Program Files/Bruxton/SIDX
@@ -123,7 +130,7 @@ Function CameraConstructor()
 					if (sidxStatus!=0)
 						SIDXCameraGetLastError sidxCamera, errorMessage
 						DoAlert 0, sprintf1s("Error in SIDXDeviceExtraListSet: %s",errorMessage)
-					endif		
+					endif
 					// Report on the camera state
 					CameraProbeStatusAndPrintf(sidxCamera)
 				else
@@ -159,13 +166,13 @@ End
 
 
 //Function CameraSetUserFromCameraMatrix(userFromCameraMatrix)
-Function CameraSetTransform(userFromCameraSwapXandY,userFromCameraReflectX,userFromCameraReflectY)
+Function CameraSetTransform(userFromCameraSwapXandYNew,userFromCameraReflectXNew,userFromCameraReflectYNew)
 	// This is currently hardcoded to one specific transform.
 	// Need to generalize this--it's pretty embarassing at present.
 	// Also need to handle this properly for a fake camera
-	Variable userFromCameraReflectX	// boolean
-	Variable userFromCameraReflectY	// boolean
-	Variable userFromCameraSwapXandY	// boolean
+	Variable userFromCameraReflectXNew	// boolean
+	Variable userFromCameraReflectYNew	// boolean
+	Variable userFromCameraSwapXandYNew	// boolean
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
@@ -173,6 +180,14 @@ Function CameraSetTransform(userFromCameraSwapXandY,userFromCameraReflectX,userF
 
 	// Declare instance variables
 	NVAR sidxCamera
+	NVAR userFromCameraReflectX
+	NVAR userFromCameraReflectY
+	NVAR userFromCameraSwapXandY
+
+	// Set them
+	userFromCameraReflectX=userFromCameraSwapXandYNew	// boolean
+	userFromCameraReflectY=userFromCameraReflectXNew	// boolean
+	userFromCameraSwapXandY=userFromCameraReflectYNew	// boolean
 
 	// Set image rotation
 	Variable sidxStatus
@@ -198,7 +213,12 @@ End
 
 
 
-Function CameraROIClear()
+
+
+
+Function CameraROIClear(nBinSize)
+	Variable nBinSize
+
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Camera
@@ -235,6 +255,9 @@ Function CameraROIClear()
 		iBottom=heightCCD-1
 	endif
 
+	// Now, set the bin size
+	CameraBinSizeSet(nBinSize)
+
 	// Restore the data folder
 	SetDataFolder savedDF	
 End
@@ -243,107 +266,33 @@ End
 
 
 
-Function CameraROISet(iLeftNew, iTopNew, iRightNew, iBottomNew)
-	// Set the camera ROI
-	// The ROI is specified in the unbinned pixel coordinates, which are image-style coordinates, 
-	// with the upper-left pels being (0,0)
-	// The ROI includes x coordinates [iLeft,iRight].  That is, the pixel with coord iRight is included.
-	// The ROI includes y coordinates [iTop,iBottom].  That is, the pixel with coord iBottom is included.
-	// iRight, iLeft must be an integer multiple of the current bin width
-	// iBottom, iTop must be an integer multiple of the current bin height
-	// The ROI will be (iRight-iLeft+1)/nBinSize bins wide, and
-	// (iBottom-iTop+1)/nBinSize bins high.
-	// Note that all of these are in CCD coords, not user coords.  The idea is that the Camera knows nothing about
-	// the user<->CCD transform.  (But currently there's some abstraction leakage b/c it's easiest to have SIDX
-	// take care of transforming the frames as they come off the hardware.)
-	Variable iLeftNew,iTopNew,iRightNew,iBottomNew
+Function CameraROISetToROIsInUserSpace(roisWave,nBinSize)
+	// Set the ROI for the camera, given the user ROIs.  Note that the input coords are in user coordinate space, so
+	// we have to translate them to CCD coordinate space.
+	Wave roisWave
+	Variable nBinSize
 	
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Camera
 
 	// Declare instance variables
-	NVAR areWeForReal
-	NVAR isSidxCameraValid
-	NVAR sidxCamera
-	NVAR iLeft, iTop
-	NVAR iBottom, iRight	 // the ROI boundaries
+	NVAR userFromCameraReflectX
+	NVAR userFromCameraReflectY
+	NVAR userFromCameraSwapXandY
 
-	// Actually set the ROI coordinates
-	Variable sidxStatus
-	if (areWeForReal)
-		if (isSidxCameraValid)
-			String errorMessage
-			SIDXCameraROISet sidxCamera, iLeftNew, iTopNew, iRightNew, iBottomNew, sidxStatus
-			if (sidxStatus!=0)
-				SIDXCameraGetLastError sidxCamera, errorMessage
-				Abort sprintf1s("Error in SIDXCameraROISet: %s",errorMessage)
-			endif
-			SIDXCameraROIGetValue sidxCamera, iLeft, iTop, iRight, iBottom, sidxStatus
-			if (sidxStatus!=0)
-				SIDXCameraGetLastError sidxCamera, errorMessage
-				Abort sprintf1s("Error in SIDXCameraROIGetValue: %s",errorMessage)
-			endif			
-			if ( (iLeft!=iLeftNew) || (iTop!=iTopNew) || (iRight!=iRightNew) || (iBottom!=iBottomNew) )
-				Abort "ROI settings on camera do not match requested ROI settings."				
-			endif
-		else
-			Abort "Called CameraROISet() before camera was created."
-		endif
-	else
-		iLeft=iLeftNew
-		iTop=iTopNew
-		iRight=iRightNew
-		iBottom=iBottomNew
-	endif
-
-	// Restore the data folder
-	SetDataFolder savedDF	
-End
-
-
-
-
-
-Function CameraBinningItemSet(iBinningMode)
-	Variable iBinningMode
+	// Clear the ROI	
+	CameraROIClear(nBinSize)
 	
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
-
-	// Declare instance variables
-	NVAR areWeForReal
-	NVAR isSidxCameraValid
-	NVAR sidxCamera
-	NVAR iBinningModeFake
-	NVAR binSize
-	//NVAR binHeight
-
-	// Set the bin sizes
-	Variable sidxStatus
-	if (areWeForReal)
-		if (isSidxCameraValid)
-			SIDXCameraBinningItemSet sidxCamera, iBinningMode, sidxStatus
-			if (sidxStatus!=0)
-				String errorMessage
-				SIDXCameraGetLastError sidxCamera, errorMessage
-				Abort sprintf1s("Error in SIDXCameraBinningItemSet: %s",errorMessage)
-			endif
-			CameraSyncBinSize()
-		else
-			Abort "Called CameraBinningItemSet() before camera was created."
-		endif
-	else
-		iBinningModeFake=iBinningMode
-		// This next is entirely Ander iXon Ultra-specific
-		binSize=2^iBinningMode
+	Variable nROIs=DimSize(roisWave,1)
+	if (nROIs>0)
+		// Calc the ROI that just includes all the ROIs, in same (user image heckbertian) coords as the ROIs themselves
+		Wave boundingROIInUS=boundingROIFromROIs(roisWave)
+		Wave boundingROIInCS=cameraROIFromUserROI(roisWave,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXandY)
+		Wave alignedROIInCS=alignCameraROIToGrid(boundingROIInCS,nBinSize)
+		CameraSetROIInCSAndAligned(alignedROIInCS)
 	endif
-
-	// Restore the data folder
-	SetDataFolder savedDF	
 End
-
 
 
 
@@ -828,12 +777,17 @@ Function CameraAcquireReadBang(framesCaged,nFramesToRead)
 	// Set x, y, t axis for the frames
 	//
 		
-	// Set the x and y offset and scale
-	SetScale /P x, iLeft+0.5*binSize, binSize, "px", framesCaged		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
-	SetScale /P y, iTop+0.5*binSize, binSize, "px", framesCaged
+	// set the time offset and scale
 	Variable frameOffset=(1000*exposureInSeconds)/2	// ms, middle of the first exposure
 	Variable frameInterval=1000*frameIntervalInSeconds	// ms
 	SetScale /P z, frameOffset, frameInterval, "ms", framesCaged	
+
+	// Set the x and y offset and scale
+	Wave roiInUS=CameraGetAlignedROIInUS()
+	Variable xLeft=roiInUS[0]
+	Variable yTop=roiInUS[1]
+	SetScale /P x, xLeft+0.5*binSize, binSize, "px", framesCaged		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
+	SetScale /P y, yTop+0.5*binSize, binSize, "px", framesCaged
 
 	// Restore the data folder
 	SetDataFolder savedDF		
@@ -1284,6 +1238,49 @@ End
 
 
 
+Function /WAVE CameraGetAlignedROIInCS()
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR iLeft, iTop
+	NVAR iRight, iBottom	 	// the ROI boundaries, as pixel indices
+
+	Make /FREE /N=4 roiInCSAligned={iLeft, iTop, iRight-1, iBottom-1}
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+	
+	return roiInCSAligned
+End
+
+
+
+
+
+Function /WAVE CameraGetAlignedROIInUS()
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR userFromCameraReflectX
+	NVAR userFromCameraReflectY
+	NVAR userFromCameraSwapXandY
+
+	// Get the ROI, convert
+	Wave roiInCS=CameraGetAlignedROIInCS()
+	Wave roiInUS=userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXandY)
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+	
+	return roiInUS
+End
+
+
+
 
 
 // private methods
@@ -1359,6 +1356,135 @@ End
 
 
 
+Function CameraSetROIInCSAndAligned(roiInCSAndAlignedNew)
+	// Set the camera ROI
+	// The ROI is specified in the unbinned pixel coordinates, which are image-style coordinates, 
+	// with the upper-left pels being (0,0)
+	// The ROI includes x coordinates [iLeft,iRight].  That is, the pixel with coord iRight is included.
+	// The ROI includes y coordinates [iTop,iBottom].  That is, the pixel with coord iBottom is included.
+	// iRight, iLeft must be an integer multiple of the current bin size
+	// iBottom, iTop must be an integer multiple of the current bin size
+	// The ROI will be (iRight-iLeft+1)/nBinSize bins wide, and
+	// (iBottom-iTop+1)/nBinSize bins high.
+	// Note that all of these are in CCD coords, not user coords.
+	Wave roiInCSAndAlignedNew
+	
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxCameraValid
+	NVAR sidxCamera
+	NVAR iLeft, iTop
+	NVAR iBottom, iRight	 // the ROI boundaries as pel indices
+
+	// Convert the ROI boundaries to pixel row/column indices that are _inclusive_
+	// The boundaries in roiInCSAndAligned we think of as infinetesimally thin boundaries, 
+	// in image heckbertian coordinates.  The SIDX function wants pixel row/col coords, and 
+	// the rows and columns given are _included_ in the ROI.  So we have to translate, but
+	// the translation is pretty trivial
+	Variable iLeftNew=roiInCSAndAlignedNew[0]
+	Variable iTopNew=roiInCSAndAlignedNew[1]
+	Variable iBottomNew=roiInCSAndAlignedNew[2]-1
+	Variable iRightNew=roiInCSAndAlignedNew[3]-1
+
+	// Actually set the ROI coordinates
+	Variable sidxStatus
+	if (areWeForReal)
+		if (isSidxCameraValid)
+			String errorMessage
+			SIDXCameraROISet sidxCamera, iLeftNew, iTopNew, iRightNew, iBottomNew, sidxStatus
+			if (sidxStatus!=0)
+				SIDXCameraGetLastError sidxCamera, errorMessage
+				Abort sprintf1s("Error in SIDXCameraROISet: %s",errorMessage)
+			endif
+			SIDXCameraROIGetValue sidxCamera, iLeft, iTop, iRight, iBottom, sidxStatus
+			if (sidxStatus!=0)
+				SIDXCameraGetLastError sidxCamera, errorMessage
+				Abort sprintf1s("Error in SIDXCameraROIGetValue: %s",errorMessage)
+			endif			
+			if ( (iLeft!=iLeftNew) || (iTop!=iTopNew) || (iRight!=iRightNew) || (iBottom!=iBottomNew) )
+				Abort "ROI settings on camera do not match requested ROI settings."				
+			endif
+		else
+			Abort "Called CameraROISet() before camera was created."
+		endif
+	else
+		iLeft=iLeftNew
+		iTop=iTopNew
+		iRight=iRightNew
+		iBottom=iBottomNew
+	endif
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+End
+
+
+
+
+
+Function CameraBinSizeSet(nBinSizeNew)
+	Variable nBinSizeNew
+	
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxCameraValid
+	NVAR sidxCamera
+	NVAR iBinningModeFake
+	NVAR nBinSize
+
+	// Translate the bin sizes into a binning mode
+	// This code is entirely Andor iXon Ultra-specific
+	Variable binningModeIndex
+	if ( (nBinSizeNew==1) )
+		binningModeIndex=0
+	elseif ( (nBinSizeNew==2) )
+		binningModeIndex=1
+	elseif ( (nBinSizeNew==4) )
+		binningModeIndex=2
+	elseif ( (nBinSizeNew==8) )
+		binningModeIndex=3
+	else
+		// Just use one if value is invalid
+		binningModeIndex=0
+	endif	
+
+	// Set the bin sizes
+	Variable sidxStatus
+	if (areWeForReal)
+		if (isSidxCameraValid)
+			SIDXCameraBinningItemSet sidxCamera, binningModeIndex, sidxStatus
+			if (sidxStatus!=0)
+				String errorMessage
+				SIDXCameraGetLastError sidxCamera, errorMessage
+				Abort sprintf1s("Error in SIDXCameraBinningItemSet: %s",errorMessage)
+			endif
+			CameraSyncBinSize()
+		else
+			Abort "Called CameraBinningItemSet() before camera was created."
+		endif
+	else
+		iBinningModeFake=binningModeIndex
+		// This next is entirely Ander iXon Ultra-specific
+		nBinSize=2^binningModeIndex
+	endif
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+End
+
+
+
+
+
+
 
 // utility functions
 Function /S stringFromSIDXSettingTypeCode(settingTypeCode)
@@ -1422,4 +1548,191 @@ Function /S getDeviceSettingValueAsString(sidxCamera, settingIndex)
 
 	return valueAsString
 End
+
+
+
+
+Function /WAVE boundingROIFromROIs(roisWave)
+	// Computes the axis-aligned ROI that just includes all of the ROIs in roisWave.
+	// This doesn't do any aligning to the bin grid or translate the image-heckbertian userspace ROI coords
+	// into CCD-space row/col indices.  That can be done elsewhere if needed.
+	// It is an error to call this function if there are zero rois in roisWave.
+	Wave roisWave
+	
+	Variable nROIs=DimSize(roisWave,1)
+	Make /FREE /N=(4) boundingROI
+	if (nROIs==0)
+		Abort "Error: No ROIs in roisWave in  FancyCameraBoundingROIFromROIs()."
+	else
+		// Compute the bounding ROI, in user coordinates
+		Make /FREE /N=(nROIs) temp
+		temp=roisWave[0][p]
+		Variable xLeft=WaveMin(temp)
+		temp=roisWave[1][p]
+		Variable yTop=WaveMin(temp)
+		temp=roisWave[2][p]
+		Variable xRight=WaveMax(temp)
+		temp=roisWave[3][p]
+		Variable yBottom=WaveMax(temp)
+		boundingROI={xLeft,yTop,xRight,yBottom}		
+	endif
+	return boundingROI	
+End
+
+
+
+
+
+Function /WAVE alignCameraROIToGrid(roiInCS,nBinSize)
+	// This takes a ROI in image heckbertian coords in the camera space, and aligns it to the binning grid.
+	// This is still dealing with ROI borders as infinitesimally thin lines between pixels, both on
+	// input and output.
+	
+	Wave roiInCS
+	Variable nBinSize
+	
+	// Aligned the ROI to the binning
+	Variable iLeft=floor(roiInCS[0]/nBinSize)*nBinSize
+	Variable iTop=floor(roiInCS[1]/nBinSize)*nBinSize
+	Variable iRight=ceil(roiInCS[2]/nBinSize)*nBinSize
+	Variable iBottom=ceil(roiInCS[3]/nBinSize)*nBinSize
+	Make /FREE /N=4 roiInCSAligned={iLeft,iTop,iRight,iBottom}		
+	return roiInCSAligned
+End
+
+
+
+
+//Function /WAVE pelIndicesFromROIInCSAndAligned(roiInCSAndAligned)
+//	// Computes the camera given all the individual ROIs.  Roughly, the camera ROI is a single
+//	// ROI that just includes all the individual ROIs.  But things are slightly more complicated b/c the 
+//	// user ROIs are specified in "image Heckbertian" coordinates, and the camera ROI is specified in 
+//	// "image pixel" coordinates.  That is, for the user ROIs, the upper left corner of the upper left pixel 
+//	// is (0,0), and the lower right corner of the lower right pixel is (n_cols, n_rows).  Further, we consider
+//	// the user ROI bounds to be infinitesimally thin.  The camera ROI is simply the index of the first/last 
+//	// column/row to be included in the ROI, with the indices being zero-based.	
+//	Wave roiInCSAndAligned
+//	
+//	// Now we have a bounding box, but need to align to the binning
+//	Variable iLeft=floor(roiInCS[0]/nBinSize)*nBinSize
+//	Variable iTop=floor(roiInCS[1]/nBinSize)*nBinSize
+//	Variable iRight=ceil(roiInCS[2]/nBinSize)*nBinSize-1
+//	Variable iBottom=ceil(roiInCS[3]/nBinSize)*nBinSize-1
+//	Make /FREE /N=4 roiInCSAligned={iLeft,iTop,iRight,iBottom}		
+//	return roiInCSAligned
+//End
+//
+
+
+
+
+Function /WAVE cameraROIFromUserROI(roiInUS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXandY)
+	// Translates a userspace image heckbertian ROI into a cameraspace
+	// image heckbertian ROI.
+	// InUS == in userspace
+	// InCS == in cameraspace
+	Wave roiInUS
+	Variable userFromCameraReflectX	// boolean
+	Variable userFromCameraReflectY	// boolean
+	Variable userFromCameraSwapXandY	// boolean
+	
+	// Get the CCD size in the camera sapce
+ 	Variable ccdWidthInCS=CameraCCDWidthGet()
+ 	Variable ccdHeightInCS=CameraCCDHeightGet()
+ 	Make /FREE /N=(2,2) farCornerReppedInCS={ {ccdWidthInCS,ccdHeightInCS}, {ccdWidthInCS,ccdHeightInCS} }
+
+	// Make a 2x2 matrix of the ROI corners in user space, with each corner a column
+	// In Igor,  { { a ,b } , { c , d } } means that a and b are in the first _column_
+	Make /FREE /N=(2,2) roiCornersInUS={ {roiInUS[0], roiInUS[1]} , {roiInUS[2], roiInUS[3]} }
+	
+	// Make the transformation matrices
+	Variable swap=userFromCameraSwapXandY
+	Variable bx=userFromCameraReflectX
+	Variable by=userFromCameraReflectY
+	Variable sx=1-2*bx
+	Variable sy=1-2*by
+	Make /FREE /N=(2,2) Pwap={ { 1-swap, swap }, {swap, 1-swap} }		// Does the x-y swap, if called for
+	Make /FREE /N=(2,2) ScaleMatrix={ { sx, 0 }, {0, sy} }	// Scales x, y to do the appropriate reflections
+	Make /FREE /N=(2,2) B={ { bx, 0 }, {0, by} }		// Gates x, y depending on who is being reflected
+	
+	// Transform the ROI corners
+	MatrixOp /FREE roiCornersInCS = ScaleMatrix x (Pwap x roiCornersInUS - B x farCornerReppedInCS)
+	
+	Make /FREE /N=(2) xCornersInCS
+	xCornersInCS=roiCornersInCS[0][p]
+	Make /FREE /N=(2) yCornersInCS
+	yCornersInCS=roiCornersInCS[1][p]
+	Variable xMinInCS=WaveMin(xCornersInCS)
+	Variable yMinInCS=WaveMin(yCornersInCS)
+	Variable xMaxInCS=WaveMax(xCornersInCS)
+	Variable yMaxInCS=WaveMax(yCornersInCS)
+		
+	// Package as a ROI
+	Make /FREE /N=(4) roiInCS={xMinInCS, yMinInCS, xMaxInCS, yMaxInCS}
+	
+	return roiInCS
+End
+
+
+
+
+
+
+Function /WAVE userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXandY)
+	// Translates a cameraspace image heckbertian ROI into a userspace
+	// image heckbertian ROI.
+	// InUS == in userspace
+	// InCS == in cameraspace
+	Wave roiInCS
+	Variable userFromCameraReflectX	// boolean
+	Variable userFromCameraReflectY	// boolean
+	Variable userFromCameraSwapXandY	// boolean
+	
+	// Get the CCD size in the camera sapce
+ 	Variable ccdWidthInCS=CameraCCDWidthGet()
+ 	Variable ccdHeightInCS=CameraCCDHeightGet()
+ 	Make /FREE /N=(2,2) farCornerReppedInCS={ {ccdWidthInCS,ccdHeightInCS}, {ccdWidthInCS,ccdHeightInCS} }
+
+	// Make a 2x2 matrix of the ROI corners in camera space, with each corner a column
+	// In Igor,  { { a ,b } , { c , d } } means that a and b are in the first _column_
+	Make /FREE /N=(2,2) roiCornersInCS={ {roiInCS[0], roiInCS[1]} , {roiInCS[2], roiInCS[3]} }
+	
+	// Make the transformation matrices
+	Variable swap=userFromCameraSwapXandY
+	Variable bx=userFromCameraReflectX
+	Variable by=userFromCameraReflectY
+	Variable sx=1-2*bx
+	Variable sy=1-2*by
+	Make /FREE /N=(2,2) Pwap={ { 1-swap, swap }, {swap, 1-swap} }		// Does the x-y swap, if called for
+	Make /FREE /N=(2,2) ScaleMatrix={ { sx, 0 }, {0, sy} }	// Scales x, y to do the appropriate reflections
+	Make /FREE /N=(2,2) B={ { bx, 0 }, {0, by} }		// Gates x, y depending on who is being reflected
+	
+	// Transform the ROI corners
+	MatrixOp /FREE roiCornersInUS = Pwap x (ScaleMatrix x roiCornersInCS + B x farCornerReppedInCS)
+	
+	Make /FREE /N=(2) xCornersInUS
+	xCornersInUS=roiCornersInUS[0][p]
+	Make /FREE /N=(2) yCornersInUS
+	yCornersInUS=roiCornersInUS[1][p]
+	Variable xMinInUS=WaveMin(xCornersInUS)
+	Variable yMinInUS=WaveMin(yCornersInUS)
+	Variable xMaxInUS=WaveMax(xCornersInUS)
+	Variable yMaxInUS=WaveMax(yCornersInUS)
+		
+	// Package as a ROI
+	Make /FREE /N=(4) roiInUS={xMinInUS, yMinInUS, xMaxInUS, yMaxInUS}
+	
+	return roiInUS
+End
+
+
+
+
+
+
+
+
+
+
+
 
