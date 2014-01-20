@@ -193,38 +193,42 @@ Function CameraSetTransform(userFromCameraReflectXNew,userFromCameraReflectYNew,
 	Variable sidxStatus
 	String errorMessage
 
-	// Can't do this thing below without taking it into account in the transform variables.
-	// So will have to do the things to get the image to look right, then match the transform vars to it
-	// to get to look right, need to mirror y, then rotate three times CCW (i.e. rotate once CW)
-	// In SIDX calls, therefore, "mirror x", and "rotate 3 times CW"
-
-	// First, reflect the x axis --- we need this only because SIDX tries to accomodate Igor weirdness a little too much.
-	// Igor has a thing like Matlab where most images you need to reverse the y axis in the plot in order for it
-	// to be right-side up.  It seems that SIDX returns it's images in such a way that it assumes you are _not_ going to do this.
-	// Since we _do_ reverse the y axis to maintain easy compatibility with Igor's imagesave operation (and also
-	// to generally fit in with how most people do images), we need to do a single y reflection just to make sure 
-	// both cameraspace and userspace are using the same (image-style) coordinate system.  This does _not_ count as one of the 
-	// transformations specified by userFromCameraSwapXandYNew, userFromCameraReflectXNew, and userFromCameraReflectYNew.
-	// And I think you have to do x instead of y because of the funny way Igor deals with image data: If you want something
-	// in row i, col j of the image, it's at image[j][i].
-	SIDXCameraRotateMirrorX sidxCamera, sidxStatus
-	if (sidxStatus!=0)
-		SIDXCameraGetLastError sidxCamera, errorMessage
-		DoAlert 0, sprintf1s("Error in SIDXCameraRotateMirrorX: %s",errorMessage)
-	endif
-
-	// In it's current incarnation, the SIDX software translations don't actually seem to do what they say they do.
+	// In it's current incarnation (SIDX 7.28), the SIDX software translations don't actually seem to do what they say they do.
 	//SIDXCameraRotateMirrorX actually mirrors in y
 	//SIDXCameraRotateMirrorY actually mirrors in x
 	//SIDXCameraRotateSet(n) actually does n CCW rotations
 	// We'll have to keep this in mind to translate our desired transformation into SIDX calls
 
-	// Set image rotation
-	Variable n90DegCCWRotations=3		// Appropriate for Yitzhak's rig---one CW 90 deg rotation
-	SIDXCameraRotateSet sidxCamera, n90DegCCWRotations, sidxStatus
-	if (sidxStatus!=0)
-		SIDXCameraGetLastError sidxCamera, errorMessage
-		DoAlert 0, sprintf1s("Error in SIDXCameraRotateSet: %s",errorMessage)
+	if (userFromCameraReflectX)
+		SIDXCameraRotateMirrorY sidxCamera, sidxStatus
+		if (sidxStatus!=0)
+			SIDXCameraGetLastError sidxCamera, errorMessage
+			DoAlert 0, sprintf1s("Error in SIDXCameraRotateMirrorY: %s",errorMessage)
+		endif
+	endif
+	
+	if (userFromCameraReflectY)
+		SIDXCameraRotateMirrorX sidxCamera, sidxStatus
+		if (sidxStatus!=0)
+			SIDXCameraGetLastError sidxCamera, errorMessage
+			DoAlert 0, sprintf1s("Error in SIDXCameraRotateMirrorX: %s",errorMessage)
+		endif
+	endif
+	
+	if (userFromCameraSwapXandY)
+		// There may be a slightly cleaner way to do this, but this works.
+		SIDXCameraRotateMirrorX sidxCamera, sidxStatus
+		if (sidxStatus!=0)
+			SIDXCameraGetLastError sidxCamera, errorMessage
+			DoAlert 0, sprintf1s("Error in SIDXCameraRotateMirrorX: %s",errorMessage)
+		endif
+	
+		Variable n90DegCCWRotations=3
+		SIDXCameraRotateSet sidxCamera, n90DegCCWRotations, sidxStatus
+		if (sidxStatus!=0)
+			SIDXCameraGetLastError sidxCamera, errorMessage
+			DoAlert 0, sprintf1s("Error in SIDXCameraRotateSet: %s",errorMessage)
+		endif
 	endif
 
 	// Restore the data folder

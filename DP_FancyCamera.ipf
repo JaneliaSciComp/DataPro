@@ -34,6 +34,18 @@ Function FancyCameraConstructor()
 	
 	// Initialize the camera
 	CameraConstructor()
+
+	// Igor has a thing like Matlab where most images you need to reverse the y axis in the plot in order for it
+	// to be right-side up.  It seems that SIDX returns it's images in such a way that it assumes you are _not_ going to do this.
+	// Since we _do_ reverse the y axis to maintain easy compatibility with Igor's imagesave operation (and also
+	// to generally fit in with how most people do images), we need to do a single y reflection just to make sure 
+	// both cameraspace and userspace are using the same (image-style) coordinate system.  This does _not_ count as one of the 
+	// transformations specified by userFromCameraSwapXandYNew, userFromCameraReflectXNew, and userFromCameraReflectYNew.
+	// And I think you have to do x instead of y because of the funny way Igor deals with image data: If you want something
+	// in row i, col j of the image, it's at image[j][i].
+		
+	// For Yitzhak's rig, we need to mirror in Y (this seems to be because of the SIDX weirdness above), then rotate CW 90 deg.
+	// Those two combined work out to a transpose.
 	
 	// Tell the camera the userFromCameraMatrix, so it can properly transform the images
 	// when we read them
