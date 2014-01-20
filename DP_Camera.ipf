@@ -193,6 +193,11 @@ Function CameraSetTransform(userFromCameraReflectXNew,userFromCameraReflectYNew,
 	Variable sidxStatus
 	String errorMessage
 
+	// Can't do this thing below without taking it into account in the transform variables.
+	// So will have to do the things to get the image to look right, then match the transform vars to it
+	// to get to look right, need to mirror y, then rotate three times CCW (i.e. rotate once CW)
+	// In SIDX calls, therefore, "mirror x", and "rotate 3 times CW"
+
 	// First, reflect the x axis --- we need this only because SIDX tries to accomodate Igor weirdness a little too much.
 	// Igor has a thing like Matlab where most images you need to reverse the y axis in the plot in order for it
 	// to be right-side up.  It seems that SIDX returns it's images in such a way that it assumes you are _not_ going to do this.
@@ -202,11 +207,11 @@ Function CameraSetTransform(userFromCameraReflectXNew,userFromCameraReflectYNew,
 	// transformations specified by userFromCameraSwapXandYNew, userFromCameraReflectXNew, and userFromCameraReflectYNew.
 	// And I think you have to do x instead of y because of the funny way Igor deals with image data: If you want something
 	// in row i, col j of the image, it's at image[j][i].
-	SIDXCameraRotateMirrorX sidxCamera, sidxStatus
-	if (sidxStatus!=0)
-		SIDXCameraGetLastError sidxCamera, errorMessage
-		DoAlert 0, sprintf1s("Error in SIDXCameraRotateMirrorX: %s",errorMessage)
-	endif
+//	SIDXCameraRotateMirrorX sidxCamera, sidxStatus
+//	if (sidxStatus!=0)
+//		SIDXCameraGetLastError sidxCamera, errorMessage
+//		DoAlert 0, sprintf1s("Error in SIDXCameraRotateMirrorX: %s",errorMessage)
+//	endif
 
 	// In it's current incarnation, the SIDX software translations don't actually seem to do what they say they do.
 	//SIDXCameraRotateMirrorX actually mirrors in y
@@ -214,13 +219,13 @@ Function CameraSetTransform(userFromCameraReflectXNew,userFromCameraReflectYNew,
 	//SIDXCameraRotateSet(n) actually does n CCW rotations
 	// We'll have to keep this in mind to translate our desired transformation into SIDX calls
 
-	// Set image rotation
-	Variable n90DegCCWRotations=3		// Appropriate for Yitzhak's rig---one CW 90 deg rotation
-	SIDXCameraRotateSet sidxCamera, n90DegCCWRotations, sidxStatus
-	if (sidxStatus!=0)
-		SIDXCameraGetLastError sidxCamera, errorMessage
-		DoAlert 0, sprintf1s("Error in SIDXCameraRotateSet: %s",errorMessage)
-	endif
+	//// Set image rotation
+	//Variable n90DegCCWRotations=3		// Appropriate for Yitzhak's rig---one CW 90 deg rotation
+	//SIDXCameraRotateSet sidxCamera, n90DegCCWRotations, sidxStatus
+	//if (sidxStatus!=0)
+	//	SIDXCameraGetLastError sidxCamera, errorMessage
+	//	DoAlert 0, sprintf1s("Error in SIDXCameraRotateSet: %s",errorMessage)
+	//endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -1654,25 +1659,30 @@ Function /WAVE cameraROIFromUserROI(roiInUS,userFromCameraReflectX,userFromCamer
 	// Get the CCD size in the camera sapce
  	Variable ccdWidthInCS=CameraCCDWidthGet()
  	Variable ccdHeightInCS=CameraCCDHeightGet()
- 	Make /FREE /N=(2,2) farCornerReppedInCS={ {ccdWidthInCS,ccdHeightInCS}, {ccdWidthInCS,ccdHeightInCS} }
 
 	// Make a 2x2 matrix of the ROI corners in user space, with each corner a column
 	// In Igor,  { { a ,b } , { c , d } } means that a and b are in the first _column_
 	Make /FREE /N=(2,2) roiCornersInUS={ {roiInUS[0], roiInUS[1]} , {roiInUS[2], roiInUS[3]} }
+	Duplicate /FREE roiCornersInUS, roiCornersInCS
 	
-	// Make the transformation matrices
-	Variable bx=userFromCameraReflectX
-	Variable by=userFromCameraReflectY
-	Variable swap=userFromCameraSwapXandY
-	Variable sx=1-2*bx
-	Variable sy=1-2*by
-	Make /FREE /N=(2,2) ScaleMatrix={ { sx, 0 }, {0, sy} }	// Scales x, y to do the appropriate reflections
-	Make /FREE /N=(2,2) B={ { bx, 0 }, {0, by} }		// Gates x, y depending on who is being reflected
-	Make /FREE /N=(2,2) Pwap={ { 1-swap, swap }, {swap, 1-swap} }		// Does the x-y swap, if called for
-	
-	// Transform the ROI corners
-	MatrixOp /FREE roiCornersInCS = ScaleMatrix x (Pwap x roiCornersInUS - B x farCornerReppedInCS)
-	
+	// Swap x and y
+	if (userFromCameraSwapXandY)
+		Duplicate /FREE roiCornersInCS, temp	
+		roiCornersInCS[0][]=temp[1][q]
+		roiCornersInCS[1][]=temp[0][q]
+	endif	
+
+	// Reflect y
+	if (userFromCameraReflectY)
+		roiCornersInCS[1][]=ccdHeightInCS-roiCornersInCS[1][q]
+	endif
+
+	// Reflect x
+	if (userFromCameraReflectX)
+		roiCornersInCS[0][]=ccdWidthInCS-roiCornersInCS[0][q]
+	endif
+
+	// "Normalize" the ROI	
 	Make /FREE /N=(2) xCornersInCS
 	xCornersInCS=roiCornersInCS[0][p]
 	Make /FREE /N=(2) yCornersInCS
@@ -1706,25 +1716,30 @@ Function /WAVE userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCamer
 	// Get the CCD size in the camera sapce
  	Variable ccdWidthInCS=CameraCCDWidthGet()
  	Variable ccdHeightInCS=CameraCCDHeightGet()
- 	Make /FREE /N=(2,2) farCornerReppedInCS={ {ccdWidthInCS,ccdHeightInCS}, {ccdWidthInCS,ccdHeightInCS} }
 
 	// Make a 2x2 matrix of the ROI corners in camera space, with each corner a column
 	// In Igor,  { { a ,b } , { c , d } } means that a and b are in the first _column_
 	Make /FREE /N=(2,2) roiCornersInCS={ {roiInCS[0], roiInCS[1]} , {roiInCS[2], roiInCS[3]} }
+	Duplicate /FREE roiCornersInCS, roiCornersInUS
 	
-	// Make the transformation matrices
-	Variable bx=userFromCameraReflectX
-	Variable by=userFromCameraReflectY
-	Variable swap=userFromCameraSwapXandY
-	Variable sx=1-2*bx
-	Variable sy=1-2*by
-	Make /FREE /N=(2,2) ScaleMatrix={ { sx, 0 }, {0, sy} }	// Scales x, y to do the appropriate reflections
-	Make /FREE /N=(2,2) B={ { bx, 0 }, {0, by} }		// Gates x, y depending on who is being reflected
-	Make /FREE /N=(2,2) Pwap={ { 1-swap, swap }, {swap, 1-swap} }		// Does the x-y swap, if called for
+	// Reflect x
+	if (userFromCameraReflectX)
+		roiCornersInUS[0][]=ccdWidthInCS-roiCornersInUS[0][q]
+	endif
+
+	// Reflect y
+	if (userFromCameraReflectY)
+		roiCornersInUS[1][]=ccdHeightInCS-roiCornersInUS[1][q]
+	endif
 	
-	// Transform the ROI corners
-	MatrixOp /FREE roiCornersInUS = Pwap x (ScaleMatrix x roiCornersInCS + B x farCornerReppedInCS)
-	
+	// Swap x and y
+	if (userFromCameraSwapXandY)
+		Duplicate /FREE roiCornersInUS, temp	
+		roiCornersInUS[0][]=temp[1][q]
+		roiCornersInUS[1][]=temp[0][q]
+	endif	
+
+	// "Normalize" the ROI
 	Make /FREE /N=(2) xCornersInUS
 	xCornersInUS=roiCornersInUS[0][p]
 	Make /FREE /N=(2) yCornersInUS
@@ -1739,13 +1754,6 @@ Function /WAVE userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCamer
 	
 	return roiInUS
 End
-
-
-
-
-
-
-
 
 
 

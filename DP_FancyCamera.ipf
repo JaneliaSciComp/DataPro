@@ -37,12 +37,12 @@ Function FancyCameraConstructor()
 	
 	// Tell the camera the userFromCameraMatrix, so it can properly transform the images
 	// when we read them
-	Variable userFromCameraReflectX=0	// boolean
-	Variable userFromCameraReflectY=1	// boolean
+	Variable userFromCameraReflectX=1	// boolean
+	Variable userFromCameraReflectY=0	// boolean
 	Variable userFromCameraSwapXandY=1	// boolean
-	//userFromCameraReflectX=0	// boolean
-	//userFromCameraReflectY=0	// boolean
-	//userFromCameraSwapXandY=0	// boolean
+	userFromCameraReflectX=0	// boolean
+	userFromCameraReflectY=0	// boolean
+	userFromCameraSwapXandY=0	// boolean
 	CameraSetTransform(userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXandY)
 	
 	// Restore the data folder
