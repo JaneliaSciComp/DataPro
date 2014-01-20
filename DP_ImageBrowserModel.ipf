@@ -24,7 +24,7 @@ Function ImageBrowserModelConstructor()
 	Variable /G whiteCount=2^16-1		// the CCD count that gets mapped to white
 	Variable /G isCurrentImageWave=0	// whether there is a current image wave
 	String /G imageWaveName=""		// the current wave being shown in the browser
-	Variable /G autoscaleToData=0
+	Variable /G autoscaleToData=1
 		// Whether to automatically set blackCount, whiteCount to min/max of image/video
 
 	// If there are any video wave around, make one of them the current one, make the first frame the current one

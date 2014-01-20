@@ -459,10 +459,11 @@ Function ImagerContFocus()
 	String imageWaveNameAbs=sprintf1s("root:DP_Imager:%s",imageWaveNameRel)	
 	Make /O /W /U /N=(0,0,0) $imageWaveNameAbs
 	WAVE imageWaveCaged= $imageWaveNameAbs
-	EpiLightSetIsOn(1)
 	Variable	nFrames=1	
 	Variable isCameraArmed=FancyCameraArm(nFrames)
 	if (isCameraArmed)
+		EpiLightSetIsOn(1)
+		DoUpdate	
 		Variable iFrame=0
 		do
 			// Start a sequence of images. In the current case, there is 
@@ -500,7 +501,7 @@ Function ImagerContFocus()
 		ImageBrowserViewModelEtcChanged()	
 	else
 		// If unable to arm camera
-		EpiLightSetIsOn(0)
+		//EpiLightSetIsOn(0)
 		ImagerSetIsFocusing(0)
 		ImagerViewModelChanged()
 		SetDataFolder savedDF
@@ -527,10 +528,11 @@ Function ImagerContAcquireSnapshot()
 	
 	// Do stuff
 	FancyCameraSetupSnapshotAcq(snapshotExposure,ccdTargetTemperature)
-	EpiLightSetIsOn(1)
 	Variable nFrames=1
-	Variable isCameraArmed=FancyCameraArm(nFrames)
-	if (isCameraArmed)
+	Variable isCameraArmed=FancyCameraArm(nFrames)	// this takes a while the first time you do it, so...
+	if (isCameraArmed)	
+		EpiLightSetIsOn(1)	// Don't turn on the light until after the camera has armed successfully
+		DoUpdate	
 		//FancyCameraStartAcquire()
 		Variable wasAcqStarted=FancyCameraStartAcquire()
 		if (wasAcqStarted)
