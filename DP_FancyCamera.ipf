@@ -40,7 +40,10 @@ Function FancyCameraConstructor()
 	Variable userFromCameraReflectX=0	// boolean
 	Variable userFromCameraReflectY=1	// boolean
 	Variable userFromCameraSwapXandY=1	// boolean
-	CameraSetTransform(userFromCameraSwapXandY,userFromCameraReflectX,userFromCameraReflectY)
+	//userFromCameraReflectX=0	// boolean
+	//userFromCameraReflectY=0	// boolean
+	//userFromCameraSwapXandY=0	// boolean
+	CameraSetTransform(userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXandY)
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
