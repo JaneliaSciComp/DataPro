@@ -97,6 +97,8 @@ Function StairBuilderModelInitialize()
 	parametersDefault[8]=0
 	Redimension /N=(nParameters) parameters
 	parameters=parametersDefault
+	SVAR signalType
+	signalType="DAC"
 End
 
 Function fillStairFromParamsBang(w,dt,nScans,parameters,parameterNames)

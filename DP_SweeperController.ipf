@@ -168,16 +168,8 @@ Function SweeperControllerTTLWavePopup(ctrlName,popNum,popStr) : PopupMenuContro
 	Variable popNum
 	String popStr
 	
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sweeper
-
-	WAVE /T ttlOutputWaveName
-
-	Variable iChannel
-	iChannel=str2num(ctrlName[3])
-	ttlOutputWaveName[iChannel]=popStr
-
-	SetDataFolder savedDF
+	Variable iChannel=str2num(ctrlName[3])
+	SweeperSetTTLOutputWaveName(iChannel,popStr)
 End
 
 Function SweeperControllerAcquireTrial()

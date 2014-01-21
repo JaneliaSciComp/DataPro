@@ -31,6 +31,7 @@
 #include ":DP_MulTrainBuilder"
 #include ":DP_TTLMTrainBuilder"
 #include ":DP_StairBuilder"
+#include ":DP_TTLConstBuilder"
 #include ":DP_OutputViewer"
 #include ":DP_Utilities"
 #include ":DP_MyProcedures"

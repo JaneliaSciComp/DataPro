@@ -330,9 +330,12 @@ Function SweeperViewTTLEnablementChanged(i)
 	SetDataFolder root:DP_Sweeper
 
 	WAVE ttlOutputChannelOn
+	NVAR isEpiLightInUse	
+	NVAR epiLightTTLOutputIndex
 	
 	// If using the imaging module, have to disable the TTL channel entirely if it is being used for epi-illumination control
-	Variable inUseForEpi= ( IsImagingModuleInUse() && (i==EpiLightGetTTLOutputIndex() )
+	//Variable inUseForEpi= ( IsImagingModuleInUse() && (i==EpiLightGetTTLOutputIndex() )
+	Variable inUseForEpi= ( isEpiLightInUse && (i==epiLightTTLOutputIndex )
 	
 	String controlName=sprintf1v("TTL%dCheckbox", i)
 	CheckBox $controlName, win=SweeperView, value=ttlOutputChannelOn[i], disable = (inUseForEpi?2:0)

@@ -89,6 +89,8 @@ Function MulTrainBuilderModelInitialize()
 	parametersDefault[7]=10
 	Redimension /N=(nParameters) parameters
 	parameters=parametersDefault
+	SVAR signalType
+	signalType="DAC"
 End
 
 Function fillMulTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)

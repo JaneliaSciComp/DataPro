@@ -70,6 +70,8 @@ Function RampBuilderModelInitialize()
 	parametersDefault[4]=10
 	Redimension /N=(nParameters) parameters
 	parameters=parametersDefault
+	SVAR signalType
+	signalType="DAC"
 End
 
 Function fillRampFromParamsBang(w,dt,nScans,parameters,parameterNames)

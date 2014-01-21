@@ -64,6 +64,8 @@ Function ChirpBuilderModelInitialize()
 	parametersDefault[4]=200
 	Redimension /N=(nParameters) parameters
 	parameters=parametersDefault
+	SVAR signalType
+	signalType="DAC"
 End
 
 Function fillChirpFromParamsBang(w,dt,nScans,parameters,parameterNames)

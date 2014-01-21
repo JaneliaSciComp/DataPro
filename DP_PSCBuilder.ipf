@@ -70,6 +70,8 @@ Function PSCBuilderModelInitialize()
 	parametersDefault[5]=0.5
 	Redimension /N=(nParameters) parameters
 	parameters=parametersDefault
+	SVAR signalType
+	signalType="DAC"
 End
 
 Function fillPSCFromParamsBang(w,dt,nScans,parameters,parameterNames)

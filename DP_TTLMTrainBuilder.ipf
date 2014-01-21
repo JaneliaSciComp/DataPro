@@ -89,6 +89,8 @@ Function TTLMTrainBuilderModelInitialize()
 	//parametersDefault[7]=10
 	Redimension /N=(nParameters) parameters
 	parameters=parametersDefault
+	SVAR signalType
+	signalType="TTL"
 End
 
 Function fillTTLMTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)

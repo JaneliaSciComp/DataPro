@@ -59,6 +59,8 @@ Function WNoiseBuilderModelInitialize()
 	parametersDefault[3]=1
 	Redimension /N=(nParameters) parameters
 	parameters=parametersDefault
+	SVAR signalType
+	signalType="DAC"
 End
 
 Function fillWNoiseFromParamsBang(w,dt,nScans,parameters,parameterNames)

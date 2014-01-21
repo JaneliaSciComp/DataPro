@@ -22,7 +22,8 @@ Function BuilderModelConstructor(builderTypeLocal)
 	Make /O /T parameterNames
 	Make /O parametersDefault
 	Make /O parameters
-
+	String /G signalType=""
+	
 	// Create the wave
 	Make /O theWave
 
@@ -150,6 +151,23 @@ Function BuilderModelSetParamsToDefault(builderType)
 	endfor	
 
 	SetDataFolder savedDF	
+End
+
+Function BuilderModelExportToSweeper(builderType,waveNameString)
+	String builderType
+	String waveNameString
+	// Send a message to the sweeper with the wave
+	String savedDF=GetDataFolder(1)
+	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)	
+	SetDataFolder $dataFolderName
+	WAVE theWave
+	SVAR signalType
+	if (AreStringsEqual(signalType,"DAC"))
+		SweeperControllerAddDACWave(theWave,waveNameString)
+	else
+		SweeperControllerAddTTLWave(theWave,waveNameString)
+	endif
+	SetDataFolder savedDF
 End
 
 Function resampleBang(builderType,w,dt,totalDuration)

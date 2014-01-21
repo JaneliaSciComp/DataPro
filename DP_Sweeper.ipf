@@ -875,6 +875,16 @@ Function SweeperAddTTLWave(w,waveNameString)
 	SetDataFolder savedDF
 End
 
+Function SweeperIsTTLWavePresent(waveNameString)
+	String waveNameString
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper:ttlWaves
+	Wave w=$waveNameString
+	Variable result=WaveExists(w)
+	SetDataFolder savedDF
+	return result
+End
+
 Function SweeperSetDtWanted(newDtWanted)
 	Variable newDtWanted
 
@@ -1051,6 +1061,49 @@ Function SweeperGetDACMultiplier(i)
 	Variable value=dacMultiplier[i]
 	SetDataFolder savedDF	
 	return value
+End
+
+Function SweeperSetTTLOutputWaveName(iChannel,newValue)
+	Variable iChannel
+	String newValue
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+
+	WAVE /T ttlOutputWaveName
+
+	ttlOutputWaveName[iChannel]=newValue
+
+	SetDataFolder savedDF
+End
+
+
+Function SweeperSetEpiLightTTLOutput(ttlOutputIndexNew)
+	Variable ttlOutputIndexNew
+
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+	
+	NVAR isEpiLightInUse	
+	NVAR epiLightTTLOutputIndex
+	
+	if (isEpiLightInUse)
+		// Turn the currently in-use channel off
+		SweeperSetTTLOutputChannelOn(epiLightTTLOutputIndex,0)
+	endif
+	String epiLightWaveName="epiLight"
+	if ( SweeperIsTTLWavePresent(epiLightWaveName) )
+		// Delete the old wave
+		KillWaves epiLightWaveName
+	endif
+	BuilderModelSetParameter("TTLConst","baseLevel",EpiLightGetIsOn())
+	BuilderModelExportToSweeper("TTLConst",epiLightWaveName)
+	SweeperSetTTLOutputWaveName(ttlOutputIndexNew,epiLightWaveName)
+	SweeperSetTTLOutputChannelOn(ttlOutputIndexNew,1)
+	isEpiLightInUse=1
+	epiLightTTLOutputIndex=ttlOutputIndexNew
+	
+	SetDataFolder savedDF		
 End
 
 

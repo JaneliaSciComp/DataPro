@@ -54,16 +54,7 @@ Function BuilderContSaveAsButtonPressed(bStruct) : ButtonControl
 	endif
 	
 	// Send a message to the sweeper with the wave
-	String savedDF=GetDataFolder(1)
-	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)	
-	SetDataFolder $dataFolderName
-	WAVE theWave
-	if (AreStringsEqual(signalType,"DAC"))
-		SweeperControllerAddDACWave(theWave,waveNameString)
-	else
-		SweeperControllerAddTTLWave(theWave,waveNameString)
-	endif
-	SetDataFolder savedDF
+	BuilderModelExportToSweeper(builderType,waveNameString)
 End
 
 Function BuilderContImportButtonPressed(bStruct) : ButtonControl

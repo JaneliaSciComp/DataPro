@@ -59,6 +59,8 @@ Function SineBuilderModelInitialize()
 	parametersDefault[3]=100
 	Redimension /N=(nParameters) parameters
 	parameters=parametersDefault
+	SVAR signalType
+	signalType="DAC"
 End
 
 Function fillSineFromParamsBang(w,dt,nScans,parameters,parameterNames)

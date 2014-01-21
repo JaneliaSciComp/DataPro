@@ -77,6 +77,8 @@ Function TrainBuilderModelInitialize()
 	parametersDefault[5]=10
 	Redimension /N=(nParameters) parameters
 	parameters=parametersDefault
+	SVAR signalType
+	signalType="DAC"
 End
 
 Function fillTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)
