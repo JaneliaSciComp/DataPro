@@ -143,6 +143,12 @@ Function InitializeDataPro()
 	FancyCameraConstructor()
 	ImagerConstructor()
 	ImageBrowserModelConstructor()
+	// Set these things 
+	BuilderModelConstructor("TTLConst")
+	Variable defaultEpiTTLOutputIndex=1
+	EpiLightSetTTLOutputIndex(defaultEpiTTLOutputIndex)
+	SweeperEpiLightTTLOutputChanged()
+	//SweeperSetEpiLightTTLOutput(defaultEpiTTLOutputIndex)
 End
 
 //Function AcquisitionPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl

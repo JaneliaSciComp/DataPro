@@ -19,8 +19,9 @@ Function EpiLightConstructor()
 	NewDataFolder /O/S root:DP_EpiLight
 
 	// Instance vars
+	Variable /G isOnPermanent=0	// boolean, allows for temporary setting and then resetting
 	Variable /G isOn=0	// boolean
-	Variable /G ttlOutputIndex=nan		// the TTL channel to which the light is hooked up
+	Variable /G ttlOutputIndex=1		// the TTL channel to which the light is hooked up
 	
 	// Restore the original data folder
 	SetDataFolder savedDF	
@@ -32,8 +33,10 @@ Function EpiLightSetIsOn(value)
 	Variable value
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_EpiLight
+	NVAR isOnPermanent
 	NVAR isOn
 	NVAR ttlOutputIndex
+	isOnPermanent=value
 	isOn=value
 	SamplerSetTTLOutput(ttlOutputIndex,isOn)
 	SetDataFolder savedDF	
@@ -52,6 +55,34 @@ End
 
 
 
+Function EpiLightSetIsOnTemporary(value)
+	Variable value
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_EpiLight
+	NVAR isOnPermanent
+	NVAR isOn
+	NVAR ttlOutputIndex
+	isOnPermanent=isOn 		// save the permanent value
+	isOn=value
+	SamplerSetTTLOutput(ttlOutputIndex,isOn)
+	SetDataFolder savedDF	
+End
+
+
+
+Function EpiLightResetToPermanent()
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_EpiLight
+	NVAR isOnPermanent
+	NVAR isOn
+	NVAR ttlOutputIndex
+	isOn=isOnPermanent
+	SamplerSetTTLOutput(ttlOutputIndex,isOn)
+	SetDataFolder savedDF	
+End
+
+
+
 Function EpiLightSetTTLOutputIndex(newValue)
 	Variable newValue
 	
@@ -62,14 +93,15 @@ Function EpiLightSetTTLOutputIndex(newValue)
 	NVAR isOn
 	
 	// Check that the new TTL output is not in use by the sweeper or the test pulser
-	if ( SweeperIsTTLInUse(newValue) || TestPulserIsTTLInUse(newValue) )
+	if ( SweeperIsTTLInUse(newValue) || (TestPulserExists() && TestPulserIsTTLInUse(newValue) ) )
 		SetDataFolder savedDF	
 		return 0
 	endif			
 	
 	ttlOutputIndex=newValue
-	SweeperSetEpiLightTTLOutput(ttlOutputIndex)
-	SamplerSetTTLOutput(ttlOutputIndex,isOn)
+	//SweeperEpiLightTTLOutputChanged()
+	//SweeperSetEpiLightTTLOutput(ttlOutputIndex)
+	//SamplerSetTTLOutput(ttlOutputIndex,isOn)
 	
 	SetDataFolder savedDF	
 End

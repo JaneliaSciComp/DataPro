@@ -48,7 +48,7 @@ Function ImagerViewConstructor() : Panel
 	// TTL Output SetVariable		
 	xOffset=30
 	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-14)/2
-	SetVariable ttlOutputChannelSV,win=ImagerView,pos={xOffset,yOffset},size={94,1},limits={0,15,1},title="TTL Output:"
+	SetVariable ttlOutputChannelSV,win=ImagerView,pos={xOffset,yOffset},size={94,1},limits={0,3,1},title="TTL Output:"
 	SetVariable ttlOutputChannelSV,win=ImagerView,proc=ICEpiTTLChannelSVTouched	
 	
 	// On/Off Button

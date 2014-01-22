@@ -167,6 +167,9 @@ Function SamplerGetTTLBackground()
 End
 
 
+Function SamplerEpiLightTTLOutputChanged()
+	SamplerSetTTLOutput(EpiLightGetTTLOutputIndex(),EpiLightGetIsOn())
+End
 
 //
 // Private methods

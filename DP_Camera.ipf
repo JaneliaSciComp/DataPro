@@ -179,6 +179,7 @@ Function CameraSetTransform(userFromCameraReflectXNew,userFromCameraReflectYNew,
 	SetDataFolder root:DP_Camera
 
 	// Declare instance variables
+	NVAR isSidxCameraValid
 	NVAR sidxCamera
 	NVAR userFromCameraReflectX
 	NVAR userFromCameraReflectY
@@ -199,7 +200,7 @@ Function CameraSetTransform(userFromCameraReflectXNew,userFromCameraReflectYNew,
 	//SIDXCameraRotateSet(n) actually does n CCW rotations
 	// We'll have to keep this in mind to translate our desired transformation into SIDX calls
 
-	if (userFromCameraReflectX)
+	if (isSidxCameraValid && userFromCameraReflectX)
 		SIDXCameraRotateMirrorY sidxCamera, sidxStatus
 		if (sidxStatus!=0)
 			SIDXCameraGetLastError sidxCamera, errorMessage
@@ -207,7 +208,7 @@ Function CameraSetTransform(userFromCameraReflectXNew,userFromCameraReflectYNew,
 		endif
 	endif
 	
-	if (userFromCameraReflectY)
+	if (isSidxCameraValid && userFromCameraReflectY)
 		SIDXCameraRotateMirrorX sidxCamera, sidxStatus
 		if (sidxStatus!=0)
 			SIDXCameraGetLastError sidxCamera, errorMessage
@@ -215,7 +216,7 @@ Function CameraSetTransform(userFromCameraReflectXNew,userFromCameraReflectYNew,
 		endif
 	endif
 	
-	if (userFromCameraSwapXandY)
+	if (isSidxCameraValid && userFromCameraSwapXandY)
 		// There may be a slightly cleaner way to do this, but this works.
 		SIDXCameraRotateMirrorX sidxCamera, sidxStatus
 		if (sidxStatus!=0)

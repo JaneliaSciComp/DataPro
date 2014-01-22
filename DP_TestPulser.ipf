@@ -108,3 +108,11 @@ Function TestPulserGetTTLOutputIndex()
 End	
 
 
+//
+// Class methods
+//
+
+//----------------------------------------------------------------------------------------------------------------------------
+Function TestPulserExists()
+	return DataFolderExists("root:DP_TestPulser")
+End

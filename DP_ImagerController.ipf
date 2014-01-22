@@ -69,6 +69,8 @@ Function ICEpiTTLChannelSVTouched(ctrlName,varNum,varStr,varName) : SetVariableC
 	String varName
 	
 	EpiLightSetTTLOutputIndex(varNum)
+	SweeperEpiLightTTLOutputChanged()
+	SamplerEpiLightTTLOutputChanged()
 	ImagerViewEpiLightChanged()	
 	SweeperViewEpiLightChanged()
 	TestPulserViewEpiLightChanged()
@@ -80,7 +82,9 @@ Function ICEpiLightToggleButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 	
 	EpiLightSetIsOn(!EpiLightGetIsOn())
+	SweeperEpiLightOnChanged()
 	ImagerViewEpiLightChanged()
+	OutputViewerContSweprWavsChngd()
 End
 
 
@@ -315,13 +319,13 @@ Function ImagerContAcquireVideoStart()
 	Variable isCameraArmed=FancyCameraArm(nFramesForVideo)
 	if (isCameraArmed)
 		ImagerSetIsAcquiringVideo(1)
-		EpiLightSetIsOn(1)
+		EpiLightSetIsOnTemporary(1)
 		ImagerViewSomethingChanged()
 		DoUpdate	
 		wasVideoAcqStarted=FancyCameraStartAcquire()
 		if (!wasVideoAcqStarted)
 			// Do this if the acquire failed to start
-			EpiLightSetIsOn(0)
+			EpiLightResetToPermanent()
 			ImagerSetIsAcquiringVideo(0)
 			ImagerViewSomethingChanged()
 		endif
@@ -366,7 +370,7 @@ Function ImagerContAcquireFinish(iSweep)
 	FancyCameraDisarm()
 	
 	// Turn off illumination
-	EpiLightSetIsOn(0)
+	EpiLightResetToPermanent()
 	
 	// Copy the free wave to a caged wave in the DP_Imager DF
 	//String imageWaveName=sprintf2sv("%s_%d", videoWaveBaseName, iSweep)
@@ -462,7 +466,8 @@ Function ImagerContFocus()
 	Variable	nFrames=1	
 	Variable isCameraArmed=FancyCameraArm(nFrames)
 	if (isCameraArmed)
-		EpiLightSetIsOn(1)
+		EpiLightSetIsOnTemporary(1)
+		ImagerViewSomethingChanged()
 		DoUpdate	
 		Variable iFrame=0
 		do
@@ -480,16 +485,16 @@ Function ImagerContFocus()
 				DoUpdate
 			else
 				// if acquire failed to start
-				EpiLightSetIsOn(0)
+				EpiLightResetToPermanent()
 				ImagerSetIsFocusing(0)
 				ImagerViewModelChanged()
 				SetDataFolder savedDF
 				Abort FancyCameraGetErrorMessage()				
 			endif			
 		while (!EscapeKeyWasPressed())	
-		EpiLightSetIsOn(0)
+		EpiLightResetToPermanent()
 		ImagerSetIsFocusing(0)
-		ImagerViewModelChanged()
+		ImagerViewSomethingChanged()
 		DoUpdate
 		FancyCameraDisarm()	
 			
@@ -531,8 +536,7 @@ Function ImagerContAcquireSnapshot()
 	Variable nFrames=1
 	Variable isCameraArmed=FancyCameraArm(nFrames)	// this takes a while the first time you do it, so...
 	if (isCameraArmed)	
-		EpiLightSetIsOn(1)	// Don't turn on the light until after the camera has armed successfully
-		DoUpdate	
+		EpiLightSetIsOnTemporary(1)	// Don't turn on the light until after the camera has armed successfully
 		//FancyCameraStartAcquire()
 		Variable wasAcqStarted=FancyCameraStartAcquire()
 		if (wasAcqStarted)
@@ -544,7 +548,7 @@ Function ImagerContAcquireSnapshot()
 			FancyCameraWaitForFramesBang(imageWave,nFrames)
 		endif
 		FancyCameraDisarm()
-		EpiLightSetIsOn(0)
+		EpiLightResetToPermanent()
 		if (wasAcqStarted)
 			ImageBrowserContSetVideo(imageWaveName) 
 			String allVideoWaveNames=WaveList(snapshotWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
@@ -557,7 +561,7 @@ Function ImagerContAcquireSnapshot()
 		endif
 	else
 		// camera failed to arm
-		EpiLightSetIsOn(0)
+		EpiLightResetToPermanent()
 		Abort FancyCameraGetErrorMessage()
 	endif			
 

@@ -340,9 +340,9 @@ Function SweeperViewTTLEnablementChanged(i)
 	String controlName=sprintf1v("TTL%dCheckbox", i)
 	CheckBox $controlName, win=SweeperView, value=ttlOutputChannelOn[i], disable = (inUseForEpi?2:0)
 	controlName=sprintf1v("TTL%dWavePopupMenu", i)
-	PopupMenu $controlName,win=SweeperView,disable=(ttlOutputChannelOn[i]?0:2)
+	PopupMenu $controlName,win=SweeperView,disable=( (!inUseForEpi&&ttlOutputChannelOn[i]) ?0:2)
 	controlName=sprintf1v("TTL%dUnitsTitleBox", i)
-	TitleBox $controlName,win=SweeperView,disable=(ttlOutputChannelOn[i]?0:2)
+	TitleBox $controlName,win=SweeperView,disable=( (!inUseForEpi&&ttlOutputChannelOn[i]) ?0:2)
 
 	// Update the dt display
 	SweeperViewUpdateDt()

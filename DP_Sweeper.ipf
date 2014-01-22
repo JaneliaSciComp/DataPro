@@ -109,6 +109,12 @@ Function SweeperConstructor()
 		adcChannelOn[7]=1
 	endif
  
+ 	// Variables that handle coordination with the epi light
+ 	String /G epiLightWaveName="epiLight"
+	Variable /G isEpiLightInUse=0
+	Variable /G epiLightTTLOutputIndex
+	String /G epiTTLOutputWaveNameOld=""	// Store the output wave name displaced by "epiLight", so we can put it back later
+ 
 	// Do the user customization
 	SetupSweeperForUser()  // Allows user to set desired channel gains, etc.
 		
@@ -1077,35 +1083,97 @@ Function SweeperSetTTLOutputWaveName(iChannel,newValue)
 	SetDataFolder savedDF
 End
 
+Function /S SweeperGetTTLOutputWaveName(iChannel)
+	Variable iChannel
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+	WAVE /T ttlOutputWaveName
+ 	String result=ttlOutputWaveName[iChannel]
+	SetDataFolder savedDF
+	return result
+End
 
-Function SweeperSetEpiLightTTLOutput(ttlOutputIndexNew)
-	Variable ttlOutputIndexNew
 
+
+//Function SweeperSetEpiLightTTLOutput(ttlOutputIndexNew)
+//	Variable ttlOutputIndexNew
+//
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Sweeper
+//	
+//	NVAR isEpiLightInUse	
+//	NVAR epiLightTTLOutputIndex
+//	
+//	if (isEpiLightInUse)
+//		// Turn the currently in-use channel off
+//		SweeperSetTTLOutputChannelOn(epiLightTTLOutputIndex,0)
+//	endif
+//	String epiLightWaveName="epiLight"
+//	if ( SweeperIsTTLWavePresent(epiLightWaveName) )
+//		// Delete the old wave
+//		KillWaves epiLightWaveName
+//	endif
+//	BuilderModelSetParameter("TTLConst","baseLevel",EpiLightGetIsOn())
+//	BuilderModelExportToSweeper("TTLConst",epiLightWaveName)
+//	SweeperSetTTLOutputWaveName(ttlOutputIndexNew,epiLightWaveName)
+//	SweeperSetTTLOutputChannelOn(ttlOutputIndexNew,1)
+//	isEpiLightInUse=1
+//	epiLightTTLOutputIndex=ttlOutputIndexNew
+//	
+//	SetDataFolder savedDF		
+//End
+
+
+
+Function SweeperEpiLightTTLOutputChanged()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Sweeper
 	
 	NVAR isEpiLightInUse	
 	NVAR epiLightTTLOutputIndex
-	
+	SVAR epiTTLOutputWaveNameOld
+
+	Variable epiLightTTLOutputIndexOld=epiLightTTLOutputIndex
+	Variable epiLightTTLOutputIndexNew=EpiLightGetTTLOutputIndex()
 	if (isEpiLightInUse)
 		// Turn the currently in-use channel off
-		SweeperSetTTLOutputChannelOn(epiLightTTLOutputIndex,0)
+		SweeperSetTTLOutputChannelOn(epiLightTTLOutputIndexOld,0)
+		// Set the sginal name back to the old one
+		// (Shouldn't we check that it still exists?)
+		SweeperSetTTLOutputWaveName(epiLightTTLOutputIndexOld,epiTTLOutputWaveNameOld)
 	endif
 	String epiLightWaveName="epiLight"
-	if ( SweeperIsTTLWavePresent(epiLightWaveName) )
-		// Delete the old wave
-		KillWaves epiLightWaveName
-	endif
+//	if ( SweeperIsTTLWavePresent(epiLightWaveName) )
+//		// Delete the old wave
+//		KillWaves $("ttlWaves:"+epiLightWaveName)
+//	endif
 	BuilderModelSetParameter("TTLConst","baseLevel",EpiLightGetIsOn())
 	BuilderModelExportToSweeper("TTLConst",epiLightWaveName)
-	SweeperSetTTLOutputWaveName(ttlOutputIndexNew,epiLightWaveName)
-	SweeperSetTTLOutputChannelOn(ttlOutputIndexNew,1)
+	epiTTLOutputWaveNameOld=SweeperGetTTLOutputWaveName(epiLightTTLOutputIndexOld)
+	SweeperSetTTLOutputWaveName(epiLightTTLOutputIndexNew,epiLightWaveName)
+	SweeperSetTTLOutputChannelOn(epiLightTTLOutputIndexNew,1)
 	isEpiLightInUse=1
-	epiLightTTLOutputIndex=ttlOutputIndexNew
+	epiLightTTLOutputIndex=epiLightTTLOutputIndexNew
 	
 	SetDataFolder savedDF		
 End
 
+
+Function SweeperEpiLightOnChanged()
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+	
+	NVAR isEpiLightInUse	
+	SVAR epiLightWaveName
+
+	// Need to set the single parameter for the internal epiLight TTL wave, resample it
+	if (isEpiLightInUse)
+		BuilderModelSetParameter("TTLConst","baseLevel",EpiLightGetIsOn())
+		BuilderModelExportToSweeper("TTLConst",epiLightWaveName)
+	endif
+	
+	SetDataFolder savedDF		
+End
 
 
 //
