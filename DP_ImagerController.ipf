@@ -11,6 +11,9 @@ static constant nudgeSize=1	// pixels in the full-CCD frame
 
 Function ImagerContConstructor()
 	ImagerConstructor()
+	ImagerSetIsAcquiringVideo(0)	
+		// If something got borked during acquire, and the user had to delete the old window and get a new one, 
+		// this makes sure the view doesn't look like video is being acquired
 	ImagerViewConstructor()
 	
 	// Update the CCD temp to get a value up there
