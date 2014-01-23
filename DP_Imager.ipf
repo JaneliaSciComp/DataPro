@@ -937,6 +937,11 @@ End
 
 
 Function ImagerUpdateCCDTemperature()
+	// Sometimes this gets called by a background task, so make it extra-robust
+	if (!DataFolderExists("root:DP_Imager"))
+		return 0
+	endif
+
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager

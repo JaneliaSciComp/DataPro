@@ -196,5 +196,6 @@ Function IgorBeforeQuitHook(unsavedExp, unsavedNotebooks, unsavedProcedures)
 	Variable unsavedNotebooks
 	Variable unsavedProcedures
 	
+	ImagerContDestructor()
 	CameraDestructor()
 End

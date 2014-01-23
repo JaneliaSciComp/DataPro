@@ -12,6 +12,20 @@ static constant nudgeSize=1	// pixels in the full-CCD frame
 Function ImagerContConstructor()
 	ImagerConstructor()
 	ImagerViewConstructor()
+	
+	// Update the CCD temp to get a value up there
+	ICUpdateTemp()
+	
+	// Start the background task that will update the CCD temperature every 5 seconds
+	Variable period=5		// s
+	Variable numTicks = period * 60		// A tick is ~ 1/60 s
+	CtrlNamedBackground ICUpdateTempInBackgroundTask, period=numTicks, proc=ICUpdateTempInBackground
+	CtrlNamedBackground ICUpdateTempInBackgroundTask, start
+End
+
+
+Function ImagerContDestructor()
+	CtrlNamedBackground ICUpdateTempInBackgroundTask, stop
 End
 
 
@@ -266,17 +280,26 @@ End
 
 Function ICUpdateTempButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
-	ImagerUpdateCCDTemperature()	
-	ImagerViewModelChanged()
+	ICUpdateTemp()
 End
 
-
-
+Function ICUpdateTempInBackground(s)		// This is the function that will be called periodically
+	STRUCT WMBackgroundStruct &s
+	ICUpdateTemp()	
+	return 0	// Continue background task
+End
 
 
 //
 // The routines that do substantial stuff are below
 //
+
+
+Function ICUpdateTemp()
+	ImagerUpdateCCDTemperature()	
+	ImagerViewCCDTempChanged()
+End
+
 
 
 Function ImagerContAcquireVideo()

@@ -332,7 +332,15 @@ Function ImagerViewSomethingChanged()
 	ImagerViewUpdate()
 End
 
+Function ImagerViewCCDTempChanged()
+	ImagerViewUpdateCCDTemp()
+End
 
+
+
+//
+// Private methods
+//
 
 Function ImagerViewUpdate()
 	// This is intended to be a private method in ImagerView.
@@ -445,4 +453,16 @@ Function ImagerViewSetIsProTipShowing(isProTipShowing)
 	Variable isProTipShowing
 
 	TitleBox focusingEscapeTB,win=ImagerView,disable=(!isProTipShowing)
+End
+
+Function ImagerViewUpdateCCDTemp()
+	// If the window doesn't exist, nothing to do
+	if (!PanelExists("ImagerView"))
+		return 0		// Have to return something
+	endif
+
+	// Update the CCD temperature
+	Variable ccdTemperature=ImagerGetCCDTemperature()
+	ValDisplay ccdTemperatureVD, win=ImagerView, value= _NUM:ccdTemperature
+	WhiteOutIffNan("ccdTemperatureVD","ImagerView",ccdTemperature)
 End
