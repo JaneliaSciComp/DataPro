@@ -776,7 +776,7 @@ Function ImagerDeleteCurrentROI()
 	Variable nROIsOriginal=ImagerGetNROIs()
 	Variable iROIToDelete=iROI
 	DeletePoints /M=1 iROIToDelete, 1, roisWave
-	DeletePoints /M=1 iROIToDelete, 1, isBackgroundROI
+	DeletePoints /M=0 iROIToDelete, 1, isBackgroundROI
 
 	// If we just deleted the highest-numbered ROI in the list, adjust iROI
 	if (iROIToDelete==nROIsOriginal-1)
