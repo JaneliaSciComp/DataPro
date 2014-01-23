@@ -1308,6 +1308,60 @@ End
 
 
 
+Function CameraCCDWidthGetInUS()
+	// This returns the "width" of the CCD in userspace.
+	// Note that this may be equal to the CCD width or the CCD height, depending
+	// on the userspace<->cameraspace transform.
+		
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR userFromCameraReflectX
+	NVAR userFromCameraReflectY
+	NVAR userFromCameraSwapXandY
+
+	// Get the ROI, convert
+	Make /FREE /N=4 roiInCS={0,0,CameraCCDWidthGet(),CameraCCDHeightGet()}
+	Wave roiInUS=userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXandY)
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+	
+	return (roiInUS[2])
+End
+
+
+
+
+Function CameraCCDHeightGetInUS()
+	// This returns the "height" of the CCD in userspace.
+	// Note that this may be equal to the CCD width or the CCD height, depending
+	// on the userspace<->cameraspace transform.
+		
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR userFromCameraReflectX
+	NVAR userFromCameraReflectY
+	NVAR userFromCameraSwapXandY
+
+	// Get the ROI, convert
+	Make /FREE /N=4 roiInCS={0,0,CameraCCDWidthGet(),CameraCCDHeightGet()}
+	Wave roiInUS=userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXandY)
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+	
+	return (roiInUS[3])
+End
+
+
+
+
 // private methods
 Function CameraSyncBinSize()
 	// Copy the bin dims according to the hardware into the instance var
