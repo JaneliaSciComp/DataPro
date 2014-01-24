@@ -122,7 +122,7 @@ End
 
 
 
-Function SamplerSetTTLOutput(ttlOutputIndex,newValue)
+Function SamplerSetBackgroundTTLOutput(ttlOutputIndex,newValue)
 	// Sets a TTL output to a set level (which should be either 0 or 1)
 	Variable ttlOutputIndex
 	Variable newValue
@@ -168,7 +168,7 @@ End
 
 
 Function SamplerEpiLightTTLOutputChanged()
-	SamplerSetTTLOutput(EpiLightGetTTLOutputIndex(),EpiLightGetIsOn())
+	SamplerSetBackgroundTTLOutput(EpiLightGetTTLOutputIndex(),EpiLightGetIsOn())
 End
 
 //

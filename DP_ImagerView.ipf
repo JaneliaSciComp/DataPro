@@ -360,11 +360,13 @@ Function ImagerViewUpdate()
 
 	// Update the Epi light toggle button
 	Variable isLightOn=EpiLightGetIsOn()
+	Variable isLightOff=EpiLightGetIsOff()
+	Variable isLightAgnostic=EpiLightGetIsAgnostic()
 	SetVariable ttlOutputChannelSV, win=ImagerView, value= _NUM:EpiLightGetTTLOutputIndex()
-	SetVariable ttlOutputChannelSV, win=ImagerView, disable= (isLightOn ? 2 : 0)
-	String titleStr = stringFif(isLightOn,"Turn Epiillumination Off","Turn Epiillumination On")
-	Button EpiLightToggleButton, win=ImagerView, title=titleStr
-	ValDisplay EpiLightStatusVD, win=ImagerView, value= _NUM:isLightOn
+	SetVariable ttlOutputChannelSV, win=ImagerView, disable= (isLightOff ? 0 : 2)
+	String titleStr = stringFif(isLightAgnostic, "(Light Control Ceded)", stringFif(isLightOn, "Turn Epiillumination Off", "Turn Epiillumination On") )
+	Button EpiLightToggleButton, win=ImagerView, title=titleStr, disable= (isLightAgnostic? 2 : 0)
+	ValDisplay EpiLightStatusVD, win=ImagerView, value= _NUM:isLightOn, disable= (isLightAgnostic ? 1 : 0)
 	
 	// Update the enablement of the "Focus" button
 	Variable isFocusing=ImagerGetIsFocusing()

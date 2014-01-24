@@ -19,8 +19,14 @@ Function EpiLightConstructor()
 	NewDataFolder /O/S root:DP_EpiLight
 
 	// Instance vars
-	Variable /G isOnPermanent=0	// boolean, allows for temporary setting and then resetting
-	Variable /G isOn=0	// boolean
+	Variable /G isInControl=1	
+		// boolean, if true it means that we assert control of the light.  If false, we cede control to others, typically the Sweeper.
+	Variable /G isOn=0	// boolean, only relevant if 
+		// To outsiders, the EpiLight is in one of three possible states: on, off, and agnostic.
+		// on: isInControl=1, isOn=1
+		// off: isInControl=1, isOn=0
+		// agnostic: isInControl=0, isOn=0
+		// We ensure that isInControl=0, isOn=1 never happens
 	Variable /G ttlOutputIndex=1		// the TTL channel to which the light is hooked up
 	
 	// Restore the original data folder
@@ -29,57 +35,123 @@ End
 
 
 
-Function EpiLightSetIsOn(value)
+Function EpiLightTurnOn()
+	// This implicitly sets isInControl to true
 	Variable value
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_EpiLight
-	NVAR isOnPermanent
+	NVAR isInControl
 	NVAR isOn
 	NVAR ttlOutputIndex
-	isOnPermanent=value
-	isOn=value
-	SamplerSetTTLOutput(ttlOutputIndex,isOn)
+	isOn=1
+	isInControl=1
+	SamplerSetBackgroundTTLOutput(ttlOutputIndex,1)
 	SetDataFolder savedDF	
 End
 
 
 
-Function EpiLightGetIsOn()	
+Function EpiLightTurnOff()
+	// This implicitly sets isInControl to true
+	Variable value
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_EpiLight
-	NVAR isOn	
-	Variable value=isOn
+	NVAR isInControl
+	NVAR isOn
+	NVAR ttlOutputIndex
+	isOn=0
+	isInControl=1
+	SamplerSetBackgroundTTLOutput(ttlOutputIndex,0)
+	SetDataFolder savedDF	
+End
+
+
+
+Function EpiLightTurnAgnostic()
+	// This sets EpiLight to the agnostic state
+	Variable value
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_EpiLight
+	NVAR isInControl
+	NVAR isOn
+	NVAR ttlOutputIndex
+	isOn=0
+	isInControl=0
+	SamplerSetBackgroundTTLOutput(ttlOutputIndex,0)
+	// Q: If turning it agnostic turns it off, why even have an "agnostic" state?
+	// A: Because the ImageView displays differently depending on whether the EpiLight is
+	//		off or agnostic, to signal the user that in the agnostic state, 
+	//		the EpiLight object is not really in control of the light.
+	SetDataFolder savedDF	
+End
+
+
+
+Function EpiLightToggle()
+	// If EpiLight is in a non-agnostic state, switch to the other
+	// non-agnostic state.  If EpiLight is an an agnostic state, do nothing.
+	if ( !EpiLightGetIsAgnostic() )
+		if ( EpiLightGetIsOn() )
+			EpiLightTurnOff()
+		else
+			EpiLightTurnOn()
+		endif
+	endif
+End
+
+
+
+Function EpiLightGetState()
+	// Returns 1 for on, 0 for off, and 0.5 for agnostic
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_EpiLight
+	NVAR isInControl
+	NVAR isOn
+	Variable value
+	if (isInControl)
+		value=isOn
+	else
+		value=0.5
+	endif
 	SetDataFolder savedDF	
 	return value
 End
 
 
 
-Function EpiLightSetIsOnTemporary(value)
-	Variable value
+Function EpiLightGetIsOn()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_EpiLight
-	NVAR isOnPermanent
-	NVAR isOn
-	NVAR ttlOutputIndex
-	isOnPermanent=isOn 		// save the permanent value
-	isOn=value
-	SamplerSetTTLOutput(ttlOutputIndex,isOn)
+	NVAR isInControl
+	NVAR isOn	
+	Variable value=(isInControl&&isOn)
 	SetDataFolder savedDF	
+	return value
 End
 
 
 
-Function EpiLightResetToPermanent()
+Function EpiLightGetIsOff()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_EpiLight
-	NVAR isOnPermanent
-	NVAR isOn
-	NVAR ttlOutputIndex
-	isOn=isOnPermanent
-	SamplerSetTTLOutput(ttlOutputIndex,isOn)
+	NVAR isInControl
+	NVAR isOn	
+	Variable value=(isInControl&&!isOn)
 	SetDataFolder savedDF	
+	return value
 End
+
+
+
+Function EpiLightGetIsAgnostic()
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_EpiLight
+	NVAR isInControl
+	Variable value=(!isInControl)
+	SetDataFolder savedDF	
+	return value
+End
+
 
 
 
@@ -90,18 +162,19 @@ Function EpiLightSetTTLOutputIndex(newValue)
 	SetDataFolder root:DP_EpiLight
 	
 	NVAR ttlOutputIndex
+	NVAR isInControl
 	NVAR isOn
-	
-	// Check that the new TTL output is not in use by the sweeper or the test pulser
-	if ( SweeperIsTTLInUse(newValue) || (TestPulserExists() && TestPulserIsTTLInUse(newValue) ) )
-		SetDataFolder savedDF	
-		return 0
-	endif			
-	
-	ttlOutputIndex=newValue
-	//SweeperEpiLightTTLOutputChanged()
-	//SweeperSetEpiLightTTLOutput(ttlOutputIndex)
-	//SamplerSetTTLOutput(ttlOutputIndex,isOn)
+
+	// If the EpiLight is on right now, no changes to the TTL output setting are allowed
+	if ( !EpiLightGetIsOn() )	
+		// Check that the new TTL output is not in use by the test pulser
+		if ( !(TestPulserExists() && TestPulserIsTTLInUse(newValue) ) )
+			ttlOutputIndex=newValue
+			//SweeperEpiLightTTLOutputChanged()
+			//SweeperSetEpiLightTTLOutput(ttlOutputIndex)
+			//SamplerSetBackgroundTTLOutput(ttlOutputIndex,isOn)
+		endif
+	endif
 	
 	SetDataFolder savedDF	
 End

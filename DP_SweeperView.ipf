@@ -197,7 +197,7 @@ Function SweeperViewConstructor() : Panel
 	TitleBox delayUnitsTitleBox,win=SweeperView,pos={xOffset+87,yOffset+2},frame=0,title="ms"
 	xOffset+=120
 	SetVariable synPulseDurationSetVariable,win=SweeperView,pos={xOffset,yOffset},size={120,15},title="Pulse Duration:"
-	SetVariable synPulseDurationSetVariable,win=SweeperView,limits={0.001,100,0.1},value= root:DP_Sweeper:synPulseDuration, proc=SweeperControllerSVTwiddled
+	SetVariable synPulseDurationSetVariable,win=SweeperView,limits={0.001,inf,0.1},value= root:DP_Sweeper:synPulseDuration, proc=SweeperControllerSVTwiddled
 	TitleBox pulseDurationUnitsTitleBox,win=SweeperView,pos={xOffset+122,yOffset+2},frame=0,title="ms"
 	
 	// Sync to model
@@ -219,9 +219,9 @@ Function SweeperViewDigitizerChanged()
 	SweeperViewUpdate()
 End
 
-Function SweeperViewEpiLightChanged()
-	SweeperViewUpdate()
-End
+//Function SweeperViewEpiLightChanged()
+//	SweeperViewUpdate()
+//End
 
 Function SweeperViewUpdate()
 	// This is intended to be a private method in SweeperView.
@@ -330,19 +330,19 @@ Function SweeperViewTTLEnablementChanged(i)
 	SetDataFolder root:DP_Sweeper
 
 	WAVE ttlOutputChannelOn
-	NVAR isEpiLightInUse	
-	NVAR epiLightTTLOutputIndex
+	//NVAR isEpiLightInUse	
+	//NVAR epiLightTTLOutputIndex
 	
 	// If using the imaging module, have to disable the TTL channel entirely if it is being used for epi-illumination control
 	//Variable inUseForEpi= ( IsImagingModuleInUse() && (i==EpiLightGetTTLOutputIndex() )
-	Variable inUseForEpi= ( isEpiLightInUse && (i==epiLightTTLOutputIndex )
+	//Variable inUseForEpi= ( isEpiLightInUse && (i==epiLightTTLOutputIndex ) )
 	
 	String controlName=sprintf1v("TTL%dCheckbox", i)
-	CheckBox $controlName, win=SweeperView, value=ttlOutputChannelOn[i], disable = (inUseForEpi?2:0)
+	//CheckBox $controlName, win=SweeperView, value=ttlOutputChannelOn[i], disable = (inUseForEpi?2:0)
 	controlName=sprintf1v("TTL%dWavePopupMenu", i)
-	PopupMenu $controlName,win=SweeperView,disable=( (!inUseForEpi&&ttlOutputChannelOn[i]) ?0:2)
+	PopupMenu $controlName,win=SweeperView,disable=( (ttlOutputChannelOn[i]) ?0:2)
 	controlName=sprintf1v("TTL%dUnitsTitleBox", i)
-	TitleBox $controlName,win=SweeperView,disable=( (!inUseForEpi&&ttlOutputChannelOn[i]) ?0:2)
+	TitleBox $controlName,win=SweeperView,disable=( (ttlOutputChannelOn[i]) ?0:2)
 
 	// Update the dt display
 	SweeperViewUpdateDt()
