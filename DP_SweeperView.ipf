@@ -172,33 +172,33 @@ Function SweeperViewConstructor() : Panel
 	PopupMenu TTL3WavePopupMenu,win=SweeperView,proc=SweeperControllerTTLWavePopup,bodyWidth=115
 	TitleBox TTL3UnitsTitleBox,win=SweeperView,pos={xOffset+xShiftPopup+xShiftUnits,yOffset+2},frame=0,title="x (5 Volts)"
 	
-	// Step Pulse DAC
+	// Built-in Pulse DAC
 	xOffset=6
 	yOffset+=30
-	GroupBox stepPulseGroup,win=SweeperView,pos={xOffset,yOffset},size={278,45},title="Step Pulse"
+	GroupBox builtinPulseGroup,win=SweeperView,pos={xOffset,yOffset},size={278,45},title="Built-In Pulse"
 	yOffset+=22
 	xOffset+=19
-	SetVariable stepPulseAmplitudeSetVariable,win=SweeperView,pos={xOffset,yOffset},size={95,15},proc=DPampProc,title="Amplitude:"
-	SetVariable stepPulseAmplitudeSetVariable,win=SweeperView,limits={-1000,10000,10},value= root:DP_Sweeper:stepPulseAmplitude, proc=SweeperControllerSVTwiddled
+	SetVariable builtinPulseAmplitudeSV,win=SweeperView,pos={xOffset,yOffset},size={95,15},proc=DPampProc,title="Amplitude:"
+	SetVariable builtinPulseAmplitudeSV,win=SweeperView,limits={-1000,10000,10},value= root:DP_Sweeper:builtinPulseAmplitude, proc=SweeperControllerSVTwiddled
 	xOffset+=117
-	SetVariable stepPulseDurationSetVariable,win=SweeperView,pos={xOffset,yOffset},size={100,15},proc=DPdurProc,title="Duration:"
-	SetVariable stepPulseDurationSetVariable,win=SweeperView,limits={1e-05,200000,100},value= root:DP_Sweeper:stepPulseDuration, proc=SweeperControllerSVTwiddled
+	SetVariable builtinPulseDurationSetVariable,win=SweeperView,pos={xOffset,yOffset},size={100,15},proc=DPdurProc,title="Duration:"
+	SetVariable builtinPulseDurationSetVariable,win=SweeperView,limits={1e-05,200000,100},value= root:DP_Sweeper:builtinPulseDuration, proc=SweeperControllerSVTwiddled
 	xOffset+=102
 	TitleBox durationUnitsTitleBox,win=SweeperView,pos={xOffset,yOffset+2},frame=0,title="ms"
 	
-	// Syn Pulse DAC
+	// Built-in TTL Pulse
 	xOffset=6
 	yOffset+=28		// baseline for the next few UI widgets
-	GroupBox synPulseGroup,win=SweeperView,pos={xOffset,yOffset},size={278,45},title="Syn Pulse (TTL)"
+	GroupBox builtinTTLPulseGroup,win=SweeperView,pos={xOffset,yOffset},size={278,45},title="Built-In TTL Pulse"
 	yOffset+=22
-	xOffset+=14
-	SetVariable synPulseDelaySetVariable,win=SweeperView,pos={xOffset,yOffset},size={85,15},title="Delay:"
-	SetVariable synPulseDelaySetVariable,win=SweeperView,limits={0,200000,10},value= root:DP_Sweeper:synPulseDelay, proc=SweeperControllerSVTwiddled
-	TitleBox delayUnitsTitleBox,win=SweeperView,pos={xOffset+87,yOffset+2},frame=0,title="ms"
-	xOffset+=120
-	SetVariable synPulseDurationSetVariable,win=SweeperView,pos={xOffset,yOffset},size={120,15},title="Pulse Duration:"
-	SetVariable synPulseDurationSetVariable,win=SweeperView,limits={0.001,inf,0.1},value= root:DP_Sweeper:synPulseDuration, proc=SweeperControllerSVTwiddled
-	TitleBox pulseDurationUnitsTitleBox,win=SweeperView,pos={xOffset+122,yOffset+2},frame=0,title="ms"
+	xOffset+=19
+	SetVariable builtinTTLPulseDelaySetVariable,win=SweeperView,pos={xOffset,yOffset},size={90,15},title="Delay:"
+	SetVariable builtinTTLPulseDelaySetVariable,win=SweeperView,limits={0,200000,10},value= root:DP_Sweeper:builtinTTLPulseDelay, proc=SweeperControllerSVTwiddled
+	TitleBox delayUnitsTitleBox,win=SweeperView,pos={xOffset+92,yOffset+2},frame=0,title="ms"
+	xOffset+=122
+	SetVariable builtinTTLPulseDurationSV,win=SweeperView,pos={xOffset,yOffset},size={100,15},title="Duration:"
+	SetVariable builtinTTLPulseDurationSV,win=SweeperView,limits={0.001,inf,0.1},value= root:DP_Sweeper:builtinTTLPulseDuration, proc=SweeperControllerSVTwiddled
+	TitleBox pulseDurationUnitsTitleBox,win=SweeperView,pos={xOffset+102,yOffset+2},frame=0,title="ms"
 	
 	// Sync to model
 	SweeperViewSweeperChanged()

@@ -12,8 +12,8 @@ Function SweeperControllerSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariab
 	String varStr
 	String varName
 
-	SweeperUpdateStepPulseWave()	// Update this wave
-	SweeperUpdateSynPulseWave()	// Update this wave
+	SweeperUpdateBuiltinPulseWave()	// Update this wave
+	SweeperUpdateBuiltinTTLPulse()	// Update this wave
 	SweeperViewSweeperChanged()	// Tell the view that the model has changed	
 	OutputViewerContSweprWavsChngd()	// Tell the OutputViewer that the sweeper waves were (possibly) changed
 End
@@ -232,8 +232,8 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	DoWindow /F SweepControl
 	
 	// Make sure the built-in stimuli are up-to-date	
-	SweeperUpdateStepPulseWave()
-	SweeperUpdateSynPulseWave()
+	SweeperUpdateBuiltinPulseWave()
+	SweeperUpdateBuiltinTTLPulse()
 	
 	// If called for, run the pre-sweep hook function
 	Variable thisSweepIndex=SweeperGetNextSweepIndex()

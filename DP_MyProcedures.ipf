@@ -82,8 +82,8 @@ Function SetupSweeperForUser()
 	// DECLARE THE digitizer variables
 	WAVE dacMultiplier
 	// Variables for synaptic stimulation
-	NVAR synPulseDelay
-	NVAR synPulseDuration
+	NVAR builtinTTLPulseDelay
+	NVAR builtinTTLPulseDuration
 	
 //	multiplier values for dacs
 	dacMultiplier[0]=1
@@ -91,8 +91,8 @@ Function SetupSweeperForUser()
 	dacMultiplier[2]=1
 	dacMultiplier[3]=1
 //	Variables for synaptic stimulation
-	synPulseDelay=50
-	synPulseDuration=0.1
+	builtinTTLPulseDelay=50
+	builtinTTLPulseDuration=0.1
 	// USER: DON'T CHANGE ANYTHING BELOW HERE
 	SetDataFolder savedDF
 End

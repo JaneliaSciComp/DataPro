@@ -32,6 +32,8 @@
 #include ":DP_TTLMTrainBuilder"
 #include ":DP_StairBuilder"
 #include ":DP_TTLConstBuilder"
+#include ":DP_TTLPulseBuilder"
+#include ":DP_PulseBuilder"
 #include ":DP_OutputViewer"
 #include ":DP_Utilities"
 #include ":DP_MyProcedures"
@@ -74,11 +76,13 @@ Menu "DataPro"
 	"-"
 	"Test Pulser",TestPulserContConstructor()
 	"-"
-	"Stair Builder",BuilderContConstructor("Stair")
+	"Pulse Builder",BuilderContConstructor("Pulse")
+	"TTL Pulse Builder",BuilderContConstructor("TTLPulse")
 	"Train Builder",BuilderContConstructor("Train")
 	"TTL Train Builder",BuilderContConstructor("TTLTrain")
 	"Multiple Train Builder",BuilderContConstructor("MulTrain")
 	"Multiple TTL Train Builder",BuilderContConstructor("TTLMTrain")
+	"Stair Builder",BuilderContConstructor("Stair")
 	"Ramp Builder",BuilderContConstructor("Ramp")
 	"PSC Builder",BuilderContConstructor("PSC")
 	"Sine Builder",BuilderContConstructor("Sine")

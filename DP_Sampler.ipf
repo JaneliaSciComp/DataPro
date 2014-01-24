@@ -84,7 +84,6 @@ Function /WAVE SamplerSampleData(adSequence,daSequence,FIFOoutFree)
 	
 	String commandLine
 	if (itc==0)
-		//WAVE stepPulse
 		FIFOin=sin(0.05*x)+gnoise(0.1)
 	elseif (itc==16)
 		Execute "ITC16StimClear 0"

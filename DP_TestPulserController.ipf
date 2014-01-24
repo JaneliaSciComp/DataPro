@@ -69,9 +69,17 @@ Function TestPulserContStart()
 	NVAR updateRate
 	
 	// Build the test pulse wave
-	Wave testPulseTTL=SimplePulseBoolean(dt,2*duration,0.5*duration,duration)		// free wave
-	Variable nScans=numpnts(testPulseTTL)
+	Variable delay=0.5*duration
+	Variable sweepDuration=2*duration
+	Variable nScans=numberOfScans(dt,sweepDuration)
+	//Wave testPulseTTL=BuiltinPulseBoolean(dt,2*duration,0.5*duration,duration)		// free wave
+	Make /FREE /N=0 testPulseTTL
+	Setscale /P x, 0, dt, "ms", testPulseTTL
+	fillTTLPulseFromParamsBang(testPulseTTL,dt,nScans,{delay,duration},{"delay","duration"})
+	
+	//Variable nScans=numpnts(testPulseTTL)
 	Make /FREE /N=(nScans) testPulse
+	Setscale /P x, 0, dt, "ms", testPulse
 	testPulse=amplitude*testPulseTTL
 
 	// Create the wave we'll display, which is all-zeros for now

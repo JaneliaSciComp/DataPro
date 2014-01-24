@@ -4,7 +4,7 @@
 //	Northwestern University
 //	project began 10/27/1998
 
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma rtGlobals=3		// Use modern global access method, strict wave access
 
 Function SweeperConstructor()
 	// if the DF already exists, nothing to do
@@ -54,10 +54,10 @@ Function SweeperConstructor()
 
 	// wave names for DAC, TTL output channels
 	Make /O /T /N=(nDACChannels) dacWaveName
-	dacWaveName={"stepPulse","stepPulse","stepPulse","stepPulse"}
+	dacWaveName={"builtinPulse","builtinPulse","builtinPulse","builtinPulse"}
 	Variable nTTLChannels=DigitizerModelGetNumTTLChans()
 	Make /O /T /N=(nTTLChannels) ttlOutputWaveName
-	ttlOutputWaveName={"synPulse","synPulse","synPulse","synPulse"}
+	ttlOutputWaveName={"builtinTTLPulse","builtinTTLPulse","builtinTTLPulse","builtinTTLPulse"}
 	
 	// Make waves to store which adc/dac/ttl devices should be used
 	Make /O /N=(nADCChannels) adcChannelOn
@@ -66,9 +66,9 @@ Function SweeperConstructor()
 	dacChannelOn[0]=1		// turn on DAC 0 by default, leave rest off
 	Make /O /N=(nTTLChannels) ttlOutputChannelOn  	// all TTL outputs off by default
 
-	// These control the stepPulse wave
-	Variable /G stepPulseAmplitude=1		// amplitude in units given by channel mode
-	Variable /G stepPulseDuration=100		// duration in ms
+	// These control the builtinPulse wave
+	Variable /G builtinPulseAmplitude=1		// amplitude in units given by channel mode
+	Variable /G builtinPulseDuration=100		// duration in ms
 
 	// Initialize the history
 	Variable /G nHistoryCols=13
@@ -87,21 +87,21 @@ Function SweeperConstructor()
 	history[0][11]="Channel Gain"
 	history[0][12]="Channel Gain Units"
 	
-	// Initialize the StepPulse wave
+	// Initialize the BuiltinPulse wave
 	SetDataFolder dacWaves
-	Make /O stepPulse
+	Make /O builtinPulse
 	SetDataFolder root:DP_Sweeper
-	SweeperUpdateStepPulseWave()
+	SweeperUpdateBuiltinPulseWave()
 
-	// Parameters of synPulse
-	Variable /G synPulseDelay=50	
-	Variable /G synPulseDuration=0.1	// ms
+	// Parameters of builtinTTLPulse
+	Variable /G builtinTTLPulseDelay=50	
+	Variable /G builtinTTLPulseDuration=0.1	// ms
 
-	// Initialize the SynPulse wave
+	// Initialize the built-in TTL pulse wave
 	SetDataFolder ttlWaves
-	Make /O synPulse
+	Make /O builtinTTLPulse
 	SetDataFolder root:DP_Sweeper
-	SweeperUpdateSynPulseWave()
+	SweeperUpdateBuiltinTTLPulse()
 
 	// If the imaging module is in use, add an analog input for the exposure signal
 	if ( IsImagingModuleInUse() )
@@ -141,48 +141,6 @@ Function SweeperSweepJustAcquired(thisSweepIndex,iSweepWithinTrial)
 	lowestAcquiredSweepIndex=min(lowestAcquiredSweepIndex,thisSweepIndex)
 	highestAcquiredSweepIndex=max(highestAcquiredSweepIndex,thisSweepIndex)
 	nextSweepIndex=thisSweepIndex+1	
-End
-
-
-Function SweeperUpdateStepPulseWave()
-	// Updates the step pulse wave to be consistent with the rest of the model state.
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sweeper
-	NVAR totalDuration,stepPulseAmplitude, stepPulseDuration
-	Variable dt=SweeperGetDt()
-	SetDataFolder root:DP_Sweeper:dacWaves
-	WAVE stepPulse		// bound wave
-		
-	Variable offDuration=totalDuration-stepPulseDuration
-	Variable delayDuration=offDuration/4
-	Duplicate /O SimplePulse(dt,totalDuration,delayDuration,stepPulseDuration,stepPulseAmplitude) stepPulse
-	
-	Note /K stepPulse
-	ReplaceStringByKeyInWaveNote(stepPulse,"WAVETYPE","StepPulse")
-	ReplaceStringByKeyInWaveNote(stepPulse,"TIME",time())
-	ReplaceStringByKeyInWaveNote(stepPulse,"duration",num2str(stepPulseDuration))
-	ReplaceStringByKeyInWaveNote(stepPulse,"amplitude",num2str(stepPulseAmplitude))
-	ReplaceStringByKeyInWaveNote(stepPulse,"STEP",num2str(stepPulseAmplitude))
-		// The value stored in STEP is shown in the Browser window, and can be used
-		// to select which sweeps will be included in an average.
-	SetDataFolder savedDF
-End
-
-Function SweeperUpdateSynPulseWave()
-	// Updates the step pulse wave to be consistent with the rest of the model state.
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sweeper
-	NVAR totalDuration, synPulseDelay, synPulseDuration
-	Variable dt=SweeperGetDt()
-	SetDataFolder root:DP_Sweeper:ttlWaves
-	WAVE synPulse
-	Duplicate /O SimplePulseBoolean(dt,totalDuration,synPulseDelay,synPulseDuration) synPulse
-	Note /K synPulse
-	ReplaceStringByKeyInWaveNote(synPulse,"WAVETYPE","SynPulse")
-	ReplaceStringByKeyInWaveNote(synPulse,"TIME",time())
-	ReplaceStringByKeyInWaveNote(synPulse,"delay",num2str(synPulseDelay))
-	ReplaceStringByKeyInWaveNote(synPulse,"duration",num2str(synPulseDuration))
-	SetDataFolder savedDF
 End
 
 Function SweeperGetNumADCsOn()
@@ -704,25 +662,6 @@ Function SweeperFreeRunVideoJustAcqd(sweepIndex)
 	SetDataFolder savedDF
 End
 
-
-//Function SweeperIncrementNextSweepIndex()
-//	// Change to the Digitizer data folder
-//	String savedDF=GetDataFolder(1)
-//	SetDataFolder root:DP_Sweeper
-//
-//	// Declare the DF vars we need
-//	NVAR lastAcquiredSweepIndex
-//	NVAR nextSweepIndex
-//	lastAcquiredSweepIndex=nextSweepIndex	// Save this
-//	nextSweepIndex+=1
-//
-//	// Restore the original DF
-//	SetDataFolder savedDF
-//End
-
-
-
-
 Function /WAVE SweeperGetWaveByFancyName(fancyWaveNameString)
 	String fancyWaveNameString
 	
@@ -803,13 +742,6 @@ Function /T SweeperGetTTLWaveNoteByName(waveNameString)
 	return waveNote
 End
 
-Function SweeperResampleInternalWaves()
-	// Private method, called to resample all the internal waves using the current dtWanted, totalDuration
-	SweeperUpdateStepPulseWave()
-	SweeperUpdateSynPulseWave()
-	SweeperUpdateImportedWaves()
-End
-
 Function SweeperGetNumberOfScans()
 	// Get the number of time points ("scans") for the current sampling interval and duration settings.
 	String savedDF=GetDataFolder(1)
@@ -819,40 +751,6 @@ Function SweeperGetNumberOfScans()
 	Variable result=numberOfScans(dt,totalDuration)
 	SetDataFolder savedDF
 	return result
-End
-
-Function SweeperUpdateImportedWaves()
-	// Updates all the imported waves to make them consistent with the current
-	// dtWanted and totalDuration, and their own parameters as stored in their wave notes.
-	SweeperUpdateImportedDACWaves()
-	SweeperUpdateImportedTTLWaves()
-End
-
-Function SweeperUpdateImportedDACWaves()
-	// Updates all the imported DAC waves to make them consistent with the current
-	// dtWanted and totalDuration, and their own parameters as stored in their wave notes.
-	String dacWaveNames=SweeperGetDACWaveNames()
-	String importedDACWaveNames=RemoveFromList("stepPulse",dacWaveNames)
-	Variable nWaves=ItemsInList(importedDACWaveNames)
-	Variable i
-	for (i=0; i<nWaves; i+=1)
-		String waveNameThis=StringFromList(i,importedDACWaveNames)
-		SweeperResampleNamedWave(waveNameThis,"DAC")
-	endfor
-End
-
-Function SweeperUpdateImportedTTLWaves()
-	// Updates all the imported TTL waves to make them consistent with the current
-	// dtWanted and totalDuration, and their own parameters as stored in their wave notes.
-	String dacWaveNames=SweeperGetDACWaveNames()
-	String ttlWaveNames=SweeperGetTTLWaveNames()
-	String importedTTLWaveNames=RemoveFromList("synPulse",ttlWaveNames)
-	Variable nWaves=ItemsInList(importedTTLWaveNames)
-	Variable i
-	for (i=0; i<nWaves; i+=1)
-		String waveNameThis=StringFromList(i,importedTTLWaveNames)
-		SweeperResampleNamedWave(waveNameThis,"TTL")
-	endfor
 End
 
 Function SweeperAddDACWave(w,waveNameString)
@@ -1095,200 +993,9 @@ End
 
 
 
-//Function SweeperSetEpiLightTTLOutput(ttlOutputIndexNew)
-//	Variable ttlOutputIndexNew
-//
-//	String savedDF=GetDataFolder(1)
-//	SetDataFolder root:DP_Sweeper
-//	
-//	NVAR isEpiLightInUse	
-//	NVAR epiLightTTLOutputIndex
-//	
-//	if (isEpiLightInUse)
-//		// Turn the currently in-use channel off
-//		SweeperSetTTLOutputChannelOn(epiLightTTLOutputIndex,0)
-//	endif
-//	String epiLightWaveName="epiLight"
-//	if ( SweeperIsTTLWavePresent(epiLightWaveName) )
-//		// Delete the old wave
-//		KillWaves epiLightWaveName
-//	endif
-//	BuilderModelSetParameter("TTLConst","baseLevel",EpiLightGetIsOn())
-//	BuilderModelExportToSweeper("TTLConst",epiLightWaveName)
-//	SweeperSetTTLOutputWaveName(ttlOutputIndexNew,epiLightWaveName)
-//	SweeperSetTTLOutputChannelOn(ttlOutputIndexNew,1)
-//	isEpiLightInUse=1
-//	epiLightTTLOutputIndex=ttlOutputIndexNew
-//	
-//	SetDataFolder savedDF		
-//End
 
 
 
-//Function SweeperEpiLightTTLOutputChanged()
-//	String savedDF=GetDataFolder(1)
-//	SetDataFolder root:DP_Sweeper
-//	
-//	NVAR isEpiLightInUse	
-//	NVAR epiLightTTLOutputIndex
-//	SVAR epiTTLOutputWaveNameOld
-//
-//	Variable epiLightTTLOutputIndexOld=epiLightTTLOutputIndex
-//	Variable epiLightTTLOutputIndexNew=EpiLightGetTTLOutputIndex()
-//	if (isEpiLightInUse)
-//		// Turn the currently in-use channel off
-//		SweeperSetTTLOutputChannelOn(epiLightTTLOutputIndexOld,0)
-//		// Set the sginal name back to the old one
-//		// (Shouldn't we check that it still exists?)
-//		SweeperSetTTLOutputWaveName(epiLightTTLOutputIndexOld,epiTTLOutputWaveNameOld)
-//	endif
-//	String epiLightWaveName="epiLight"
-////	if ( SweeperIsTTLWavePresent(epiLightWaveName) )
-////		// Delete the old wave
-////		KillWaves $("ttlWaves:"+epiLightWaveName)
-////	endif
-//	BuilderModelSetParameter("TTLConst","baseLevel",EpiLightGetIsOn())
-//	BuilderModelExportToSweeper("TTLConst",epiLightWaveName)
-//	epiTTLOutputWaveNameOld=SweeperGetTTLOutputWaveName(epiLightTTLOutputIndexOld)
-//	SweeperSetTTLOutputWaveName(epiLightTTLOutputIndexNew,epiLightWaveName)
-//	SweeperSetTTLOutputChannelOn(epiLightTTLOutputIndexNew,1)
-//	isEpiLightInUse=1
-//	epiLightTTLOutputIndex=epiLightTTLOutputIndexNew
-//	
-//	SetDataFolder savedDF		
-//End
-
-
-//Function SweeperEpiLightOnChanged()
-//	String savedDF=GetDataFolder(1)
-//	SetDataFolder root:DP_Sweeper
-//	
-//	NVAR isEpiLightInUse	
-//	SVAR epiLightWaveName
-//
-//	// Need to set the single parameter for the internal epiLight TTL wave, resample it
-//	if (isEpiLightInUse)
-//		BuilderModelSetParameter("TTLConst","baseLevel",EpiLightGetIsOn())
-//		BuilderModelExportToSweeper("TTLConst",epiLightWaveName)
-//	endif
-//	
-//	SetDataFolder savedDF		
-//End
-
-
-//
-// Functions below here are "class methods"
-//
-
-Function resampleStepPulseBang(w,dt,totalDuration)
-	Wave w
-	Variable dt, totalDuration
-	
-	Variable duration=NumberByKeyInWaveNote(w,"duration")
-	Variable amplitude=NumberByKeyInWaveNote(w,"amplitude")
-	
-	resampleStepPulseFromParamsBang(w,dt,totalDuration,duration,amplitude)
-End
-
-Function resampleStepPulseFromParamsBang(w,dt,totalDuration,duration,amplitude)
-	// Compute the sine wave from the parameters
-	Wave w
-	Variable dt,totalDuration,duration,amplitude
-	
-	Variable nScans=numberOfScans(dt,totalDuration)
-	Redimension /N=(nScans) w
-	Setscale /P x, 0, dt, "ms", w
-	Variable offDuration=totalDuration-duration
-	Variable delay=offDuration/4
-	Wave temp
-	Duplicate /FREE SimplePulse(dt,totalDuration,delay,duration,amplitude) temp
-	w=temp
-End
-
-Function /S fancyWaveList(dacWaveNames,ttlWaveNames)
-	// A "class method" to take a list of DAC wave names and a list
-	// of TTL wave names, and make a merged list where all the items
-	// in ttlWaveNames have " (TTL)" appended.
-	String dacWaveNames
-	String ttlWaveNames
-
-	Variable nWavesDAC=ItemsInList(dacWaveNames)
-	Variable nWavesTTL=ItemsInList(ttlWaveNames)
-	Variable nWaves=nWavesDAC+nWavesTTL
-
-	String fancyList=""
-	Variable i
-	for (i=0;i<nWavesDAC;i+=1)
-		fancyList=fancyList+StringFromList(i,dacWaveNames)+";"
-	endfor
-	for (i=0;i<nWavesTTL;i+=1)
-		fancyList=fancyList+StringFromList(i,ttlWaveNames)+" (TTL);"
-	endfor
-
-	return fancyList
-End
-
-Function /S reconcileADCSequence(adcSequenceRaw,dacSequenceRaw)
-	// Reconciles the raw ADC sequence with the given raw DAC sequence, returning an
-	// ADC sequence which consists of some number of repeats of the raw ADC sequence.
-	String adcSequenceRaw,dacSequenceRaw
-
-	Variable nCommon=lcmLength(dacSequenceRaw,adcSequenceRaw)  // the reconciled sequences must be the same length
-	Variable nRepeats=nCommon/strlen(adcSequenceRaw)
-	String adcSequence=RepeatString(adcSequenceRaw,nRepeats)
-		
-	return adcSequence	
-End
-
-Function /S reconcileDACSequence(dacSequenceRaw,adcSequenceRaw)
-	// Reconciles the raw DAC sequence with the given raw ADC sequence, returning a
-	// DAC sequence which consists of some number of repeats of the raw DAC sequence.
-	String adcSequenceRaw,dacSequenceRaw
-
-	Variable nCommon=lcmLength(dacSequenceRaw,adcSequenceRaw)  // the reconciled sequences must be the same length
-	Variable nRepeats=nCommon/strlen(dacSequenceRaw)
-	String dacSequence=RepeatString(dacSequenceRaw,nRepeats)
-		
-	return dacSequence
-End
-
-Function resampleSynPulseBang(w,dt,totalDuration)
-	Wave w
-	Variable dt, totalDuration
-	
-	Variable delay=NumberByKeyInWaveNote(w,"delay")
-	Variable duration=NumberByKeyInWaveNote(w,"duration")
-	
-	resampleSynPulseFromParamsBang(w,dt,totalDuration,delay,duration)
-End
-
-Function resampleSynPulseFromParamsBang(w,dt,totalDuration,delay,duration)
-	// Compute the sine wave from the parameters
-	Wave w
-	Variable dt,totalDuration,delay,duration
-	
-	Variable nScans=numberOfScans(dt,totalDuration)
-	Redimension /N=(nScans) w
-	Setscale /P x, 0, dt, "ms", w
-	Wave temp
-	Duplicate /FREE SimplePulseBoolean(dt,totalDuration,delay,duration) temp
-	w=temp
-End
-
-Function /T extractBuilderParamsString(waveNote)
-	// Given a wave note from a builder-made stimulus wave, remove all the non-parameter
-	// key-value pairs and return just the parameter key-value pairs
-	// Also, use semicolon as item separator, instead of carriage return
-	String waveNote
-	String paramKVList
-	
-	paramKVList=RemoveByKey("WAVETYPE",waveNote,"=","\r",1)		// 1 means match case
-	paramKVList=RemoveByKey("STEP",paramKVList,"=","\r",1)		// 1 means match case
-	paramKVList=RemoveByKey("TIME",paramKVList,"=","\r",1)		// 1 means match case
-	paramKVList=ReplaceString("\r",paramKVList,";")
-
-	return paramKVList
-End
 
 
 
@@ -1298,6 +1005,103 @@ End
 //
 // Private methods
 //
+
+Function SweeperResampleInternalWaves()
+	// Private method, called to resample all the internal waves using the current dtWanted, totalDuration
+	SweeperUpdateBuiltinPulseWave()
+	SweeperUpdateBuiltinTTLPulse()
+	SweeperUpdateImportedWaves()
+End
+
+Function SweeperUpdateImportedWaves()
+	// Updates all the imported waves to make them consistent with the current
+	// dtWanted and totalDuration, and their own parameters as stored in their wave notes.
+	SweeperUpdateImportedDACWaves()
+	SweeperUpdateImportedTTLWaves()
+End
+
+Function SweeperUpdateImportedDACWaves()
+	// Updates all the imported DAC waves to make them consistent with the current
+	// dtWanted and totalDuration, and their own parameters as stored in their wave notes.
+	String dacWaveNames=SweeperGetDACWaveNames()
+	String importedDACWaveNames=RemoveFromList("builtinPulse",dacWaveNames)
+	Variable nWaves=ItemsInList(importedDACWaveNames)
+	Variable i
+	for (i=0; i<nWaves; i+=1)
+		String waveNameThis=StringFromList(i,importedDACWaveNames)
+		SweeperResampleNamedWave(waveNameThis,"DAC")
+	endfor
+End
+
+Function SweeperUpdateImportedTTLWaves()
+	// Updates all the imported TTL waves to make them consistent with the current
+	// dtWanted and totalDuration, and their own parameters as stored in their wave notes.
+	String dacWaveNames=SweeperGetDACWaveNames()
+	String ttlWaveNames=SweeperGetTTLWaveNames()
+	String importedTTLWaveNames=RemoveFromList("builtinTTLPulse",ttlWaveNames)
+	Variable nWaves=ItemsInList(importedTTLWaveNames)
+	Variable i
+	for (i=0; i<nWaves; i+=1)
+		String waveNameThis=StringFromList(i,importedTTLWaveNames)
+		SweeperResampleNamedWave(waveNameThis,"TTL")
+	endfor
+End
+
+Function SweeperUpdateBuiltinPulseWave()
+	// Updates the simple pulse wave to be consistent with the rest of the model state.
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+
+	NVAR totalDuration,builtinPulseAmplitude, builtinPulseDuration
+	
+	SetDataFolder root:DP_Sweeper:dacWaves
+	WAVE builtinPulse		// bound wave
+		
+	//Variable offDuration=totalDuration-builtinPulseDuration
+	//Variable delayDuration=offDuration/4
+	//Duplicate /O BuiltinPulse(dt,totalDuration,delayDuration,builtinPulseDuration,builtinPulseAmplitude) builtinPulse
+	
+	// Update the wave note for builtinPulse
+	Note /K builtinPulse
+	ReplaceStringByKeyInWaveNote(builtinPulse,"WAVETYPE","BuiltinPulse")
+	ReplaceStringByKeyInWaveNote(builtinPulse,"TIME",time())
+	ReplaceStringByKeyInWaveNote(builtinPulse,"duration",num2str(builtinPulseDuration))
+	ReplaceStringByKeyInWaveNote(builtinPulse,"amplitude",num2str(builtinPulseAmplitude))
+	ReplaceStringByKeyInWaveNote(builtinPulse,"STEP",num2str(builtinPulseAmplitude))
+		// The value stored in STEP is shown in the Browser window, and can be used
+		// to select which sweeps will be included in an average.
+		
+	// Update the wave itself, based in part on the wave note
+	Variable dt=SweeperGetDt()
+	resampleBuiltinPulseBang(builtinPulse,dt,totalDuration)	
+		
+	// Restore the data folder
+	SetDataFolder savedDF
+End
+
+Function SweeperUpdateBuiltinTTLPulse()
+	// Updates the step pulse wave to be consistent with the rest of the model state.
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+	NVAR totalDuration, builtinTTLPulseDelay, builtinTTLPulseDuration
+	Variable dt=SweeperGetDt()
+	SetDataFolder root:DP_Sweeper:ttlWaves
+	WAVE builtinTTLPulse
+	//Duplicate /O BuiltinPulseBoolean(dt,totalDuration,builtinTTLPulseDelay,builtinTTLPulseDuration) builtinTTLPulse
+	
+	// Update the wave note
+	Note /K builtinTTLPulse
+	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"WAVETYPE","BuiltinTTLPulse")
+	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"TIME",time())
+	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"delay",num2str(builtinTTLPulseDelay))
+	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"duration",num2str(builtinTTLPulseDuration))
+	
+	// Update the wave proper, based in part on the wave note
+	resampleBuiltinTTLPulseBang(builtinTTLPulse,dt,totalDuration)
+	
+	SetDataFolder savedDF
+End
+
 Function SweeperAddHistoryForSweep(sweepIndex,iSweepWithinTrial)
 	// Adds a row to the history matrix, with the given sweepIndex and iSweepWithinTrial
   	Variable sweepIndex
@@ -1444,3 +1248,138 @@ Function SweeperIsTTLInUse(ttlOutputIndex)
 	
 	return value
 End
+
+
+
+
+
+
+
+
+//
+// Class methods
+//
+
+Function resampleBuiltinPulseBang(w,dt,totalDuration)
+	// Mutate the wave w to make in have time-step dt, totalDuration totalDuration,
+	// and then fill the elements of it with the correct values for a simple pulse, 
+	// given the params stored in w's wave note.
+	Wave w
+	Variable dt, totalDuration
+	
+	Variable duration=NumberByKeyInWaveNote(w,"duration")
+	Variable amplitude=NumberByKeyInWaveNote(w,"amplitude")
+	
+	resampBuiltinPulseFromParamsBng(w,dt,totalDuration,duration,amplitude)	
+End
+		
+Function resampBuiltinPulseFromParamsBng(w,dt,totalDuration,duration,amplitude)
+	Wave w
+	Variable dt
+	Variable totalDuration
+	Variable duration
+	Variable amplitude
+	
+	Variable nScans=numberOfScans(dt,totalDuration)
+	Redimension /N=(nScans) w
+	Setscale /P x, 0, dt, "ms", w
+	Variable offDuration=totalDuration-duration
+	Variable delay=offDuration/4
+	Variable baseLevel=0
+	fillPulseFromParamsBang(w,dt,nScans,{delay,duration,baseLevel,amplitude},{"delay","duration","baseLevel","amplitude"})
+//	Wave temp
+//	Duplicate /FREE BuiltinPulse(dt,totalDuration,delay,duration,amplitude) temp
+//	w=temp
+End
+
+Function /S fancyWaveList(dacWaveNames,ttlWaveNames)
+	// A "class method" to take a list of DAC wave names and a list
+	// of TTL wave names, and make a merged list where all the items
+	// in ttlWaveNames have " (TTL)" appended.
+	String dacWaveNames
+	String ttlWaveNames
+
+	Variable nWavesDAC=ItemsInList(dacWaveNames)
+	Variable nWavesTTL=ItemsInList(ttlWaveNames)
+	Variable nWaves=nWavesDAC+nWavesTTL
+
+	String fancyList=""
+	Variable i
+	for (i=0;i<nWavesDAC;i+=1)
+		fancyList=fancyList+StringFromList(i,dacWaveNames)+";"
+	endfor
+	for (i=0;i<nWavesTTL;i+=1)
+		fancyList=fancyList+StringFromList(i,ttlWaveNames)+" (TTL);"
+	endfor
+
+	return fancyList
+End
+
+Function /S reconcileADCSequence(adcSequenceRaw,dacSequenceRaw)
+	// Reconciles the raw ADC sequence with the given raw DAC sequence, returning an
+	// ADC sequence which consists of some number of repeats of the raw ADC sequence.
+	String adcSequenceRaw,dacSequenceRaw
+
+	Variable nCommon=lcmLength(dacSequenceRaw,adcSequenceRaw)  // the reconciled sequences must be the same length
+	Variable nRepeats=nCommon/strlen(adcSequenceRaw)
+	String adcSequence=RepeatString(adcSequenceRaw,nRepeats)
+		
+	return adcSequence	
+End
+
+Function /S reconcileDACSequence(dacSequenceRaw,adcSequenceRaw)
+	// Reconciles the raw DAC sequence with the given raw ADC sequence, returning a
+	// DAC sequence which consists of some number of repeats of the raw DAC sequence.
+	String adcSequenceRaw,dacSequenceRaw
+
+	Variable nCommon=lcmLength(dacSequenceRaw,adcSequenceRaw)  // the reconciled sequences must be the same length
+	Variable nRepeats=nCommon/strlen(dacSequenceRaw)
+	String dacSequence=RepeatString(dacSequenceRaw,nRepeats)
+		
+	return dacSequence
+End
+
+Function resampleBuiltinTTLPulseBang(w,dt,totalDuration)
+	Wave w
+	Variable dt, totalDuration
+	
+	Variable delay=NumberByKeyInWaveNote(w,"delay")
+	Variable duration=NumberByKeyInWaveNote(w,"duration")
+	
+	resampleBuiltinTTLPulsePrmsBng(w,dt,totalDuration,delay,duration)
+End
+
+Function resampleBuiltinTTLPulsePrmsBng(w,dt,totalDuration,delay,duration)
+	// Compute the sine wave from the parameters
+	Wave w
+	Variable dt,totalDuration,delay,duration
+	
+	Variable nScans=numberOfScans(dt,totalDuration)
+	Redimension /N=(nScans) w
+	Setscale /P x, 0, dt, "ms", w
+//	Wave temp
+//	Duplicate /FREE BuiltinPulseBoolean(dt,totalDuration,delay,duration) temp
+//	w=temp
+	fillTTLPulseFromParamsBang(w,dt,nScans,{delay,duration},{"delay","duration"})
+End
+
+Function /T extractBuilderParamsString(waveNote)
+	// Given a wave note from a builder-made stimulus wave, remove all the non-parameter
+	// key-value pairs and return just the parameter key-value pairs
+	// Also, use semicolon as item separator, instead of carriage return
+	String waveNote
+	String paramKVList
+	
+	paramKVList=RemoveByKey("WAVETYPE",waveNote,"=","\r",1)		// 1 means match case
+	paramKVList=RemoveByKey("STEP",paramKVList,"=","\r",1)		// 1 means match case
+	paramKVList=RemoveByKey("TIME",paramKVList,"=","\r",1)		// 1 means match case
+	paramKVList=ReplaceString("\r",paramKVList,";")
+
+	return paramKVList
+End
+
+
+
+
+
+

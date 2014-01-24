@@ -1,6 +1,6 @@
 //	DataPro Utilities
 
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma rtGlobals=3		// Use modern global access method, strict wave access
 //#include <Strings as Lists>
 //#include <Axis Utilities>
 
@@ -579,50 +579,50 @@ Function IsEmptyString(s)
 	return (strlen(s)==0)
 End
 
-Function /WAVE SimplePulseBoolean(dt,totalDuration,preDuration,pulseDuration)
-	// Returns a three-segment pulse wave, suitable for pushing to a TTL channel.
-	Variable dt	// time step, ms
-	Variable totalDuration		// total duration, ms
-	Variable preDuration		// prestep duration, ms
-	Variable pulseDuration	// pulse duration, ms
+//Function /WAVE SimplePulseBoolean(dt,totalDuration,preDuration,pulseDuration)
+//	// Returns a three-segment pulse wave, suitable for pushing to a TTL channel.
+//	Variable dt	// time step, ms
+//	Variable totalDuration		// total duration, ms
+//	Variable preDuration		// prestep duration, ms
+//	Variable pulseDuration	// pulse duration, ms
+//
+//	Variable nSegments=3
+//	Make /FREE /N=(nSegments) amplitude, duration
+//	amplitude[0]=0
+//	amplitude[1]=1
+//	amplitude[2]=0
+//	duration[0]=preDuration		// duration of first segment (ms)
+//	duration[1]=pulseDuration		// duration of second segment (ms)
+//	duration[2]=0					// not used
+//	Variable nScans=numberOfScans(dt,totalDuration)
+//	Make /FREE /N=(nScans) signal
+//	Setscale /P x, 0, dt, "ms", signal
+//	Variable first=0, last
+//	Variable i
+//	for (i=0; i<nSegments; i+=1)
+//		if (i<nSegments-1)
+//			last=first+round(duration[i]/dt)-1
+//		else
+//			last=nScans-1
+//		endif
+//		signal[first,last]=amplitude[i]
+//		first=last+1
+//	endfor
+//	return signal
+//End
 
-	Variable nSegments=3
-	Make /FREE /N=(nSegments) amplitude, duration
-	amplitude[0]=0
-	amplitude[1]=1
-	amplitude[2]=0
-	duration[0]=preDuration		// duration of first segment (ms)
-	duration[1]=pulseDuration		// duration of second segment (ms)
-	duration[2]=0					// not used
-	Variable nScans=numberOfScans(dt,totalDuration)
-	Make /FREE /N=(nScans) signal
-	Setscale /P x, 0, dt, "ms", signal
-	Variable first=0, last
-	Variable i
-	for (i=0; i<nSegments; i+=1)
-		if (i<nSegments-1)
-			last=first+round(duration[i]/dt)-1
-		else
-			last=nScans-1
-		endif
-		signal[first,last]=amplitude[i]
-		first=last+1
-	endfor
-	return signal
-End
-
-Function /WAVE SimplePulse(dt,totalDuration,preDuration,pulseDuration,pulseAmplitude)
-	// Returns a three-segment pulse wave, suitable for pushing to a TTL channel.
-	Variable dt	// time step, ms
-	Variable totalDuration		// total duration, ms
-	Variable preDuration		// prestep duration, ms
-	Variable pulseDuration	// pulse duration, ms
-	Variable pulseAmplitude	// pulse amplitude, whatever units
-
-	Wave signal=SimplePulseBoolean(dt,totalDuration,preDuration,pulseDuration)
-	signal=pulseAmplitude*signal
-	return signal
-End
+//Function /WAVE SimplePulse(dt,totalDuration,preDuration,pulseDuration,pulseAmplitude)
+//	// Returns a three-segment pulse wave, suitable for pushing to a TTL channel.
+//	Variable dt	// time step, ms
+//	Variable totalDuration		// total duration, ms
+//	Variable preDuration		// prestep duration, ms
+//	Variable pulseDuration	// pulse duration, ms
+//	Variable pulseAmplitude	// pulse amplitude, whatever units
+//
+//	Wave signal=SimplePulseBoolean(dt,totalDuration,preDuration,pulseDuration)
+//	signal=pulseAmplitude*signal
+//	return signal
+//End
 
 Function detectITCVersion()
 	// Determine what model of Instrutech ITC is currently in use.  Returns 16, 18, or 0 if no ITC found.
