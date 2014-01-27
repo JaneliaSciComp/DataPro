@@ -159,32 +159,37 @@ Function ImagerViewConstructor() : Panel
 	width=100
 	height=14
 	SetVariable videoExposureSV, win=ImagerView, pos={xOffset,yOffset}, size={width,height}, title="Exposure:"
-	SetVariable videoExposureSV, win=ImagerView, limits={0,10000,10}, value=videoExposure
+	SetVariable videoExposureSV, win=ImagerView, limits={0,10000,10}, proc= ICVideoExposureSVTouched
 	TitleBox videoExposureUnitsTitleBox,win=ImagerView,pos={xOffset+width+2,yOffset+2},frame=0,title="ms"
+
+
+	// Bin Size Popup Menu
+	xOffset=106
+	yOffset=videoYOffset+24
+	PopupMenu binSizePM, win=ImagerView, pos={xOffset,yOffset}, size={1,22}, proc=ICBinSizePMTouched, title="Bin Size:"
+	String binSizeListAsString=ImagerGetBinSizeListAsString()
+	Variable binSizeIndex=ImagerGetBinSizeIndex()
+	String binSizeListAsStringFU="\""+binSizeListAsString+"\""
+	PopupMenu binSizePM, win=ImagerView, value=#binSizeListAsStringFU, mode=binSizeIndex+1
+
+	// Frame rate titlebox
+	xOffset=200
+	yOffset=yOffset+2
+	TitleBox frameRateTB, win=ImagerView, pos={xOffset,yOffset+2}, frame=0
 
 	// # frames SV	
 	xOffset=106
-	yOffset=videoYOffset+26
+	yOffset=videoYOffset+52
 	width=100
 	height=14
 	SetVariable nFramesSV, win=ImagerView, pos={xOffset,yOffset}, size={width,height}, title="# Frames:"
 	SetVariable nFramesSV, win=ImagerView, limits={1,10000,1}, value=nFramesForVideo
 
 	// is triggered SV
-	xOffset=240
-	//yOffset=yOffset+1
-	yOffset=yOffset+12
+	xOffset=236
+	yOffset=yOffset+1
 	width=40
 	CheckBox isTriggeredCB, win=ImagerView, pos={xOffset,yOffset}, size={width,height}, proc=ICTriggeredCBTwiddled, title="Triggered"
-
-	// Bin Size Popup Menu
-	xOffset=106
-	yOffset=274
-	PopupMenu binSizePM, win=ImagerView, pos={xOffset,yOffset}, size={1,22}, proc=ICBinSizePMTouched, title="Bin Size:"
-	String binSizeListAsString=ImagerGetBinSizeListAsString()
-	Variable binSizeIndex=ImagerGetBinSizeIndex()
-	String binSizeListAsStringFU="\""+binSizeListAsString+"\""
-	PopupMenu binSizePM, win=ImagerView, value=#binSizeListAsStringFU, mode=binSizeIndex+1
 
 //	// bin width SV
 //	yOffset=276
@@ -378,6 +383,13 @@ Function ImagerViewUpdate()
 	// Update the enablement of the "Take Video" button
 	Variable isAcquiringVideo=ImagerGetIsAcquiringVideo()
 	Button takeVideoButton,win=ImagerView,disable=(ImagerGetIsTriggered()&&!isAcquiringVideo?2:0)
+
+	// Update the exposure duration SV
+	SetVariable videoExposureSV, win=ImagerView, value=_NUM:ImagerGetVideoExposure()
+
+	// Update the frame rate TB
+	Variable frameRate=ImagerGetFrameRate()		// Hz
+	TitleBox frameRateTB, win=ImagerView, title=sprintf1v("Frame Rate: %0.3f Hz",frameRate)
 
 	// Update the "(hit ESC to Cancel)" message for video
 	TitleBox videoEscapeTB,win=ImagerView,disable=(!isAcquiringVideo)

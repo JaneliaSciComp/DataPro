@@ -58,7 +58,7 @@ Function SweeperViewConstructor() : Panel
 
 	yOffset+=20
 	xOffset=55
-	Variable dt=SweeperGetDt()
+	//Variable dt=SweeperGetDt()
 	TitleBox dtTitleBox,win=SweeperView,pos={xOffset,yOffset+2},frame=0
 	//,title=sprintf1v("Achievable sampling interval: %g ms",dt)
 

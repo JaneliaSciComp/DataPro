@@ -293,6 +293,20 @@ Function ICUpdateTempInBackground(s)		// This is the function that will be calle
 	return 0	// Continue background task
 End
 
+Function ICVideoExposureSVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum	// value of variable as number
+	String varStr		// value of variable as string
+	String varName	// name of variable
+
+	ImagerSetVideoExposure(varNum)
+	ImagerViewModelChanged()
+End
+
+
+
+
+
 
 //
 // The routines that do substantial stuff are below
@@ -328,7 +342,7 @@ Function ImagerContAcquireVideoStart()
 	// Declare the instance vars
 	WAVE roisWave
 	NVAR videoExposure
-	NVAR ccdTargetTemperature	
+	//NVAR ccdTargetTemperature	
 	//NVAR binSizeIndex
 	//WAVE binSizeList
 	SVAR videoWaveBaseName
@@ -341,7 +355,7 @@ Function ImagerContAcquireVideoStart()
 	
 	// Do stuff
 	//Variable iSweep=SweeperGetNextSweepIndex()
-	FancyCameraSetupVideoAcq(binSize,roisWave,isTriggered,videoExposure,ccdTargetTemperature)
+	FancyCameraSetupVideoAcq(binSize,roisWave,isTriggered,videoExposure)
 	Variable wasVideoAcqStarted
 	Variable isCameraArmed=FancyCameraArm(nFramesForVideo)
 	if (isCameraArmed)

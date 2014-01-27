@@ -91,13 +91,12 @@ End
 
 
 
-Function FancyCameraSetupVideoAcq(nBinSize,roisWave,isTriggered,exposure,targetTemperature)
+Function FancyCameraSetupVideoAcq(nBinSize,roisWave,isTriggered,exposure)
 	// This sets up the camera for a single video acquisition.
 	Variable nBinSize
 	Wave roisWave
 	Variable isTriggered
 	Variable exposure	// frame exposure duration, in ms
-	Variable targetTemperature
 	
 	// Set the binning and ROI
 	//FancyCameraBinningSet(nBinSize)
@@ -156,6 +155,23 @@ End
 
 
 
+
+
+Function FancyCameraGetFrameInterval(nBinSize,roisWave,exposure)
+	Variable nBinSize
+	Wave roisWave
+	Variable exposure	// frame exposure duration, in ms
+	// First, configure the camera for video acq
+	Variable isTriggered=0
+	FancyCameraSetupVideoAcq(nBinSize,roisWave,isTriggered,exposure)
+	// Get the frame interval, in ms
+	Variable frameIntervalInSeconds=CameraGetImageInterval()
+	if (isnan(frameIntervalInSeconds))
+		// This signals an error, propagate the error message
+		FancyCameraSetErrorMessage(CameraGetErrorMessage())
+	endif
+	return 1000*frameIntervalInSeconds
+End
 
 
 

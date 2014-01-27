@@ -34,6 +34,7 @@ Function ImagerConstructor()
 	//Variable /G focusingExposure=100		// duration of each exposure when focusing, in ms
 	Variable /G snapshotExposure=50		// duration of each frame exposure for full-frame images, in ms
 	Variable /G videoExposure=50	// duration of each frame for triggered video, in ms
+	Variable /G frameRate=nan	// Video frame rate, in Hz, based on exposure, binning, ROIs (if any)
 	//Variable /G iFrame		// Frame index to show in the browser
 	String /G snapshotWaveBaseName="snap"		// the base name of the full-frame image waves, including the underscore
 	//String /G focusWaveBaseName="full_"		// the base name of the focusing image waves, including the underscore
@@ -64,6 +65,9 @@ Function ImagerConstructor()
 	
 	// Set the target CCD temp
 	FancyCameraSetTemp(ccdTargetTemperature)
+	
+	// Update the frame rate
+	ImagerUpdateFrameRate()
 	
 	// Restore the original data folder
 	SetDataFolder savedDF	
@@ -186,6 +190,9 @@ Function ImagerSetIROILeft(iROI,newValue)
 		roisWave[0][iROI]=newValue
 	endif
 	
+	// Update the frame rate
+	ImagerUpdateFrameRate()
+	
 	// Restore the original DF
 	SetDataFolder savedDF	
 End
@@ -236,6 +243,9 @@ Function ImagerSetIROIRight(iROI,newValue)
 	if ( (0<=newValue) && (newValue<=ccdWidth) && (iROILeft<=newValue) )
 		roisWave[2][iROI]=newValue
 	endif
+	
+	// Update the frame rate
+	ImagerUpdateFrameRate()
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -288,6 +298,9 @@ Function ImagerSetIROITop(iROI,newValue)
 		roisWave[1][iROI]=newValue
 	endif
 	
+	// Update the frame rate
+	ImagerUpdateFrameRate()
+	
 	// Restore the original DF
 	SetDataFolder savedDF	
 End
@@ -338,6 +351,9 @@ Function ImagerSetIROIBottom(iROI,newValue)
 	if ( (0<=newValue) && (newValue<=ccdHeight) && (iROITop<=newValue) )
 		roisWave[3][iROI]=newValue
 	endif
+
+	// Update the frame rate
+	ImagerUpdateFrameRate()	
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -385,6 +401,9 @@ Function ImagerSetBinSizeIndex(newValue)
 
 	// Set the value
 	binSizeIndex=newValue
+	
+	// Update the frame rate
+	ImagerUpdateFrameRate()
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -452,6 +471,9 @@ Function ImagerSetBinSize(newValue)
 		binSizeIndex=V_value
 	endif
 
+	// Update the frame rate
+	ImagerUpdateFrameRate()
+	
 	// Restore the original DF
 	SetDataFolder savedDF	
 End
@@ -593,6 +615,75 @@ End
 
 
 
+Function ImagerGetFrameRate()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR frameRate
+
+	// Get the value
+	Variable value=frameRate
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End
+
+
+
+
+Function ImagerGetVideoExposure()
+	// Get the exposure duration for video frames, in ms
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR videoExposure 		//ms
+
+	// Get the value
+	Variable value=videoExposure
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End
+
+
+
+
+Function ImagerSetVideoExposure(newValue)
+	Variable newValue
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR videoExposure
+
+	// Set the value
+	if (newValue>0) 
+		videoExposure=newValue
+	endif
+	
+	// Update the frame rate
+	ImagerUpdateFrameRate()
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+
+
 Function ImagerAddROI(xROILeft, yROITop, xROIRight, yROIBottom)
 	// Add a ROI.  The coords are in a coordinate system where the upper left corner
 	// of the upper left pixel is at (0,0), and the lower right corner of the lower right pixel is at
@@ -633,6 +724,9 @@ Function ImagerAddROI(xROILeft, yROITop, xROIRight, yROIBottom)
 	Redimension /N=(nROIs) isBackgroundROI
 	isBackgroundROI[iROI]=0	
 
+	// Update the frame rate
+	ImagerUpdateFrameRate()
+	
 	// Restore the original DF
 	SetDataFolder savedDF	
 End
@@ -783,6 +877,9 @@ Function ImagerDeleteCurrentROI()
 		iROI=nROIsOriginal-2
 	endif
 	
+	// Update the frame rate
+	ImagerUpdateFrameRate()
+	
 	// Restore the original DF
 	SetDataFolder savedDF	
 End
@@ -911,6 +1008,9 @@ Function ImagerTranslateROI(iROI,dx,dy)
 	roisWave[2][iROI]+=dx
 	roisWave[3][iROI]+=dy
 	
+	// Update the frame rate
+	ImagerUpdateFrameRate()
+	
 	// Restore the original DF
 	SetDataFolder savedDF		
 End
@@ -1013,3 +1113,37 @@ Function ImagerGetCCDTargetTemp()
 	// Return the target CCD temp
 	return result
 End
+
+
+
+
+
+//
+// Private methods
+//
+
+Function ImagerUpdateFrameRate()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR frameRate		// Hz
+
+	// Get the frame interval for video acquisition, given the current settings, in ms
+	Variable videoExposure=ImagerGetVideoExposure()
+	Variable nBinSize=ImagerGetBinSize()
+	Wave roisWave=ImagerGetROIsWave()
+	Variable frameInterval=FancyCameraGetFrameInterval(nBinSize,roisWave,videoExposure)		// ms
+	
+	// Set the frame rate
+	frameRate=1000/frameInterval		// Hz
+
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+
+
+

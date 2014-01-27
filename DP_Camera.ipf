@@ -823,6 +823,63 @@ End
 
 
 
+Function CameraGetImageInterval()
+	// Get the inter-frame interval, in seconds.
+	// Returns nan if querying the camera fails
+
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxAcquirerValid
+	NVAR sidxAcquirer
+	NVAR exposureInSeconds
+
+	Variable frameIntervalInSeconds
+	Variable sidxStatus
+	String errorMessage
+	Variable wasCameraArmedAtEntry=isSidxAcquirerValid
+	if (areWeForReal)
+		if (!isSidxAcquirerValid)
+			// If no valid acquire, need to get one
+			Variable wasArmingSuccessful=CameraAcquireArm()
+			if (!wasArmingSuccessful)
+				frameIntervalInSeconds= nan
+			endif
+		endif
+		if (isSidxAcquirerValid)
+			// Get the frame interval
+			SIDXAcquireGetImageInterval sidxAcquirer, frameIntervalInSeconds, sidxStatus
+			if (sidxStatus!=0)
+				SIDXAcquireGetLastError sidxAcquirer, errorMessage
+				CameraSetErrorMessage(sprintf1s("Error in SIDXAcquireGetImageInterval: %s",errorMessage))
+				frameIntervalInSeconds= nan
+			endif
+		endif
+	else
+		// We're faking
+		frameIntervalInSeconds=exposureInSeconds		// in a real acquire, the frame interval is always longer than the exposure, but whatevs
+	endif
+
+	// Disarm the camera if it was not armed on entry
+	if (isSidxAcquirerValid && !wasCameraArmedAtEntry)
+		CameraAcquireDisarm()
+	endif
+
+	// Restore the data folder
+	SetDataFolder savedDF
+	
+	// Return the value
+	return frameIntervalInSeconds
+End
+
+
+
+
+
+
 Function CameraAcquireDisarm()
 	// This "disarms" acquisition, allowing settings to be set again
 
