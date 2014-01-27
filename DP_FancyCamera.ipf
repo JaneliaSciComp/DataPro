@@ -64,11 +64,10 @@ End
 
 
 
-Function FancyCameraSetupSnapshotAcq(exposure,targetTemperature)
+Function FancyCameraSetupSnapshotAcq(exposure)
 	// This sets up the camera for a single snapshot acquisition.
 	// This is typically called once per acquisition, just before the acquisition.
 	Variable exposure	// frame exposure duration, in ms
-	Variable targetTemperature
 	
 	// Set the binning and ROI
 	Variable nBinSize=1
@@ -157,7 +156,7 @@ End
 
 
 
-Function /WAVE FancyCameraGetFrameIntervalEtc(nBinSize,roisWave,exposureWanted)
+Function /WAVE FancyCameraGetVideoParams(nBinSize,roisWave,exposureWanted)
 	Variable nBinSize
 	Wave roisWave
 	Variable exposureWanted	// frame exposure duration, in ms
@@ -180,6 +179,31 @@ Function /WAVE FancyCameraGetFrameIntervalEtc(nBinSize,roisWave,exposureWanted)
 	endif
 	Make /FREE /N=2 result={frameInterval,exposure}
 	return result
+End
+
+
+
+
+
+Function FancyCameraGetSnapshotExposure(exposureWanted)
+	Variable exposureWanted	// frame exposure duration, in ms
+	// First, configure the camera for video acq
+	FancyCameraSetupSnapshotAcq(exposureWanted)
+//	// Get the frame interval, in ms
+//	Variable frameIntervalInSeconds=CameraGetImageInterval()
+//	if (isnan(frameIntervalInSeconds))
+//		// This signals an error, propagate the error message
+//		FancyCameraSetErrorMessage(CameraGetErrorMessage())
+//	endif
+//	Variable frameInterval=1000*frameIntervalInSeconds	// in ms
+	// Get the actual exposure, in ms
+	Variable exposureInSeconds=CameraExposeGetValue()
+	Variable exposure=1000*exposureInSeconds
+	if (isnan(exposure))
+		// This signals an error, propagate the error message
+		FancyCameraSetErrorMessage(CameraGetErrorMessage())
+	endif
+	return exposure
 End
 
 

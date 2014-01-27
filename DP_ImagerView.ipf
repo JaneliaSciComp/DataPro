@@ -119,12 +119,21 @@ Function ImagerViewConstructor() : Panel
 	yOffset=snapshotYOffset+2
 	width=100
 	height=14
-	SetVariable snapshotExposureSV,win=ImagerView,pos={xOffset,yOffset},size={width,height},title="Exposure:"
-	SetVariable snapshotExposureSV,win=ImagerView,limits={0,10000,100},value= snapshotExposure
-	TitleBox snapshotExposureUnitsTitleBox,win=ImagerView,pos={xOffset+width+2,yOffset+2},frame=0,title="ms"
+	SetVariable snapshotExposureWantedSV,win=ImagerView,pos={xOffset,yOffset},size={width,height},title="Exposure:"
+	SetVariable snapshotExposureWantedSV,win=ImagerView,limits={0,inf,10}, proc= ICSnapshotExposureSVTouched
+	TitleBox snapshotExposureWantedUnitsTB, win=ImagerView,pos={xOffset+width+2,yOffset+2},frame=0,title="ms"
+
+	// Actual snapshot exposure title box parts
+	yOffset=snapshotYOffset+22
+	xOffset=200
+	TitleBox actualSnapshotTB, win=ImagerView, pos={xOffset,yOffset}, frame=0, title="Actual:"
+	xOffset=254
+	TitleBox actualSnapshotExposureTB, win=ImagerView, pos={xOffset,yOffset}, frame=0
+	xOffset=302
+	TitleBox actualSnapshotUnitsTB, win=ImagerView, pos={xOffset,yOffset}, frame=0, title="ms"
 
 	// "(hit ESC key to stop)" title box
-	TitleBox focusingEscapeTB, win=ImagerView, pos={106,focusYOffset+3}, frame=0, title="(hit ESC key to stop)",disable=1
+	TitleBox focusingEscapeTB, win=ImagerView, pos={106,focusYOffset+3}, frame=0, title="(hit ESC to stop)",disable=1
 
 
 	//
@@ -397,6 +406,14 @@ Function ImagerViewUpdate()
 	Variable isFocusing=ImagerGetIsFocusing()
 	Button focusButton,win=ImagerView,disable=(isFocusing?2:0)
 
+	// Update the desired video exposure duration SV
+	Variable snapshotExposureWanted=ImagerGetSnapshotExposureWanted()		// ms
+	SetVariable snapshotExposureWantedSV, win=ImagerView, value=_NUM:snapshotExposureWanted
+
+	// Update the snapshot exposure duration TB
+	Variable snapshotExposure=ImagerGetSnapshotExposure()	// ms
+	TitleBox actualSnapshotExposureTB, win=ImagerView, title=sprintf1v("%0.3f",snapshotExposure)
+	
 	// Update the "(hit ESC to Cancel)" message for focusing
 	TitleBox focusingEscapeTB,win=ImagerView,disable=(!isFocusing)
 
@@ -404,7 +421,7 @@ Function ImagerViewUpdate()
 	Variable isAcquiringVideo=ImagerGetIsAcquiringVideo()
 	Button takeVideoButton,win=ImagerView,disable=(ImagerGetIsTriggered()&&!isAcquiringVideo?2:0)
 
-	// Update the exposure duration SV
+	// Update the desired video exposure duration SV
 	Variable videoExposureWanted=ImagerGetVideoExposureWanted()		// ms
 	SetVariable videoExposureWantedSV, win=ImagerView, value=_NUM:videoExposureWanted
 

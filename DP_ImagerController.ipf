@@ -303,6 +303,16 @@ Function ICVideoExposureSVTouched(ctrlName,varNum,varStr,varName) : SetVariableC
 	ImagerViewModelChanged()
 End
 
+Function ICSnapshotExposureSVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum	// value of variable as number
+	String varStr		// value of variable as string
+	String varName	// name of variable
+
+	ImagerSetSnapshotExposureWanted(varNum)
+	ImagerViewModelChanged()
+End
+
 
 
 
@@ -493,7 +503,7 @@ Function ImagerContFocus()
 	//NVAR iFullFrameWave
 	WAVE roisWave
 	NVAR snapshotExposure
-	NVAR ccdTargetTemperature
+	//NVAR ccdTargetTemperature
 
 	// Do stuff
 	//Variable isBinnedAndROIed=0
@@ -506,7 +516,7 @@ Function ImagerContFocus()
 
 	//Variable isImagingTriggered=0			// set to one for triggered images
 	//FancyCameraSetupAcquisition(isBinnedAndROIed,roisWave,isImagingTriggered,snapshotExposure,ccdTargetTemperature,binSize,binHeight)
-	FancyCameraSetupSnapshotAcq(snapshotExposure,ccdTargetTemperature)
+	FancyCameraSetupSnapshotAcq(snapshotExposure)
 
 	Variable iFullFrameWave=SweeperGetNextSweepIndex()
 	String imageWaveNameRel=sprintf2sv("%s_%d", snapshotWaveBaseName, iFullFrameWave)
@@ -584,10 +594,10 @@ Function ImagerContAcquireSnapshot()
 	SVAR videoWaveBaseName
 	WAVE roisWave
 	NVAR snapshotExposure
-	NVAR ccdTargetTemperature
+	//NVAR ccdTargetTemperature
 	
 	// Do stuff
-	FancyCameraSetupSnapshotAcq(snapshotExposure,ccdTargetTemperature)
+	FancyCameraSetupSnapshotAcq(snapshotExposure)
 	Variable nFrames=1
 	Variable isCameraArmed=FancyCameraArm(nFrames)	// this takes a while the first time you do it, so...
 	if (isCameraArmed)	

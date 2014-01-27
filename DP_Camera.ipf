@@ -1464,7 +1464,13 @@ End
 
 
 
+
+
+
+//
 // private methods
+//
+
 Function CameraSyncBinSize()
 	// Copy the bin dims according to the hardware into the instance var
 
@@ -1668,7 +1674,10 @@ End
 
 
 
+//
 // utility functions
+//
+
 Function /S stringFromSIDXSettingTypeCode(settingTypeCode)
 	Variable settingTypeCode
 	String result=""
