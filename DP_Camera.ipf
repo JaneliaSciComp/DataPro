@@ -36,13 +36,14 @@ Function CameraConstructor()
 
 		// This stuff is only needed/used if there's no camera and we're faking
 		Variable /G modeTriggerFake=0		// the trigger mode of the fake camera. 0=>free-running, 1=> each frame is triggered, and there are other settings
-		Variable /G binSize=nan		// We sometimes want to know this when the camera is armed, and it therefore won't tell us, so we store it
+		Variable /G binSize=nan		
+			// We sometimes want to know this when the camera is armed, and it won't tell us when armed, so we store it
 		//Variable /G binHeight=nan
 		Variable /G iLeft=0		// The left bound of the ROI.  The includes the pels with this index.
 		Variable /G iTop=0
 		Variable /G iBottom=nan
 		Variable /G iRight=nan
-		Variable /G exposureInSeconds=nan		// cached exposure for the camera, in sec
+		Variable /G exposureWantedInSeconds=nan		// cached exposure wanted for the camera, in sec
 		Variable /G temperatureTargetFake=-40		// degC
 		Variable /G nFramesBufferFake=1		// How many frames in the fake on-camera frame buffer
 		Variable /G nFramesToAcquireFake=1		
@@ -150,7 +151,7 @@ Function CameraConstructor()
 				iRight=widthCCD-1
 				binSize=1
 				//binHeight=1
-				exposureInSeconds=0.05
+				exposureWantedInSeconds=0.05
 			endif
 		endif
 		//printf "areWeForReal: %d\r", areWeForReal
@@ -399,6 +400,50 @@ End
 
 
 
+Function CameraExposeGetValue()
+	// Get the actual (not the desired) camera exposure duration, in seconds.
+	// Returns nan if the value cannot be determined.
+
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxCameraValid
+	NVAR sidxCamera
+	NVAR exposureWantedInSeconds
+
+	Variable exposureInSeconds
+	Variable sidxStatus
+	String errorMessage
+	if (areWeForReal)
+		if (isSidxCameraValid)
+			SIDXCameraExposeGetValue sidxCamera, exposureInSeconds, sidxStatus
+			if (sidxStatus!=0)
+				SIDXCameraGetLastError sidxCamera, errorMessage
+				CameraSetErrorMessage(sprintf1s("Error in SIDXCameraTriggerModeGet: %s",errorMessage))
+				exposureInSeconds=nan
+			endif
+		else
+			CameraSetErrorMessage("Called CameraExpsoreGetValue() before camera was created.")
+			exposureInSeconds=nan
+		endif
+	else
+		exposureInSeconds=exposureWantedInSeconds
+	endif
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+	
+	return exposureInSeconds
+End
+
+
+
+
+
+
 Function CameraExposeSet(newValue)
 	Variable newValue	// in seconds
 	
@@ -410,7 +455,7 @@ Function CameraExposeSet(newValue)
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR exposureInSeconds		// in seconds
+	NVAR exposureWantedInSeconds		// in seconds
 
 	Variable sidxStatus
 	if (areWeForReal)
@@ -421,12 +466,12 @@ Function CameraExposeSet(newValue)
 				SIDXCameraGetLastError sidxCamera, errorMessage
 				Abort sprintf1s("Error in SIDXCameraExposeSet: %s",errorMessage)
 			endif
-			CameraSyncExposure()
+			CameraSyncExposureWanted()
 		else
 			Abort "Called CameraExposeSet() before camera was created."
 		endif
 	else
-		exposureInSeconds=newValue
+		exposureWantedInSeconds=newValue
 	endif
 
 	// Restore the data folder
@@ -672,7 +717,7 @@ Function CameraAcquireStop()
 	NVAR nFramesBufferFake
 	NVAR nFramesToAcquireFake
 	//NVAR countReadFrameFake
-	NVAR exposureInSeconds
+	NVAR exposureWantedInSeconds
 	
 	Variable sidxStatus
 	if (areWeForReal)
@@ -696,9 +741,9 @@ Function CameraAcquireStop()
 		//SetScale /P x, iLeft+0.5*binSize, binSize, "px", bufferFrame		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
 		//SetScale /P y, iTop+0.5*binSize, binHeight, "px", bufferFrame
 		Variable interExposureDelay=0.001		// s, could be shift time for FT camera, or readout time for non-FT camera
-		Variable frameInterval=exposureInSeconds+interExposureDelay		// s, Add a millisecond of shift time, for fun
-		Variable frameOffset=exposureInSeconds/2
-		// Assumes the first exposure starts at t==0, so the middle of it occurs at exposureInSeconds/2.
+		Variable frameInterval=exposureWantedInSeconds+interExposureDelay		// s, Add a millisecond of shift time, for fun
+		Variable frameOffset=exposureWantedInSeconds/2
+		// Assumes the first exposure starts at t==0, so the middle of it occurs at exposureWantedInSeconds/2.
 		// After that, the middle of the next exposure comes frameInterval later, etc.
 		//SetScale /P z, 1000*frameOffset, 1000*frameInterval, "ms", bufferFrame		// s -> ms
 		//bufferFrame=2^15+(2^12)*gnoise(1)
@@ -716,7 +761,7 @@ Function CameraAcquireStop()
 			Variable delay=0	// ms
 			Variable duration=1000*(frameInterval*nFramesToAcquireFake)	// s->ms
 			Variable pulseRate=1/frameInterval	// Hz
-			Variable pulseDuration=1000*exposureInSeconds	// s->ms
+			Variable pulseDuration=1000*exposureWantedInSeconds	// s->ms
 			Variable baseLevel=0		// V
 			Variable amplitude=5		// V, for a TTL signal
 			Make /FREE parameters={delay,duration,pulseRate,pulseDuration,baseLevel,amplitude}
@@ -758,7 +803,7 @@ Function CameraAcquireReadBang(framesCaged,nFramesToRead)
 	NVAR iRight, iBottom
 	NVAR binSize
 	//NVAR countReadFrameFake
-	NVAR exposureInSeconds
+	NVAR exposureWantedInSeconds
 
 	Variable frameIntervalInSeconds	
 	Variable sidxStatus
@@ -795,7 +840,7 @@ Function CameraAcquireReadBang(framesCaged,nFramesToRead)
 		Variable heightROIBinnedFake=round(heightROIFake/binSize)
 		Redimension /N=(widthROIBinnedFake,heightROIBinnedFake,nFramesToRead) framesCaged
 		framesCaged=2^15+(2^12)*gnoise(1)	// fill with noise
-		frameIntervalInSeconds=exposureInSeconds		// in a real acquire, the frame interval is always longer than the exposure, but whatevs
+		frameIntervalInSeconds=exposureWantedInSeconds		// in a real acquire, the frame interval is always longer than the exposure, but whatevs
 	endif
 
 	//
@@ -803,7 +848,7 @@ Function CameraAcquireReadBang(framesCaged,nFramesToRead)
 	//
 		
 	// set the time offset and scale
-	Variable frameOffset=(1000*exposureInSeconds)/2	// ms, middle of the first exposure
+	Variable frameOffset=(1000*exposureWantedInSeconds)/2	// ms, middle of the first exposure
 	Variable frameInterval=1000*frameIntervalInSeconds	// ms
 	SetScale /P z, frameOffset, frameInterval, "ms", framesCaged	
 
@@ -835,7 +880,7 @@ Function CameraGetImageInterval()
 	NVAR areWeForReal
 	NVAR isSidxAcquirerValid
 	NVAR sidxAcquirer
-	NVAR exposureInSeconds
+	NVAR exposureWantedInSeconds
 
 	Variable frameIntervalInSeconds
 	Variable sidxStatus
@@ -860,7 +905,7 @@ Function CameraGetImageInterval()
 		endif
 	else
 		// We're faking
-		frameIntervalInSeconds=exposureInSeconds		// in a real acquire, the frame interval is always longer than the exposure, but whatevs
+		frameIntervalInSeconds=exposureWantedInSeconds		// in a real acquire, the frame interval is always longer than the exposure, but whatevs
 	endif
 
 	// Disarm the camera if it was not armed on entry
@@ -1458,7 +1503,7 @@ End
 
 
 
-Function CameraSyncExposure()
+Function CameraSyncExposureWanted()
 	// Copy the exposure according to the hardware into the instance var
 	
 	// Switch to the imaging data folder
@@ -1469,19 +1514,20 @@ Function CameraSyncExposure()
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR exposureInSeconds		// in seconds
+	NVAR exposureWantedInSeconds		// in seconds
 
 	Variable sidxStatus
 	if (areWeForReal)
 		if (isSidxCameraValid)
-			SIDXCameraExposeGet sidxCamera, exposureInSeconds, sidxStatus
+			SIDXCameraExposeGet sidxCamera, exposureWantedInSeconds, sidxStatus
+				// This gets the value set, not the realized value
 			if (sidxStatus!=0)
 				String errorMessage
 				SIDXCameraGetLastError sidxCamera, errorMessage
 				Abort sprintf1s("Error in SIDXCameraExposeGet: %s",errorMessage)
 			endif
 		else
-			exposureInSeconds=nan
+			exposureWantedInSeconds=nan
 		endif
 	endif
 

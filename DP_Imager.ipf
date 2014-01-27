@@ -33,7 +33,8 @@ Function ImagerConstructor()
 	Variable /G nFramesForVideo=4	// number of frames to acquire
 	//Variable /G focusingExposure=100		// duration of each exposure when focusing, in ms
 	Variable /G snapshotExposure=50		// duration of each frame exposure for full-frame images, in ms
-	Variable /G videoExposure=50	// duration of each frame for triggered video, in ms
+	String /G videoExposureWanted="50"		// desired exposure duration for video, as a string, in ms
+	Variable /G videoExposure=nan	// duration of each frame for triggered video, in ms
 	Variable /G frameRate=nan	// Video frame rate, in Hz, based on exposure, binning, ROIs (if any)
 	//Variable /G iFrame		// Frame index to show in the browser
 	String /G snapshotWaveBaseName="snap"		// the base name of the full-frame image waves, including the underscore
@@ -67,7 +68,7 @@ Function ImagerConstructor()
 	FancyCameraSetTemp(ccdTargetTemperature)
 	
 	// Update the frame rate
-	ImagerUpdateFrameRate()
+	ImagerUpdateFrameRateEtc()
 	
 	// Restore the original data folder
 	SetDataFolder savedDF	
@@ -191,7 +192,7 @@ Function ImagerSetIROILeft(iROI,newValue)
 	endif
 	
 	// Update the frame rate
-	ImagerUpdateFrameRate()
+	ImagerUpdateFrameRateEtc()
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -245,7 +246,7 @@ Function ImagerSetIROIRight(iROI,newValue)
 	endif
 	
 	// Update the frame rate
-	ImagerUpdateFrameRate()
+	ImagerUpdateFrameRateEtc()
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -299,7 +300,7 @@ Function ImagerSetIROITop(iROI,newValue)
 	endif
 	
 	// Update the frame rate
-	ImagerUpdateFrameRate()
+	ImagerUpdateFrameRateEtc()
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -353,7 +354,7 @@ Function ImagerSetIROIBottom(iROI,newValue)
 	endif
 
 	// Update the frame rate
-	ImagerUpdateFrameRate()	
+	ImagerUpdateFrameRateEtc()	
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -403,7 +404,7 @@ Function ImagerSetBinSizeIndex(newValue)
 	binSizeIndex=newValue
 	
 	// Update the frame rate
-	ImagerUpdateFrameRate()
+	ImagerUpdateFrameRateEtc()
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -472,7 +473,7 @@ Function ImagerSetBinSize(newValue)
 	endif
 
 	// Update the frame rate
-	ImagerUpdateFrameRate()
+	ImagerUpdateFrameRateEtc()
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -659,23 +660,47 @@ End
 
 
 
-Function ImagerSetVideoExposure(newValue)
-	Variable newValue
+Function /S ImagerGetVideoExposureWanted()
+	// Get the requested exposure duration for video frames, as a string, in ms
 
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 	
 	// Declare instance vars
-	NVAR videoExposure
+	SVAR videoExposureWanted 		// ms
+
+	// Get the value
+	String value=videoExposureWanted
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End
+
+
+
+
+Function ImagerSetVideoExposureWanted(newValue)
+	String newValue
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	SVAR videoExposureWanted
 
 	// Set the value
-	if (newValue>0) 
-		videoExposure=newValue
+	Variable newValueAsNumber=str2num(newValue)
+	if ( !isnan(newValueAsNumber) && newValueAsNumber>=0 ) 
+		videoExposureWanted=newValue
 	endif
 	
 	// Update the frame rate
-	ImagerUpdateFrameRate()
+	ImagerUpdateFrameRateEtc()
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -725,7 +750,7 @@ Function ImagerAddROI(xROILeft, yROITop, xROIRight, yROIBottom)
 	isBackgroundROI[iROI]=0	
 
 	// Update the frame rate
-	ImagerUpdateFrameRate()
+	ImagerUpdateFrameRateEtc()
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -878,7 +903,7 @@ Function ImagerDeleteCurrentROI()
 	endif
 	
 	// Update the frame rate
-	ImagerUpdateFrameRate()
+	ImagerUpdateFrameRateEtc()
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -1009,7 +1034,7 @@ Function ImagerTranslateROI(iROI,dx,dy)
 	roisWave[3][iROI]+=dy
 	
 	// Update the frame rate
-	ImagerUpdateFrameRate()
+	ImagerUpdateFrameRateEtc()
 	
 	// Restore the original DF
 	SetDataFolder savedDF		
@@ -1122,19 +1147,23 @@ End
 // Private methods
 //
 
-Function ImagerUpdateFrameRate()
+Function ImagerUpdateFrameRateEtc()
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 	
 	// Declare instance vars
+	NVAR videoExposure  // Hz
 	NVAR frameRate		// Hz
 
 	// Get the frame interval for video acquisition, given the current settings, in ms
-	Variable videoExposure=ImagerGetVideoExposure()
+	String videoExposureWanted=ImagerGetVideoExposureWanted()
+	Variable videoExposureWantedAsNumber=str2num(videoExposureWanted)
 	Variable nBinSize=ImagerGetBinSize()
 	Wave roisWave=ImagerGetROIsWave()
-	Variable frameInterval=FancyCameraGetFrameInterval(nBinSize,roisWave,videoExposure)		// ms
+	Wave frameIntervalEtc=FancyCameraGetFrameIntervalEtc(nBinSize,roisWave,videoExposureWantedAsNumber)		// ms
+	Variable frameInterval=frameIntervalEtc[0]	// ms
+	videoExposure=frameIntervalEtc[1]	// ms
 	
 	// Set the frame rate
 	frameRate=1000/frameInterval		// Hz
