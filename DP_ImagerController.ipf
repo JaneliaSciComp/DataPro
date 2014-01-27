@@ -299,7 +299,7 @@ Function ICVideoExposureSVTouched(ctrlName,varNum,varStr,varName) : SetVariableC
 	String varStr		// value of variable as string
 	String varName	// name of variable
 
-	ImagerSetVideoExposureWanted(varStr)
+	ImagerSetVideoExposureWanted(varNum)
 	ImagerViewModelChanged()
 End
 

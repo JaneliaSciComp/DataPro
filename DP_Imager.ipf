@@ -33,7 +33,7 @@ Function ImagerConstructor()
 	Variable /G nFramesForVideo=4	// number of frames to acquire
 	//Variable /G focusingExposure=100		// duration of each exposure when focusing, in ms
 	Variable /G snapshotExposure=50		// duration of each frame exposure for full-frame images, in ms
-	String /G videoExposureWanted="50"		// desired exposure duration for video, as a string, in ms
+	Variable /G videoExposureWanted=50		// desired exposure duration for video, in ms
 	Variable /G videoExposure=nan	// duration of each frame for triggered video, in ms
 	Variable /G frameRate=nan	// Video frame rate, in Hz, based on exposure, binning, ROIs (if any)
 	//Variable /G iFrame		// Frame index to show in the browser
@@ -660,18 +660,18 @@ End
 
 
 
-Function /S ImagerGetVideoExposureWanted()
-	// Get the requested exposure duration for video frames, as a string, in ms
+Function ImagerGetVideoExposureWanted()
+	// Get the requested exposure duration for video frames, in ms
 
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 	
 	// Declare instance vars
-	SVAR videoExposureWanted 		// ms
+	NVAR videoExposureWanted 		// ms
 
 	// Get the value
-	String value=videoExposureWanted
+	Variable value=videoExposureWanted
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -684,18 +684,17 @@ End
 
 
 Function ImagerSetVideoExposureWanted(newValue)
-	String newValue
+	Variable newValue
 
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 	
 	// Declare instance vars
-	SVAR videoExposureWanted
+	NVAR videoExposureWanted
 
 	// Set the value
-	Variable newValueAsNumber=str2num(newValue)
-	if ( !isnan(newValueAsNumber) && newValueAsNumber>=0 ) 
+	if ( newValue>=0 ) 
 		videoExposureWanted=newValue
 	endif
 	
@@ -1157,11 +1156,10 @@ Function ImagerUpdateFrameRateEtc()
 	NVAR frameRate		// Hz
 
 	// Get the frame interval for video acquisition, given the current settings, in ms
-	String videoExposureWanted=ImagerGetVideoExposureWanted()
-	Variable videoExposureWantedAsNumber=str2num(videoExposureWanted)
+	Variable videoExposureWanted=ImagerGetVideoExposureWanted()
 	Variable nBinSize=ImagerGetBinSize()
 	Wave roisWave=ImagerGetROIsWave()
-	Wave frameIntervalEtc=FancyCameraGetFrameIntervalEtc(nBinSize,roisWave,videoExposureWantedAsNumber)		// ms
+	Wave frameIntervalEtc=FancyCameraGetFrameIntervalEtc(nBinSize,roisWave,videoExposureWanted)		// ms
 	Variable frameInterval=frameIntervalEtc[0]	// ms
 	videoExposure=frameIntervalEtc[1]	// ms
 	
