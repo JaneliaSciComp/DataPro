@@ -924,11 +924,6 @@ Function /WAVE offsetAndIntervalFromExposure(exposure)
 		return result
 	endif
 	
-	// Compute the time at the center of each frame
-	Duplicate /FREE risingEdgeTimes, frameCenterTimes
-	frameCenterTimes+=fallingEdgeTimes
-	frameCenterTimes/=2
-
 	// Things we'll return
 	Variable frameOffset
 	Variable frameIntervalMin
@@ -943,6 +938,13 @@ Function /WAVE offsetAndIntervalFromExposure(exposure)
 		frameInterval=nan
 	else	
 		// At least one rising edge
+
+		// Compute the time at the center of each frame
+		Duplicate /FREE risingEdgeTimes, frameCenterTimes
+		frameCenterTimes+=fallingEdgeTimes
+		frameCenterTimes/=2
+
+		// The offset is the center time of the first frame
 		frameOffset=frameCenterTimes[0]
 		
 		// Compute the n-1 frame intervals

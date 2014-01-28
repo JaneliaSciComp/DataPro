@@ -463,7 +463,7 @@ Function ImagerContAcquireFinish(iSweep)
 		Variable frameIntervalMin=offsetEtc[2]
 		Variable frameIntervalMax=offsetEtc[3]
 		if ((frameIntervalMax-frameIntervalMin)/frameInterval>0.01)
-			Printf "Highly variable frame intervals!\r"		// Need to handle better
+			DoAlert /T="Warning" 0, "The frame intervals are highly variable (>1%)"
 		endif
 		SetScale /P z, frameOffset, frameInterval, "ms", $imageWaveName
 	endif

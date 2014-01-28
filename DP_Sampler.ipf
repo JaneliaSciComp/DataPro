@@ -99,7 +99,7 @@ Function /WAVE SamplerSampleData(adSequence,daSequence,FIFOoutFree)
 		//Execute "ITC18Seq daSequence, adSequence"
 		sprintf commandLine "ITC18Seq \"%s\", \"%s\"", daSequence, adSequence
 		Execute commandLine
-		Execute "ITC18Stim FIFOout"
+		Execute "ITC18Stim FIFOout"		// This line throws an error if the FIFO is not big enough
 		sprintf commandLine, "ITC18StartAcq %d,2,0", nDigitizerClockTicksPerDt
 		Execute commandLine
 		Execute "ITC18Samp FIFOin"
