@@ -46,7 +46,7 @@ Function BuilderViewUpdate(builderType)
 	// Set each SetVariable to hold the current model value
 	Variable nParameters=numpnts(parameters)
 	Variable i
-	for (i=0; i<=nParameters; i+=1)
+	for (i=0; i<nParameters; i+=1)
 		String controlName=parameterNames[i]+"SV"
 		SetVariable $controlName, win=$windowName, value= _NUM:parameters[i]
 	endfor

@@ -59,7 +59,7 @@ Function BuilderModelSetParameter(builderType,parameterName,value)
 	// Set the parameter in the parameters wave
 	Variable nParameters=numpnts(parameters)
 	Variable i
-	for (i=0; i<=nParameters; i+=1)
+	for (i=0; i<nParameters; i+=1)
 		if (AreStringsEqual(parameterName,parameterNames[i]))
 			parameters[i]=value
 		endif
@@ -94,7 +94,7 @@ Function BuilderModelUpdateWave(builderType)
 	// Set the parameters in the wave note
 	Variable nParameters=numpnts(parameters)
 	Variable i
-	for (i=0; i<=nParameters; i+=1)
+	for (i=0; i<nParameters; i+=1)
 		ReplaceStringByKeyInWaveNote(theWave,parameterNames[i],num2str(parameters[i]))
 	endfor
 	SetDataFolder savedDF
@@ -122,7 +122,7 @@ Function BuilderModelImportWave(builderType,fancyWaveNameString)
 		String waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
 		if (AreStringsEqual(waveTypeString,builderType))
 			Variable nParameters=numpnts(parameters)
-			for (i=0; i<=nParameters; i+=1)
+			for (i=0; i<nParameters; i+=1)
 				parameters[i]=NumberByKeyInWaveNote(exportedWave,parameterNames[i])
 			endfor
 		else
@@ -146,7 +146,7 @@ Function BuilderModelSetParamsToDefault(builderType)
 
 	Variable nParameters=numpnts(parameters)
 	Variable i
-	for (i=0; i<=nParameters; i+=1)
+	for (i=0; i<nParameters; i+=1)
 		parameters[i]=parametersDefault[i]
 	endfor	
 
@@ -186,7 +186,7 @@ Function resampleBang(builderType,w,dt,totalDuration)
 	Variable nParameters=numpnts(parameterNames)
 	Make /FREE /N=(nParameters) parametersFromW
 	Variable i
-	for (i=0; i<=nParameters; i+=1)
+	for (i=0; i<nParameters; i+=1)
 		parametersFromW[i]=NumberByKeyInWaveNote(w,parameterNames[i])
 	endfor
 	
