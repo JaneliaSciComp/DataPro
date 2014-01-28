@@ -15,7 +15,7 @@ Function BuilderModelConstructor(builderTypeLocal)
 	// Create a new DF
 	NewDataFolder /O /S $dataFolderName
 	
-	// Parameters of sine wave stimulus
+	// Parameters of stimulus
 	String /G builderType=builderTypeLocal
 	Variable /G dt=SweeperGetDt()
 	Variable /G totalDuration=SweeperGetTotalDuration()
