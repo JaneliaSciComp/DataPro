@@ -4,6 +4,7 @@
 //	Northwestern University
 //	project began 10/27/1998
 
+#pragma rtGlobals=3		// Use modern global access method, strict wave access
 
 //----------------------------------------------------------------------------------------------------------------------------
 Function TestPulserViewConstructor() : Graph
@@ -119,10 +120,11 @@ Function TestPulserViewUpdate()
 	// Make sure TestPulse_ADC is plotted if it exists, but nothing is plotted if it doesn't exist
 	String traceList=TraceNameList("TestPulserView",";",3)  // 3 means all traces
 	Variable nTraces=ItemsInList(traceList)
-	Variable waveInGraph=(nTraces>0)		// assume that if there's a wave in there, it's TestPulse_ADC	
-	if (WaveExists(TestPulse_ADC))
+	Variable waveInGraph=(nTraces>0)		// assume that if there's a wave in there, it's TestPulse_ADC
+	if (WaveExistsByName("TestPulse_ADC"))
+		Wave TestPulseADCRef=$"TestPulse_ADC"
 		if (!waveInGraph)
-			AppendToGraph /W=TestPulserView TestPulse_ADC
+			AppendToGraph /W=TestPulserView TestPulseADCRef
 		endif
 		ModifyGraph /W=TestPulserView grid(left)=1
 		ModifyGraph /W=TestPulserView tickUnit(bottom)=1
@@ -184,7 +186,8 @@ Function TestPulserViewUpdateAxisLabels()
 
 	NVAR adcIndex
 	
-	if (WaveExists(TestPulse_ADC))	
+	Wave TestPulseADCRef=$"TestPulse_ADC"
+	if (WaveExists(TestPulseADCRef))	
 		Label /W=TestPulserView /Z bottom "\\F'Helvetica'\\Z12\\f01Time (ms)"
 		String adcModeString=DigitizerModelGetADCModeName(adcIndex)
 		String adcUnitsString=DigitizerModelGetADCUnitsString(adcIndex)	

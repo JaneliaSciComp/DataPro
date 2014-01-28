@@ -754,7 +754,7 @@ Function CameraAcquireStop()
 		Variable iSweep=SweeperGetLastAcqSweepIndex()
 		String exposureWaveNameRel=WaveNameFromBaseAndSweep("exposure",iSweep)
 		String exposureWaveNameAbs=sprintf1s("root:%s",exposureWaveNameRel)
-		if ( WaveExists($exposureWaveNameAbs) )
+		if ( WaveExistsByName(exposureWaveNameAbs) )
 			Wave exposure=$exposureWaveNameAbs
 			Variable dt=DimDelta(exposure,0)	// ms
 			Variable nScans=DimSize(exposure,0)

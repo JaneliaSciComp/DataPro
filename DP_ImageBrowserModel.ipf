@@ -261,7 +261,7 @@ Function ImageBrowserModelSetVideo(imageWaveNameNew)
 	
 	// Set instance vars appropriately
 	String imageWaveNameNewAbs="root:DP_Imager:"+imageWaveNameNew
-	if ( WaveExists($imageWaveNameNewAbs) )
+	if ( WaveExistsByName(imageWaveNameNewAbs) )
 		isCurrentImageWave=1
 		imageWaveName=imageWaveNameNew
 		iFrame=0

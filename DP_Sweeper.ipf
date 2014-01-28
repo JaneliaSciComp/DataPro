@@ -32,10 +32,10 @@ Function SweeperConstructor()
 	Variable /G runHookFunctionsChecked=0		// true iff "Run hook functions" checkbox is checked
 
 	// Variables controlling the trials and sweeps
-	Variable /G nSweepsAcquired=0
-	Variable /G lowestAcquiredSweepIndex=inf
-	Variable /G highestAcquiredSweepIndex= -inf
-	Variable /G lastAcquiredSweepIndex=nan
+	Variable /G nSweepsAcquired=0	// Also includes unrenamed averages
+	Variable /G lowestAcquiredSweepIndex=inf		// Also includes unrenamed averages
+	Variable /G highestAcquiredSweepIndex= -inf	// Also includes unrenamed averages
+	Variable /G lastAcquiredSweepIndex=nan	// Also includes unrenamed averages
 	Variable /G nextSweepIndex=1		// index of the next sweep to be acquired
 	Variable /G nSweepsPerTrial=1
 	Variable /G sweepInterval=10		// seconds
@@ -630,13 +630,22 @@ Function SweeperUnrenamedAverageJustDone(sweepIndex)
 	SetDataFolder root:DP_Sweeper
 
 	// Declare the DF vars we need
+	NVAR lastAcquiredSweepIndex
+	NVAR nSweepsAcquired
+	NVAR lowestAcquiredSweepIndex
+	NVAR highestAcquiredSweepIndex
 	NVAR nextSweepIndex
+	
+	// Update things as needed
+	lastAcquiredSweepIndex=sweepIndex	// Save this
+	nSweepsAcquired+=1
+	lowestAcquiredSweepIndex=min(lowestAcquiredSweepIndex,sweepIndex)
+	highestAcquiredSweepIndex=max(highestAcquiredSweepIndex,sweepIndex)
 	nextSweepIndex=sweepIndex+1
 
 	// Restore the original DF
 	SetDataFolder savedDF
 End
-
 
 Function SweeperFreeRunVideoJustAcqd(sweepIndex)
 	Variable sweepIndex		// the sweep index used for the video/image just acquired

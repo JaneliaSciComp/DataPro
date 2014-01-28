@@ -1,7 +1,7 @@
 // This contains the "methods" of the DP Browser View.  Of course, this idea is largely conceptual, since
 // Igor Pro doesn't have OOP features.
 
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 Function BrowserViewConstructor(browserNumber) : Graph
 	// Figure out what the index of this DataProBrowser instance should be
@@ -407,7 +407,7 @@ Function BrowserViewUpdate(browserNumber)
 	// If it exists, add $traceBWaveNameAbs to the graph
 	Variable iColorB=WhichListItem(colorNameB,colorNameList)
 	String traceBWaveNameAbs=BrowserModelGetBWaveNameAbs(browserNumber)
-	Variable waveBExists=WaveExists($traceBWaveNameAbs)
+	Variable waveBExists=WaveExistsByName(traceBWaveNameAbs)
 	Variable traceBShowing=(traceBChecked && waveBExists)
 	if (traceBShowing)
 		AppendToGraph /W=$browserName /R /C=(colors[0][iColorB],colors[1][iColorB],colors[2][iColorB]) $traceBWaveNameAbs
@@ -417,7 +417,7 @@ Function BrowserViewUpdate(browserNumber)
 	// If it exists, add $traceAWaveNameAbs to the graph	
 	Variable iColorA=WhichListItem(colorNameA,colorNameList)
 	String traceAWaveNameAbs=BrowserModelGetAWaveNameAbs(browserNumber)
-	Variable waveAExists=WaveExists($traceAWaveNameAbs)
+	Variable waveAExists=WaveExistsByName(traceAWaveNameAbs)
 	Variable traceAShowing=(traceAChecked && waveAExists)
 	if (traceAShowing)
 		AppendToGraph /W=$browserName /C=(colors[0][iColorA],colors[1][iColorA],colors[2][iColorA]) $traceAWaveNameAbs
@@ -528,7 +528,7 @@ Function BrowserViewUpdateRejectCBs(browserNumber)
 	// Update the traceAWaveName reject checkbox
 	String traceAWaveName=BrowserModelGetAWaveNameAbs(browserNumber)
 	Variable reject
-	if ( WaveExists($traceAWaveName) )
+	if ( WaveExistsByName(traceAWaveName) )
 		reject=NumberByKeyInWaveNote($traceAWaveName,"REJECT")
 		reject = IsNan(reject)?0:reject;  // default to not reject if REJECT key missing
 		CheckBox rejectACheckbox, win=$browserName, value=reject
@@ -536,7 +536,7 @@ Function BrowserViewUpdateRejectCBs(browserNumber)
 	
 	// Update the traceBWaveName reject checkbox
 	String traceBWaveName=BrowserModelGetBWaveNameAbs(browserNumber)
-	if ( WaveExists($traceBWaveName) )
+	if ( WaveExistsByName(traceBWaveName) )
 		reject=NumberByKeyInWaveNote($traceBWaveName,"REJECT")
 		reject = IsNan(reject)?0:reject;
 		CheckBox rejectBCheckbox, win=$browserName, value=reject
@@ -622,7 +622,7 @@ Function BrowserViewUpdateMarkerLineOld(browserNumber,cursorWaveName,tCursor,r,g
 		
 	// Get the max and min of wave A trace
 	String traceAWaveName=sprintf2sv("root:%s_%d", baseNameA, iCurrentSweep)
-	Variable waveAExists=WaveExists($traceAWaveName)
+	Variable waveAExists=WaveExistsByName(traceAWaveName)
 	Variable yAMin, yAMax
 	if (waveAExists && traceAChecked)
 		WaveStats /Q $traceAWaveName
@@ -635,7 +635,7 @@ Function BrowserViewUpdateMarkerLineOld(browserNumber,cursorWaveName,tCursor,r,g
 
 	// Get the max and min of wave B trace
 	String traceBWaveName=sprintf2sv("root:%s_%d", baseNameB, iCurrentSweep)
-	Variable waveBExists=WaveExists($traceBWaveName)		
+	Variable waveBExists=WaveExistsByName(traceBWaveName)		
 	Variable yBMin, yBMax
 	if (waveBExists  && traceBChecked)
 		WaveStats /Q $traceBWaveName
@@ -717,10 +717,10 @@ Function BrowserViewUpdateMarkerLineNew(browserNumber,markerWaveName,tMarker,r,g
 		
 	// Figure out what traces are showing currently	
 	String traceAWaveName=sprintf2sv("root:%s_%d", baseNameA, iCurrentSweep)
-	Variable waveAExists=WaveExists($traceAWaveName)
+	Variable waveAExists=WaveExistsByName(traceAWaveName)
 	Variable traceAShowing=(traceAChecked && waveAExists)
 	String traceBWaveName=sprintf2sv("root:%s_%d", baseNameB, iCurrentSweep)
-	Variable waveBExists=WaveExists($traceBWaveName)		
+	Variable waveBExists=WaveExistsByName(traceBWaveName)		
 	Variable traceBShowing=(traceBChecked && waveBExists)
 	Variable someTraceShowing=(traceAShowing || traceBShowing)
 			
@@ -842,9 +842,9 @@ Function BrowserViewUpdateAxesLimits(browserNumber)
 	
 	// Get the wave names, and see if they exist
 	String traceAWaveName=sprintf2sv("root:%s_%d", baseNameA, iCurrentSweep)
-	Variable waveAExists=WaveExists($traceAWaveName)
+	Variable waveAExists=WaveExistsByName(traceAWaveName)
 	String traceBWaveName=sprintf2sv("root:%s_%d", baseNameB, iCurrentSweep)
-	Variable waveBExists=WaveExists($traceBWaveName)
+	Variable waveBExists=WaveExistsByName(traceBWaveName)
 	
 	// Scale the x axis
 	if ( traceAChecked || traceBChecked )
@@ -993,10 +993,11 @@ Function BrowserViewUpdateFitDisplay(browserNumber)
 					// the displayed trace is the one the fit applies to
 					// Ensure that yFit is displayed
 					if (ItemsInList(WaveList("yFit",";",windowSpec))==0)
+						Wave yFitRef=$"yFit"
 						if (traceAChecked)
-							AppendToGraph /W=$browserName /L yFit
+							AppendToGraph /W=$browserName /L yFitRef
 						else
-							AppendToGraph /W=$browserName /R yFit
+							AppendToGraph /W=$browserName /R yFitRef
 						endif
 					endif
 					// show the fit parameters

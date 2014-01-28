@@ -992,3 +992,21 @@ Function /S stringFromIntegerWave(valueWave)
 	
 	return valueAsString
 End
+
+
+
+Function WaveExistsByName(name)
+	// Returns true iff a wave by the given name exists in the current DF context.
+	String name
+	
+	//Wave w=$"no such wave"
+	//Variable test=WaveExists(w)
+	
+	return WaveExists($name)		
+		// It doesn't seem like this should work, since if the wave doesn't exist, evaluating $name should error, 
+		// as the commented-out snippet above does.  But it does work...
+		
+	//String list=WaveList(name,";","")
+	//return !IsEmptyString(list)		
+End
+

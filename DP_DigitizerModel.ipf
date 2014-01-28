@@ -4,7 +4,7 @@
 //	Northwestern University
 //	project began 10/27/1998
 
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 Function DigitizerModelConstructor()
 	// if the DF already exists, nothing to do

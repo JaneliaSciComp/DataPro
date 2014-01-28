@@ -1,4 +1,4 @@
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 Function BrowserModelConstructor()
 	// Figure out what the index of this DataProBrowser instance should be
@@ -170,8 +170,8 @@ Function /S BrowserModelGetTopWaveNameAbs(browserNumber)
 
 	String traceAWaveName=BrowserModelGetAWaveNameAbs(browserNumber)
 	String traceBWaveName=BrowserModelGetBWaveNameAbs(browserNumber)
-	Variable waveAExists=WaveExists($traceAWaveName)
-	Variable waveBExists=WaveExists($traceBWaveName)
+	Variable waveAExists=WaveExistsByName(traceAWaveName)
+	Variable waveBExists=WaveExistsByName(traceBWaveName)
 
 	String retval
 	if (traceAChecked && waveAExists)
@@ -209,8 +209,8 @@ Function /S BrowserModelGetTopWaveNameRel(browserNumber)
 	String traceBWaveNameRel=BrowserModelGetBWaveNameRel(browserNumber)
 	String traceAWaveNameAbs=BrowserModelGetAWaveNameAbs(browserNumber)
 	String traceBWaveNameAbs=BrowserModelGetBWaveNameAbs(browserNumber)
-	Variable waveAExists=WaveExists($traceAWaveNameAbs)
-	Variable waveBExists=WaveExists($traceBWaveNameAbs)
+	Variable waveAExists=WaveExistsByName(traceAWaveNameAbs)
+	Variable waveBExists=WaveExistsByName(traceBWaveNameAbs)
 
 	String retval
 	if (traceAChecked && waveAExists)
@@ -295,7 +295,7 @@ End
 //	String traceAWaveName=BrowserModelGetAWaveNameAbs(browserNumber)
 //	WAVE theWave=$traceAWaveName
 //	Variable basesubtracted, baseline
-//	if ( traceAChecked && WaveExists($traceAWaveName) )
+//	if ( traceAChecked && WaveExistsByName(traceAWaveName) )
 //		baseline=NumberByKeyInWaveNote(theWave,"BASELINE")
 //		basesubtracted=NumberByKeyInWaveNote(theWave,"BASESUBTRACTED")
 //	endif
@@ -1217,10 +1217,10 @@ Function BrowserModelIncludeInAverage(thisWaveName,filterOnHold,holdCenter,holdT
 
 	// The default is to include the wave in the average, then we check for a bunch of possible
 	// reasons to exclude it
-	WAVE thisWave=$thisWaveName
-	if ( !WaveExists(thisWave) )
+	if ( !WaveExistsByName(thisWaveName) )
 		return 0
 	endif
+	Wave thisWave=$thisWaveName
 	String waveTypeStr=StringByKeyInWaveNote(thisWave, "WAVETYPE")
 	if (AreStringsEqual(waveTypeStr,"average"))
 		return 0

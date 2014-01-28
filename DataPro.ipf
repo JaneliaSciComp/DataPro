@@ -4,7 +4,7 @@
 //	Northwestern University
 //	project began 10/27/1998
 
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma rtGlobals=3		// Use modern global access method and strict wave access
 // #pragma IndependentModule = DP	// Decided not to do, b/c want users to be able to modify hook functions
 
 // These should all be in the same dir as this file, DataPro.ipf

@@ -4,6 +4,7 @@
 //	Northwestern University
 //	project began 10/27/1998
 
+#pragma rtGlobals=3		// Use modern global access method, strict wave access
 
 //----------------------------------------------------------------------------------------------------------------------------
 Function TestPulserContConstructor() : Graph
@@ -73,7 +74,7 @@ Function TestPulserContStart()
 	Variable sweepDuration=2*duration
 	Variable nScans=numberOfScans(dt,sweepDuration)
 	//Wave testPulseTTL=BuiltinPulseBoolean(dt,2*duration,0.5*duration,duration)		// free wave
-	Make /FREE /N=0 testPulseTTL
+	Make /FREE /N=(nScans) testPulseTTL
 	Setscale /P x, 0, dt, "ms", testPulseTTL
 	fillTTLPulseFromParamsBang(testPulseTTL,dt,nScans,{delay,duration},{"delay","duration"})
 	
@@ -257,10 +258,11 @@ Function TestPulserContYLimitsToTrace()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_TestPulser
 
-	if (WaveExists(TestPulse_ADC))	
+	Wave TestPulseADCRef=$"TestPulse_ADC"
+	if (WaveExists(TestPulseADCRef))	
 		// set display range, axis labels, etc.
 		Variable miny, maxy
-		Wavestats /Q TestPulse_ADC
+		Wavestats /Q TestPulseADCRef
 		miny=1.2*V_min
 		maxy=1.2*V_max
 		miny-=maxy/10

@@ -6,7 +6,7 @@
 
 //	This is one of the only files you should modify as the user.
 
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 Function SetupDigitizerForUser()
 	// USER: DON'T CHANGE THE NEXT TWO LINES

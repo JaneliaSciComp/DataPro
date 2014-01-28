@@ -1,4 +1,4 @@
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 // This is a swticher designed for one of the modern computer-controlled Axon Instruments amplifiers,
 // which switches its primary output depending on whether you're doing current clamp
