@@ -1625,8 +1625,7 @@ Function CameraBinSizeSet(nBinSizeNew)
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR iBinningModeFake
-	NVAR nBinSize
+	NVAR binSize
 
 	// Translate the bin sizes into a binning mode
 	// This code is entirely Andor iXon Ultra-specific
@@ -1659,9 +1658,9 @@ Function CameraBinSizeSet(nBinSizeNew)
 			Abort "Called CameraBinningItemSet() before camera was created."
 		endif
 	else
-		iBinningModeFake=binningModeIndex
+		//iBinningModeFake=binningModeIndex
 		// This next is entirely Ander iXon Ultra-specific
-		nBinSize=2^binningModeIndex
+		binSize=2^binningModeIndex
 	endif
 
 	// Restore the data folder
