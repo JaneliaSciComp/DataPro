@@ -775,11 +775,12 @@ Function IsInteger(x)
 
 End
 
-Function AddROIWavesToRoot(imageWave,roisWave,iSweep,calculationName,isBackgroundROI)
+Function AddROIWavesToRoot(imageWave,roisWave,iSweep,calculationName,nFramesBaseline,isBackgroundROI)
 	Wave imageWave
 	Wave roisWave
 	Variable iSweep
 	String calculationName
+	Variable nFramesBaseline
 	Wave isBackgroundROI
 	
 	// Get image dimensions --- these will be useful later
@@ -834,8 +835,8 @@ Function AddROIWavesToRoot(imageWave,roisWave,iSweep,calculationName,isBackgroun
 			signalWaveNameAbs="root:"+signalWaveNameRel
 			Wave signalWave3=$signalWaveNameAbs
 			// Divide out the mean signal, subtract one
-			Variable xbar=mean(signalWave3)
-			signalWave3 = signalWave3/xbar-1
+			Variable baseline=mean(signalWave3, pnt2x(signalWave3,0), pnt2x(signalWave3,nFramesBaseline-1))
+			signalWave3 = signalWave3/baseline-1
 			SetScale d 0, 0, "pure", signalWave3
 		endfor
 	endif
@@ -868,16 +869,16 @@ Function computeROISignalBang(signalWave,imageWave,roisWave,iROI,doMean)
 	Variable yMin=roisWave[1][iROI]
 	Variable xMax=roisWave[2][iROI]
 	Variable yMax=roisWave[3][iROI]
-	Variable i0=ceil((xMin-x0)/dx)
-	Variable iff=floor((xMax-x0)/dx)
-	Variable j0=ceil((yMin-x0)/dx)
-	Variable jf=floor((yMax-x0)/dx)
+	Variable i0=round((xMin-x0)/dx+0.5)		// A pel is included iff the pel center is within the (real-valued) ROI bounds
+	Variable iff=round((xMax-x0)/dx+0.5)
+	Variable j0=round((yMin-y0)/dy+0.5)
+	Variable jf=round((yMax-y0)/dy+0.5)
 	// Do the triple-loop that sums up all the pixel values for each time point
 	Variable i, j, k
 	for (k=0; k<nFrames; k+=1)
 		Variable s=0		// Will hold sum of pel values in ROI
-		for (i=i0; i<=iff; i+=1)
-			for (j=j0; j<=jf; j+=1)
+		for (i=i0; i<iff; i+=1)
+			for (j=j0; j<jf; j+=1)
 				s+=imageWave[i][j][k]
 			endfor
 		endfor

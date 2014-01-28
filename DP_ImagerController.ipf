@@ -428,7 +428,7 @@ Function ImagerContAcquireFinish(iSweep)
 	WAVE isBackgroundROI
 	NVAR videoExposure
 	NVAR ccdTargetTemperature	
-	NVAR binSize
+	//NVAR binSize
 	//NVAR binHeight
 	SVAR videoWaveBaseName
 	NVAR nFramesForVideo
@@ -470,7 +470,8 @@ Function ImagerContAcquireFinish(iSweep)
 	
 	// Calculate ROI signals, store in root DF
 	String calculationName=ImagerGetCalculationName()
-	AddROIWavesToRoot($imageWaveName,roisWave,iSweep,calculationName,isBackgroundROI)
+	Variable nBaselineFrames=ImagerGetNBaselineFrames()
+	AddROIWavesToRoot($imageWaveName,roisWave,iSweep,calculationName,nBaselineFrames,isBackgroundROI)
 	
 	// Tell the image browser controller to show the newly-acquired video
 	ImageBrowserContSetVideo(imageWaveName)
