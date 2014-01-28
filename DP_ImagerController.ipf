@@ -556,11 +556,14 @@ Function ImagerContFocus()
 			Variable wasAcqStarted=FancyCameraStartAcquire()
 			if (wasAcqStarted)
 				FancyCameraWaitForFramesBang(imageWaveCaged,nFrames)
+				ImageBrowserContSetVideo(imageWaveNameRel)
 				if (iFrame==0)
 					ImageBrowserContSetVideo(imageWaveNameRel)
+				else
+					ImageBrowserContNewFocusFrame()
 				endif
 				iFrame+=1
-				printf "."
+				//printf "."
 				DoUpdate
 			else
 				// if acquire failed to start

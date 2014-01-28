@@ -58,6 +58,14 @@ End
 
 
 
+Function IBViewFocusFrameChanged()
+	// Called to notify the view that we're focussing, and there's a new frame
+	IBViewUpdateDuringFocus()
+End
+
+
+
+
 
 
 //
@@ -194,10 +202,37 @@ End
 
 
 
+Function IBViewUpdateDuringFocus()
+	// An update function that only updates things that need updating
+	// after new frames are acquired during focussing
+
+	// If the view doesn't exist, nothing to do
+	if (!GraphExists("ImageBrowserView"))
+		return 0
+	endif
+
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_ImageBrowserModel
+
+	// Update the blackCount SetVariable
+	Variable blackCount=ImageBrowserModelGetBlackCount()
+	SetVariable gray_setvar0,win=ImageBrowserView, value= _NUM:blackCount
+	
+	// Update the whiteCount SetVariable
+	Variable whiteCount=ImageBrowserModelGetWhiteCount()	
+	SetVariable gray_setvar1, win=ImageBrowserView, value= _NUM:whiteCount
+
+	// Update the image
+	String imageWaveName=ImageBrowserModGetImWaveName()
+	ModifyImage /W=ImageBrowserView $imageWaveName ctab= {blackCount,whiteCount,Grays,0}
+
+	// Restore the original DF
+	SetDataFolder savedDF	 	
+End
 
 
 
-// Private methods
 Function ImageBrowserViewDrawROI(iROI,iROICurrent,iROIBackground)
 	// Draws the indicated ROI.  If iROI==iROICurrent, draws it a different color to indicate this
 	Variable iROI

@@ -92,6 +92,15 @@ End
 
 
 
+Function ImageBrowserContNewFocusFrame()
+	ImageBrowserModelNewFocusFrame()
+	IBViewFocusFrameChanged()	
+End
+
+
+
+
+
 
 // Marquee functions --- these are invoked by clicking inside a Marquee
 

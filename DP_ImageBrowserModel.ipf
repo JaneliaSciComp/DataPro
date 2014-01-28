@@ -279,6 +279,26 @@ End
 
 
 
+Function ImageBrowserModelNewFocusFrame()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_ImageBrowserModel
+	
+	// Declare instance vars
+	NVAR autoscaleToData
+	
+	// Do stuff
+	if (autoscaleToData)
+		ImageBrowserModelScaleToData()
+	endif
+
+	// Restore the original DF
+	SetDataFolder savedDF		
+End
+
+
+
+
 Function ImageBrowserModelScaleToData()
 	// This sets blackCount and whiteCount to the min and max of the current frame
 
