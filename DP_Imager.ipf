@@ -56,6 +56,7 @@ Function ImagerConstructor()
 	// the list of possible calculations
 	Make /O /T calculationList={"Mean","Sum","DF/F"}
 	Variable /G calculationIndex=0		// default is mean
+	Variable /G nBaselineFrames=1	// Number of frames to use for baseline in DF/F calculation
 	
 	Variable nROIs=0
 	Make /O /N=(4,nROIs) roisWave		// a 2D wave holding a ROI specification in each column, order is : left, top, right, bottom
@@ -75,6 +76,88 @@ Function ImagerConstructor()
 	// Restore the original data folder
 	SetDataFolder savedDF	
 End
+
+Function ImagerGetNBaselineFrames()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR nBaselineFrames
+	
+	// get the value
+	Variable value=nBaselineFrames
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End
+
+Function ImagerSetNBaselineFrames(newValue)
+	Variable newValue
+	
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR nBaselineFrames
+	NVAR nFramesForVideo
+	
+	// Set the value
+	if ( 0<newValue )
+		nBaselineFrames=min(newValue,nFramesForVideo)
+	endif
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+Function ImagerSetNFramesForVideo(newValue)
+	Variable newValue
+	
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR nFramesForVideo
+	
+	// Set the value
+	if ( 0<newValue)
+		nFramesForVideo=newValue
+
+		// Bring number of baseline frames into line
+		Variable nBaselineFrames=ImagerGetNBaselineFrames()
+		ImagerSetNBaselineFrames(min(nBaselineFrames,nFramesForVideo))
+	endif
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+Function ImagerGetNFramesForVideo()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR nFramesForVideo
+	
+	// get the value
+	Variable value=nFramesForVideo
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End
+
 
 Function /S ImagerGetCalculationList()
 	// Switch to the data folder

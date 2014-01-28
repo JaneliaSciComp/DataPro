@@ -204,8 +204,8 @@ Function ImagerViewConstructor() : Panel
 	yOffset=yOffsetRow
 	width=86
 	height=14
-	SetVariable nFramesSV, win=ImagerView, pos={xOffset,yOffset}, size={width,height}, title="Frames:"
-	SetVariable nFramesSV, win=ImagerView, limits={1,10000,1}, value=nFramesForVideo
+	SetVariable nFramesForVideoSV, win=ImagerView, pos={xOffset,yOffset}, size={width,height}, title="Frames:"
+	SetVariable nFramesForVideoSV, win=ImagerView, limits={1,inf,1}, proc=ICNFramesForVideoSVTouched
 
 	// Frame rate titlebox parts
 //	xOffset=204
@@ -258,6 +258,12 @@ Function ImagerViewConstructor() : Panel
 	TitleBox CalculationTB, win=ImagerView, pos={xOffset,yOffset+2}, frame=0, title="Calculation:"
 	PopupMenu CalculationPM, win=ImagerView, pos={xOffset+labelWidth,yOffset+2+yShimPopup}, bodyWidth=62
 	PopupMenu CalculationPM, win=ImagerView, proc=ICCalculationPMTouched
+
+	// Baseline frames for DF/F
+	width=122
+	height=0		// ignored
+	SetVariable nBaselineFramesSV, win=ImagerView, pos={xOffset,yOffset+23}, size={width,height}, title="Baseline Frames:"
+	SetVariable nBaselineFramesSV, win=ImagerView, limits={1,inf,1}, proc=ICNBaselineFramesSVTouched
 
 	// Background checkbox
 	width=84
@@ -434,6 +440,9 @@ Function ImagerViewUpdate()
 	Variable videoExposure=ImagerGetVideoExposure()	// ms
 	TitleBox actualVideoExposureTB, win=ImagerView, title=sprintf1v("%0.3f",videoExposure)
 
+	//Update the number of frames for video
+	SetVariable nFramesForVideoSV, win=ImagerView, value=_NUM:ImagerGetNFramesForVideo()
+
 	// Update the "(hit ESC to Cancel)" message for video
 	TitleBox videoEscapeTB,win=ImagerView,disable=(!isAcquiringVideo)
 
@@ -466,6 +475,10 @@ Function ImagerViewUpdate()
 
 	// Update stuff
 	PopupMenu binSizePM, win=ImagerView, mode=ImagerGetBinSizeIndex()+1
+	SetVariable nBaselineFramesSV, win=ImagerView, value=_NUM:ImagerGetNBaselineFrames()
+	Variable isDFF=AreStringsEqual(ImagerGetCalculationName(),"DF/F")
+	SetVariable nBaselineFramesSV, win=ImagerView, disable=fromEnable(isDFF)
+
 	//SetVariable binWidthSV,win=ImagerView,limits={1,ccdWidth,1},value= _NUM:binWidth
 	//SetVariable binHeightSV,win=ImagerView,limits={1,ccdHeight,1},value= _NUM:binHeight
 	if (nROIs==0)

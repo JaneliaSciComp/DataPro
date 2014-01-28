@@ -1010,3 +1010,13 @@ Function WaveExistsByName(name)
 	//return !IsEmptyString(list)		
 End
 
+
+
+Function fromEnable(isEnabled)
+	// Computes the number to set a controls "disable" field to, given
+	// A boolean that says whether is should be enabled or not
+	Variable isEnabled
+	
+	return (isEnabled?0:2)
+End
+

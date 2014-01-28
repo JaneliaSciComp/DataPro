@@ -313,9 +313,25 @@ Function ICSnapshotExposureSVTouched(ctrlName,varNum,varStr,varName) : SetVariab
 	ImagerViewModelChanged()
 End
 
+Function ICNFramesForVideoSVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum	// value of variable as number
+	String varStr		// value of variable as string
+	String varName	// name of variable
 
+	ImagerSetNFramesForVideo(varNum)
+	ImagerViewModelChanged()
+End
 
+Function ICNBaselineFramesSVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum	// value of variable as number
+	String varStr		// value of variable as string
+	String varName	// name of variable
 
+	ImagerSetNBaselineFrames(varNum)
+	ImagerViewModelChanged()
+End
 
 
 //
