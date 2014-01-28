@@ -884,8 +884,8 @@ Function ImagerAddROI(xROILeft, yROITop, xROIRight, yROIBottom)
 	NVAR iROI
 
 	// Constrain bounds to image bounds
-	Variable nWidthCCD=CameraCCDWidthGet()
-	Variable nHeightCCD=CameraCCDHeightGet()
+	Variable nWidthCCD=CameraCCDWidthGetInUS()
+	Variable nHeightCCD=CameraCCDHeightGetInUS()
 	xROILeft=max(0,min(xROILeft,nWidthCCD))
 	yROITop=max(0,min(yROITop,nHeightCCD))
 	xROIRight=max(0,min(xROIRight,nWidthCCD))
@@ -1156,11 +1156,7 @@ Function ImagerTranslateCurrentROIOrAll(dx,dy)
 
 	// Do stuff
 	if (moveAllROIs)
-		Variable nROIs=ImagerGetNROIs()
-		Variable i
-		for (i=0; i<nROIs; i+=1)
-			ImagerTranslateROI(i,dx,dy)			
-		endfor
+		ImagerTranslateAllROIs(dx,dy)
 	else
 		ImagerTranslateROI(iROI,dx,dy)
 	endif
@@ -1175,23 +1171,44 @@ Function ImagerTranslateROI(iROI,dx,dy)
 	// Translate the ROI iROI.  We assume it exists.
 	Variable iROI
 	Variable dx, dy
+
+	// Do the actual translating	
+	ImagerTranslateROIRaw(iROI,dx,dy)
 	
+	// Update the frame rate
+	ImagerUpdateVideoParams()
+End
+
+
+
+Function ImagerTranslateAllROIs(dx,dy)
+	Variable dx, dy
+
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Imager
 	
 	// Declare instance vars
-	WAVE roisWave		// a 2D wave holding a ROI specification in each column, order is : left, top, right, bottom
+	WAVE roisWave
 
-	// Do stuff
-	roisWave[0][iROI]+=dx
-	roisWave[1][iROI]+=dy
-	roisWave[2][iROI]+=dx
-	roisWave[3][iROI]+=dy
+	// Extract a bounding box for the ROIs
+	Wave roisBound=boundingROIFromROIs(roisWave)
+
+	// Translate the ROI bounding box, keeping in CCD bounds
+	Wave roisBoundNew=boundROITranslation(roisBound,dx,dy)
+	Variable dxNew=roisBoundNew[0]-roisBound[0]
+	Variable dyNew=roisBoundNew[1]-roisBound[1]
+	
+	// Move all the ROIs using the bounded translation
+	Variable nROIs=DimSize(roisWave,1)
+	Variable iROI
+	for ( iROI=0; iROI<nROIs; iROI+=1 )
+		ImagerTranslateROIRaw(iROI,dxNew,dyNew)
+	endfor
 	
 	// Update the frame rate
 	ImagerUpdateVideoParams()
-	
+
 	// Restore the original DF
 	SetDataFolder savedDF		
 End
@@ -1346,4 +1363,41 @@ Function ImagerUpdateSnapshotParams()
 End
 
 
+
+Function ImagerTranslateROIRaw(iROI,dx,dy)
+	// Translate the ROI iROI.  We assume it exists.
+	// The "raw" is b/c it doesn't update the video params afterward.
+	// That's also why it's private
+	Variable iROI
+	Variable dx, dy
+	
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	WAVE roisWave		// a 2D wave holding a ROI specification in each column, order is : left, top, right, bottom
+
+	// Extract the indicated ROI
+	Make /FREE /N=4 roiWave
+	roiWave=roisWave[p][iROI]
+
+	// Translate the ROI, keeping in bounds
+	Wave roiWaveNew=boundROITranslation(roiWave,dx,dy)
+
+	// commit the change			
+	roisWave[][iROI]=roiWaveNew[p]
+	
+	// Restore the original DF
+	SetDataFolder savedDF		
+End
+
+
+
+
+
+
+//
+// Class methods
+//
 

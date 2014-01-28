@@ -1670,6 +1670,69 @@ End
 
 
 
+Function /WAVE boundROITranslation(roiWave,dx,dy)
+	Wave roiWave
+	Variable dx,dy
+	
+	// Unpack the input ROI
+	Variable xROILeft=roiWave[0]
+	Variable yROITop=roiWave[1]
+	Variable xROIRight=roiWave[2]
+	Variable yROIBottom=roiWave[3]
+	Variable width=xROIRight-xROILeft
+	Variable height=yROIBottom-yROITop
+	
+	// Shift them the indicated amount
+	Variable xROILeftNew=xROILeft+dx
+	Variable yROITopNew=yROITop+dy
+	Variable xROIRightNew=xROIRight+dx
+	Variable yROIBottomNew=yROIBottom+dy
+	
+	// Initial guess at the translation to be returned
+	Variable dxNew=dx
+	Variable dyNew=dy
+	
+	// Limit the ROI to stay in bounds
+	Variable nWidthCCD=CameraCCDWidthGetInUS()
+	Variable nHeightCCD=CameraCCDHeightGetInUS()
+	if (dx<0)
+		// moved to the left
+		if (xROILeftNew<0)
+			xROILeftNew=0
+			xROIRightNew=width
+		endif
+	else
+		// moved to the right
+		if (xROIRightNew>nWidthCCD)
+			xROILeftNew=nWidthCCD-width
+			xROIRightNew=nWidthCCD
+		endif
+	endif
+	if (dy<0)
+		// moved up
+		if (yROITopNew<0)
+			yROITopNew=0
+			yROIBottomNew=height
+		endif
+	else
+		// moved down
+		if (yROIBottomNew>nHeightCCD)
+			yROITopNew=nHeightCCD-height
+			yROIBottomNew=nHeightCCD
+		endif
+	endif
+	
+	// package the result in a wave
+	Make /FREE /N=4 roiWaveNew
+	roiWaveNew[0]=xROILeftNew
+	roiWaveNew[1]=yROITopNew
+	roiWaveNew[2]=xROIRightNew
+	roiWaveNew[3]=yROIBottomNew
+
+	// return	
+	return roiWaveNew
+End
+
 
 
 
