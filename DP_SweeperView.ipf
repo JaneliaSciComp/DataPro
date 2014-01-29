@@ -429,6 +429,5 @@ Function SweeperViewUpdateGetDataButton()
 	endif
 
 	// Set the enablement of the Get Data button
-	Variable getDataEnabled= SweeperGetNumADCsOn()>0 && (SweeperGetNumDACsOn()>0 || SweeperGetNumTTLOutputsOn()>0)
-	Button getDataButton,win=SweeperView,disable=2*(1-getDataEnabled)
+	Button getDataButton,win=SweeperView,disable=fromEnable(SweeperIsSamplingPossible())
 End

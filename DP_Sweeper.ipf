@@ -858,19 +858,17 @@ Function SweeperSetDACChannelOn(i,state)
 	SetDataFolder savedDF
 End
 
-Function SweeperSetTTLOutputChannelOn(i,state)
-	Variable i, state
+Function SweeperSetTTLOutputChannelOn(i,newValue)
+	Variable i, newValue
+	
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Sweeper
+	
 	WAVE ttlOutputChannelOn
-	ttlOutputChannelOn[i]=state
-//	// Have to make sure at least one output channel always stays on
-//	if (state)
-//		ttlOutputChannelOn[i]=1
-//	elseif ( SweeperGetNumDACsOn()>0 || SweeperGetNumTTLOutputsOn()>1 )
-//		ttlOutputChannelOn[i]=0
-//	endif
+	
+	ttlOutputChannelOn[i]=newValue
 	SweeperResampleInternalWaves()	
+	
 	SetDataFolder savedDF	
 End
 
@@ -1000,7 +998,24 @@ Function /S SweeperGetTTLOutputWaveName(iChannel)
 	return result
 End
 
+Function SweeperIsSamplingPossible()
+	// Basically, reports whether or not sampling is possible with the current settings.
+	// This is used to enable/disable the "Get Data" button.
+	Variable dt=SweeperGetDt()
+	Variable totalDuration=SweeperGetTotalDuration()
+	Variable nADCChannelsOn=SweeperGetNumADCsOn()
+	Variable nDACChannelsOn=SweeperGetNumDACsOn()
+	Variable nTTLOutputChannelsOn=SweeperGetNumTTLOutputsOn()
 
+	Variable getDataEnabled= SweeperGetNumADCsOn()>0 && (SweeperGetNumDACsOn()>0 || SweeperGetNumTTLOutputsOn()>0)
+
+	Variable isAtLeastOneInput= (nADCChannelsOn>0)
+	Variable isAtLeastOneOutput= ( (  nDACChannelsOn>0) || ( nTTLOutputChannelsOn>0) )
+	Variable isFIFOBigEnough=SweeperIsFIFOBigEnough(dt,totalDuration,nADCChannelsOn,nDACChannelsOn,nTTLOutputChannelsOn)
+	
+	Variable isSamplingPossible= isAtLeastOneInput && isAtLeastOneOutput && isFIFOBigEnough
+	return isSamplingPossible
+End
 
 
 
@@ -1258,7 +1273,15 @@ Function SweeperIsTTLInUse(ttlOutputIndex)
 	return value
 End
 
-
+Function SweeperIsFIFOBigEnough(dt,totalDuration,nADCChannels,nDACChannels,nTTLOutputChannels)
+	Variable dt, totalDuration, nADCChannels, nDACChannels, nTTLOutputChannels
+	// Returns true iff the FIFO is large enough to accomodate the proposed sampling settings
+	Variable nScans=numberOfScans(dt,totalDuration)
+	Variable nFIFOSamplesNeededNow=nFIFOSamplesNeeded(nADCChannels,nDACChannels,nTTLOutputChannels,nScans)
+	Variable fifoSize=SamplerGetFIFOSize()
+	Variable isFeasable=(fifoSize>=nFIFOSamplesNeededNow)
+	return isFeasable
+End
 
 
 

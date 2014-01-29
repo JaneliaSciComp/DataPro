@@ -166,8 +166,42 @@ Function SamplerGetTTLBackground()
 End
 
 
+
 Function SamplerEpiLightTTLOutputChanged()
 	SamplerSetBackgroundTTLOutput(EpiLightGetTTLOutputIndex(),EpiLightGetIsOn())
+End
+
+
+
+Function SamplerGetFIFOSize()
+	// Get the size of the FIFO, in samples
+	// Save, set DF
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sampler
+
+	// Declare the instance variables we need
+	NVAR itc
+
+	// Return the FIFO size, based on the ITC model
+	Variable nSamples
+	if (itc==0)
+		// Fake digitizer
+		nSamples=2^20	// approx 1 million
+	elseif (itc==16)
+		// ITC-16, 256 kilosamples
+		nSamples=2^18	// approx 256 thousand
+	elseif (itc==18)
+		// ITC-16, 1024 kilosamples
+		nSamples=2^20	// approx 1 million
+	else
+		// Something is wrong...
+		Abort "Internal error: Sampler has an invalid itc value.  Please contact the DataPro developer(s)."
+	endif	
+
+	// Restore the original DF	
+	SetDataFolder savedDF
+	
+	return nSamples
 End
 
 
@@ -223,10 +257,8 @@ Function nFIFOSamplesNeeded(nADCChannels,nDACChannels,nTTLOutputChannels,nScans)
 	
 	Variable nInputChannels=nADCChannels
 	Variable nOutputChannels=(nDACChannels+((nTTLOutputChannels>0)?1:0)
-	
-	Variable nSamplesOnInput=nInputChannels*nScans
-	Variable nSamplesOnOutput=nOutputChannels*nScans
-	Variable nSamplesNeeded=max(nSamplesOnInput,nSamplesOnOutput)
+	Variable sequenceLength=LCM(nInputChannels,nOutputChannels)		// ITC-18 be crazy
+	Variable nSamplesNeeded=sequenceLength*nScans
 	
 	return nSamplesNeeded
 End
