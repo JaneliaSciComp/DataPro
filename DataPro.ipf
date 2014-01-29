@@ -43,6 +43,8 @@
 #include ":DP_Switcher"
 #include ":DP_ASwitcher"
 #include ":DP_Camera"
+#include ":DP_CameraPrivateMethods"
+#include ":DP_CameraClassMethods"
 #include ":DP_FancyCamera"
 #include ":DP_EpiLight"
 #include ":DP_Imager"
@@ -126,6 +128,7 @@ End
 //End
 
 Function AfterCompiledHook()
+	Printf "Inside AfterCompiledHook()\r"
 	InitializeDataPro()
 	PostInitializationHook()
 End

@@ -17,7 +17,13 @@ Function CameraConstructor()
 	String savedDF=GetDataFolder(1)
 
 	// If the data folder does not already exist, create it and set up the camera
-	if (!DataFolderExists("root:DP_Camera"))
+	String errorMessage
+	if (DataFolderExists("root:DP_Camera"))
+		// If the data folder exists, double check that any supposedly-valid SIDX handles really are valid.
+		// We do this in case an experiment has just been loaded.  In this case, the camera constructor gets
+		// called, so this is a good place to verify that any supposedly-valid SIDX handles really are valid.
+		CameraValidifySidxHandles()
+	else
 		// If the data folder doesn't exist, create it (and switch to it)
 		// IMAGING GLOBALS
 		NewDataFolder /O /S root:DP_Camera
@@ -28,8 +34,8 @@ Function CameraConstructor()
 		Variable /G sidxRoot
 		Variable /G isSidxCameraValid=0	// boolean
 		Variable /G sidxCamera	
-		Variable /G isSidxAcquirerValid=0	// boolean
-		Variable /G sidxAcquirer
+		Variable /G isSidxAcquireValid=0	// boolean
+		Variable /G sidxAcquire
 		//Make /N=(0,0,0) bufferFrame	// Will hold the acquired frames
 		Variable /G widthCCD=nan		// width of the CCD
 		Variable /G heightCCD=nan	// height of the CCD
@@ -60,104 +66,25 @@ Function CameraConstructor()
 		// This covers all 8 possible transforms, including rotations and anything else
 		
 		// Create the SIDX root object, referenced by sidxRoot
-		String errorMessage
-		String license=""	// License file is stored in C:/Program Files/Bruxton/SIDX
-		Variable sidxStatus
-		SIDXRootOpen sidxRoot, license, sidxStatus
-		if (sidxStatus!=0)
-			SIDXRootGetLastError sidxRoot, errorMessage
-			printf "Error in SIDXRootOpen: %s\r" errorMessage
-		endif
-		isSidxRootValid=(sidxStatus==0)
-		//printf "isSidxRootValid: %d\r" isSidxRootValid
-		Variable nCameras
+		sidxRoot=CameraTryToGetSidxRootHandle()
+		isSidxRootValid=(sidxRoot>=0)
 		if (isSidxRootValid)
-			Printf "Scanning for cameras..."
-			SIDXRootCameraScan sidxRoot, sidxStatus
-			Printf "done.\r"
-			if (sidxStatus != 0)
-				// Scan didn't work
-				nCameras=0
-			else
-				// Scan worked				
-				// For debugging purposes
-				String report
-				SIDXRootCameraScanGetReport sidxRoot, report, sidxStatus
-				Print report
-				// Get the number of cameras
-				SIDXRootCameraScanGetCount sidxRoot, nCameras,sidxStatus
-				if (sidxStatus != 0)
-					nCameras=0
-				endif
-			endif
-			Printf "# of cameras: %d\r", nCameras
-			if (nCameras>0)
-				// Create the SIDX camera object, referenced by sidxCamera
-				String cameraName
-				SIDXRootCameraScanGetName sidxRoot, 0, cameraName, sidxStatus
-				if (sidxStatus!=0)
-					SIDXRootGetLastError sidxRoot, errorMessage
-					printf "Error in SIDXRootCameraScanGetName: %s\r" errorMessage
-				endif
-				printf "cameraName: %s\r", cameraName
-				SIDXRootCameraOpenName sidxRoot, cameraName, sidxCamera, sidxStatus
-				if (sidxStatus!=0)
-					SIDXRootGetLastError sidxRoot, errorMessage
-					printf "Error in SIDXRootCameraOpenName: %s\r" errorMessage
-				endif	
-				isSidxCameraValid= (sidxStatus==0)
-				printf "isSidxCameraValid: %d\r", isSidxCameraValid
-				areWeForReal=isSidxCameraValid		// if no valid camera, then we fake
-				if (isSidxCameraValid)
-					SIDXCameraROIGetValue sidxCamera, iLeft, iTop, iRight, iBottom, sidxStatus
-					if (sidxStatus!=0)
-						SIDXCameraGetLastError sidxCamera, errorMessage
-						Abort sprintf1s("Error in SIDXCameraROIGetValue: %s",errorMessage)
-					endif						
-					Printf "ROI: %d %d %d %d\r", iLeft, iTop, iRight, iBottom
-					widthCCD=iRight-iLeft+1
-					heightCCD=iBottom-iTop+1
-					// Set the EM gain to 100, the Solis default
-					Variable emGainSettingWant=100
-					SIDXCameraEMGainSet sidxCamera, emGainSettingWant, sidxStatus
-					if (sidxStatus!=0)
-						SIDXCameraGetLastError sidxCamera, errorMessage
-						DoAlert 0, sprintf1s("Error in SIDXCameraEMGainSet: %s",errorMessage)
-					endif		
-					// Set the vertical shift speed to the Solis default
-					Variable verticalShiftSpeedSettingIndex=15		
-					Variable verticalShiftSpeedValueIndex=2		// Corresponds to "[0.9]", whatever that means
-					SIDXDeviceExtraListSet sidxCamera, verticalShiftSpeedSettingIndex, verticalShiftSpeedValueIndex, sidxStatus
-					if (sidxStatus!=0)
-						SIDXCameraGetLastError sidxCamera, errorMessage
-						DoAlert 0, sprintf1s("Error in SIDXDeviceExtraListSet: %s",errorMessage)
-					endif
-					// Report on the camera state
-					CameraProbeStatusAndPrintf(sidxCamera)
-				else
-					// fake CCD size
-					widthCCD=512
-					heightCCD=512
-					iBottom=heightCCD-1
-					iRight=widthCCD-1
-				endif
-			else
-				// if zero cameras, then we fake
-				areWeForReal=0;
-				// fake CCD size
-				widthCCD=512
-				heightCCD=512
-				iBottom=heightCCD-1
-				iRight=widthCCD-1
-				binSize=1
-				//binHeight=1
-				exposureWantedInSeconds=0.05
+			sidxCamera=CameraTryToGetSidxRootHandle()
+			if (sidxCamera>=0)
+				CameraInitCCDDims()
+				isSidxCameraValid=CameraInitSidxCamera(sidxCamera)
 			endif
 		endif
-		//printf "areWeForReal: %d\r", areWeForReal
-//		if (!areWeForReal)
-//			Redimension /N=(widthCCD,heightCCD,nFramesBufferFake) bufferFrame		// sic: this is how Igor Pro organizes image data 
-//		endif
+		if (!isSidxCameraValid)
+			// if unable to get a camera object, we fake
+			areWeForReal=0
+			widthCCD=512
+			heightCCD=512
+			iBottom=heightCCD-1
+			iRight=widthCCD-1
+			binSize=1
+			exposureWantedInSeconds=0.05
+		endif
 	endif
 
 	// Restore the data folder
@@ -571,8 +498,8 @@ Function CameraAcquireArm()
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR isSidxAcquirerValid
-	NVAR sidxAcquirer
+	NVAR isSidxAcquireValid
+	NVAR sidxAcquire
 	NVAR isAcquireOpenFake
 
 	Variable success
@@ -583,15 +510,15 @@ Function CameraAcquireArm()
 			// debug code here
 			//CameraProbeStatusAndPrintf(sidxCamera)
 			// real code starts here
-			SIDXCameraAcquireOpen sidxCamera, sidxAcquirer, sidxStatus
+			SIDXCameraAcquireOpen sidxCamera, sidxAcquire, sidxStatus
 			if (sidxStatus!=0)
-				isSidxAcquirerValid=0
+				isSidxAcquireValid=0
 				SIDXCameraGetLastError sidxCamera, errorMessage
 				CameraSetErrorMessage(sprintf1s("Error in SIDXCameraAcquireOpen: %s",errorMessage))
 				//Abort sprintf1s("Error in SIDXCameraAcquireOpen: %s",errorMessage)
 				success=0
 			else
-				isSidxAcquirerValid=1
+				isSidxAcquireValid=1
 				success=1
 			endif
 		else
@@ -624,18 +551,18 @@ Function CameraAcquireStart()
 
 	// Declare instance variables
 	NVAR areWeForReal
-	NVAR isSidxAcquirerValid
-	NVAR sidxAcquirer
+	NVAR isSidxAcquireValid
+	NVAR sidxAcquire
 	NVAR isAcquisitionOngoingFake
 
 	Variable success
 	Variable sidxStatus
 	if (areWeForReal)
-		if (isSidxAcquirerValid)
-			SIDXAcquireStart sidxAcquirer, sidxStatus
+		if (isSidxAcquireValid)
+			SIDXAcquireStart sidxAcquire, sidxStatus
 			if (sidxStatus!=0)
 				String errorMessage
-				SIDXAcquireGetLastError sidxAcquirer, errorMessage
+				SIDXAcquireGetLastError sidxAcquire, errorMessage
 				//Abort sprintf1s("Error in SIDXAcquireStart: %s",errorMessage)
 				CameraSetErrorMessage(sprintf1s("Error in SIDXAcquireStart: %s",errorMessage))
 				success=0
@@ -667,18 +594,18 @@ Function CameraAcquireGetStatus()
 
 	// Declare instance variables
 	NVAR areWeForReal
-	NVAR isSidxAcquirerValid
-	NVAR sidxAcquirer
+	NVAR isSidxAcquireValid
+	NVAR sidxAcquire
 	NVAR isAcquisitionOngoingFake
 
 	Variable isAcquiring
 	Variable sidxStatus
 	if (areWeForReal)
-		if (isSidxAcquirerValid)
-			SIDXAcquireGetStatus sidxAcquirer, isAcquiring, sidxStatus
+		if (isSidxAcquireValid)
+			SIDXAcquireGetStatus sidxAcquire, isAcquiring, sidxStatus
 			if (sidxStatus!=0)
 				String errorMessage
-				SIDXAcquireGetLastError sidxAcquirer, errorMessage
+				SIDXAcquireGetLastError sidxAcquire, errorMessage
 				Abort sprintf1s("Error in SIDXAcquireGetStatus: %s",errorMessage)
 			endif
 		else
@@ -706,8 +633,8 @@ Function CameraAcquireStop()
 
 	// Declare instance variables
 	NVAR areWeForReal
-	NVAR isSidxAcquirerValid
-	NVAR sidxAcquirer
+	NVAR isSidxAcquireValid
+	NVAR sidxAcquire
 	NVAR isAcquisitionOngoingFake
 	//WAVE bufferFrame
 	NVAR widthCCD, heightCCD
@@ -721,11 +648,11 @@ Function CameraAcquireStop()
 	
 	Variable sidxStatus
 	if (areWeForReal)
-		if (isSidxAcquirerValid)
-			SIDXAcquireStop sidxAcquirer, sidxStatus
+		if (isSidxAcquireValid)
+			SIDXAcquireStop sidxAcquire, sidxStatus
 			if (sidxStatus!=0)
 				String errorMessage
-				SIDXAcquireGetLastError sidxAcquirer, errorMessage
+				SIDXAcquireGetLastError sidxAcquire, errorMessage
 				Abort sprintf1s("Error in SIDXAcquireStop: %s",errorMessage)
 			endif
 		else
@@ -795,8 +722,8 @@ Function CameraAcquireReadBang(framesCaged,nFramesToRead)
 	// Declare instance variables
 	NVAR areWeForReal
 	NVAR sidxCamera
-	NVAR isSidxAcquirerValid
-	NVAR sidxAcquirer
+	NVAR isSidxAcquireValid
+	NVAR sidxAcquire
 	NVAR isAcquisitionOngoingFake
 	//WAVE bufferFrame
 	NVAR iLeft, iTop
@@ -809,21 +736,21 @@ Function CameraAcquireReadBang(framesCaged,nFramesToRead)
 	Variable sidxStatus
 	String errorMessage
 	if (areWeForReal)
-		if (isSidxAcquirerValid)
+		if (isSidxAcquireValid)
 			Make /O framesCagedTemp
 			//WAVE ref=$"framesCagedTemp"
 			// OK, done allocating frames
-			SIDXAcquireRead sidxAcquirer, nFramesToRead, framesCagedTemp, sidxStatus	
+			SIDXAcquireRead sidxAcquire, nFramesToRead, framesCagedTemp, sidxStatus	
 				// doesn't seem to work if frames is a free wave, or a wave reference
 			if (sidxStatus!=0)
-				SIDXAcquireGetLastError sidxAcquirer, errorMessage
+				SIDXAcquireGetLastError sidxAcquire, errorMessage
 				Abort sprintf1s("Error in SIDXAcquireRead: %s",errorMessage)
 			endif
 			Duplicate /O framesCagedTemp, framesCaged
 			// Get the frame interval while we're here
-			SIDXAcquireGetImageInterval sidxAcquirer, frameIntervalInSeconds, sidxStatus
+			SIDXAcquireGetImageInterval sidxAcquire, frameIntervalInSeconds, sidxStatus
 			if (sidxStatus!=0)
-				SIDXAcquireGetLastError sidxAcquirer, errorMessage
+				SIDXAcquireGetLastError sidxAcquire, errorMessage
 				Abort sprintf1s("Error in SIDXAcquireGetImageInterval: %s",errorMessage)
 			endif
 			
@@ -878,27 +805,27 @@ Function CameraGetImageInterval()
 
 	// Declare instance variables
 	NVAR areWeForReal
-	NVAR isSidxAcquirerValid
-	NVAR sidxAcquirer
+	NVAR isSidxAcquireValid
+	NVAR sidxAcquire
 	NVAR exposureWantedInSeconds
 
 	Variable frameIntervalInSeconds
 	Variable sidxStatus
 	String errorMessage
-	Variable wasCameraArmedAtEntry=isSidxAcquirerValid
+	Variable wasCameraArmedAtEntry=isSidxAcquireValid
 	if (areWeForReal)
-		if (!isSidxAcquirerValid)
+		if (!isSidxAcquireValid)
 			// If no valid acquire, need to get one
 			Variable wasArmingSuccessful=CameraAcquireArm()
 			if (!wasArmingSuccessful)
 				frameIntervalInSeconds= nan
 			endif
 		endif
-		if (isSidxAcquirerValid)
+		if (isSidxAcquireValid)
 			// Get the frame interval
-			SIDXAcquireGetImageInterval sidxAcquirer, frameIntervalInSeconds, sidxStatus
+			SIDXAcquireGetImageInterval sidxAcquire, frameIntervalInSeconds, sidxStatus
 			if (sidxStatus!=0)
-				SIDXAcquireGetLastError sidxAcquirer, errorMessage
+				SIDXAcquireGetLastError sidxAcquire, errorMessage
 				CameraSetErrorMessage(sprintf1s("Error in SIDXAcquireGetImageInterval: %s",errorMessage))
 				frameIntervalInSeconds= nan
 			endif
@@ -909,7 +836,7 @@ Function CameraGetImageInterval()
 	endif
 
 	// Disarm the camera if it was not armed on entry
-	if (isSidxAcquirerValid && !wasCameraArmedAtEntry)
+	if (isSidxAcquireValid && !wasCameraArmedAtEntry)
 		CameraAcquireDisarm()
 	endif
 
@@ -934,23 +861,23 @@ Function CameraAcquireDisarm()
 
 	// Declare instance variables
 	NVAR areWeForReal
-	NVAR isSidxAcquirerValid
-	NVAR sidxAcquirer		
+	NVAR isSidxAcquireValid
+	NVAR sidxAcquire		
 	NVAR isAcquireOpenFake
 	NVAR isAcquisitionOngoingFake
 
 	// Close the SIDX Acquire object	
 	Variable sidxStatus
 	if (areWeForReal)
-		if (isSidxAcquirerValid)
-			SIDXAcquireClose sidxAcquirer, sidxStatus
+		if (isSidxAcquireValid)
+			SIDXAcquireClose sidxAcquire, sidxStatus
 			if (sidxStatus!=0)
 				String errorMessage
-				SIDXAcquireGetLastError sidxAcquirer, errorMessage
+				SIDXAcquireGetLastError sidxAcquire, errorMessage
 				Abort sprintf1s("Error in SIDXAcquireClose: %s",errorMessage)
 			else
 				// Successfully close the acquirer
-				isSidxAcquirerValid=0
+				isSidxAcquireValid=0
 			endif
 		else
 			Abort "Called CameraAcquireDisarm() before acquisition was armed."
@@ -1059,21 +986,21 @@ Function CameraDestructor()
 	NVAR sidxRoot
 	NVAR isSidxCameraValid
 	NVAR sidxCamera	
-	NVAR isSidxAcquirerValid
-	NVAR sidxAcquirer		
+	NVAR isSidxAcquireValid
+	NVAR sidxAcquire		
 
 	// This is used in lots of places
 	Variable sidxStatus
 	String errorMessage
 
 	// Close the SIDX Acquire object
-	if (isSidxAcquirerValid)
-		SIDXAcquireClose sidxAcquirer, sidxStatus
+	if (isSidxAcquireValid)
+		SIDXAcquireClose sidxAcquire, sidxStatus
 		if (sidxStatus!=0)
-			SIDXAcquireGetLastError sidxAcquirer, errorMessage
+			SIDXAcquireGetLastError sidxAcquire, errorMessage
 			Printf "Error in SIDXAcquireClose: %s\r", errorMessage
 		endif
-		isSidxAcquirerValid=0	
+		isSidxAcquireValid=0	
 	endif
 	
 	// Close the SIDX Camera object
@@ -1190,25 +1117,6 @@ Function /S CameraGetErrorMessage()
 	SetDataFolder savedDF	
 	
 	return result
-End
-
-
-
-
-Function CameraSetErrorMessage(newValue)
-	String newValue
-
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
-
-	// Declare instance variables
-	SVAR mostRecentErrorMessage
-
-	mostRecentErrorMessage=newValue
-
-	// Restore the data folder
-	SetDataFolder savedDF	
 End
 
 
@@ -1460,535 +1368,3 @@ Function CameraCCDHeightGetInUS()
 	
 	return (roiInUS[3])
 End
-
-
-
-
-
-
-
-//
-// private methods
-//
-
-Function CameraSyncBinSize()
-	// Copy the bin dims according to the hardware into the instance var
-
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
-
-	// Declare instance variables
-	NVAR areWeForReal
-	NVAR isSidxCameraValid
-	NVAR sidxCamera
-	NVAR binSize
-
-	if (areWeForReal)
-		if (isSidxCameraValid)
-			Variable sidxStatus
-			Variable binWidth, binHeight
-			SIDXCameraBinningGet sidxCamera, binWidth, binHeight, sidxStatus
-			if (sidxStatus!=0)
-				String errorMessage
-				SIDXCameraGetLastError sidxCamera, errorMessage
-				Abort sprintf1s("Error in SIDXCameraBinningGet: %s", errorMessage)
-			endif
-			if (binWidth!=binHeight)
-				Abort "Internal Error: Bin width and height should always be the same."
-			endif
-			binSize=binWidth
-		else
-			binSize=nan
-		endif
-	endif
-	
-	// Restore the data folder
-	SetDataFolder savedDF	
-End
-
-
-
-Function CameraSyncExposureWanted()
-	// Copy the exposure according to the hardware into the instance var
-	
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
-
-	// Declare instance variables
-	NVAR areWeForReal
-	NVAR isSidxCameraValid
-	NVAR sidxCamera
-	NVAR exposureWantedInSeconds		// in seconds
-
-	Variable sidxStatus
-	if (areWeForReal)
-		if (isSidxCameraValid)
-			SIDXCameraExposeGet sidxCamera, exposureWantedInSeconds, sidxStatus
-				// This gets the value set, not the realized value
-			if (sidxStatus!=0)
-				String errorMessage
-				SIDXCameraGetLastError sidxCamera, errorMessage
-				Abort sprintf1s("Error in SIDXCameraExposeGet: %s",errorMessage)
-			endif
-		else
-			exposureWantedInSeconds=nan
-		endif
-	endif
-
-	// Restore the data folder
-	SetDataFolder savedDF	
-End
-
-
-
-
-Function CameraSetROIInCSAndAligned(roiInCSAndAlignedNew)
-	// Set the camera ROI
-	// The ROI is specified in the unbinned pixel coordinates, which are image-style coordinates, 
-	// with the upper-left pels being (0,0)
-	// The ROI includes x coordinates [iLeft,iRight].  That is, the pixel with coord iRight is included.
-	// The ROI includes y coordinates [iTop,iBottom].  That is, the pixel with coord iBottom is included.
-	// iRight, iLeft must be an integer multiple of the current bin size
-	// iBottom, iTop must be an integer multiple of the current bin size
-	// The ROI will be (iRight-iLeft+1)/nBinSize bins wide, and
-	// (iBottom-iTop+1)/nBinSize bins high.
-	// Note that all of these are in CCD coords, not user coords.
-	Wave roiInCSAndAlignedNew
-	
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
-
-	// Declare instance variables
-	NVAR areWeForReal
-	NVAR isSidxCameraValid
-	NVAR sidxCamera
-	NVAR iLeft, iTop
-	NVAR iBottom, iRight	 // the ROI boundaries as pel indices
-
-	// Convert the ROI boundaries to pixel row/column indices that are _inclusive_
-	// The boundaries in roiInCSAndAligned we think of as infinetesimally thin boundaries, 
-	// in image heckbertian coordinates.  The SIDX function wants pixel row/col coords, and 
-	// the rows and columns given are _included_ in the ROI.  So we have to translate, but
-	// the translation is pretty trivial
-	Variable iLeftNew=roiInCSAndAlignedNew[0]
-	Variable iTopNew=roiInCSAndAlignedNew[1]
-	Variable iRightNew=roiInCSAndAlignedNew[2]-1
-	Variable iBottomNew=roiInCSAndAlignedNew[3]-1
-
-	// Actually set the ROI coordinates
-	Variable sidxStatus
-	if (areWeForReal)
-		if (isSidxCameraValid)
-			String errorMessage
-			SIDXCameraROISet sidxCamera, iLeftNew, iTopNew, iRightNew, iBottomNew, sidxStatus
-			if (sidxStatus!=0)
-				SIDXCameraGetLastError sidxCamera, errorMessage
-				Abort sprintf1s("Error in SIDXCameraROISet: %s",errorMessage)
-			endif
-			SIDXCameraROIGetValue sidxCamera, iLeft, iTop, iRight, iBottom, sidxStatus
-			if (sidxStatus!=0)
-				SIDXCameraGetLastError sidxCamera, errorMessage
-				Abort sprintf1s("Error in SIDXCameraROIGetValue: %s",errorMessage)
-			endif			
-			if ( (iLeft!=iLeftNew) || (iTop!=iTopNew) || (iRight!=iRightNew) || (iBottom!=iBottomNew) )
-				Abort "ROI settings on camera do not match requested ROI settings."				
-			endif
-		else
-			Abort "Called CameraROISet() before camera was created."
-		endif
-	else
-		iLeft=iLeftNew
-		iTop=iTopNew
-		iRight=iRightNew
-		iBottom=iBottomNew
-	endif
-
-	// Restore the data folder
-	SetDataFolder savedDF	
-End
-
-
-
-
-
-Function CameraBinSizeSet(nBinSizeNew)
-	Variable nBinSizeNew
-	
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
-
-	// Declare instance variables
-	NVAR areWeForReal
-	NVAR isSidxCameraValid
-	NVAR sidxCamera
-	NVAR binSize
-
-	// Translate the bin sizes into a binning mode
-	// This code is entirely Andor iXon Ultra-specific
-	Variable binningModeIndex
-	if ( (nBinSizeNew==1) )
-		binningModeIndex=0
-	elseif ( (nBinSizeNew==2) )
-		binningModeIndex=1
-	elseif ( (nBinSizeNew==4) )
-		binningModeIndex=2
-	elseif ( (nBinSizeNew==8) )
-		binningModeIndex=3
-	else
-		// Just use one if value is invalid
-		binningModeIndex=0
-	endif	
-
-	// Set the bin sizes
-	Variable sidxStatus
-	if (areWeForReal)
-		if (isSidxCameraValid)
-			SIDXCameraBinningItemSet sidxCamera, binningModeIndex, sidxStatus
-			if (sidxStatus!=0)
-				String errorMessage
-				SIDXCameraGetLastError sidxCamera, errorMessage
-				Abort sprintf1s("Error in SIDXCameraBinningItemSet: %s",errorMessage)
-			endif
-			CameraSyncBinSize()
-		else
-			Abort "Called CameraBinningItemSet() before camera was created."
-		endif
-	else
-		//iBinningModeFake=binningModeIndex
-		// This next is entirely Ander iXon Ultra-specific
-		binSize=2^binningModeIndex
-	endif
-
-	// Restore the data folder
-	SetDataFolder savedDF	
-End
-
-
-
-
-Function /WAVE boundROITranslation(roiWave,dx,dy)
-	Wave roiWave
-	Variable dx,dy
-	
-	// Unpack the input ROI
-	Variable xROILeft=roiWave[0]
-	Variable yROITop=roiWave[1]
-	Variable xROIRight=roiWave[2]
-	Variable yROIBottom=roiWave[3]
-	Variable width=xROIRight-xROILeft
-	Variable height=yROIBottom-yROITop
-	
-	// Shift them the indicated amount
-	Variable xROILeftNew=xROILeft+dx
-	Variable yROITopNew=yROITop+dy
-	Variable xROIRightNew=xROIRight+dx
-	Variable yROIBottomNew=yROIBottom+dy
-	
-	// Initial guess at the translation to be returned
-	Variable dxNew=dx
-	Variable dyNew=dy
-	
-	// Limit the ROI to stay in bounds
-	Variable nWidthCCD=CameraCCDWidthGetInUS()
-	Variable nHeightCCD=CameraCCDHeightGetInUS()
-	if (dx<0)
-		// moved to the left
-		if (xROILeftNew<0)
-			xROILeftNew=0
-			xROIRightNew=width
-		endif
-	else
-		// moved to the right
-		if (xROIRightNew>nWidthCCD)
-			xROILeftNew=nWidthCCD-width
-			xROIRightNew=nWidthCCD
-		endif
-	endif
-	if (dy<0)
-		// moved up
-		if (yROITopNew<0)
-			yROITopNew=0
-			yROIBottomNew=height
-		endif
-	else
-		// moved down
-		if (yROIBottomNew>nHeightCCD)
-			yROITopNew=nHeightCCD-height
-			yROIBottomNew=nHeightCCD
-		endif
-	endif
-	
-	// package the result in a wave
-	Make /FREE /N=4 roiWaveNew
-	roiWaveNew[0]=xROILeftNew
-	roiWaveNew[1]=yROITopNew
-	roiWaveNew[2]=xROIRightNew
-	roiWaveNew[3]=yROIBottomNew
-
-	// return	
-	return roiWaveNew
-End
-
-
-
-
-//
-// utility functions
-//
-
-Function /S stringFromSIDXSettingTypeCode(settingTypeCode)
-	Variable settingTypeCode
-	String result=""
-	if (settingTypeCode==0)
-		result="boolean"
-	elseif (settingTypeCode==1)
-		result="integer"
-	elseif (settingTypeCode==2)
-		result="list"
-	elseif (settingTypeCode==3)
-		result="none"
-	elseif (settingTypeCode==4)
-		result="real"
-	elseif (settingTypeCode==5)
-		result="sequence"
-	elseif (settingTypeCode==6)
-		result="string"
-	endif
-	return result
-End
-
-
-Function /S getDeviceSettingValueAsString(sidxCamera, settingIndex)
-	Variable sidxCamera
-	Variable settingIndex
-
-	Variable sidxStatus
-	Variable errorMessage
-
-	// Get the type of the setting
-	Variable typeCode
-	SIDXDeviceExtraGetType sidxCamera, settingIndex, typeCode, sidxStatus
-	String settingType=stringFromSIDXSettingTypeCode(typeCode)
-	
-	// Use the proper function to get that kind of setting, convert to string
-	Variable value
-	String valueAsString=""
-	if ( AreStringsEqual(settingType,"boolean") )
-		SIDXDeviceExtraBooleanGet sidxCamera, settingIndex, value, sidxStatus
-		valueAsString=stringFif(value,"true","false")
-	elseif ( AreStringsEqual(settingType,"integer") )
-		SIDXDeviceExtraIntegerGetValue sidxCamera, settingIndex, value, sidxStatus
-		valueAsString=sprintf1v("%d",value)
-	elseif ( AreStringsEqual(settingType,"list") )
-		SIDXDeviceExtraListGet sidxCamera, settingIndex, value, sidxStatus	// value here is an index into the list
-		SIDXDeviceExtraListGetLocal sidxCamera, settingIndex, value, valueAsString, sidxStatus
-	elseif ( AreStringsEqual(settingType,"none") )
-		valueAsString="none"
-	elseif ( AreStringsEqual(settingType,"real") )
-		SIDXDeviceExtraRealGetValue sidxCamera, settingIndex, value, sidxStatus
-		valueAsString=sprintf1v("%f",value)
-	elseif ( AreStringsEqual(settingType,"sequence") )
-		Make /FREE valueWave
-		SIDXDeviceExtraSequenceGet sidxCamera, settingIndex, valueWave, sidxStatus
-		valueAsString=stringFromIntegerWave(valueWave)
-	elseif ( AreStringsEqual(settingType,"string") )
-		SIDXDeviceExtraStringGet sidxCamera, settingIndex, valueAsString, sidxStatus
-	endif
-
-	return valueAsString
-End
-
-
-
-
-Function /WAVE boundingROIFromROIs(roisWave)
-	// Computes the axis-aligned ROI that just includes all of the ROIs in roisWave.
-	// This doesn't do any aligning to the bin grid or translate the image-heckbertian userspace ROI coords
-	// into CCD-space row/col indices.  That can be done elsewhere if needed.
-	// It is an error to call this function if there are zero rois in roisWave.
-	Wave roisWave
-	
-	Variable nROIs=DimSize(roisWave,1)
-	Make /FREE /N=(4) boundingROI
-	if (nROIs==0)
-		Abort "Error: No ROIs in roisWave in  FancyCameraBoundingROIFromROIs()."
-	else
-		// Compute the bounding ROI, in user coordinates
-		Make /FREE /N=(nROIs) temp
-		temp=roisWave[0][p]
-		Variable xLeft=WaveMin(temp)
-		temp=roisWave[1][p]
-		Variable yTop=WaveMin(temp)
-		temp=roisWave[2][p]
-		Variable xRight=WaveMax(temp)
-		temp=roisWave[3][p]
-		Variable yBottom=WaveMax(temp)
-		boundingROI={xLeft,yTop,xRight,yBottom}		
-	endif
-	return boundingROI	
-End
-
-
-
-
-
-Function /WAVE alignCameraROIToGrid(roiInCS,nBinSize)
-	// This takes a ROI in image heckbertian coords in the camera space, and aligns it to the binning grid.
-	// This is still dealing with ROI borders as infinitesimally thin lines between pixels, both on
-	// input and output.
-	
-	Wave roiInCS
-	Variable nBinSize
-	
-	// Aligned the ROI to the binning
-	Variable iLeft=floor(roiInCS[0]/nBinSize)*nBinSize
-	Variable iTop=floor(roiInCS[1]/nBinSize)*nBinSize
-	Variable iRight=ceil(roiInCS[2]/nBinSize)*nBinSize
-	Variable iBottom=ceil(roiInCS[3]/nBinSize)*nBinSize
-	Make /FREE /N=4 roiInCSAligned={iLeft,iTop,iRight,iBottom}		
-	return roiInCSAligned
-End
-
-
-
-
-//Function /WAVE pelIndicesFromROIInCSAndAligned(roiInCSAndAligned)
-//	// Computes the camera given all the individual ROIs.  Roughly, the camera ROI is a single
-//	// ROI that just includes all the individual ROIs.  But things are slightly more complicated b/c the 
-//	// user ROIs are specified in "image Heckbertian" coordinates, and the camera ROI is specified in 
-//	// "image pixel" coordinates.  That is, for the user ROIs, the upper left corner of the upper left pixel 
-//	// is (0,0), and the lower right corner of the lower right pixel is (n_cols, n_rows).  Further, we consider
-//	// the user ROI bounds to be infinitesimally thin.  The camera ROI is simply the index of the first/last 
-//	// column/row to be included in the ROI, with the indices being zero-based.	
-//	Wave roiInCSAndAligned
-//	
-//	// Now we have a bounding box, but need to align to the binning
-//	Variable iLeft=floor(roiInCS[0]/nBinSize)*nBinSize
-//	Variable iTop=floor(roiInCS[1]/nBinSize)*nBinSize
-//	Variable iRight=ceil(roiInCS[2]/nBinSize)*nBinSize-1
-//	Variable iBottom=ceil(roiInCS[3]/nBinSize)*nBinSize-1
-//	Make /FREE /N=4 roiInCSAligned={iLeft,iTop,iRight,iBottom}		
-//	return roiInCSAligned
-//End
-//
-
-
-
-
-Function /WAVE cameraROIFromUserROI(roiInUS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXandY)
-	// Translates a userspace image heckbertian ROI into a cameraspace
-	// image heckbertian ROI.
-	// InUS == in userspace
-	// InCS == in cameraspace
-	Wave roiInUS
-	Variable userFromCameraReflectX	// boolean
-	Variable userFromCameraReflectY	// boolean
-	Variable userFromCameraSwapXandY	// boolean
-	
-	// Get the CCD size in the camera sapce
- 	Variable ccdWidthInCS=CameraCCDWidthGet()
- 	Variable ccdHeightInCS=CameraCCDHeightGet()
-
-	// Make a 2x2 matrix of the ROI corners in user space, with each corner a column
-	// In Igor,  { { a ,b } , { c , d } } means that a and b are in the first _column_
-	Make /FREE /N=(2,2) roiCornersInUS={ {roiInUS[0], roiInUS[1]} , {roiInUS[2], roiInUS[3]} }
-	Duplicate /FREE roiCornersInUS, roiCornersInCS
-	
-	// Swap x and y
-	if (userFromCameraSwapXandY)
-		Duplicate /FREE roiCornersInCS, temp	
-		roiCornersInCS[0][]=temp[1][q]
-		roiCornersInCS[1][]=temp[0][q]
-	endif	
-
-	// Reflect y
-	if (userFromCameraReflectY)
-		roiCornersInCS[1][]=ccdHeightInCS-roiCornersInCS[1][q]
-	endif
-
-	// Reflect x
-	if (userFromCameraReflectX)
-		roiCornersInCS[0][]=ccdWidthInCS-roiCornersInCS[0][q]
-	endif
-
-	// "Normalize" the ROI	
-	Make /FREE /N=(2) xCornersInCS
-	xCornersInCS=roiCornersInCS[0][p]
-	Make /FREE /N=(2) yCornersInCS
-	yCornersInCS=roiCornersInCS[1][p]
-	Variable xMinInCS=WaveMin(xCornersInCS)
-	Variable yMinInCS=WaveMin(yCornersInCS)
-	Variable xMaxInCS=WaveMax(xCornersInCS)
-	Variable yMaxInCS=WaveMax(yCornersInCS)
-		
-	// Package as a ROI
-	Make /FREE /N=(4) roiInCS={xMinInCS, yMinInCS, xMaxInCS, yMaxInCS}
-	
-	return roiInCS
-End
-
-
-
-
-
-
-Function /WAVE userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXandY)
-	// Translates a cameraspace image heckbertian ROI into a userspace
-	// image heckbertian ROI.
-	// InUS == in userspace
-	// InCS == in cameraspace
-	Wave roiInCS
-	Variable userFromCameraReflectX	// boolean
-	Variable userFromCameraReflectY	// boolean
-	Variable userFromCameraSwapXandY	// boolean
-	
-	// Get the CCD size in the camera sapce
- 	Variable ccdWidthInCS=CameraCCDWidthGet()
- 	Variable ccdHeightInCS=CameraCCDHeightGet()
-
-	// Make a 2x2 matrix of the ROI corners in camera space, with each corner a column
-	// In Igor,  { { a ,b } , { c , d } } means that a and b are in the first _column_
-	Make /FREE /N=(2,2) roiCornersInCS={ {roiInCS[0], roiInCS[1]} , {roiInCS[2], roiInCS[3]} }
-	Duplicate /FREE roiCornersInCS, roiCornersInUS
-	
-	// Reflect x
-	if (userFromCameraReflectX)
-		roiCornersInUS[0][]=ccdWidthInCS-roiCornersInUS[0][q]
-	endif
-
-	// Reflect y
-	if (userFromCameraReflectY)
-		roiCornersInUS[1][]=ccdHeightInCS-roiCornersInUS[1][q]
-	endif
-	
-	// Swap x and y
-	if (userFromCameraSwapXandY)
-		Duplicate /FREE roiCornersInUS, temp	
-		roiCornersInUS[0][]=temp[1][q]
-		roiCornersInUS[1][]=temp[0][q]
-	endif	
-
-	// "Normalize" the ROI
-	Make /FREE /N=(2) xCornersInUS
-	xCornersInUS=roiCornersInUS[0][p]
-	Make /FREE /N=(2) yCornersInUS
-	yCornersInUS=roiCornersInUS[1][p]
-	Variable xMinInUS=WaveMin(xCornersInUS)
-	Variable yMinInUS=WaveMin(yCornersInUS)
-	Variable xMaxInUS=WaveMax(xCornersInUS)
-	Variable yMaxInUS=WaveMax(yCornersInUS)
-		
-	// Package as a ROI
-	Make /FREE /N=(4) roiInUS={xMinInUS, yMinInUS, xMaxInUS, yMaxInUS}
-	
-	return roiInUS
-End
-
-
-
-
-
