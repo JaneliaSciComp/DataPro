@@ -170,6 +170,11 @@ Function SamplerEpiLightTTLOutputChanged()
 	SamplerSetBackgroundTTLOutput(EpiLightGetTTLOutputIndex(),EpiLightGetIsOn())
 End
 
+
+
+
+
+
 //
 // Private methods
 //
@@ -201,3 +206,27 @@ Function SamplerSyncTTLOutputToBG()
 	SetDataFolder savedDF
 End
 
+
+
+
+
+
+//
+// Class methods
+//
+
+Function nFIFOSamplesNeeded(nADCChannels,nDACChannels,nTTLOutputChannels,nScans)
+	Variable nADCChannels
+	Variable nDACChannels
+	Variable nTTLOutputChannels
+	Variable nScans
+	
+	Variable nInputChannels=nADCChannels
+	Variable nOutputChannels=(nDACChannels+((nTTLOutputChannels>0)?1:0)
+	
+	Variable nSamplesOnInput=nInputChannels*nScans
+	Variable nSamplesOnOutput=nOutputChannels*nScans
+	Variable nSamplesNeeded=max(nSamplesOnInput,nSamplesOnOutput)
+	
+	return nSamplesNeeded
+End

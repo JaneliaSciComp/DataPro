@@ -259,10 +259,16 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 
 	// Get the wave that will be fed into the FIFO	(Have to do it after starting the video, b/c that's where the epi light gets turned on.
 	Wave FIFOout=SweeperGetFIFOout()
+	Variable nSamplesFIFO=numpnts(FIFOout)
+	Printf "nSamplesFIFO: %d\r", nSamplesFIFO
 	// This shouldn't happen anymore, b/c the interface no longer allows it, but I'll leave it in
 	if (numpnts(FIFOout)==0)
 		Abort "There must be at least one valid DAC or TTL output wave"
 	endif
+	
+	// Predict how many samples large the FIFO needs to be
+	Variable nFIFOSamplesNeededNow=nFIFOSamplesNeeded(SweeperGetNumADCsOn(),SweeperGetNumDACsOn(),SweeperGetNumTTLOutputsOn(),SweeperGetNumberOfScans())
+	Printf "nFIFOSamplesNeededNow: %d\r", nFIFOSamplesNeededNow
 	
 	// Actually acquire the data for this sweep
 	Variable absoluteTime=DateTime	// "Unlike most Igor functions, DateTime is used without parentheses."
