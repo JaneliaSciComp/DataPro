@@ -333,6 +333,25 @@ Function ICNBaselineFramesSVTouched(ctrlName,varNum,varStr,varName) : SetVariabl
 	ImagerViewModelChanged()
 End
 
+Function ICTriggerTTLChannelSVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum	// value of variable as number
+	String varStr		// value of variable as string
+	String varName	// name of variable
+
+	ImagerSetTriggerTTLOutputIndex(varNum)
+	ImagerViewModelChanged()
+End
+
+Function ICTriggerDelaySVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum	// value of variable as number
+	String varStr		// value of variable as string
+	String varName	// name of variable
+
+	ImagerSetTriggerDelay(varNum)
+	ImagerViewModelChanged()
+End
 
 //
 // The routines that do substantial stuff are below

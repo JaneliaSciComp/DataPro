@@ -462,11 +462,18 @@ Function CameraValidifySidxHandles()
 	SetDataFolder root:DP_Camera
 
 	// Declare instance variables
+	NVAR areWeForReal
 	NVAR isSidxRootValid
 	NVAR sidxRoot
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
 	NVAR isSidxAcquireValid
+
+	// If we're faking the camera, this is easy
+	if (!areWeForReal)
+		SetDataFolder savedDF	
+		return 1
+	endif
 
 	// Check the SIDX handles, and if they're not valid, restore them
 	if (isSidxRootValid)

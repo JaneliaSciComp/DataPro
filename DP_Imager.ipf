@@ -23,6 +23,8 @@ Function ImagerConstructor()
 	//Variable /G wheelPositionForEpiLightOn=1	// Setting of something that results in epi-illumination being on
 	//Variable /G wheelPositionForEpiLightOff=0	// Setting of something that results in epi-illumination being off
 	Variable /G isTriggered		// boolean, true iff the video acquisition will be triggered (as opposed to free-running)
+	Variable /G triggerTTLOutputIndex=3
+	Variable /G triggerDelay=10	// in ms
 	Variable /G isFocusing=0		// boolean, whether or not we're currently focusing
 	Variable /G isAcquiringVideo=0		// boolean, whether or not we're currently taking video
 	//Variable /G image_focus	// image_focus may be unnecessary if there is a separate focus routine
@@ -1274,7 +1276,6 @@ End
 
 
 
-
 Function ImagerSetCCDTargetTemp(newValue)
 	Variable newValue
 
@@ -1294,7 +1295,6 @@ End
 
 
 
-
 Function ImagerGetCCDTargetTemp()
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
@@ -1311,6 +1311,85 @@ Function ImagerGetCCDTargetTemp()
 	// Return the target CCD temp
 	return result
 End
+
+
+
+Function ImagerGetTriggerTTLOutputIndex()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR triggerTTLOutputIndex
+
+	Variable result=triggerTTLOutputIndex
+
+	// Restore the original DF
+	SetDataFolder savedDF	
+	
+	// Return the target CCD temp
+	return result
+End
+
+
+
+Function ImagerSetTriggerTTLOutputIndex(newValue)
+	Variable newValue
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR triggerTTLOutputIndex
+
+	if ( (0<=newValue) && (newValue<=3) && !SweeperGetTTLOutputChannelOn(newValue) )
+		triggerTTLOutputIndex=newValue
+	endif
+
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+
+Function ImagerGetTriggerDelay()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR triggerDelay
+
+	Variable result=triggerDelay
+
+	// Restore the original DF
+	SetDataFolder savedDF	
+	
+	// Return the target CCD temp
+	return result
+End
+
+
+
+Function ImagerSetTriggerDelay(newValue)
+	Variable newValue
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR triggerDelay
+
+	if (newValue>=0)
+		triggerDelay=newValue
+	endif
+
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
 
 
 

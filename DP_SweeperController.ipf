@@ -161,6 +161,7 @@ Function SweeperControllerTTLCheckbox(ctrlName,checked) : CheckBoxControl
 	Variable iChannel=str2num(ctrlName[3])
 	SweeperSetTTLOutputChannelOn(iChannel,checked)
 	SweeperViewTTLEnablementChanged(iChannel)
+	ImagerViewSomethingChanged()
 End
 
 Function SweeperControllerTTLWavePopup(ctrlName,popNum,popStr) : PopupMenuControl

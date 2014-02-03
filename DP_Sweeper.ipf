@@ -858,6 +858,21 @@ Function SweeperSetDACChannelOn(i,state)
 	SetDataFolder savedDF
 End
 
+Function SweeperGetTTLOutputChannelOn(i)
+	Variable i
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+	
+	WAVE ttlOutputChannelOn
+	
+	Variable result=ttlOutputChannelOn[i]
+	
+	SetDataFolder savedDF
+	
+	return result
+End
+
 Function SweeperSetTTLOutputChannelOn(i,newValue)
 	Variable i, newValue
 	

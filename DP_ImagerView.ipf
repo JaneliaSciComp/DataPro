@@ -26,7 +26,7 @@ Function ImagerViewConstructor() : Panel
 	Variable xOffset=1550
 	Variable yOffset=54
 	Variable panelWidth=330
-	Variable panelHeight=562
+	Variable panelHeight=562+21
 	NewPanel /W=(xOffset,yOffset,xOffset+panelWidth,yOffset+panelHeight)  /N=ImagerView /K=1 as "Imager Controls"
 	ModifyPanel /W=ImagerView fixedSize=1
 
@@ -140,7 +140,7 @@ Function ImagerViewConstructor() : Panel
 	// Video Group
 	//
 	groupBoxYOffset+=groupBoxHeight+groupBoxSpaceHeight
-	groupBoxHeight=96
+	groupBoxHeight=96+21
 	GroupBox videoGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Video"
 
 	// Take video button
@@ -193,12 +193,6 @@ Function ImagerViewConstructor() : Panel
 	// Set y offset for this line
 	yOffsetRow=videoYOffset+52
 	
-	// is triggered SV
-	xOffset=18
-	yOffset=yOffsetRow+1
-	width=40
-	CheckBox isTriggeredCB, win=ImagerView, pos={xOffset,yOffset}, size={width,height}, proc=ICTriggeredCBTwiddled, title="Triggered"
-
 	// # frames SV
 	xOffset=106
 	yOffset=yOffsetRow
@@ -219,6 +213,29 @@ Function ImagerViewConstructor() : Panel
 	xOffset=302
 	TitleBox rateUnitsTB, win=ImagerView, pos={xOffset,yOffset}, frame=0, title="Hz"
 
+	// Set y offset for this line
+	yOffsetRow=videoYOffset+52+22
+
+	// Is triggered SV
+	xOffset=18
+	yOffset=yOffsetRow+1
+	width=40
+	CheckBox isTriggeredCB, win=ImagerView, pos={xOffset,yOffset}, size={width,height}, proc=ICTriggeredCBTwiddled, title="Triggered"
+
+	// TTL output for trigger
+	xOffset=106
+	yOffset=yOffsetRow
+	SetVariable triggerTTLChannelSV, win=ImagerView, pos={xOffset,yOffset}, size={90,1}, limits={0,3,1}, title="TTL Output:"
+	SetVariable triggerTTLChannelSV, win=ImagerView, proc=ICTriggerTTLChannelSVTouched
+
+	// Delay for trigger
+	xOffset=215
+	yOffset=yOffsetRow
+	width=80
+	height=14
+	SetVariable triggerDelaySV, win=ImagerView, pos={xOffset,yOffset}, size={width,height}, title="Delay:"
+	SetVariable triggerDelaySV, win=ImagerView, limits={0,inf,10}, proc=ICTriggerDelaySVTouched
+	TitleBox triggerDelayUnitsTB, win=ImagerView, pos={xOffset+width+2,yOffset+2}, frame=0, title="ms"
 
 //	// bin width SV
 //	yOffset=276
@@ -403,7 +420,7 @@ Function ImagerViewUpdate()
 	Variable isLightOff=EpiLightGetIsOff()
 	Variable isLightAgnostic=EpiLightGetIsAgnostic()
 	SetVariable ttlOutputChannelSV, win=ImagerView, value= _NUM:EpiLightGetTTLOutputIndex()
-	SetVariable ttlOutputChannelSV, win=ImagerView, disable= (isLightOff ? 0 : 2)
+	SetVariable ttlOutputChannelSV, win=ImagerView, disable= fromEnable(isLightOff)
 	String titleStr = stringFif(isLightAgnostic, "(Light Control Ceded)", stringFif(isLightOn, "Turn Epiillumination Off", "Turn Epiillumination On") )
 	Button EpiLightToggleButton, win=ImagerView, title=titleStr, disable= (isLightAgnostic? 2 : 0)
 	ValDisplay EpiLightStatusVD, win=ImagerView, value= _NUM:isLightOn, disable= (isLightAgnostic ? 1 : 0)
@@ -446,8 +463,13 @@ Function ImagerViewUpdate()
 	// Update the "(hit ESC to Cancel)" message for video
 	TitleBox videoEscapeTB,win=ImagerView,disable=(!isAcquiringVideo)
 
-	// Update the isTriggered checkbox
-	CheckBox isTriggeredCB, win=ImagerView, value=ImagerGetIsTriggered()
+	// Update the isTriggered checkbox and friends
+	Variable isTriggered=ImagerGetIsTriggered()
+	Variable triggerTTLOutputIndex=ImagerGetTriggerTTLOutputIndex()
+	CheckBox isTriggeredCB, win=ImagerView, value=isTriggered, disable=fromEnable(!SweeperGetTTLOutputChannelOn(triggerTTLOutputIndex))
+	SetVariable triggerTTLChannelSV, win=ImagerView, value=_NUM:triggerTTLOutputIndex, disable=fromEnable(isTriggered)
+	SetVariable triggerDelaySV, win=ImagerView, value=_NUM:ImagerGetTriggerDelay(), disable=fromEnable(isTriggered)
+	TitleBox triggerDelayUnitsTB, win=ImagerView, disable=fromEnable(isTriggered)
 
 	// Update the CCD temperature
 	Variable ccdTemperature=ImagerGetCCDTemperature()
