@@ -31,6 +31,15 @@ Function StimulusInitialize(w,dt,durationWanted,stimulusType,params)
 	StimulusResample(w,dt,durationWanted)
 End
 
+Function StimulusSetParams(w,params)
+	// Set the named param in the named stimulusType model
+	Wave w
+	Wave params
+
+	StimulusSetWaveNote(w,StimulusGetType(w),params)
+	StimulusRefill(w)
+End
+
 Function StimulusSetParam(w,paramName,newValue)
 	// Set the named param in the named stimulusType model
 	Wave w
@@ -186,6 +195,12 @@ End
 //
 // Class methods
 //
+
+Function StimulusGetNumOfParamsFromType(stimulusType)
+	String stimulusType
+	Wave /T paramNames=StimulusGetParamNamesFromType(stimulusType)
+	return numpnts(paramNames)
+End
 
 Function /WAVE StimulusGetParamNamesFromType(stimulusType)
 	String stimulusType

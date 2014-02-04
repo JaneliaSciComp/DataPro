@@ -19,10 +19,10 @@ Function BuilderModelConstructor(builderTypeLocal)
 	String /G builderType=builderTypeLocal
 	Variable /G dt=SweeperGetDt()
 	Variable /G totalDuration=SweeperGetTotalDuration()
-	Make /O /T parameterNames
+	//Make /O /T parameterNames
 	Make /O parametersDefault
 	Make /O parameters
-	String /G signalType=""
+	//String /G signalType=""
 	
 	// Create the wave
 	Make /O theWave

@@ -57,28 +57,15 @@ End
 
 Function PulseBuilderModelInitialize()
 	// Called from the constructor, so DF already set.
-	Variable nParameters=4
-	WAVE /T parameterNames
-	WAVE parametersDefault
-	WAVE parameters
-	Redimension /N=(nParameters) parameterNames
-	parameterNames[0]="delay"
-	parameterNames[1]="duration"
-	//parameterNames[2]="pulseRate"
-	//parameterNames[3]="pulseDuration"
-	parameterNames[2]="baseLevel"
-	parameterNames[3]="amplitude"
+	SVAR builderType
+	Variable nParameters=StimulusGetNumOfParamsFromType(builderType)
 	Redimension /N=(nParameters) parametersDefault
 	parametersDefault[0]=20		// ms
 	parametersDefault[1]=100		// ms
-	//parametersDefault[2]=100		// Hz
-	//parametersDefault[3]=2		// ms
 	parametersDefault[2]=0
 	parametersDefault[3]=10
 	Redimension /N=(nParameters) parameters
 	parameters=parametersDefault
-	SVAR signalType
-	signalType="DAC"
 End
 
 Function fillPulseFromParamsBang(w,dt,nScans,parameters,parameterNames)
