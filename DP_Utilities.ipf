@@ -704,12 +704,6 @@ Function /S CatLists(a,b)
 	return result
 End
 
-Function numberOfScans(dt,totalDuration)
-	// Get the number of time points ("scans") for the given sampling interval and duration settings.
-	Variable dt,totalDuration
-	return round(totalDuration/dt)+1
-End
-
 Function cursorXPosition(cursorName,graphName)
 	// This is like xcsr, but doesn't throw errors as much.
 	// It returns nan if the cursor X position is not well-defined, for whatever reason.

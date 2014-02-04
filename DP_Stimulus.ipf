@@ -1,62 +1,103 @@
-// A stimulus is a wave that has a wave note which specifies a builder type and a set of parameters.
+// A stimulus is a wave that has a wave note which specifies a stimulus type and a set of parameters.
 // If you want to change the duration or the dt for the stimulus, the wave note contains enough information
 // to do this.  Each stimulus should obey the invariant that the wave data points match the builder and the
 // parameters in the wave note, for some value of duration and time step.
 
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
-Function StimulusInitialize(theWave,dt,totalDuration,stimulusType,parameters)
-	Wave theWave
+Function /WAVE StimulusConstructor(dt,durationWanted,stimulusType,params)
 	Variable dt
-	Variable totalDuration
+	Variable durationWanted
 	String stimulusType
-	Wave parameters	
-		
+	Wave params
+
+	Make /FREE /N=0 w	
+	StimulusInitialize(w,dt,durationWanted,stimulusType,params)
+	return w
 End
 
-Function StimulusInitialize(theWave)
-	Wave theWave
-	Abort "Internal Error: Attempt to call a function that doesn't exist."
-End
-
-Function StimulusSetParameter(w,stimulusType,parameterName,value)
-	// Set the named parameter in the named stimulusType model
-	String stimulusType
-	String parameterName
-	Variable value
-
-	String savedDF=GetDataFolder(1)
-	String dataFolderName=sprintf1s("root:DP_%sBuilder",stimulusType)
-	SetDataFolder $dataFolderName
-
-	WAVE parameters
-	WAVE /T parameterNames
-
-	// Set the parameter in the parameters wave
-	Variable nParameters=numpnts(parameters)
-	Variable i
-	for (i=0; i<nParameters; i+=1)
-		if (AreStringsEqual(parameterName,parameterNames[i]))
-			parameters[i]=value
-		endif
-	endfor
-
-	// Update the wave
-	StimulusUpdateWave(stimulusType)
-
-	SetDataFolder savedDF
-End
-
-Function StimulusChangeSampling(w,stimulusType,dt,totalDuration)
-	// Used to notify the Builder model of a change to dt or totalDuration in the Sweeper.
-	String stimulusType
+Function StimulusInitialize(w,dt,durationWanted,stimulusType,params)
+	Wave w
 	Variable dt
-	Variable totalDuration
+	Variable durationWanted
+	String stimulusType
+	Wave params
+	
+	StimulusSetWaveNote(w,stimulusType,params)
+	StimulusResample(w,dt,durationWanted)
+End
+
+Function StimulusSetParam(w,paramName,newValue)
+	// Set the named param in the named stimulusType model
+	Wave w
+	String paramName
+	Variable newValue
+
+	ReplaceStringByKeyInWaveNote(w,paramName,num2str(newValue))
+	StimulusRefill(w)
+End
+
+Function StimulusChangeSampling(w,dt,durationWanted)
+	// Used to notify the Builder model of a change to dt or durationWanted in the Sweeper.
+	Wave w
+	Variable dt
+	Variable durationWanted
 		
 	// Update the	wave
-	StimulusUpdateWave(stimulusType,dt,totalDuration)
+	StimulusResample(w,dt,durationWanted)
 End
 
+Function /S StimulusGetType(w)
+	Wave w	
+	return StringByKeyInWaveNote(w, "WAVETYPE")
+End
+
+Function StimulusGetDt(w)
+	Wave w
+	return deltax(w)
+End
+
+Function StimulusGetN(w)
+	Wave w
+	return numpnts(w)
+End
+
+Function StimulusGetDuration(w)
+	Wave w
+	Variable n=StimulusGetN(w)
+	Variable dt=StimulusGetDt(w)
+	return (n-1)/dt
+End
+
+Function /WAVE StimulusGetParamNames(w)
+	Wave w
+	
+	String stimulusType=StringByKeyInWaveNote(w,"WAVETYPE")
+	Wave /T paramNames=StimulusGetParamNamesFromType(stimulusType)
+	return paramNames
+End
+
+Function StimulusGetNumOfParams(w)
+	Wave w
+	
+	Wave /T paramNames=StimulusGetParamNames(w)
+	return numpnts(paramNames)
+End
+
+Function /WAVE StimulusGetParams(w)
+	Wave w
+	
+	Wave /T paramNames=StimulusGetParamNames(w)
+	Variable nParams=numpnts(paramNames)
+
+	Make /FREE /N=(nParams) params
+	Variable i
+	for (i=0; i<nParams; i+=1)
+		params[i]=NumberByKeyInWaveNote(w,paramNames[i])
+	endfor
+	
+	return params
+End
 
 
 
@@ -66,84 +107,115 @@ End
 // Private methods
 //
 
-Function StimulusUpdateWave(theWave,stimulusType)
-	// Updates the theWave wave to match the model parameters.
-	// This is a private _model_ method -- The view updates itself when theWave changes.
+Function StimulusSetWaveNote(w,stimulusType,params)
+	// Set the fields in the wave note that are relevant to the stimulus.  Leave any other
+	// fields alone.
+	Wave w
 	String stimulusType
+	Wave params
+
+	//Note /K w
+	ReplaceStringByKeyInWaveNote(w,"WAVETYPE",stimulusType)
+	//ReplaceStringByKeyInWaveNote(w,"TIME",time())
 	
-	String savedDF=GetDataFolder(1)
-	String dataFolderName=sprintf1s("root:DP_%sBuilder",stimulusType)
-	SetDataFolder $dataFolderName
+	// Set the params in the wave note
+	Wave /T paramNames=StimulusGet
 	
-	WAVE /T parameterNames
-	WAVE parameters
-	WAVE theWave
-	NVAR dt, totalDuration
+	Variable nParams=numpnts(params)
+	Variable i
+	for (i=0; i<nParams; i+=1)
+		ReplaceStringByKeyInWaveNote(w,paramNames[i],num2str(params[i]))
+	endfor
+End
+
+Function StimulusResample(w,dt,durationWanted)
+	// Re-compute the wave in w, using the given dt, durationWanted, and the
+	// param values stored in the wave note of w itself.
+	Wave w
+	Variable dt, durationWanted
 		
-	StimulusResampleFromParams(stimulusType,theWave,dt,totalDuration,parameters,parameterNames)
-	
-	Note /K theWave
-	ReplaceStringByKeyInWaveNote(theWave,"WAVETYPE",stimulusType)
-	ReplaceStringByKeyInWaveNote(theWave,"TIME",time())
-	
-	// Set the parameters in the wave note
-	Variable nParameters=numpnts(parameters)
-	Variable i
-	for (i=0; i<nParameters; i+=1)
-		ReplaceStringByKeyInWaveNote(theWave,parameterNames[i],num2str(parameters[i]))
-	endfor
-	SetDataFolder savedDF
-End
-
-Function StimulusResample(w,stimulusType,dt,totalDuration)
-	// Re-compute the wave in w, using the given dt, totalDuration, and the
-	// parameter values stored in the wave note of w itself.
-	String stimulusType
-	Wave w
-	Variable dt, totalDuration
-	
-	String savedDF=GetDataFolder(1)
-	String dataFolderName=sprintf1s("root:DP_%sBuilder",stimulusType)
-	SetDataFolder $dataFolderName
-	
-	WAVE /T parameterNames
-	
-	Variable nParameters=numpnts(parameterNames)
-	Make /FREE /N=(nParameters) parametersFromW
-	Variable i
-	for (i=0; i<nParameters; i+=1)
-		parametersFromW[i]=NumberByKeyInWaveNote(w,parameterNames[i])
-	endfor
-	
-	StimulusResampleFromParams(stimulusType,w,dt,totalDuration,parametersFromW,parameterNames)
-
-	SetDataFolder savedDF	
-End
-
-Function StimulusResampleFromParams(w,stimulusType,dt,totalDuration,parameters)
-	// Re-compute the wave in w using the given dt, totalDuration, and parameters
-	// This is a class method.
-	String stimulusType
-	Wave w
-	Variable dt,totalDuration
-	Wave parameters
-	
-	Variable nScans=numberOfScans(dt,totalDuration)
+	Variable nScans=numberOfScans(dt,durationWanted)
 	Redimension /N=(nScans) w
 	Setscale /P x, 0, dt, "ms", w
 	
-	String fillFunctionName=stimulusType+"FillFromParams"
-	Funcref StimulusFillFromParams fillFunction=$fillFunctionName
-	fillFunction(w,dt,nScans,parameters,parameterNames)
+	Wave params=StimulusGetParams(w)
+	StimulusFillFromParams(w,params)
 End
 
-Function StimulusFillFromParams(w,parameters)
+Function StimulusFillFromParamsSig(w,params)
 	// Placeholder function
 	Wave w
-	Variable dt,nScans
-	Wave parameters
-	Wave /T parameterNames	
+	Wave params
 	Abort "Internal Error: Attempt to call a function that doesn't exist."
 End
 
+Function StimulusRefill(w)
+	// Re-compute the wave in w, using the current wave dt and number of scans
+	Wave w
+		
+	Wave params=StimulusGetParams(w)
+	StimulusFillFromParams(w,params)
+End
+
+Function StimulusFillFromParams(w,params)
+	Wave w
+	Wave params
+		
+	String stimulusType=StringByKeyInWaveNote(w,"WAVETYPE")
+	String fillFunctionName=stimulusType+"FillFromParams"
+	Funcref StimulusFillFromParamsSig fillFunction=$fillFunctionName
+	fillFunction(w,params)
+End
+
+Function /S StimulusGetSignalType(w)
+	Wave w
+	String stimulusType=StimulusGetType(w)
+	String signalType=StimulusGetSignalTypeFromType(stimulusType)
+	return signalType
+End
+
+
+
+
+
+
+//
+// Class methods
+//
+
+Function /WAVE StimulusGetParamNamesFromType(stimulusType)
+	String stimulusType
+
+	String paramNamesFunctionName=stimulusType+"GetParamNames"
+	Funcref StimulusGetParamNamesSig paramNamesFunction=$paramNamesFunctionName
+	Wave paramNames=paramNamesFunction()
+	
+	return paramNames
+End
+
+Function /WAVE StimulusGetParamNamesSig()
+	// Placeholder function
+	Abort "Internal Error: Attempt to call a function that doesn't exist."
+End
+
+Function /S StimulusGetSignalTypeFromType(stimulusType)
+	String stimulusType
+
+	String signalTypeFunctionName=stimulusType+"GetSignalType"
+	Funcref StimulusGetSignalTypeSig signalTypeFunction=$signalTypeFunctionName
+	String signalType=signalTypeFunction()
+	
+	return signalType
+End
+
+Function /S StimulusGetSignalTypeSig()
+	// Placeholder function
+	Abort "Internal Error: Attempt to call a function that doesn't exist."
+End
+
+Function numberOfScans(dt,totalDuration)
+	// Get the number of time points ("scans") for the given sampling interval and duration settings.
+	Variable dt,totalDuration
+	return round(totalDuration/dt)+1
+End
 
