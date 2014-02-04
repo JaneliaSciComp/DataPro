@@ -3,6 +3,10 @@
 // to do this.  Each stimulus should obey the invariant that the wave data points match the builder and the
 // parameters in the wave note, for some value of duration and time step.
 
+// Eventually, all the builders should be refactored such that they rely on an underlying Stimulus 'subclass', 
+// And the Sweeper should be modified to deal exclusively with Stimulus 'objects'.  But I don't have time to
+// do this right now (ALT, Feb 4 2014).
+
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 Function /WAVE StimulusConstructor(dt,durationWanted,stimulusType,params)
@@ -119,9 +123,9 @@ Function StimulusSetWaveNote(w,stimulusType,params)
 	//ReplaceStringByKeyInWaveNote(w,"TIME",time())
 	
 	// Set the params in the wave note
-	Wave /T paramNames=StimulusGet
+	Wave /T paramNames=StimulusGetParamNamesFromType(stimulusType)
 	
-	Variable nParams=numpnts(params)
+	Variable nParams=numpnts(paramNames)
 	Variable i
 	for (i=0; i<nParams; i+=1)
 		ReplaceStringByKeyInWaveNote(w,paramNames[i],num2str(params[i]))

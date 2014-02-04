@@ -60,11 +60,16 @@ Function SweeperConstructor()
 	ttlOutputWaveName={"builtinTTLPulse","builtinTTLPulse","builtinTTLPulse","builtinTTLPulse"}
 	
 	// Make waves to store which adc/dac/ttl devices should be used
+	// Also, set up infrastructure so that that output channels can be "hijacked" --- They can be commandeered
+	// by other parts of the system (the imager).  When hijacked, an output can no longer be manipulated by the user
+	// directly.
 	Make /O /N=(nADCChannels) adcChannelOn
 	adcChannelOn[0]=1		// turn on ADC 0 by default, leave rest off
 	Make /O /N=(nDACChannels) dacChannelOn
 	dacChannelOn[0]=1		// turn on DAC 0 by default, leave rest off
+	Make /O /N=(nDACChannels) dacChannelHijacked  	// all DACs not hijacked by default
 	Make /O /N=(nTTLChannels) ttlOutputChannelOn  	// all TTL outputs off by default
+	Make /O /N=(nTTLChannels) ttlOutputChannelHijacked  	// all TTL outputs not hijacked by default
 
 	// These control the builtinPulse wave
 	Variable /G builtinPulseAmplitude=1		// amplitude in units given by channel mode
@@ -788,6 +793,29 @@ Function SweeperAddTTLWave(w,waveNameString)
 	SetDataFolder savedDF
 End
 
+Function SweeperAddCameraTrigger(ttlOutputIndex, delay)
+	Variable ttlOutputIndex
+	Variable delay	// ms
+
+	// If that TTL output is already in use, do nothing
+	if (SweeperGetTTLOutputChannelOn(ttlOutputIndex))
+		return 0
+	endif
+
+	// Make a stimulus
+	String name="cameraTrigger"
+	Variable duration=10	// ms
+	Wave w=StimulusConstructor(SweeperGetDt(),SweeperGetTotalDuration(),"TTLPulse",{delay,duration})
+	
+	// Add it to self
+	SweeperAddTTLWave(w,name)
+	
+	// Set the given ttlOutputIndex to use the trigger stim, and turn it on, and mark it as hijacked
+	SweeperGetTTLOutputChannelOn(ttlOutputIndex)
+	SweeperSetTTLOutputWaveName(ttlOutputIndex,name)
+	SweeperSetTTLOutputHijacked(ttlOutputIndex,1)			
+End
+
 Function SweeperIsTTLWavePresent(waveNameString)
 	String waveNameString
 	String savedDF=GetDataFolder(1)
@@ -883,6 +911,19 @@ Function SweeperSetTTLOutputChannelOn(i,newValue)
 	
 	ttlOutputChannelOn[i]=newValue
 	SweeperResampleInternalWaves()	
+	
+	SetDataFolder savedDF	
+End
+
+Function SweeperSetTTLOutputHijacked(i,newValue)
+	Variable i, newValue
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+	
+	WAVE ttlOutputChannelHijacked
+	
+	ttlOutputChannelHijacked[i]=newValue
 	
 	SetDataFolder savedDF	
 End
@@ -1233,34 +1274,23 @@ Function SweeperResampleNamedWave(waveNameString,dacOrTTLString)
 	// Private method, resamples the named wave to the current dt, totalDuration
 	String waveNameString
 	String dacOrTTLString		// either "DAC" or "TTL"
+
 	String savedDF=GetDataFolder(1)
 	String dataFolderName="root:DP_Sweeper:"+LowerStr(dacOrTTLString)+"Waves"
 	SetDataFolder $dataFolderName
 	Wave w=$waveNameString
-	SetDataFolder "root:DP_Sweeper"
-
-	NVAR totalDuration
-	
-	Variable dt=SweeperGetDt()	
-	String builderType=StringByKeyInWaveNote(w,"WAVETYPE")
-	resampleBang(builderType,w,dt,totalDuration)
-
-	SetDataFolder savedDF	
+	SweeperResampleWave(w)
+	SetDataFolder savedDF
 End
 
 Function SweeperResampleWave(w)
-	// Private method, resamples the named wave to the current dt, totalDuration
+	// Private method, resamples the wave to the current dt, totalDuration
 	Wave w
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Sweeper
 
-	NVAR totalDuration
+	Variable totalDuration=SweeperGetTotalDuration()
 	Variable dt=SweeperGetDt()	
 
-	String builderType=StringByKeyInWaveNote(w,"WAVETYPE")
-	resampleBang(builderType,w,dt,totalDuration)
-	
-	SetDataFolder savedDF	
+	StimulusChangeSampling(w,dt,totalDuration)
 End
 
 Function SweeperIsTTLInUse(ttlOutputIndex)
@@ -1397,7 +1427,7 @@ Function resampleBuiltinTTLPulseBang(w,dt,totalDuration)
 End
 
 Function resampleBuiltinTTLPulsePrmsBng(w,dt,totalDuration,delay,duration)
-	// Compute the sine wave from the parameters
+	// Compute the wave from the parameters
 	Wave w
 	Variable dt,totalDuration,delay,duration
 	

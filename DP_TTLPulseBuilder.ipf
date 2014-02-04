@@ -67,8 +67,8 @@ Function TTLPulseBuilderModelInitialize()
 	WAVE parameters
 	SVAR signalType
 
-	Wave /T parameterNamesLocal=TTLPulseGetParamNames()
-	Duplicate /T parameterNamesLocal, parameterNames
+	//Wave /T parameterNamesLocal=TTLPulseGetParamNames()
+	Duplicate /T TTLPulseGetParamNames(), parameterNames
 	Variable nParameters=numpnts(parameterNames)
 	Redimension /N=(nParameters) parametersDefault
 	parametersDefault[0]=20		// ms
