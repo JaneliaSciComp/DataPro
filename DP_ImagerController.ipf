@@ -76,6 +76,7 @@ Function ICTriggeredCBTwiddled(ctrlName,checked) : CheckBoxControl
 	ImagerSetIsTriggered(checked)
 	ImagerViewModelChanged()
 	SweeperViewSweeperChanged()
+	TestPulserViewSweeperChanged()
 	OutputViewerContSweprWavsChngd()
 End
 
@@ -92,7 +93,7 @@ Function ICEpiTTLChannelSVTouched(ctrlName,varNum,varStr,varName) : SetVariableC
 	SamplerEpiLightTTLOutputChanged()
 	ImagerViewEpiLightChanged()	
 	//SweeperViewEpiLightChanged()
-	TestPulserViewEpiLightChanged()
+	TestPulserViewSomethingChanged()
 End
 
 
@@ -117,6 +118,7 @@ Function ICEpiTriggeredDelaySVTouched(ctrlName,varNum,varStr,varName) : SetVaria
 	
 	EpiLightSetTriggeredDelay(varNum)
 	ImagerViewEpiLightChanged()
+	OutputViewerViewUpdate()
 End
 	
 
@@ -129,6 +131,7 @@ Function ICEpiTriggeredDurationSVTouched(ctrlName,varNum,varStr,varName) : SetVa
 
 	EpiLightSetTriggeredDuration(varNum)
 	ImagerViewEpiLightChanged()
+	OutputViewerViewUpdate()
 End
 
 
@@ -372,6 +375,7 @@ Function ICTriggerTTLChannelSVTouched(ctrlName,varNum,varStr,varName) : SetVaria
 	ImagerSetTriggerTTLOutputIndex(varNum)
 	ImagerViewModelChanged()
 	SweeperViewSweeperChanged()
+	TestPulserViewSweeperChanged()
 End
 
 Function ICTriggerDelaySVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl

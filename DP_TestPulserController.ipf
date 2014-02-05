@@ -244,8 +244,12 @@ Function TestPulserContTTLOutputCheckBox(ctrlName,checked) : CheckBoxControl
 	SetDataFolder root:DP_TestPulser
 
 	NVAR isTTLOutputEnabled
+
 	isTTLOutputEnabled=checked
 	SetVariable ttlOutputIndexSV, win=TestPulserView, disable=(isTTLOutputEnabled?0:2)
+	if ( IsImagingModuleInUse() )
+		ImagerViewTestPulserChanged()
+	endif
 	
 	SetDataFolder savedDF
 End
@@ -287,7 +291,10 @@ Function TPContTTLOutputIndexSVTouched(ctrlName,varNum,varStr,varName) : SetVari
 	String varName
 	
 	TestPulserSetTTLOutputIndex(varNum)
-	TestPulserViewUpdate()	
+	TestPulserViewUpdate()
+	if ( IsImagingModuleInUse() )
+		ImagerViewTestPulserChanged()
+	endif
 End	
 
 

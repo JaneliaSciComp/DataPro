@@ -167,14 +167,21 @@ Function EpiLightSetTTLOutputIndex(newValue)
 	NVAR isInControl
 	NVAR isOn
 
+	Variable originalValue=ttlOutputIndex
 	// If the EpiLight is on right now, no changes to the TTL output setting are allowed
-	if ( !EpiLightGetIsOn() )	
-		// Check that the new TTL output is not in use by the test pulser
-		if ( !(TestPulserExists() && TestPulserIsTTLInUse(newValue) ) )
-			ttlOutputIndex=newValue
-			//SweeperEpiLightTTLOutputChanged()
-			//SweeperSetEpiLightTTLOutput(ttlOutputIndex)
-			//SamplerSetBackgroundTTLOutput(ttlOutputIndex,isOn)
+	if ( !EpiLightGetIsOn() )
+		// Make sure the value is in-range
+		if ( (0<=newValue) && (newValue<=3) )
+			// Check that the new TTL output is not in use by the test pulser
+			if ( !(TestPulserExists() && TestPulserIsTTLInUse(newValue) ) && !SweeperGetTTLOutputChannelOn(newValue) && !SweeperGetTTLOutputHijacked(newValue) )
+				// If we get here, then the destination TTL channel is available, so we'll proceed with the switch
+				if ( ImagerGetIsTriggered() && SweeperGetTTLOutputHijacked(originalValue) )
+					// This means that the original TTL channel is hijacked, and we are the hijacker
+					ImagerUnhijackSweeperEpiGate(originalValue)
+				endif
+				ImagerHijackSweeperEpiGate(newValue)
+				ttlOutputIndex=newValue
+			endif
 		endif
 	endif
 	
@@ -212,6 +219,7 @@ Function EpiLightSetTriggeredDelay(newValue)
 	NVAR triggeredDelay
 	if (newValue>=0)
 		triggeredDelay=newValue
+		ImagerChangeSweeperEpiGate()
 	endif
 	SetDataFolder savedDF	
 End
@@ -236,6 +244,7 @@ Function EpiLightSetTriggeredDuration(newValue)
 	NVAR triggeredDuration
 	if (newValue>=0)
 		triggeredDuration=newValue
+		ImagerChangeSweeperEpiGate()
 	endif
 	SetDataFolder savedDF	
 End

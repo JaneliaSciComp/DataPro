@@ -56,6 +56,21 @@ End
 
 
 //----------------------------------------------------------------------------------------------------------------------------
+Function TestPulserIsTTLOutputEnabled()
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_TestPulser
+
+	NVAR isTTLOutputEnabled		// whether or not to do a TTL output during test pulse
+
+	Variable value=isTTLOutputEnabled
+
+	SetDataFolder savedDF	
+	
+	return value
+End
+
+
+//----------------------------------------------------------------------------------------------------------------------------
 Function TestPulserIsTTLInUse(ttlOutputIndexInQuestion)
 	Variable ttlOutputIndexInQuestion
 	
@@ -81,14 +96,16 @@ Function TestPulserSetTTLOutputIndex(newValue)
 	SetDataFolder root:DP_TestPulser
 	
 	NVAR ttlOutputIndex
-	if ( IsImagingModuleInUse() )
-		// If using imaging module, need to make sure TestPulser doesn't collide with EpiLight
-		if (newValue != EpiLightGetTTLOutputIndex())
-			ttlOutputIndex=newValue	
+	if ( !SweeperGetTTLOutputHijacked(newValue) )
+		if ( IsImagingModuleInUse() )
+			// If using imaging module, need to make sure TestPulser doesn't collide with EpiLight
+			if ( newValue != EpiLightGetTTLOutputIndex() )
+				ttlOutputIndex=newValue	
+			endif
+		else
+			// If not using imaging module, no more checks needed
+			ttlOutputIndex=newValue		
 		endif
-	else
-		// If not using imaging module, no checks needed
-		ttlOutputIndex=newValue		
 	endif
 
 	SetDataFolder savedDF

@@ -954,8 +954,10 @@ Function ImagerSetIsTriggered(newValue)
 	// Hijack sweeper signals as needed	
 	if (isTriggered)
 		ImagerHijackSweeperCamTrigger(ImagerGetTriggerTTLOutputIndex())
+		ImagerHijackSweeperEpiGate(EpiLightGetTTLOutputIndex())
 	else
 		ImagerUnhijackSweeperCamTrigger(ImagerGetTriggerTTLOutputIndex())
+		ImagerUnhijackSweeperEpiGate(EpiLightGetTTLOutputIndex())
 	endif
 	
 	// Restore the original DF
@@ -1514,6 +1516,28 @@ Function ImagerUnhijackSweeperCamTrigger(ttlOutputIndex)
 End
 
 
+Function ImagerHijackSweeperEpiGate(ttlOutputIndex)
+	Variable ttlOutputIndex	
+	String name="epiLightGate"
+	Variable delay=EpiLightGetTriggeredDelay()
+	Variable duration=EpiLightGetTriggeredDuration()
+	Wave w=StimulusConstructor(SweeperGetDt(),SweeperGetTotalDuration(),"TTLPulse",{delay,duration})
+	SweeperHijackTTLOutput(ttlOutputIndex,name,w)	
+End
+
+
+Function ImagerChangeSweeperEpiGate()
+	String name="epiLightGate"
+	Variable delay=EpiLightGetTriggeredDelay()
+	Variable duration=EpiLightGetTriggeredDuration()
+	SweeperSetTTLWaveParams(name,{delay,duration})	
+End
+
+
+Function ImagerUnhijackSweeperEpiGate(ttlOutputIndex)
+	Variable ttlOutputIndex
+	SweeperUnhijackTTLOutput(ttlOutputIndex)
+End
 
 
 

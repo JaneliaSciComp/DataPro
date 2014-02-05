@@ -405,9 +405,15 @@ Function ImagerViewEpiLightChanged()
 End
 
 
+Function ImagerViewTestPulserChanged()
+	ImagerViewUpdate()
+End
+
+
 Function ImagerViewSomethingChanged()
 	ImagerViewUpdate()
 End
+
 
 Function ImagerViewCCDTempChanged()
 	ImagerViewUpdateCCDTemp()
@@ -446,8 +452,10 @@ Function ImagerViewUpdate()
 	ValDisplay EpiLightStatusVD, win=ImagerView, value= _NUM:isLightOn, disable= (isLightAgnostic ? 1 : 0)
 
 	// Update epi-light delay and duration	
-	SetVariable epiTriggeredDelaySV, win=ImagerView, value=_NUM:EpiLightGetTriggeredDelay()
-	SetVariable epiTriggeredDurationSV, win=ImagerView, value=_NUM:EpiLightGetTriggeredDuration()
+	Variable isTriggered=ImagerGetIsTriggered()
+	TitleBox epiTriggeredTB, win=ImagerView, disable=fromEnable(isTriggered)
+	SetVariable epiTriggeredDelaySV, win=ImagerView, value=_NUM:EpiLightGetTriggeredDelay(), disable=fromEnable(isTriggered)
+	SetVariable epiTriggeredDurationSV, win=ImagerView, value=_NUM:EpiLightGetTriggeredDuration(), disable=fromEnable(isTriggered)
 	
 	// Update the enablement of the "Focus" button
 	Variable isFocusing=ImagerGetIsFocusing()
@@ -488,9 +496,8 @@ Function ImagerViewUpdate()
 	TitleBox videoEscapeTB,win=ImagerView,disable=(!isAcquiringVideo)
 
 	// Update the isTriggered checkbox and friends
-	Variable isTriggered=ImagerGetIsTriggered()
 	Variable triggerTTLOutputIndex=ImagerGetTriggerTTLOutputIndex()
-	CheckBox isTriggeredCB, win=ImagerView, value=isTriggered, disable=fromEnable(!SweeperGetTTLOutputChannelOn(triggerTTLOutputIndex)||isTriggered)
+	CheckBox isTriggeredCB, win=ImagerView, value=isTriggered, disable=fromEnable(isTriggered || (!SweeperGetTTLOutputChannelOn(triggerTTLOutputIndex) && !(TestPulserIsTTLOutputEnabled() && triggerTTLOutputIndex==TestPulserGetTTLOutputIndex()) ) )
 	SetVariable triggerTTLChannelSV, win=ImagerView, value=_NUM:triggerTTLOutputIndex, disable=fromEnable(isTriggered)
 	SetVariable triggerDelaySV, win=ImagerView, value=_NUM:ImagerGetTriggerDelay(), disable=fromEnable(isTriggered)
 	TitleBox triggerDelayUnitsTB, win=ImagerView, disable=fromEnable(isTriggered)

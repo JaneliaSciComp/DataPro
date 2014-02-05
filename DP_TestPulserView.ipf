@@ -140,8 +140,9 @@ Function TestPulserViewUpdate()
 	CheckBox testPulseBaseSubCheckbox,win=TestPulserView,value=doBaselineSubtraction
 
 	Variable ttlOutputIndex=TestPulserGetTTLOutputIndex()
+	Variable isHijacked=SweeperGetTTLOutputHijacked(ttlOutputIndex)
 	Variable inUseForEpi= ( IsImagingModuleInUse() && (ttlOutputIndex==EpiLightGetTTLOutputIndex() )
-	CheckBox ttlOutputCheckbox,win=TestPulserView,value=isTTLOutputEnabled, disable=(inUseForEpi?2:0)
+	CheckBox ttlOutputCheckbox,win=TestPulserView,value=isTTLOutputEnabled, disable=fromEnable(!isHijacked&!inUseForEpi)
 
 	SetVariable ttlOutputIndexSV, win=TestPulserView, value= _NUM:ttlOutputIndex
 	SetVariable ttlOutputIndexSV, win=TestPulserView, disable=(isTTLOutputEnabled ? 0 : 2)
@@ -162,6 +163,30 @@ End
 //----------------------------------------------------------------------------------------------------------------------------
 Function TestPulserViewEpiLightChanged()
 	// Used to notify the Test Pulser view that the EpiLight has changed.
+	// Currently, prompts an update of the TestPulser view.
+	TestPulserViewUpdate()	
+End
+
+
+//----------------------------------------------------------------------------------------------------------------------------
+Function TestPulserViewSweeperChanged()
+	// Used to notify the Test Pulser view that the Sweeper has changed.
+	// Currently, prompts an update of the TestPulser view.
+	TestPulserViewUpdate()	
+End
+
+
+//----------------------------------------------------------------------------------------------------------------------------
+Function TestPulserViewImagerChanged()
+	// Used to notify the Test Pulser view that the Imager has changed.
+	// Currently, prompts an update of the TestPulser view.
+	TestPulserViewUpdate()	
+End
+
+
+//----------------------------------------------------------------------------------------------------------------------------
+Function TestPulserViewSomethingChanged()
+	// Used to notify the Test Pulser view that comething it depends upon changed.
 	// Currently, prompts an update of the TestPulser view.
 	TestPulserViewUpdate()	
 End
