@@ -1341,9 +1341,15 @@ Function ImagerSetTriggerTTLOutputIndex(newValue)
 	SetDataFolder root:DP_Imager
 	
 	// Declare instance vars
+	NVAR isTriggered
 	NVAR triggerTTLOutputIndex
 
-	if ( (0<=newValue) && (newValue<=3) && !SweeperGetTTLOutputChannelOn(newValue) )
+	Variable originalValue=triggerTTLOutputIndex
+	if ( (0<=newValue) && (newValue<=3) && !SweeperGetTTLOutputChannelOn(newValue) && !SweeperGetTTLChannelHijacked(newValue) )
+		// If we get here, then the destination TTL channel is available, so we'll proceed with the switch
+		if ( isTriggered && SweeperGetTTLOutputChannelHijacked(originalValue) )
+			// This means that the original TTL channel is hijacked, and we are the hijacker
+			
 		triggerTTLOutputIndex=newValue
 	endif
 

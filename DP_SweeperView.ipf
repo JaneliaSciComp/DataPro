@@ -336,13 +336,14 @@ Function SweeperViewTTLEnablementChanged(i)
 	// If using the imaging module, have to disable the TTL channel entirely if it is being used for epi-illumination control
 	//Variable inUseForEpi= ( IsImagingModuleInUse() && (i==EpiLightGetTTLOutputIndex() )
 	//Variable inUseForEpi= ( isEpiLightInUse && (i==epiLightTTLOutputIndex ) )
+	Variable isHijacked=SweeperGetTTLOutputHijacked(i)
 	
 	String controlName=sprintf1v("TTL%dCheckbox", i)
-	//CheckBox $controlName, win=SweeperView, value=ttlOutputChannelOn[i], disable = (inUseForEpi?2:0)
+	CheckBox $controlName, win=SweeperView, value=ttlOutputChannelOn[i], disable=fromEnable(!isHijacked)
 	controlName=sprintf1v("TTL%dWavePopupMenu", i)
-	PopupMenu $controlName,win=SweeperView,disable=( (ttlOutputChannelOn[i]) ?0:2)
+	PopupMenu $controlName,win=SweeperView,disable=fromEnable(ttlOutputChannelOn[i]&&!isHijacked)
 	controlName=sprintf1v("TTL%dUnitsTitleBox", i)
-	TitleBox $controlName,win=SweeperView,disable=( (ttlOutputChannelOn[i]) ?0:2)
+	TitleBox $controlName,win=SweeperView,disable=fromEnable(ttlOutputChannelOn[i]&&!isHijacked)
 
 	// Update the dt display
 	SweeperViewUpdateDt()

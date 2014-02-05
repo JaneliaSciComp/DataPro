@@ -74,9 +74,14 @@ Function ICTriggeredCBTwiddled(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 	ImagerSetIsTriggered(checked)
-	SweeperAddCameraTrigger(ImagerGetTriggerTTLOutputIndex(), ImagerGetTriggerDelay())
+	if (checked)
+		SweeperAddCameraTrigger(ImagerGetTriggerTTLOutputIndex(), ImagerGetTriggerDelay())
+	else
+		SweeperRemoveCameraTrigger(ImagerGetTriggerTTLOutputIndex(), ImagerGetTriggerDelay())
+	endif
 	ImagerViewModelChanged()
 	SweeperViewSweeperChanged()
+	OutputViewerContSweprWavsChngd()
 End
 
 

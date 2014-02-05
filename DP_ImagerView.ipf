@@ -466,7 +466,7 @@ Function ImagerViewUpdate()
 	// Update the isTriggered checkbox and friends
 	Variable isTriggered=ImagerGetIsTriggered()
 	Variable triggerTTLOutputIndex=ImagerGetTriggerTTLOutputIndex()
-	CheckBox isTriggeredCB, win=ImagerView, value=isTriggered, disable=fromEnable(!SweeperGetTTLOutputChannelOn(triggerTTLOutputIndex))
+	CheckBox isTriggeredCB, win=ImagerView, value=isTriggered, disable=fromEnable(!SweeperGetTTLOutputChannelOn(triggerTTLOutputIndex)||isTriggered)
 	SetVariable triggerTTLChannelSV, win=ImagerView, value=_NUM:triggerTTLOutputIndex, disable=fromEnable(isTriggered)
 	SetVariable triggerDelaySV, win=ImagerView, value=_NUM:ImagerGetTriggerDelay(), disable=fromEnable(isTriggered)
 	TitleBox triggerDelayUnitsTB, win=ImagerView, disable=fromEnable(isTriggered)

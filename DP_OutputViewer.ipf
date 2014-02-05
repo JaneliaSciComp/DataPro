@@ -102,7 +102,7 @@ Function OutputViewerModelSweprWavsChngd()
 	// If the current wave name is no longer valid, deal with that
 	Variable nWavesDAC=ItemsInList(dacWaveNames)
 	Variable nWavesTTL=ItemsInList(ttlWaveNames)
-	Variable nWaves=nWavesDAC+nWavesTTL
+	//Variable nWaves=nWavesDAC+nWavesTTL
 	if (!IsEmptyString(currentWaveName))
 		if (currentWaveIsDAC)
 			if (IsItemInList(currentWaveName,dacWaveNames))
@@ -122,11 +122,13 @@ Function OutputViewerModelSweprWavsChngd()
 		endif
 	endif
 	// If there is no current wave at this point, pick the first available one, if possible
-	if ( IsEmptyString(currentWaveName) && (nWaves>0) )
+	if ( IsEmptyString(currentWaveName) )
 		if (nWavesDAC>0)
 			currentWaveName=StringFromList(0,dacWaveNames)
+			currentWaveIsDAC=1
 		elseif (nWavesTTL>0)
 			currentWaveName=StringFromList(0,ttlWaveNames)
+			currentWaveIsDAC=0
 		endif
 	endif
 	
