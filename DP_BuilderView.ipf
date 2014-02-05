@@ -41,9 +41,10 @@ Function BuilderViewUpdate(builderType)
 	SetDataFolder $dataFolderName
 
 	WAVE parameters
-	WAVE /T parameterNames
+	WAVE theWave
 
 	// Set each SetVariable to hold the current model value
+	Wave /T parameterNames=StimulusGetParamNames(theWave)
 	Variable nParameters=numpnts(parameters)
 	Variable i
 	for (i=0; i<nParameters; i+=1)

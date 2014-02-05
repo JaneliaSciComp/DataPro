@@ -34,7 +34,7 @@ Function BuilderModelConstructor(builderTypeLocal)
 //	initializationFunction()
 //		
 //	// Update the wave	
-//	BuilderModelUpdateWave(builderType)	
+//	BuilderModelSyncStimulus(builderType)	
 		
 	// Restore the original data folder
 	SetDataFolder savedDF
@@ -70,37 +70,8 @@ Function BuilderModelSetParameter(builderType,parameterName,value)
 
 	// Update the wave
 	StimulusSetParam(theWave,parameterName,value)
-	//BuilderModelUpdateWave(builderType)
+	//BuilderModelSyncStimulus(builderType)
 
-	SetDataFolder savedDF
-End
-
-Function BuilderModelUpdateWave(builderType)
-	// Updates the theWave wave to match the model parameters.
-	// This is a private _model_ method -- The view updates itself when theWave changes.
-	String builderType
-	
-	String savedDF=GetDataFolder(1)
-	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)
-	SetDataFolder $dataFolderName
-	
-	WAVE /T parameterNames
-	WAVE parameters
-	WAVE theWave
-	NVAR dt, totalDuration
-		
-	resampleFromParamsBang(builderType,theWave,dt,totalDuration,parameters,parameterNames)
-	
-	Note /K theWave
-	ReplaceStringByKeyInWaveNote(theWave,"WAVETYPE",builderType)
-	ReplaceStringByKeyInWaveNote(theWave,"TIME",time())
-	
-	// Set the parameters in the wave note
-	Variable nParameters=numpnts(parameters)
-	Variable i
-	for (i=0; i<nParameters; i+=1)
-		ReplaceStringByKeyInWaveNote(theWave,parameterNames[i],num2str(parameters[i]))
-	endfor
 	SetDataFolder savedDF
 End
 
@@ -110,52 +81,57 @@ Function BuilderModelImportWave(builderType,fancyWaveNameString)
 	String builderType
 	String fancyWaveNameString
 	
+	// Switch to the DF
 	String savedDF=GetDataFolder(1)
 	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)
 	SetDataFolder $dataFolderName
 	
-	WAVE /T parameterNames
+	// Instance vars
+	//WAVE /T parameterNames
 	WAVE parameters
+	WAVE theWave
 
+	Wave /T parameterNames=StimulusGetParamNames(theWave)
 	Variable i
 	if (AreStringsEqual(fancyWaveNameString,"(Default Settings)"))
-		BuilderModelSetParamsToDefault(builderType)
+		Wave parameters=StimulusGetDefParamsFromType(builderType)
 	else
 		// Get the wave from the digitizer
 		Wave exportedWave=SweeperGetWaveByFancyName(fancyWaveNameString)
 		String waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
 		if (AreStringsEqual(waveTypeString,builderType))
-			Variable nParameters=numpnts(parameters)
-			for (i=0; i<nParameters; i+=1)
-				parameters[i]=NumberByKeyInWaveNote(exportedWave,parameterNames[i])
-			endfor
+			Wave newParameters=StimulusGetParams(exportedWave)
+			parameters=newParameters
+			//Variable nParameters=numpnts(parameters)
+			//for (i=0; i<nParameters; i+=1)
+			//	parameters[i]=NumberByKeyInWaveNote(exportedWave,parameterNames[i])
+			//endfor
 		else
 			Abort(sprintf1s("This is not a %s wave; choose another",builderType))
 		endif
 	endif
-	BuilderModelUpdateWave(builderType)
+	StimulusSetParams(theWave,parameters)
+	//BuilderModelSyncStimulus(builderType)
 	
 	SetDataFolder savedDF	
 End
 
-Function BuilderModelSetParamsToDefault(builderType)
-	String builderType
-	
-	String savedDF=GetDataFolder(1)
-	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)
-	SetDataFolder $dataFolderName
-	
-	WAVE parameters
-	WAVE parametersDefault
-
-	Variable nParameters=numpnts(parameters)
-	Variable i
-	for (i=0; i<nParameters; i+=1)
-		parameters[i]=parametersDefault[i]
-	endfor	
-
-	SetDataFolder savedDF	
-End
+//Function BuilderModelSetParamsToDefault(builderType)
+//	String builderType
+//	
+//	String savedDF=GetDataFolder(1)
+//	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)
+//	SetDataFolder $dataFolderName
+//	
+//	WAVE theWave
+//	WAVE parameters
+//	
+//	Wave parametersDefault=StimulusGetDefParamsFromType(builderType)
+//	parameters=parametersDefault
+//	StimulusSetParams(theWave,parameters)
+//	
+//	SetDataFolder savedDF	
+//End
 
 Function BuilderModelExportToSweeper(builderType,waveNameString)
 	String builderType
@@ -165,7 +141,7 @@ Function BuilderModelExportToSweeper(builderType,waveNameString)
 	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)	
 	SetDataFolder $dataFolderName
 	WAVE theWave
-	SVAR signalType
+	String signalType=StimulusGetSignalType(theWave)
 	if (AreStringsEqual(signalType,"DAC"))
 		SweeperControllerAddDACWave(theWave,waveNameString)
 	else
@@ -174,30 +150,31 @@ Function BuilderModelExportToSweeper(builderType,waveNameString)
 	SetDataFolder savedDF
 End
 
-Function resampleBang(builderType,w,dt,totalDuration)
-	// Re-compute the wave in w, using the given dt, totalDuration, and the
-	// parameter values stored in the wave note of w itself.
-	String builderType
-	Wave w
-	Variable dt, totalDuration
-	
-	String savedDF=GetDataFolder(1)
-	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)
-	SetDataFolder $dataFolderName
-	
-	WAVE /T parameterNames
-	
-	Variable nParameters=numpnts(parameterNames)
-	Make /FREE /N=(nParameters) parametersFromW
-	Variable i
-	for (i=0; i<nParameters; i+=1)
-		parametersFromW[i]=NumberByKeyInWaveNote(w,parameterNames[i])
-	endfor
-	
-	resampleFromParamsBang(builderType,w,dt,totalDuration,parametersFromW,parameterNames)
-
-	SetDataFolder savedDF	
-End
+//Function resampleBang(builderType,w,dt,totalDuration)
+//	// Re-compute the wave in w, using the given dt, totalDuration, and the
+//	// parameter values stored in the wave note of w itself.
+//	String builderType
+//	Wave w
+//	Variable dt, totalDuration
+//	
+//	String savedDF=GetDataFolder(1)
+//	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)
+//	SetDataFolder $dataFolderName
+//	
+//	//WAVE /T parameterNames
+//	
+//	Wave /T parameterNames=StimulusGetParamNames(theWave)
+//	Variable nParameters=numpnts(parameterNames)
+//	Make /FREE /N=(nParameters) parametersFromW
+//	Variable i
+//	for (i=0; i<nParameters; i+=1)
+//		parametersFromW[i]=NumberByKeyInWaveNote(w,parameterNames[i])
+//	endfor
+//	
+//	resampleFromParamsBang(builderType,w,dt,totalDuration,parametersFromW,parameterNames)
+//
+//	SetDataFolder savedDF	
+//End
 
 Function BuilderModelSweeperDtOrTChanged(builderType)
 	// Used to notify the Builder model of a change to dt or totalDuration in the Sweeper.
@@ -214,40 +191,86 @@ Function BuilderModelSweeperDtOrTChanged(builderType)
 	SetDataFolder $dataFolderName
 	
 	NVAR dt, totalDuration
+	WAVE theWave
 	
 	// Get dt, totalDuration from the sweeper
 	dt=SweeperGetDt()
 	totalDuration=SweeperGetTotalDuration()
 	// Update the	wave
-	BuilderModelUpdateWave(builderType)
+	StimulusResample(theWave,dt,totalDuration)
+	//BuilderModelSyncStimulus(builderType)
 	
 	// Restore the DF
 	SetDataFolder savedDF		
 End
 
-Function resampleFromParamsBang(builderType,w,dt,totalDuration,parameters,parameterNames)
-	// Re-compute the wave in w using the given dt, totalDuration, and parameters
-	// This is a class method.
-	String builderType
-	Wave w
-	Variable dt,totalDuration
-	Wave parameters
-	Wave parameterNames
-	
-	Variable nScans=numberOfScans(dt,totalDuration)
-	Redimension /N=(nScans) w
-	Setscale /P x, 0, dt, "ms", w
-	
-	String fillFunctionName="fill"+builderType+"FromParamsBang"
-	Funcref fillFromParamsBang fillFunction=$fillFunctionName
-	fillFunction(w,dt,nScans,parameters,parameterNames)
-End
+//Function resampleFromParamsBang(builderType,w,dt,totalDuration,parameters,parameterNames)
+//	// Re-compute the wave in w using the given dt, totalDuration, and parameters
+//	// This is a class method.
+//	String builderType
+//	Wave w
+//	Variable dt,totalDuration
+//	Wave parameters
+//	Wave parameterNames
+//	
+//	Variable nScans=numberOfScans(dt,totalDuration)
+//	Redimension /N=(nScans) w
+//	Setscale /P x, 0, dt, "ms", w
+//	
+//	String fillFunctionName="fill"+builderType+"FromParamsBang"
+//	Funcref fillFromParamsBang fillFunction=$fillFunctionName
+//	fillFunction(w,dt,nScans,parameters,parameterNames)
+//End
+//
+//Function fillFromParamsBang(w,dt,nScans,parameters,parameterNames)
+//	// Placeholder function
+//	Wave w
+//	Variable dt,nScans
+//	Wave parameters
+//	Wave /T parameterNames	
+//	Abort "Internal Error: Attempt to call a function that doesn't exist."
+//End
 
-Function fillFromParamsBang(w,dt,nScans,parameters,parameterNames)
-	// Placeholder function
-	Wave w
-	Variable dt,nScans
-	Wave parameters
-	Wave /T parameterNames	
-	Abort "Internal Error: Attempt to call a function that doesn't exist."
-End
+
+
+
+//
+// private
+//
+
+//Function BuilderModelSyncStimulus(builderType)
+//	// Updates the theWave wave to match the model parameters.
+//	// This is a private _model_ method -- The view updates itself when theWave changes.
+//	String builderType
+//	
+//	// Switch to the DF
+//	String savedDF=GetDataFolder(1)
+//	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)
+//	SetDataFolder $dataFolderName
+//	
+//	// instance vars
+//	WAVE theWave
+//	WAVE parameters
+//	NVAR dt, totalDuration
+//	
+//	// Reset the stimulus 
+//	//Wave /T parameterNames=StimulusGetParamNames(theWave)
+//	StimulusReset(theWave,dt,totalDuration,parameters)
+//	//resampleFromParamsBang(builderType,theWave,dt,totalDuration,parameters,parameterNames)
+//	
+//	// Append the current time (do we still need this?)
+//	//Note /K theWave
+//	//ReplaceStringByKeyInWaveNote(theWave,"WAVETYPE",builderType)
+//	//ReplaceStringByKeyInWaveNote(theWave,"TIME",time())
+//	
+////	// Set the parameters in the wave note
+////	Variable nParameters=numpnts(parameters)
+////	Variable i
+////	for (i=0; i<nParameters; i+=1)
+////		ReplaceStringByKeyInWaveNote(theWave,parameterNames[i],num2str(parameters[i]))
+////	endfor
+//
+//	// Restore the original DF
+//	SetDataFolder savedDF
+//End
+
