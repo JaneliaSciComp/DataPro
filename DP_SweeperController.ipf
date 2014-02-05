@@ -41,6 +41,8 @@ End
 Function SweepContDtOrTotalDurChanged()
 	// private method, used to notify everyone that needs notifying after a change to dtWanted or totalDuration
 	SweeperViewSweeperChanged()	// Tell the view that the model has changed
+	BuilderContSweepDtOrTChngd("TTLPulse")
+	BuilderContSweepDtOrTChngd("Pulse")
 	BuilderContSweepDtOrTChngd("Sine")
 	BuilderContSweepDtOrTChngd("PSC")
 	BuilderContSweepDtOrTChngd("Ramp")

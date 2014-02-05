@@ -130,6 +130,8 @@ Function ICROISVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
 	ImageBrowserViewModelEtcChanged()
 End
 
+
+
 Function ICBinSizePMTouched(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
 	Variable popNum	// which item is currently selected (1-based)
@@ -138,6 +140,8 @@ Function ICBinSizePMTouched(ctrlName,popNum,popStr) : PopupMenuControl
 	ImagerSetBinSizeIndex(popNum-1)
 	ImagerViewModelChanged()		
 End
+
+
 
 Function ICCurrentROIIndexSVTwiddled(svStruct) : SetVariableControl
 	STRUCT WMSetVariableAction &svStruct
@@ -354,6 +358,7 @@ Function ICTriggerDelaySVTouched(ctrlName,varNum,varStr,varName) : SetVariableCo
 
 	ImagerSetTriggerDelay(varNum)
 	ImagerViewModelChanged()
+	OutputViewerViewUpdate()
 End
 
 //

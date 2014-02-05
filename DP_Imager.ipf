@@ -1397,8 +1397,10 @@ Function ImagerSetTriggerDelay(newValue)
 	// Declare instance vars
 	NVAR triggerDelay
 
+	// Change the value, if legal
 	if (newValue>=0)
 		triggerDelay=newValue
+		ImagerChangeSweeperCamTrigger()
 	endif
 
 	// Restore the original DF
@@ -1497,6 +1499,13 @@ Function ImagerHijackSweeperCamTrigger(ttlOutputIndex)
 	SweeperHijackTTLOutput(ttlOutputIndex,name,w)	
 End
 
+
+Function ImagerChangeSweeperCamTrigger()
+	String name="cameraTrigger"
+	Variable delay=ImagerGetTriggerDelay()
+	Variable duration=10	// ms
+	SweeperSetTTLWaveParams(name,{delay,duration})	
+End
 
 
 Function ImagerUnhijackSweeperCamTrigger(ttlOutputIndex)

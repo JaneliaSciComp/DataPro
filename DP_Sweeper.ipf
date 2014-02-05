@@ -796,6 +796,22 @@ Function SweeperAddTTLWave(w,waveNameString)
 	SetDataFolder savedDF
 End
 
+Function SweeperSetTTLWaveParams(waveNameString,params)
+	String waveNameString
+	Wave params
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper:ttlWaves
+
+	Wave stim=$waveNameString
+	StimulusSetParams(stim,params)
+
+	// Notify the output viewer model
+	OutputViewerModelSweprWavsChngd()
+	
+	SetDataFolder savedDF
+End
+
 Function SweeperRemoveTTLWave(waveNameString)
 	String waveNameString
 
