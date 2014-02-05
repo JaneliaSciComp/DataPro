@@ -10,6 +10,16 @@ Function /WAVE PulseGetParamNames()
 	return parameterNames
 End
 
+Function /WAVE PulseGetDefaultParams()
+	Variable nParameters=4
+	Make /FREE /N=(nParameters) parametersDefault
+	parametersDefault[0]=20		// ms
+	parametersDefault[1]=100		// ms
+	parametersDefault[2]=0
+	parametersDefault[3]=10
+	return parametersDefault
+End
+
 Function PulseFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

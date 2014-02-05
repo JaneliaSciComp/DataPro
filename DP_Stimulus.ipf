@@ -20,6 +20,16 @@ Function /WAVE StimulusConstructor(dt,durationWanted,stimulusType,params)
 	return w
 End
 
+Function /WAVE StimulusConstructorToDefault(dt,durationWanted,stimulusType)
+	Variable dt
+	Variable durationWanted
+	String stimulusType
+
+	Make /FREE /N=0 w	
+	StimulusInitializeToDefault(w,dt,durationWanted,stimulusType)
+	return w
+End
+
 Function StimulusInitialize(w,dt,durationWanted,stimulusType,params)
 	Wave w
 	Variable dt
@@ -29,6 +39,25 @@ Function StimulusInitialize(w,dt,durationWanted,stimulusType,params)
 	
 	StimulusSetWaveNote(w,stimulusType,params)
 	StimulusResample(w,dt,durationWanted)
+End
+
+Function StimulusInitializeToDefault(w,dt,durationWanted,stimulusType)
+	Wave w
+	Variable dt
+	Variable durationWanted
+	String stimulusType
+	
+	Wave params=StimulusGetDefParamsFromType(stimulusType)
+	StimulusInitialize(w,dt,durationWanted,stimulusType,params)
+End
+
+Function StimulusSetParamsToDefault(w)
+	Wave w
+
+	String stimulusType=StringByKeyInWaveNote(w,"WAVETYPE")
+	Wave params=StimulusGetDefParamsFromType(stimulusType)
+	StimulusSetWaveNote(w,StimulusGetType(w),params)
+	StimulusRefill(w)
 End
 
 Function StimulusSetParams(w,params)
@@ -60,6 +89,16 @@ Function StimulusChangeSampling(w,dt,durationWanted)
 	StimulusResample(w,dt,durationWanted)
 End
 
+Function StimulusReset(w,dt,durationWanted,params)
+	Wave w
+	Variable dt
+	Variable durationWanted
+	Wave params
+
+	StimulusSetWaveNote(w,StimulusGetType(w),params)
+	StimulusResample(w,dt,durationWanted)		
+End
+
 Function /S StimulusGetType(w)
 	Wave w	
 	return StringByKeyInWaveNote(w, "WAVETYPE")
@@ -79,7 +118,7 @@ Function StimulusGetDuration(w)
 	Wave w
 	Variable n=StimulusGetN(w)
 	Variable dt=StimulusGetDt(w)
-	return (n-1)/dt
+	return (n-1)*dt
 End
 
 Function /WAVE StimulusGetParamNames(w)
@@ -159,7 +198,7 @@ Function StimulusFillFromParamsSig(w,params)
 	// Placeholder function
 	Wave w
 	Wave params
-	Abort "Internal Error: Attempt to call a function that doesn't exist."
+	Abort "Internal Error: Attempt to call a StimulusFillFromParamsSig function that doesn't exist."
 End
 
 Function StimulusRefill(w)
@@ -214,7 +253,22 @@ End
 
 Function /WAVE StimulusGetParamNamesSig()
 	// Placeholder function
-	Abort "Internal Error: Attempt to call a function that doesn't exist."
+	Abort "Internal Error: Attempt to call a StimulusGetParamNamesSig function that doesn't exist."
+End
+
+Function /WAVE StimulusGetDefParamsFromType(stimulusType)
+	String stimulusType
+
+	String defaultParamsFunctionName=stimulusType+"GetDefaultParams"
+	Funcref StimulusGetDefaultParamsSig defaultParamsFunction=$defaultParamsFunctionName
+	Wave defaultParams=defaultParamsFunction()
+	
+	return defaultParams
+End
+
+Function /WAVE StimulusGetDefaultParamsSig()
+	// Placeholder function
+	Abort "Internal Error: Attempt to call a StimulusGetDefaultParamsSig function that doesn't exist."
 End
 
 Function /S StimulusGetSignalTypeFromType(stimulusType)
@@ -229,7 +283,7 @@ End
 
 Function /S StimulusGetSignalTypeSig()
 	// Placeholder function
-	Abort "Internal Error: Attempt to call a function that doesn't exist."
+	Abort "Internal Error: Attempt to call a StimulusGetSignalTypeSig function that doesn't exist."
 End
 
 Function numberOfScans(dt,totalDuration)

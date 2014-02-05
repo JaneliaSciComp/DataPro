@@ -20,28 +20,29 @@ Function BuilderModelConstructor(builderTypeLocal)
 	Variable /G dt=SweeperGetDt()
 	Variable /G totalDuration=SweeperGetTotalDuration()
 	//Make /O /T parameterNames
-	Make /O parametersDefault
-	Make /O parameters
+	//Make /O parametersDefault
+	Duplicate /O StimulusGetDefParamsFromType(builderType), parameters
 	//String /G signalType=""
 	
 	// Create the wave
 	Make /O theWave
+	StimulusInitialize(theWave,dt,totalDuration,builderType,parameters)
 
-	// Set to default params
-	String initializationFunctionName=builderType+"BuilderModelInitialize"
-	Funcref BuilderModelInitialize initializationFunction=$initializationFunctionName
-	initializationFunction()
-		
-	// Update the wave	
-	BuilderModelUpdateWave(builderType)	
+//	// Set to default params
+//	String initializationFunctionName=builderType+"BuilderModelInitialize"
+//	Funcref BuilderModelInitialize initializationFunction=$initializationFunctionName
+//	initializationFunction()
+//		
+//	// Update the wave	
+//	BuilderModelUpdateWave(builderType)	
 		
 	// Restore the original data folder
 	SetDataFolder savedDF
 End
 
-Function BuilderModelInitialize()
-	Abort "Internal Error: Attempt to call a function that doesn't exist."
-End
+//Function BuilderModelInitialize()
+//	Abort "Internal Error: Attempt to call a function that doesn't exist."
+//End
 
 Function BuilderModelSetParameter(builderType,parameterName,value)
 	// Set the named parameter in the named builderType model
@@ -53,10 +54,12 @@ Function BuilderModelSetParameter(builderType,parameterName,value)
 	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)
 	SetDataFolder $dataFolderName
 
+	// instance vars
 	WAVE parameters
-	WAVE /T parameterNames
-
+	WAVE theWave
+	
 	// Set the parameter in the parameters wave
+	Wave /T parameterNames=StimulusGetParamNames(theWave)
 	Variable nParameters=numpnts(parameters)
 	Variable i
 	for (i=0; i<nParameters; i+=1)
@@ -66,7 +69,8 @@ Function BuilderModelSetParameter(builderType,parameterName,value)
 	endfor
 
 	// Update the wave
-	BuilderModelUpdateWave(builderType)
+	StimulusSetParam(theWave,parameterName,value)
+	//BuilderModelUpdateWave(builderType)
 
 	SetDataFolder savedDF
 End

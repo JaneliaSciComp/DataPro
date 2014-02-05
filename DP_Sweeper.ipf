@@ -95,8 +95,10 @@ Function SweeperConstructor()
 	// Initialize the BuiltinPulse wave
 	SetDataFolder dacWaves
 	Make /O builtinPulse
+	StimulusInitialize(builtinPulse,dtWanted,totalDuration,"BuiltinPulse",{builtinPulseDuration,builtinPulseAmplitude})
+	ReplaceStringByKeyInWaveNote(builtinPulse,"STEP",num2str(builtinPulseAmplitude))
 	SetDataFolder root:DP_Sweeper
-	SweeperUpdateBuiltinPulseWave()
+	//SweeperUpdateBuiltinPulseWave()
 
 	// Parameters of builtinTTLPulse
 	Variable /G builtinTTLPulseDelay=50	
@@ -105,8 +107,9 @@ Function SweeperConstructor()
 	// Initialize the built-in TTL pulse wave
 	SetDataFolder ttlWaves
 	Make /O builtinTTLPulse
+	StimulusInitialize(builtinTTLPulse,dtWanted,totalDuration,"TTLPulse",{builtinTTLPulseDelay,builtinTTLPulseDuration})
 	SetDataFolder root:DP_Sweeper
-	SweeperUpdateBuiltinTTLPulse()
+	//SweeperUpdateBuiltinTTLPulse()
 
 	// If the imaging module is in use, add an analog input for the exposure signal
 	if ( IsImagingModuleInUse() )
@@ -1132,28 +1135,27 @@ Function SweeperUpdateBuiltinPulseWave()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Sweeper
 
-	NVAR totalDuration,builtinPulseAmplitude, builtinPulseDuration
+	NVAR totalDuration, builtinPulseAmplitude, builtinPulseDuration
 	
 	SetDataFolder root:DP_Sweeper:dacWaves
 	WAVE builtinPulse		// bound wave
 		
-	//Variable offDuration=totalDuration-builtinPulseDuration
-	//Variable delayDuration=offDuration/4
-	//Duplicate /O BuiltinPulse(dt,totalDuration,delayDuration,builtinPulseDuration,builtinPulseAmplitude) builtinPulse
-	
-	// Update the wave note for builtinPulse
-	Note /K builtinPulse
-	ReplaceStringByKeyInWaveNote(builtinPulse,"WAVETYPE","BuiltinPulse")
-	ReplaceStringByKeyInWaveNote(builtinPulse,"TIME",time())
-	ReplaceStringByKeyInWaveNote(builtinPulse,"duration",num2str(builtinPulseDuration))
-	ReplaceStringByKeyInWaveNote(builtinPulse,"amplitude",num2str(builtinPulseAmplitude))
-	ReplaceStringByKeyInWaveNote(builtinPulse,"STEP",num2str(builtinPulseAmplitude))
-		// The value stored in STEP is shown in the Browser window, and can be used
-		// to select which sweeps will be included in an average.
+//	// Update the wave note for builtinPulse
+//	Note /K builtinPulse
+//	ReplaceStringByKeyInWaveNote(builtinPulse,"WAVETYPE","BuiltinPulse")
+//	ReplaceStringByKeyInWaveNote(builtinPulse,"TIME",time())
+//	ReplaceStringByKeyInWaveNote(builtinPulse,"duration",num2str(builtinPulseDuration))
+//	ReplaceStringByKeyInWaveNote(builtinPulse,"amplitude",num2str(builtinPulseAmplitude))
+//	ReplaceStringByKeyInWaveNote(builtinPulse,"STEP",num2str(builtinPulseAmplitude))
+//		// The value stored in STEP is shown in the Browser window, and can be used
+//		// to select which sweeps will be included in an average.
+//		
+//	// Update the wave itself, based in part on the wave note
+//	Variable dt=SweeperGetDt()
+//	resampleBuiltinPulseBang(builtinPulse,dt,totalDuration)	
 		
-	// Update the wave itself, based in part on the wave note
 	Variable dt=SweeperGetDt()
-	resampleBuiltinPulseBang(builtinPulse,dt,totalDuration)	
+	StimulusReset(builtinPulse,dt,totalDuration,{builtinPulseDuration,builtinPulseAmplitude})	
 		
 	// Restore the data folder
 	SetDataFolder savedDF
@@ -1337,37 +1339,35 @@ End
 // Class methods
 //
 
-Function resampleBuiltinPulseBang(w,dt,totalDuration)
-	// Mutate the wave w to make in have time-step dt, totalDuration totalDuration,
-	// and then fill the elements of it with the correct values for a simple pulse, 
-	// given the params stored in w's wave note.
-	Wave w
-	Variable dt, totalDuration
-	
-	Variable duration=NumberByKeyInWaveNote(w,"duration")
-	Variable amplitude=NumberByKeyInWaveNote(w,"amplitude")
-	
-	resampBuiltinPulseFromParamsBng(w,dt,totalDuration,duration,amplitude)	
-End
-		
-Function resampBuiltinPulseFromParamsBng(w,dt,totalDuration,duration,amplitude)
-	Wave w
-	Variable dt
-	Variable totalDuration
-	Variable duration
-	Variable amplitude
-	
-	Variable nScans=numberOfScans(dt,totalDuration)
-	Redimension /N=(nScans) w
-	Setscale /P x, 0, dt, "ms", w
-	Variable offDuration=totalDuration-duration
-	Variable delay=offDuration/4
-	Variable baseLevel=0
-	fillPulseFromParamsBang(w,dt,nScans,{delay,duration,baseLevel,amplitude},{"delay","duration","baseLevel","amplitude"})
-//	Wave temp
-//	Duplicate /FREE BuiltinPulse(dt,totalDuration,delay,duration,amplitude) temp
-//	w=temp
-End
+//Function resampleBuiltinPulseBang(w,dt,totalDuration)
+//	// Mutate the wave w to make in have time-step dt, totalDuration totalDuration,
+//	// and then fill the elements of it with the correct values for a simple pulse, 
+//	// given the params stored in w's wave note.
+//	Wave w
+//	Variable dt, totalDuration
+//	
+//	Variable duration=NumberByKeyInWaveNote(w,"duration")
+//	Variable amplitude=NumberByKeyInWaveNote(w,"amplitude")
+//	
+//	resampBuiltinPulseFromParamsBng(w,dt,totalDuration,duration,amplitude)	
+//End
+//		
+//Function resampBuiltinPulseFromParamsBng(w,dt,totalDuration,duration,amplitude)
+//	Wave w
+//	Variable dt
+//	Variable totalDuration
+//	Variable duration
+//	Variable amplitude
+//	
+//	//Variable nScans=numberOfScans(dt,totalDuration)
+//	//Redimension /N=(nScans) w
+//	//Setscale /P x, 0, dt, "ms", w
+//	Variable offDuration=totalDuration-duration
+//	Variable delay=offDuration/4
+//	Variable baseLevel=0
+//	//fillPulseFromParamsBang(w,dt,nScans,{delay,duration,baseLevel,amplitude},{"delay","duration","baseLevel","amplitude"})
+//	StimulusReset(w,dt,totalDuration,{delay,duration,baseLevel,amplitude})
+//End
 
 Function /S fancyWaveList(dacWaveNames,ttlWaveNames)
 	// A "class method" to take a list of DAC wave names and a list

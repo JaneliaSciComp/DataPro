@@ -55,34 +55,34 @@ Function PulseBuilderViewConstructor() : Graph
 	SetDataFolder savedDF
 End
 
-Function PulseBuilderModelInitialize()
-	// Called from the constructor, so DF already set.
-	SVAR builderType
-	Variable nParameters=StimulusGetNumOfParamsFromType(builderType)
-	Redimension /N=(nParameters) parametersDefault
-	parametersDefault[0]=20		// ms
-	parametersDefault[1]=100		// ms
-	parametersDefault[2]=0
-	parametersDefault[3]=10
-	Redimension /N=(nParameters) parameters
-	parameters=parametersDefault
-End
-
-Function fillPulseFromParamsBang(w,dt,nScans,parameters,parameterNames)
-	Wave w
-	Variable dt,nScans
-	Wave parameters
-	Wave /T parameterNames
-
-	Variable delay=parameters[0]
-	Variable duration=parameters[1]
-	Variable baseLevel=parameters[2]				
-	Variable amplitude=parameters[3]
-
-       // Somewhat controversial, but in the common case that pulse starts are sample-aligned, and pulse durations are
-       // an integer multiple of dt, this ensures that each pulse is exactly pulseDuration samples long
-	Variable delayTweaked=delay-dt/2
-
-	//Variable pulseDutyCycle=max(0,min((pulseDuration/1000)*pulseRate,1))		// pure
-	w=baseLevel+amplitude*unitPulse(x-delayTweaked,duration)
-End
+//Function PulseBuilderModelInitialize()
+//	// Called from the constructor, so DF already set.
+//	SVAR builderType
+//	Variable nParameters=StimulusGetNumOfParamsFromType(builderType)
+//	Redimension /N=(nParameters) parametersDefault
+//	parametersDefault[0]=20		// ms
+//	parametersDefault[1]=100		// ms
+//	parametersDefault[2]=0
+//	parametersDefault[3]=10
+//	Redimension /N=(nParameters) parameters
+//	parameters=parametersDefault
+//End
+//
+//Function fillPulseFromParamsBang(w,dt,nScans,parameters,parameterNames)
+//	Wave w
+//	Variable dt,nScans
+//	Wave parameters
+//	Wave /T parameterNames
+//
+//	Variable delay=parameters[0]
+//	Variable duration=parameters[1]
+//	Variable baseLevel=parameters[2]				
+//	Variable amplitude=parameters[3]
+//
+//       // Somewhat controversial, but in the common case that pulse starts are sample-aligned, and pulse durations are
+//       // an integer multiple of dt, this ensures that each pulse is exactly pulseDuration samples long
+//	Variable delayTweaked=delay-dt/2
+//
+//	//Variable pulseDutyCycle=max(0,min((pulseDuration/1000)*pulseRate,1))		// pure
+//	w=baseLevel+amplitude*unitPulse(x-delayTweaked,duration)
+//End

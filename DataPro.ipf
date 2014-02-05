@@ -44,6 +44,7 @@
 #include ":DP_TTLPulseStimulus"
 #include ":DP_PulseBuilder"
 #include ":DP_PulseStimulus"
+#include ":DP_BuiltinPulseStimulus"
 #include ":DP_OutputViewer"
 #include ":DP_Utilities"
 #include ":DP_MyProcedures"
