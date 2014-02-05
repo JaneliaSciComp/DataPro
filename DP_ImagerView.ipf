@@ -23,10 +23,11 @@ Function ImagerViewConstructor() : Panel
 	// This is used in several places
 	String absVarName
 	
+	Variable yOffsetRow
 	Variable xOffset=1550
 	Variable yOffset=54
 	Variable panelWidth=330
-	Variable panelHeight=562+21
+	Variable panelHeight=562+21+25
 	NewPanel /W=(xOffset,yOffset,xOffset+panelWidth,yOffset+panelHeight)  /N=ImagerView /K=1 as "Imager Controls"
 	ModifyPanel /W=ImagerView fixedSize=1
 
@@ -42,12 +43,12 @@ Function ImagerViewConstructor() : Panel
 	//
 	
 	Variable groupBoxYOffset=3
-	Variable groupBoxHeight=54
+	Variable groupBoxHeight=54+24
 	GroupBox illuminationGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Illumination"
 
 	// TTL Output SetVariable		
 	xOffset=30
-	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-14)/2
+	yOffset=groupBoxYOffset-3+29
 	SetVariable ttlOutputChannelSV,win=ImagerView,pos={xOffset,yOffset},size={94,1},limits={0,3,1},title="TTL Output:"
 	SetVariable ttlOutputChannelSV,win=ImagerView,proc=ICEpiTTLChannelSVTouched	
 	
@@ -55,17 +56,36 @@ Function ImagerViewConstructor() : Panel
 	Variable width=140	// Size of the button
 	Variable height=26
 	xOffset=146
-	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-height)/2
+	yOffset=groupBoxYOffset-3+23
 	Button EpiLightToggleButton,win=ImagerView,pos={xOffset,yOffset},size={width,height},proc=ICEpiLightToggleButtonPressed
 
 	// On/Off ValDisplay
 	xOffset=310
-	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-14)/2
+	yOffset=groupBoxYOffset-3+29
 	ValDisplay EpiLightStatusVD, win=ImagerView, pos={xOffset,yOffset}, size={0,14}, bodyWidth=14, mode=1, limits={0,1,0.5}
 	ValDisplay EpiLightStatusVD, win=ImagerView, barmisc={0,0}, highColor=(0,65535,0), lowColor=(0,0,0)
+	//ValDisplay ld501_1 title="round LED",size={65,13},bodyWidth=10,mode=1;DelayUpdate
+	//ValDisplay ld501_1 barmisc={0,0},limits={-50,100,0}
 
-//ValDisplay ld501_1 title="round LED",size={65,13},bodyWidth=10,mode=1;DelayUpdate
-//ValDisplay ld501_1 barmisc={0,0},limits={-50,100,0}
+	// Controls for triggered mode
+	yOffsetRow=groupBoxYOffset+54
+	xOffset=16
+	yOffset=yOffsetRow
+	TitleBox epiTriggeredTB, win=ImagerView, pos={xOffset,yOffset+2}, frame=0, title="Triggered:"
+
+	xOffset+=65
+	yOffset=yOffsetRow
+	SetVariable epiTriggeredDelaySV, win=ImagerView,pos={xOffset,yOffset}, size={90,15}, title="Delay:"
+	SetVariable epiTriggeredDelaySV, win=ImagerView, limits={0,inf,10}, proc=ICEpiTriggeredDelaySVTouched
+	TitleBox epiTriggeredDelayUnitsTB, win=ImagerView, pos={xOffset+92,yOffset+2}, frame=0, title="ms"
+
+	xOffset+=122
+	yOffset=yOffsetRow
+	SetVariable epiTriggeredDurationSV, win=ImagerView, pos={xOffset,yOffset}, size={100,15}, title="Duration:"
+	SetVariable epiTriggeredDurationSV, win=ImagerView, limits={0.001,inf,0.1}, proc=ICEpiTriggeredDurationSVTouched
+	TitleBox epiTriggeredDurationUnitsTB, win=ImagerView, pos={xOffset+102,yOffset+2}, frame=0, title="ms"
+
+
 
 	//
 	// Temperature Group
@@ -173,7 +193,7 @@ Function ImagerViewConstructor() : Panel
 
 	// Bin Size Popup Menu
 	xOffset=106
-	Variable yOffsetRow=videoYOffset+24
+	yOffsetRow=videoYOffset+24
 	yOffset=yOffsetRow
 	PopupMenu binSizePM, win=ImagerView, pos={xOffset,yOffset}, size={1,22}, proc=ICBinSizePMTouched, title="Bin Size:"
 	String binSizeListAsString=ImagerGetBinSizeListAsString()
@@ -424,6 +444,10 @@ Function ImagerViewUpdate()
 	String titleStr = stringFif(isLightAgnostic, "(Light Control Ceded)", stringFif(isLightOn, "Turn Epiillumination Off", "Turn Epiillumination On") )
 	Button EpiLightToggleButton, win=ImagerView, title=titleStr, disable= (isLightAgnostic? 2 : 0)
 	ValDisplay EpiLightStatusVD, win=ImagerView, value= _NUM:isLightOn, disable= (isLightAgnostic ? 1 : 0)
+
+	// Update epi-light delay and duration	
+	SetVariable epiTriggeredDelaySV, win=ImagerView, value=_NUM:EpiLightGetTriggeredDelay()
+	SetVariable epiTriggeredDurationSV, win=ImagerView, value=_NUM:EpiLightGetTriggeredDuration()
 	
 	// Update the enablement of the "Focus" button
 	Variable isFocusing=ImagerGetIsFocusing()

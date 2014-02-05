@@ -109,6 +109,30 @@ End
 
 
 
+Function ICEpiTriggeredDelaySVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum
+	String varStr
+	String varName
+	
+	EpiLightSetTriggeredDelay(varNum)
+	ImagerViewEpiLightChanged()
+End
+	
+
+
+Function ICEpiTriggeredDurationSVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum
+	String varStr
+	String varName
+
+	EpiLightSetTriggeredDuration(varNum)
+	ImagerViewEpiLightChanged()
+End
+
+
+
 Function ICROISVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName
 	Variable varNum

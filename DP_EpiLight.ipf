@@ -28,6 +28,8 @@ Function EpiLightConstructor()
 		// agnostic: isInControl=0, isOn=0
 		// We ensure that isInControl=0, isOn=1 never happens
 	Variable /G ttlOutputIndex=1		// the TTL channel to which the light is hooked up
+	Variable /G triggeredDelay=10		// ms
+	Variable /G triggeredDuration=180		// ms
 	
 	// Restore the original data folder
 	SetDataFolder savedDF	
@@ -189,5 +191,54 @@ Function EpiLightGetTTLOutputIndex()
 	SetDataFolder savedDF	
 	return value
 End
+
+
+
+Function EpiLightGetTriggeredDelay()
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_EpiLight
+	NVAR triggeredDelay
+	Variable value=triggeredDelay
+	SetDataFolder savedDF	
+	return value
+End
+
+
+
+Function EpiLightSetTriggeredDelay(newValue)
+	Variable newValue
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_EpiLight
+	NVAR triggeredDelay
+	if (newValue>=0)
+		triggeredDelay=newValue
+	endif
+	SetDataFolder savedDF	
+End
+
+
+
+Function EpiLightGetTriggeredDuration()	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_EpiLight
+	NVAR triggeredDuration
+	Variable value=triggeredDuration
+	SetDataFolder savedDF	
+	return value
+End
+
+
+
+Function EpiLightSetTriggeredDuration(newValue)
+	Variable newValue
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_EpiLight
+	NVAR triggeredDuration
+	if (newValue>=0)
+		triggeredDuration=newValue
+	endif
+	SetDataFolder savedDF	
+End
+
 
 
