@@ -44,60 +44,60 @@ Function ChirpBuilderViewConstructor() : Graph
 	SetDataFolder savedDF
 End
 
-Function ChirpBuilderModelInitialize()
-	// Called from the constructor, so DF already set.
-	Variable nParameters=5
-	WAVE /T parameterNames
-	WAVE parametersDefault
-	WAVE parameters
-	Redimension /N=(nParameters) parameterNames
-	parameterNames[0]="delay"
-	parameterNames[1]="duration"
-	parameterNames[2]="amplitude"
-	parameterNames[3]="initialFrequency"
-	parameterNames[4]="finalFrequency"
-	Redimension /N=(nParameters) parametersDefault
-	parametersDefault[0]=10
-	parametersDefault[1]=50
-	parametersDefault[2]=10
-	parametersDefault[3]=50
-	parametersDefault[4]=200
-	Redimension /N=(nParameters) parameters
-	parameters=parametersDefault
-	SVAR signalType
-	signalType="DAC"
-End
-
-Function fillChirpFromParamsBang(w,dt,nScans,parameters,parameterNames)
-	Wave w
-	Variable dt,nScans
-	Wave parameters
-	Wave /T parameterNames
-
-	Variable delay=parameters[0]
-	Variable duration=parameters[1]
-	Variable amplitude=parameters[2]
-	Variable initialFrequency=parameters[3]
-	Variable finalFrequency=parameters[4]
-
-//	Variable jFirst=0
-//	Variable jLast=round(delay/dt)-1
-//	if (jFirst>=nScans)
-//		return 0
-//	endif
-//	w[jFirst,jLast]=0
-//	jFirst=jLast+1
-//	jLast=jFirst+round(duration/dt)-1
-//	if (jFirst>=nScans)
-//		return 0
-//	endif
-//	w[jFirst,jLast]=amplitude*sin(2*PI*(x-delay)/1000*(0.5*(finalFrequency-initialFrequency)/(duration/1000)*(x-delay)/1000+initialFrequency))
-//	jFirst=jLast+1
-//	jLast=nScans-1
-//	if (jFirst>=nScans)
-//		return 0
-//	endif
-//	w[jFirst,jLast]=0	
-	
-	w=amplitude*unitPulse(x-delay,duration)*amplitude*sin(2*PI*(x-delay)/1000*(0.5*(finalFrequency-initialFrequency)/(duration/1000)*(x-delay)/1000+initialFrequency))
-End
+//Function ChirpBuilderModelInitialize()
+//	// Called from the constructor, so DF already set.
+//	Variable nParameters=5
+//	WAVE /T parameterNames
+//	WAVE parametersDefault
+//	WAVE parameters
+//	Redimension /N=(nParameters) parameterNames
+//	parameterNames[0]="delay"
+//	parameterNames[1]="duration"
+//	parameterNames[2]="amplitude"
+//	parameterNames[3]="initialFrequency"
+//	parameterNames[4]="finalFrequency"
+//	Redimension /N=(nParameters) parametersDefault
+//	parametersDefault[0]=10
+//	parametersDefault[1]=50
+//	parametersDefault[2]=10
+//	parametersDefault[3]=50
+//	parametersDefault[4]=200
+//	Redimension /N=(nParameters) parameters
+//	parameters=parametersDefault
+//	SVAR signalType
+//	signalType="DAC"
+//End
+//
+//Function fillChirpFromParamsBang(w,dt,nScans,parameters,parameterNames)
+//	Wave w
+//	Variable dt,nScans
+//	Wave parameters
+//	Wave /T parameterNames
+//
+//	Variable delay=parameters[0]
+//	Variable duration=parameters[1]
+//	Variable amplitude=parameters[2]
+//	Variable initialFrequency=parameters[3]
+//	Variable finalFrequency=parameters[4]
+//
+////	Variable jFirst=0
+////	Variable jLast=round(delay/dt)-1
+////	if (jFirst>=nScans)
+////		return 0
+////	endif
+////	w[jFirst,jLast]=0
+////	jFirst=jLast+1
+////	jLast=jFirst+round(duration/dt)-1
+////	if (jFirst>=nScans)
+////		return 0
+////	endif
+////	w[jFirst,jLast]=amplitude*sin(2*PI*(x-delay)/1000*(0.5*(finalFrequency-initialFrequency)/(duration/1000)*(x-delay)/1000+initialFrequency))
+////	jFirst=jLast+1
+////	jLast=nScans-1
+////	if (jFirst>=nScans)
+////		return 0
+////	endif
+////	w[jFirst,jLast]=0	
+//	
+//	w=amplitude*unitPulse(x-delay,duration)*amplitude*sin(2*PI*(x-delay)/1000*(0.5*(finalFrequency-initialFrequency)/(duration/1000)*(x-delay)/1000+initialFrequency))
+//End

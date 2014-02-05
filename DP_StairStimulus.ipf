@@ -15,6 +15,21 @@ Function /WAVE StairGetParamNames()
 	return parameterNames
 End
 
+Function /WAVE StairGetDefaultParams()
+	Variable nParameters=9
+	Make /FREE /N=(nParameters) parametersDefault
+	parametersDefault[0]=0
+	parametersDefault[1]=40		// ms
+	parametersDefault[2]=1
+	parametersDefault[3]=40		// ms
+	parametersDefault[4]=2
+	parametersDefault[5]=40		// ms
+	parametersDefault[6]=3
+	parametersDefault[7]=40		// ms
+	parametersDefault[8]=0
+	return parametersDefault
+End
+
 Function StairFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

@@ -41,38 +41,38 @@ Function WNoiseBuilderViewConstructor() : Graph
 	SetDataFolder savedDF
 End
 
-Function WNoiseBuilderModelInitialize()
-	// Called from the constructor, so DF already set.
-	Variable nParameters=4
-	WAVE /T parameterNames
-	WAVE parametersDefault
-	WAVE parameters
-	Redimension /N=(nParameters) parameterNames
-	parameterNames[0]="delay"
-	parameterNames[1]="duration"
-	parameterNames[2]="mu"
-	parameterNames[3]="sigma"
-	Redimension /N=(nParameters) parametersDefault
-	parametersDefault[0]=10
-	parametersDefault[1]=50
-	parametersDefault[2]=0
-	parametersDefault[3]=1
-	Redimension /N=(nParameters) parameters
-	parameters=parametersDefault
-	SVAR signalType
-	signalType="DAC"
-End
-
-Function fillWNoiseFromParamsBang(w,dt,nScans,parameters,parameterNames)
-	Wave w
-	Variable dt,nScans
-	Wave parameters
-	Wave /T parameterNames
-
-	Variable delay=parameters[0]
-	Variable duration=parameters[1]
-	Variable mu=parameters[2]
-	Variable sigma=parameters[3]
-	
-	w=(mu+gnoise(sigma))*unitPulse(x-delay,duration)
-End
+//Function WNoiseBuilderModelInitialize()
+//	// Called from the constructor, so DF already set.
+//	Variable nParameters=4
+//	WAVE /T parameterNames
+//	WAVE parametersDefault
+//	WAVE parameters
+//	Redimension /N=(nParameters) parameterNames
+//	parameterNames[0]="delay"
+//	parameterNames[1]="duration"
+//	parameterNames[2]="mu"
+//	parameterNames[3]="sigma"
+//	Redimension /N=(nParameters) parametersDefault
+//	parametersDefault[0]=10
+//	parametersDefault[1]=50
+//	parametersDefault[2]=0
+//	parametersDefault[3]=1
+//	Redimension /N=(nParameters) parameters
+//	parameters=parametersDefault
+//	SVAR signalType
+//	signalType="DAC"
+//End
+//
+//Function fillWNoiseFromParamsBang(w,dt,nScans,parameters,parameterNames)
+//	Wave w
+//	Variable dt,nScans
+//	Wave parameters
+//	Wave /T parameterNames
+//
+//	Variable delay=parameters[0]
+//	Variable duration=parameters[1]
+//	Variable mu=parameters[2]
+//	Variable sigma=parameters[3]
+//	
+//	w=(mu+gnoise(sigma))*unitPulse(x-delay,duration)
+//End

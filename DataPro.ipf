@@ -24,6 +24,7 @@
 #include ":DP_SineBuilder"
 #include ":DP_SineStimulus"
 #include ":DP_ChirpBuilder"
+#include ":DP_ChirpStimulus"
 #include ":DP_WNoiseBuilder"
 #include ":DP_WNoiseStimulus"
 #include ":DP_PSCBuilder"

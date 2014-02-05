@@ -41,57 +41,57 @@ Function SineBuilderViewConstructor() : Graph
 	SetDataFolder savedDF
 End
 
-Function SineBuilderModelInitialize()
-	// Called from the constructor, so DF already set.
-	Variable nParameters=4
-	WAVE /T parameterNames
-	WAVE parametersDefault
-	WAVE parameters
-	Redimension /N=(nParameters) parameterNames
-	parameterNames[0]="delay"
-	parameterNames[1]="duration"
-	parameterNames[2]="amplitude"
-	parameterNames[3]="frequency"
-	Redimension /N=(nParameters) parametersDefault
-	parametersDefault[0]=10
-	parametersDefault[1]=50
-	parametersDefault[2]=10
-	parametersDefault[3]=100
-	Redimension /N=(nParameters) parameters
-	parameters=parametersDefault
-	SVAR signalType
-	signalType="DAC"
-End
-
-Function fillSineFromParamsBang(w,dt,nScans,parameters,parameterNames)
-	Wave w
-	Variable dt,nScans
-	Wave parameters
-	Wave /T parameterNames
-
-	Variable delay=parameters[0]
-	Variable duration=parameters[1]
-	Variable amplitude=parameters[2]
-	Variable frequency=parameters[3]
-
-//	Variable jFirst=0
-//	Variable jLast=round(delay/dt)-1
-//	if (jFirst>=nScans)
-//		return 0
-//	endif
-//	w[jFirst,jLast]=0
-//	jFirst=jLast+1
-//	jLast=jFirst+round(duration/dt)-1
-//	if (jFirst>=nScans)
-//		return 0
-//	endif
-//	w[jFirst,jLast]=amplitude*sin(frequency*2*PI*(x-delay)/1000)
-//	jFirst=jLast+1
-//	jLast=nScans-1
-//	if (jFirst>=nScans)
-//		return 0
-//	endif
-//	w[jFirst,jLast]=0
-	
-	w=amplitude*unitPulse(x-delay,duration)*sin(frequency*2*PI*(x-delay)/1000)
-End
+//Function SineBuilderModelInitialize()
+//	// Called from the constructor, so DF already set.
+//	Variable nParameters=4
+//	WAVE /T parameterNames
+//	WAVE parametersDefault
+//	WAVE parameters
+//	Redimension /N=(nParameters) parameterNames
+//	parameterNames[0]="delay"
+//	parameterNames[1]="duration"
+//	parameterNames[2]="amplitude"
+//	parameterNames[3]="frequency"
+//	Redimension /N=(nParameters) parametersDefault
+//	parametersDefault[0]=10
+//	parametersDefault[1]=50
+//	parametersDefault[2]=10
+//	parametersDefault[3]=100
+//	Redimension /N=(nParameters) parameters
+//	parameters=parametersDefault
+//	SVAR signalType
+//	signalType="DAC"
+//End
+//
+//Function fillSineFromParamsBang(w,dt,nScans,parameters,parameterNames)
+//	Wave w
+//	Variable dt,nScans
+//	Wave parameters
+//	Wave /T parameterNames
+//
+//	Variable delay=parameters[0]
+//	Variable duration=parameters[1]
+//	Variable amplitude=parameters[2]
+//	Variable frequency=parameters[3]
+//
+////	Variable jFirst=0
+////	Variable jLast=round(delay/dt)-1
+////	if (jFirst>=nScans)
+////		return 0
+////	endif
+////	w[jFirst,jLast]=0
+////	jFirst=jLast+1
+////	jLast=jFirst+round(duration/dt)-1
+////	if (jFirst>=nScans)
+////		return 0
+////	endif
+////	w[jFirst,jLast]=amplitude*sin(frequency*2*PI*(x-delay)/1000)
+////	jFirst=jLast+1
+////	jLast=nScans-1
+////	if (jFirst>=nScans)
+////		return 0
+////	endif
+////	w[jFirst,jLast]=0
+//	
+//	w=amplitude*unitPulse(x-delay,duration)*sin(frequency*2*PI*(x-delay)/1000)
+//End

@@ -14,6 +14,20 @@ Function /WAVE MulTrainGetParamNames()
 	return parameterNames
 End
 
+Function /WAVE MulTrainGetDefaultParams()
+	Variable nParameters=8
+	Make /FREE /N=(nParameters) parametersDefault
+	parametersDefault[0]=25		// ms
+	parametersDefault[1]=150		// ms
+	parametersDefault[2]=100		// Hz
+	parametersDefault[3]=2		// ms
+	parametersDefault[4]=20		// Hz
+	parametersDefault[5]=25		// ms	
+	parametersDefault[6]=0
+	parametersDefault[7]=10
+	return parametersDefault
+End
+
 Function MulTrainFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

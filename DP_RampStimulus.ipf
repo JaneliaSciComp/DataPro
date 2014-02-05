@@ -11,6 +11,17 @@ Function /WAVE RampGetParamNames()
 	return parameterNames
 End
 
+Function /WAVE RampGetDefaultParams()
+	Variable nParameters=5
+	Make /FREE /N=(nParameters) parametersDefault
+	parametersDefault[0]=0
+	parametersDefault[1]=50
+	parametersDefault[2]=-10
+	parametersDefault[3]=100
+	parametersDefault[4]=10
+	return parametersDefault
+End
+
 Function RampFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

@@ -12,6 +12,18 @@ Function /WAVE TrainGetParamNames()
 	return parameterNames
 End
 
+Function /WAVE TrainGetDefaultParams()
+	Variable nParameters=6
+	Make /FREE /N=(nParameters) parametersDefault
+	parametersDefault[0]=20		// ms
+	parametersDefault[1]=100		// ms
+	parametersDefault[2]=100		// Hz
+	parametersDefault[3]=2		// ms
+	parametersDefault[4]=0
+	parametersDefault[5]=10
+	return parametersDefault
+End
+
 Function TrainFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

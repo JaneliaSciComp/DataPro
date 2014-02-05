@@ -12,6 +12,18 @@ Function /WAVE PSCGetParamNames()
 	return parameterNames
 End
 
+Function /WAVE PSCGetDefaultParams()
+	Variable nParameters=6
+	Make /FREE /N=(nParameters) parametersDefault
+	parametersDefault[0]=10
+	parametersDefault[1]=10
+	parametersDefault[2]=0.2
+	parametersDefault[3]=2
+	parametersDefault[4]=10
+	parametersDefault[5]=0.5
+	return parametersDefault
+End
+
 Function PSCFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

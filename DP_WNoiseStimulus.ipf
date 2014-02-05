@@ -10,6 +10,16 @@ Function /WAVE WNoiseGetParamNames()
 	return parameterNames
 End
 
+Function /WAVE WNoiseGetDefaultParams()
+	Variable nParameters=4
+	Make /FREE /N=(nParameters) parametersDefault
+	parametersDefault[0]=10
+	parametersDefault[1]=50
+	parametersDefault[2]=0
+	parametersDefault[3]=1	
+	return parametersDefault
+End
+
 Function WNoiseFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

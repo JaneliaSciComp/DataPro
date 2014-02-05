@@ -10,6 +10,16 @@ Function /WAVE SineGetParamNames()
 	return parameterNames
 End
 
+Function /WAVE SineGetDefaultParams()
+	Variable nParameters=4
+	Make /FREE /N=(nParameters) parametersDefault
+	parametersDefault[0]=10
+	parametersDefault[1]=50
+	parametersDefault[2]=10
+	parametersDefault[3]=100
+	return parametersDefault
+End
+
 Function SineFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

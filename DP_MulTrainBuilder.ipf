@@ -63,52 +63,52 @@ Function MulTrainBuilderViewConstructor() : Graph
 	SetDataFolder savedDF
 End
 
-Function MulTrainBuilderModelInitialize()
-	// Called from the constructor, so DF already set.
-	Variable nParameters=8
-	WAVE /T parameterNames
-	WAVE parametersDefault
-	WAVE parameters
-	Redimension /N=(nParameters) parameterNames
-	parameterNames[0]="delay"
-	parameterNames[1]="duration"
-	parameterNames[2]="pulseRate"
-	parameterNames[3]="pulseDuration"
-	parameterNames[4]="trainRate"
-	parameterNames[5]="trainDuration"
-	parameterNames[6]="baseLevel"
-	parameterNames[7]="amplitude"
-	Redimension /N=(nParameters) parametersDefault
-	parametersDefault[0]=25		// ms
-	parametersDefault[1]=150		// ms
-	parametersDefault[2]=100		// Hz
-	parametersDefault[3]=2		// ms
-	parametersDefault[4]=20		// Hz
-	parametersDefault[5]=25		// ms	
-	parametersDefault[6]=0
-	parametersDefault[7]=10
-	Redimension /N=(nParameters) parameters
-	parameters=parametersDefault
-	SVAR signalType
-	signalType="DAC"
-End
-
-Function fillMulTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)
-	Wave w
-	Variable dt,nScans
-	Wave parameters
-	Wave /T parameterNames
-
-	fillTTLMTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)
-
-//	Variable delay=parameters[0]
-//	Variable duration=parameters[1]
-//	Variable pulseRate=parameters[2]				
-//	Variable pulseDuration=parameters[3]
-//	Variable trainRate=parameters[4]				
-//	Variable trainDuration=parameters[5]
-	Variable baseLevel=parameters[6]
-	Variable amplitude=parameters[7]			
-
-	w=baseLevel+amplitude*w
-End
+//Function MulTrainBuilderModelInitialize()
+//	// Called from the constructor, so DF already set.
+//	Variable nParameters=8
+//	WAVE /T parameterNames
+//	WAVE parametersDefault
+//	WAVE parameters
+//	Redimension /N=(nParameters) parameterNames
+//	parameterNames[0]="delay"
+//	parameterNames[1]="duration"
+//	parameterNames[2]="pulseRate"
+//	parameterNames[3]="pulseDuration"
+//	parameterNames[4]="trainRate"
+//	parameterNames[5]="trainDuration"
+//	parameterNames[6]="baseLevel"
+//	parameterNames[7]="amplitude"
+//	Redimension /N=(nParameters) parametersDefault
+//	parametersDefault[0]=25		// ms
+//	parametersDefault[1]=150		// ms
+//	parametersDefault[2]=100		// Hz
+//	parametersDefault[3]=2		// ms
+//	parametersDefault[4]=20		// Hz
+//	parametersDefault[5]=25		// ms	
+//	parametersDefault[6]=0
+//	parametersDefault[7]=10
+//	Redimension /N=(nParameters) parameters
+//	parameters=parametersDefault
+//	SVAR signalType
+//	signalType="DAC"
+//End
+//
+//Function fillMulTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)
+//	Wave w
+//	Variable dt,nScans
+//	Wave parameters
+//	Wave /T parameterNames
+//
+//	fillTTLMTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)
+//
+////	Variable delay=parameters[0]
+////	Variable duration=parameters[1]
+////	Variable pulseRate=parameters[2]				
+////	Variable pulseDuration=parameters[3]
+////	Variable trainRate=parameters[4]				
+////	Variable trainDuration=parameters[5]
+//	Variable baseLevel=parameters[6]
+//	Variable amplitude=parameters[7]			
+//
+//	w=baseLevel+amplitude*w
+//End

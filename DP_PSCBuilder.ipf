@@ -48,57 +48,57 @@ Function PSCBuilderViewConstructor() : Graph
 	SetDataFolder savedDF
 End
 
-Function PSCBuilderModelInitialize()
-	// Called from the constructor, so DF already set.
-	Variable nParameters=6
-	WAVE /T parameterNames
-	WAVE parametersDefault
-	WAVE parameters
-	Redimension /N=(nParameters) parameterNames
-	parameterNames[0]="delay"
-	parameterNames[1]="amplitude"
-	parameterNames[2]="tauRise"
-	parameterNames[3]="tauDecay1"
-	parameterNames[4]="tauDecay2"
-	parameterNames[5]="weightDecay2"
-	Redimension /N=(nParameters) parametersDefault
-	parametersDefault[0]=10
-	parametersDefault[1]=10
-	parametersDefault[2]=0.2
-	parametersDefault[3]=2
-	parametersDefault[4]=10
-	parametersDefault[5]=0.5
-	Redimension /N=(nParameters) parameters
-	parameters=parametersDefault
-	SVAR signalType
-	signalType="DAC"
-End
-
-Function fillPSCFromParamsBang(w,dt,nScans,parameters,parameterNames)
-	Wave w
-	Variable dt,nScans
-	Wave parameters
-	Wave /T parameterNames
-
-	Variable delay=parameters[0]
-	Variable amplitude=parameters[1]
-	Variable tauRise=parameters[2]		
-	Variable tauDecay1=parameters[3]		
-	Variable tauDecay2=parameters[4]		
-	Variable weightDecay2=parameters[5]		
-
-	// Set the delay portion
-	Variable nDelay=floor(delay/dt)		// err on the side of making this too small, if anything
-	w[0,nDelay-1]=0
-	// Set the main portion
-	if (nDelay>=nScans)
-		return 0
-	endif
-	w[nDelay,nScans-1]=unitStep(x-delay)*(-exp(-(x-delay)/tauRise)+(1-weightDecay2)*exp(-(x-delay)/tauDecay1)+weightDecay2*exp(-(x-delay)/tauDecay2))
-	// re-scale to have the proper amplitude
-	Wavestats /Q w
-	w=(amplitude/V_max)*w		// want the peak amplitude to be amplitude
-End
+//Function PSCBuilderModelInitialize()
+//	// Called from the constructor, so DF already set.
+//	Variable nParameters=6
+//	WAVE /T parameterNames
+//	WAVE parametersDefault
+//	WAVE parameters
+//	Redimension /N=(nParameters) parameterNames
+//	parameterNames[0]="delay"
+//	parameterNames[1]="amplitude"
+//	parameterNames[2]="tauRise"
+//	parameterNames[3]="tauDecay1"
+//	parameterNames[4]="tauDecay2"
+//	parameterNames[5]="weightDecay2"
+//	Redimension /N=(nParameters) parametersDefault
+//	parametersDefault[0]=10
+//	parametersDefault[1]=10
+//	parametersDefault[2]=0.2
+//	parametersDefault[3]=2
+//	parametersDefault[4]=10
+//	parametersDefault[5]=0.5
+//	Redimension /N=(nParameters) parameters
+//	parameters=parametersDefault
+//	SVAR signalType
+//	signalType="DAC"
+//End
+//
+//Function fillPSCFromParamsBang(w,dt,nScans,parameters,parameterNames)
+//	Wave w
+//	Variable dt,nScans
+//	Wave parameters
+//	Wave /T parameterNames
+//
+//	Variable delay=parameters[0]
+//	Variable amplitude=parameters[1]
+//	Variable tauRise=parameters[2]		
+//	Variable tauDecay1=parameters[3]		
+//	Variable tauDecay2=parameters[4]		
+//	Variable weightDecay2=parameters[5]		
+//
+//	// Set the delay portion
+//	Variable nDelay=floor(delay/dt)		// err on the side of making this too small, if anything
+//	w[0,nDelay-1]=0
+//	// Set the main portion
+//	if (nDelay>=nScans)
+//		return 0
+//	endif
+//	w[nDelay,nScans-1]=unitStep(x-delay)*(-exp(-(x-delay)/tauRise)+(1-weightDecay2)*exp(-(x-delay)/tauDecay1)+weightDecay2*exp(-(x-delay)/tauDecay2))
+//	// re-scale to have the proper amplitude
+//	Wavestats /Q w
+//	w=(amplitude/V_max)*w		// want the peak amplitude to be amplitude
+//End
 
 // Below are special callback functions that check the validity of certain parameter values
 

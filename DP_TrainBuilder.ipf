@@ -55,46 +55,46 @@ Function TrainBuilderViewConstructor() : Graph
 	SetDataFolder savedDF
 End
 
-Function TrainBuilderModelInitialize()
-	// Called from the constructor, so DF already set.
-	Variable nParameters=6
-	WAVE /T parameterNames
-	WAVE parametersDefault
-	WAVE parameters
-	Redimension /N=(nParameters) parameterNames
-	parameterNames[0]="delay"
-	parameterNames[1]="duration"
-	parameterNames[2]="pulseRate"
-	parameterNames[3]="pulseDuration"
-	parameterNames[4]="baseLevel"
-	parameterNames[5]="amplitude"
-	Redimension /N=(nParameters) parametersDefault
-	parametersDefault[0]=20		// ms
-	parametersDefault[1]=100		// ms
-	parametersDefault[2]=100		// Hz
-	parametersDefault[3]=2		// ms
-	parametersDefault[4]=0
-	parametersDefault[5]=10
-	Redimension /N=(nParameters) parameters
-	parameters=parametersDefault
-	SVAR signalType
-	signalType="DAC"
-End
-
-Function fillTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)
-	Wave w
-	Variable dt,nScans
-	Wave parameters
-	Wave /T parameterNames
-
-	fillTTLTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)
-
-	//Variable delay=parameters[0]
-	//Variable duration=parameters[1]
-	//Variable pulseRate=parameters[2]				
-	//Variable pulseDuration=parameters[3]
-	Variable baseLevel=parameters[4]
-	Variable amplitude=parameters[5]			
-
-	w=baseLevel+amplitude*w
-End
+//Function TrainBuilderModelInitialize()
+//	// Called from the constructor, so DF already set.
+//	Variable nParameters=6
+//	WAVE /T parameterNames
+//	WAVE parametersDefault
+//	WAVE parameters
+//	Redimension /N=(nParameters) parameterNames
+//	parameterNames[0]="delay"
+//	parameterNames[1]="duration"
+//	parameterNames[2]="pulseRate"
+//	parameterNames[3]="pulseDuration"
+//	parameterNames[4]="baseLevel"
+//	parameterNames[5]="amplitude"
+//	Redimension /N=(nParameters) parametersDefault
+//	parametersDefault[0]=20		// ms
+//	parametersDefault[1]=100		// ms
+//	parametersDefault[2]=100		// Hz
+//	parametersDefault[3]=2		// ms
+//	parametersDefault[4]=0
+//	parametersDefault[5]=10
+//	Redimension /N=(nParameters) parameters
+//	parameters=parametersDefault
+//	SVAR signalType
+//	signalType="DAC"
+//End
+//
+//Function fillTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)
+//	Wave w
+//	Variable dt,nScans
+//	Wave parameters
+//	Wave /T parameterNames
+//
+//	fillTTLTrainFromParamsBang(w,dt,nScans,parameters,parameterNames)
+//
+//	//Variable delay=parameters[0]
+//	//Variable duration=parameters[1]
+//	//Variable pulseRate=parameters[2]				
+//	//Variable pulseDuration=parameters[3]
+//	Variable baseLevel=parameters[4]
+//	Variable amplitude=parameters[5]			
+//
+//	w=baseLevel+amplitude*w
+//End

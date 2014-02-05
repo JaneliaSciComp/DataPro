@@ -50,52 +50,52 @@ Function RampBuilderViewConstructor() : Graph
 	SetDataFolder savedDF
 End
 
-Function RampBuilderModelInitialize()
-	// Called from the constructor, so DF already set.
-	Variable nParameters=5
-	WAVE /T parameterNames
-	WAVE parametersDefault
-	WAVE parameters
-	Redimension /N=(nParameters) parameterNames
-	parameterNames[0]="baselineLevel"
-	parameterNames[1]="delay"
-	parameterNames[2]="initialLevel"
-	parameterNames[3]="duration"
-	parameterNames[4]="finalLevel"	
-	Redimension /N=(nParameters) parametersDefault
-	parametersDefault[0]=0
-	parametersDefault[1]=50
-	parametersDefault[2]=-10
-	parametersDefault[3]=100
-	parametersDefault[4]=10
-	Redimension /N=(nParameters) parameters
-	parameters=parametersDefault
-	SVAR signalType
-	signalType="DAC"
-End
-
-Function fillRampFromParamsBang(w,dt,nScans,parameters,parameterNames)
-	Wave w
-	Variable dt,nScans
-	Wave parameters
-	Wave /T parameterNames
-
-	Variable baselineLevel=parameters[0]
-	Variable delay=parameters[1]
-	Variable initialLevel=parameters[2]
-	Variable duration=parameters[3]
-	Variable finalLevel=parameters[4]
-
-//	Variable nDelay=round(delay/dt)
-//	Variable nDuration=round(duration/dt)	
-//	Variable slope=(postLevel-preLevel)/duration
-//	w=postLevel
-//	w[0,nDelay-1]=preLevel
-//	if (nDelay>=nScans)
-//		return 0
-//	endif	
-//	w[nDelay,nDelay+nDuration-1]=preLevel+slope*(x-delay)
-	
-	w=baselineLevel+((initialLevel-baselineLevel)+(finalLevel-initialLevel)*max(0,min((x-delay)/duration,1)))*unitPulse(x-delay,duration)
-End
+//Function RampBuilderModelInitialize()
+//	// Called from the constructor, so DF already set.
+//	Variable nParameters=5
+//	WAVE /T parameterNames
+//	WAVE parametersDefault
+//	WAVE parameters
+//	Redimension /N=(nParameters) parameterNames
+//	parameterNames[0]="baselineLevel"
+//	parameterNames[1]="delay"
+//	parameterNames[2]="initialLevel"
+//	parameterNames[3]="duration"
+//	parameterNames[4]="finalLevel"	
+//	Redimension /N=(nParameters) parametersDefault
+//	parametersDefault[0]=0
+//	parametersDefault[1]=50
+//	parametersDefault[2]=-10
+//	parametersDefault[3]=100
+//	parametersDefault[4]=10
+//	Redimension /N=(nParameters) parameters
+//	parameters=parametersDefault
+//	SVAR signalType
+//	signalType="DAC"
+//End
+//
+//Function fillRampFromParamsBang(w,dt,nScans,parameters,parameterNames)
+//	Wave w
+//	Variable dt,nScans
+//	Wave parameters
+//	Wave /T parameterNames
+//
+//	Variable baselineLevel=parameters[0]
+//	Variable delay=parameters[1]
+//	Variable initialLevel=parameters[2]
+//	Variable duration=parameters[3]
+//	Variable finalLevel=parameters[4]
+//
+////	Variable nDelay=round(delay/dt)
+////	Variable nDuration=round(duration/dt)	
+////	Variable slope=(postLevel-preLevel)/duration
+////	w=postLevel
+////	w[0,nDelay-1]=preLevel
+////	if (nDelay>=nScans)
+////		return 0
+////	endif	
+////	w[nDelay,nDelay+nDuration-1]=preLevel+slope*(x-delay)
+//	
+//	w=baselineLevel+((initialLevel-baselineLevel)+(finalLevel-initialLevel)*max(0,min((x-delay)/duration,1)))*unitPulse(x-delay,duration)
+//End
 

@@ -693,7 +693,8 @@ Function CameraAcquireStop()
 			Variable amplitude=5		// V, for a TTL signal
 			Make /FREE parameters={delay,duration,pulseRate,pulseDuration,baseLevel,amplitude}
 			Make /FREE /T parameterNames={"delay","duration","pulseRate","pulseDuration","baseLevel","amplitude"}
-			fillTrainFromParamsBang(exposure,dt,nScans,parameters,parameterNames)
+			//fillTrainFromParamsBang(exposure,dt,nScans,parameters,parameterNames)
+			StimulusSetParams(exposure,parameters)
 		endif
 		
 		// Note that the acquisiton is done
