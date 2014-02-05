@@ -941,56 +941,87 @@ Function SweeperGetTTLOutputHijacked(i)
 	return result
 End
 
-Function SweeperSetTTLOutputHijacked(i,newValue)
-	Variable i, newValue
+Function SweeperHijackTTLOutput(i,stimName,stim)
+	Variable i
+	String stimName
+	Wave stim	// A Stimulus wave
 	
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Sweeper
 	
 	WAVE ttlOutputChannelHijacked
 	
-	ttlOutputChannelHijacked[i]=newValue
+	// If that TTL output is already in use, do nothing
+	if (SweeperGetTTLOutputChannelOn(i))
+		return 0
+	endif
+
+	// Add wave to self
+	SweeperAddTTLWave(stim,stimName)
+	
+	// Set the given ttlOutputIndex to use the trigger stim, and turn it on, and mark it as hijacked
+	SweeperSetTTLOutputChannelOn(i,1)
+	SweeperSetTTLOutputWaveName(i,stimName)
+	ttlOutputChannelHijacked[i]=1
 	
 	SetDataFolder savedDF	
 End
 
-Function SweeperAddCameraTrigger(ttlOutputIndex, delay)
-	Variable ttlOutputIndex
-	Variable delay	// ms
-
-	// If that TTL output is already in use, do nothing
-	if (SweeperGetTTLOutputChannelOn(ttlOutputIndex))
-		return 0
-	endif
-
-	// Make a stimulus
-	String name="cameraTrigger"
-	Variable duration=10	// ms
-	Wave w=StimulusConstructor(SweeperGetDt(),SweeperGetTotalDuration(),"TTLPulse",{delay,duration})
+Function SweeperUnhijackTTLOutput(i)
+	Variable i
 	
-	// Add it to self
-	SweeperAddTTLWave(w,name)
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
 	
-	// Set the given ttlOutputIndex to use the trigger stim, and turn it on, and mark it as hijacked
-	SweeperSetTTLOutputChannelOn(ttlOutputIndex,1)
-	SweeperSetTTLOutputWaveName(ttlOutputIndex,name)
-	SweeperSetTTLOutputHijacked(ttlOutputIndex,1)			
-End
-
-Function SweeperRemoveCameraTrigger(ttlOutputIndex, delay)
-	Variable ttlOutputIndex
-	Variable delay	// ms
-
-	// Make a stimulus
-	String name="cameraTrigger"
+	WAVE ttlOutputChannelHijacked
 	
-	// Unhijack channel, turn off
-	SweeperSetTTLOutputHijacked(ttlOutputIndex,0)			
-	SweeperSetTTLOutputChannelOn(ttlOutputIndex,0)
+	// Mark channel as unhijacked, turn off
+	ttlOutputChannelHijacked[i]=0
+	SweeperSetTTLOutputChannelOn(i,0)
 
 	// Remove the cameraTrigger wave
-	SweeperRemoveTTLWave(name)	
+	SweeperRemoveTTLWave(SweeperGetTTLOutputWaveName(i))	
+	
+	SetDataFolder savedDF	
 End
+
+//Function SweeperAddCameraTrigger(ttlOutputIndex, delay)
+//	Variable ttlOutputIndex
+//	Variable delay	// ms
+//
+//	// If that TTL output is already in use, do nothing
+//	if (SweeperGetTTLOutputChannelOn(ttlOutputIndex))
+//		return 0
+//	endif
+//
+//	// Make a stimulus
+//	String name="cameraTrigger"
+//	Variable duration=10	// ms
+//	Wave w=StimulusConstructor(SweeperGetDt(),SweeperGetTotalDuration(),"TTLPulse",{delay,duration})
+//	
+//	// Add it to self
+//	SweeperAddTTLWave(w,name)
+//	
+//	// Set the given ttlOutputIndex to use the trigger stim, and turn it on, and mark it as hijacked
+//	SweeperSetTTLOutputChannelOn(ttlOutputIndex,1)
+//	SweeperSetTTLOutputWaveName(ttlOutputIndex,name)
+//	SweeperSetTTLOutputHijacked(ttlOutputIndex,1)			
+//End
+//
+//Function SweeperRemoveCameraTrigger(ttlOutputIndex, delay)
+//	Variable ttlOutputIndex
+//	Variable delay	// ms
+//
+//	// Make a stimulus
+//	String name="cameraTrigger"
+//	
+//	// Unhijack channel, turn off
+//	SweeperSetTTLOutputHijacked(ttlOutputIndex,0)			
+//	SweeperSetTTLOutputChannelOn(ttlOutputIndex,0)
+//
+//	// Remove the cameraTrigger wave
+//	SweeperRemoveTTLWave(name)	
+//End
 
 
 

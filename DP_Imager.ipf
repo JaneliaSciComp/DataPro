@@ -950,6 +950,13 @@ Function ImagerSetIsTriggered(newValue)
 
 	// Set the value
 	isTriggered=newValue
+
+	// Hijack sweeper signals as needed	
+	if (isTriggered)
+		ImagerHijackSweeperCamTrigger(ImagerGetTriggerTTLOutputIndex())
+	else
+		ImagerUnhijackSweeperCamTrigger(ImagerGetTriggerTTLOutputIndex())
+	endif
 	
 	// Restore the original DF
 	SetDataFolder savedDF	
@@ -1345,11 +1352,13 @@ Function ImagerSetTriggerTTLOutputIndex(newValue)
 	NVAR triggerTTLOutputIndex
 
 	Variable originalValue=triggerTTLOutputIndex
-	if ( (0<=newValue) && (newValue<=3) && !SweeperGetTTLOutputChannelOn(newValue) && !SweeperGetTTLChannelHijacked(newValue) )
+	if ( (0<=newValue) && (newValue<=3) && !SweeperGetTTLOutputChannelOn(newValue) && !SweeperGetTTLOutputHijacked(newValue) )
 		// If we get here, then the destination TTL channel is available, so we'll proceed with the switch
-		if ( isTriggered && SweeperGetTTLOutputChannelHijacked(originalValue) )
+		if ( isTriggered && SweeperGetTTLOutputHijacked(originalValue) )
 			// This means that the original TTL channel is hijacked, and we are the hijacker
-			
+			ImagerUnhijackSweeperCamTrigger(originalValue)
+		endif
+		ImagerHijackSweeperCamTrigger(newValue)
 		triggerTTLOutputIndex=newValue
 	endif
 
@@ -1475,6 +1484,24 @@ Function ImagerTranslateROIRaw(iROI,dx,dy)
 	
 	// Restore the original DF
 	SetDataFolder savedDF		
+End
+
+
+
+Function ImagerHijackSweeperCamTrigger(ttlOutputIndex)
+	Variable ttlOutputIndex	
+	String name="cameraTrigger"
+	Variable delay=ImagerGetTriggerDelay()
+	Variable duration=10	// ms
+	Wave w=StimulusConstructor(SweeperGetDt(),SweeperGetTotalDuration(),"TTLPulse",{delay,duration})
+	SweeperHijackTTLOutput(ttlOutputIndex,name,w)	
+End
+
+
+
+Function ImagerUnhijackSweeperCamTrigger(ttlOutputIndex)
+	Variable ttlOutputIndex
+	SweeperUnhijackTTLOutput(ttlOutputIndex)
 End
 
 
