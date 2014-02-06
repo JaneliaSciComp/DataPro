@@ -82,34 +82,51 @@
 //---------------------- DataPro MENU -----------------------//
 
 Menu "DataPro"
-	"All Controls",MainContConstructors()
-	"-"
-	"Sweeper Controls",SweeperContConstructor()
-	"Digitizer Controls",DigitizerContConstructor()
-	"Imager Controls", ImagerContConstructor()
-	"-"
-	"New Signal Browser",BrowserContConstructor("New")
-	"Image Browser",ImageBrowserContConstructor()
-	"-"
-	"Test Pulser",TestPulserContConstructor()
-	"-"
-	"Pulse Builder",BuilderContConstructor("Pulse")
-	"TTL Pulse Builder",BuilderContConstructor("TTLPulse")
-	"Train Builder",BuilderContConstructor("Train")
-	"TTL Train Builder",BuilderContConstructor("TTLTrain")
-	"Multiple Train Builder",BuilderContConstructor("MulTrain")
-	"Multiple TTL Train Builder",BuilderContConstructor("TTLMTrain")
-	"Stair Builder",BuilderContConstructor("Stair")
-	"Ramp Builder",BuilderContConstructor("Ramp")
-	"PSC Builder",BuilderContConstructor("PSC")
-	"Sine Builder",BuilderContConstructor("Sine")
-	"Chirp Builder",BuilderContConstructor("Chirp")
-	"White Noise Builder",BuilderContConstructor("WNoise")
-	"-"
-	"Output Viewer",OutputViewerContConstructor()
-	"-"
-	"Switcher",SwitcherContConstructor()
-	"Axon Switcher",ASwitcherContConstructor()
+	dpMenu("All Controls"), MainContConstructors()
+	dpMenu("-")
+	dpMenu("Sweeper Controls"), SweeperContConstructor()
+	dpMenu("Digitizer Controls"), DigitizerContConstructor()
+	dpMenu("Imager Controls"), ImagerContConstructor()
+	dpMenu("-")
+	dpMenu("New Signal Browser"), BrowserContConstructor("New")
+	dpMenu("Image Browser"), ImageBrowserContConstructor()
+	dpMenu("-")
+	dpMenu("Test Pulser"), TestPulserContConstructor()
+	dpMenu("-")
+	dpMenu("Pulse Builder"), BuilderContConstructor("Pulse")
+	dpMenu("TTL Pulse Builder"), BuilderContConstructor("TTLPulse")
+	dpMenu("Train Builder"), BuilderContConstructor("Train")
+	dpMenu("TTL Train Builder"), BuilderContConstructor("TTLTrain")
+	dpMenu("Multiple Train Builder"), BuilderContConstructor("MulTrain")
+	dpMenu("Multiple TTL Train Builder"), BuilderContConstructor("TTLMTrain")
+	dpMenu("Stair Builder"), BuilderContConstructor("Stair")
+	dpMenu("Ramp Builder"), BuilderContConstructor("Ramp")
+	dpMenu("PSC Builder"), BuilderContConstructor("PSC")
+	dpMenu("Sine Builder"), BuilderContConstructor("Sine")
+	dpMenu("Chirp Builder"), BuilderContConstructor("Chirp")
+	dpMenu("White Noise Builder"), BuilderContConstructor("WNoise")
+	dpMenu("-")
+	dpMenu("Output Viewer"), OutputViewerContConstructor()
+	dpMenu("-")
+	dpMenu("Switcher"), SwitcherContConstructor()
+	dpMenu("Axon Switcher"), ASwitcherContConstructor()
+End
+
+Function /S dpMenu(item)
+	String item
+	
+	String result
+	strswitch (item)
+		case "Imager Controls":
+			result=stringFif(IsImagingModuleInUse(),item,"")
+			break
+		case "Image Browser":
+			result=stringFif(IsImagingModuleInUse(),item,"")
+			break
+		default:
+			result=item	
+	endswitch
+	return result
 End
 
 //Menu "DataPro Image"
@@ -158,13 +175,16 @@ Function InitializeDataPro()
 	//	// 0 indicates the zeroth element (relative to the last), hence the last element
 	//NewPath /O DataPro dataProPathAbs
 	//LoadPICT /O /P=DataPro "DataProMenu.jpg", DataProMenu
+	BuildMenu "DataPro"
 	SamplerConstructor()
 	DigitizerModelConstructor()
 	SweeperConstructor()
-	EpiLightConstructor()
-	FancyCameraConstructor()
-	ImagerConstructor()
-	ImageBrowserModelConstructor()
+	if ( IsImagingModuleInUse() )
+		EpiLightConstructor()
+		FancyCameraConstructor()
+		ImagerConstructor()
+		ImageBrowserModelConstructor()
+	endif
 //	// Set these things 
 //	BuilderModelConstructor("TTLConst")
 //	Variable defaultEpiTTLOutputIndex=1
@@ -205,11 +225,15 @@ Function MainContConstructors()
 	TestPulserContConstructor()
 	SweeperContConstructor()
 	BrowserContConstructor("NewOnlyIfNone")
-	ImagerContConstructor()
+	if ( IsImagingModuleInUse() )
+		ImagerContConstructor()
+	endif
 End
 
 Function IsImagingModuleInUse()
-	return 1		// Change to zero if you don't want to use the imaging module
+	Variable sidxPresent=(exists("SIDXRootOpen")==4)
+	//sidxPresent=0		// Uncomment if you don't want to use the imaging module
+	return sidxPresent		// Change to zero if you don't want to use the imaging module
 End
 
 Function IgorBeforeQuitHook(unsavedExp, unsavedNotebooks, unsavedProcedures)
@@ -220,3 +244,4 @@ Function IgorBeforeQuitHook(unsavedExp, unsavedNotebooks, unsavedProcedures)
 	ImagerContDestructor()
 	CameraDestructor()
 End
+

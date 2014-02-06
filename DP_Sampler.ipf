@@ -15,7 +15,7 @@ Function SamplerConstructor()
 	// Auto-detect the ITC version present
 	// itc is 16 if ITC-16 is being used, 18 if ITC-18, and 0 if neither is present
 	// If neither is present, DataPro runs in "demo" mode.
-	Variable /G itc=detectITCVersion()
+	Variable /G itc=SamplerDetectITCVersion()
 	Variable /G usPerDigitizerClockTick=((itc<18)?1:1.25)
 	Variable /G ttlBackground=0		// How the TTLs will be set when not actively sampling
 		// This is interpreted as a 16-bit unsigned integer
@@ -262,3 +262,22 @@ Function nFIFOSamplesNeeded(nADCChannels,nDACChannels,nTTLOutputChannels,nScans)
 	
 	return nSamplesNeeded
 End
+
+Function SamplerDetectITCVersion()
+	// Determine what model of Instrutech ITC is currently in use.  Returns 16, 18, or 0 if no ITC found.
+	Variable itc16Present=(exists("ITC16StopAcq")==4)
+	Variable itc18Present=(exists("ITC18StopAcq")==4)
+	Variable itc
+	if (itc18Present)
+		itc=18
+	elseif (itc16Present)
+		itc=16
+	else
+		itc=0	// Demo mode
+	endif
+	//Printf "itc16Present: %d\r", itc16Present
+	//Printf "itc18Present: %d\r", itc18Present
+	//Printf "itc: %d\r", itc
+	Return itc
+End
+

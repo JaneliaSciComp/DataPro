@@ -624,24 +624,6 @@ End
 //	return signal
 //End
 
-Function detectITCVersion()
-	// Determine what model of Instrutech ITC is currently in use.  Returns 16, 18, or 0 if no ITC found.
-	Variable itc16Present=(exists("ITC16StopAcq")==4)
-	Variable itc18Present=(exists("ITC18StopAcq")==4)
-	Variable itc
-	if (itc18Present)
-		itc=18
-	elseif (itc16Present)
-		itc=16
-	else
-		itc=0	// Demo mode
-	endif
-	//Printf "itc16Present: %d\r", itc16Present
-	//Printf "itc18Present: %d\r", itc18Present
-	//Printf "itc: %d\r", itc
-	Return itc
-End
-
 Function IsStandardName(s)
 	// Returns true iff the string s contains a valid Igor Pro standard name
 	String s
