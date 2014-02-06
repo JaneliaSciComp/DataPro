@@ -49,7 +49,11 @@ Function TestPulserSetADCIndex(newValue)
 	SetDataFolder root:DP_TestPulser
 	
 	NVAR adcIndex
-	adcIndex=newValue	
+
+	// Make sure the new ADC has not been hijacked
+	if ( !SweeperGetADCHijacked(newValue) )
+		adcIndex=newValue	
+	endif
 
 	SetDataFolder savedDF
 End	
@@ -89,6 +93,23 @@ End
 
 
 //----------------------------------------------------------------------------------------------------------------------------
+Function TestPulserIsADCInUse(adcIndexInQuestion)
+	Variable adcIndexInQuestion
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_TestPulser
+
+	NVAR adcIndex
+
+	Variable value=( adcIndex==adcIndexInQuestion)
+
+	SetDataFolder savedDF	
+	
+	return value
+End
+
+
+//----------------------------------------------------------------------------------------------------------------------------
 Function TestPulserSetTTLOutputIndex(newValue)
 	Variable newValue
 	
@@ -118,7 +139,23 @@ Function TestPulserGetTTLOutputIndex()
 	SetDataFolder root:DP_TestPulser
 	
 	NVAR ttlOutputIndex
+	
 	Variable result=ttlOutputIndex
+
+	SetDataFolder savedDF
+	
+	return result
+End	
+
+
+//----------------------------------------------------------------------------------------------------------------------------
+Function TestPulserGetADCIndex()
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_TestPulser
+	
+	NVAR adcIndex
+
+	Variable result=adcIndex
 
 	SetDataFolder savedDF
 	

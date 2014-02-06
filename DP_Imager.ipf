@@ -1357,14 +1357,22 @@ Function ImagerSetTriggerTTLOutputIndex(newValue)
 	NVAR triggerTTLOutputIndex
 
 	Variable originalValue=triggerTTLOutputIndex
-	if ( (0<=newValue) && (newValue<=3) && !SweeperGetTTLOutputChannelOn(newValue) && !SweeperGetTTLOutputHijacked(newValue) )
-		// If we get here, then the destination TTL channel is available, so we'll proceed with the switch
-		if ( isTriggered && SweeperGetTTLOutputHijacked(originalValue) )
-			// This means that the original TTL channel is hijacked, and we are the hijacker
-			ImagerUnhijackSweeperCamTrigger(originalValue)
+	// Check that the new value is in bounds
+	if ( (0<=newValue) && (newValue<=3) )
+		// Check that the new TTL output is available
+		if ( !SweeperGetTTLOutputChannelOn(newValue) && !SweeperGetTTLOutputHijacked(newValue) )
+			// Check that the new value will not conflict with the test pulser
+			if ( !TestPulserIsTTLInUse(newValue) )
+				// If we get here, then the destination TTL channel is available, so we'll proceed with the switch
+				// Unhijack the original value, if needed
+				if ( isTriggered && SweeperGetTTLOutputHijacked(originalValue) )
+					// This means that the original TTL channel is hijacked, and we are the hijacker
+					ImagerUnhijackSweeperCamTrigger(originalValue)
+				endif
+				ImagerHijackSweeperCamTrigger(newValue)
+				triggerTTLOutputIndex=newValue
+			endif
 		endif
-		ImagerHijackSweeperCamTrigger(newValue)
-		triggerTTLOutputIndex=newValue
 	endif
 
 	// Restore the original DF
@@ -1404,15 +1412,25 @@ Function ImagerSetExposureADCIndex(newValue)
 	NVAR exposureADCIndex
 
 	Variable originalValue=exposureADCIndex
-	if ( (0<=newValue) && (newValue<=7) && !SweeperGetADCOn(newValue) && !SweeperGetADCHijacked(newValue) )
-		// If we get here, then the destination channel is available, so we'll proceed with the switch
-		if ( isTriggered && SweeperGetADCHijacked(originalValue) )
-			// This means that the original channel is hijacked, and we are the hijacker
-			ImagerUnhijackSweeperExposure(originalValue)
+	// Check that the new value is in bounds
+	if ( (0<=newValue) && (newValue<=7) )
+		// Check that the new ADC is available
+		if ( !SweeperGetADCOn(newValue) && !SweeperGetADCHijacked(newValue) )
+			// Check that the new value will not conflict with the test pulser
+			if ( !TestPulserIsADCInUse(newValue) )
+				// If we get here, then the destination ADC channel is available, so we'll proceed with the switch
+				// Unhijack the original value, if needed
+				if ( isTriggered && SweeperGetADCHijacked(originalValue) )
+					// This means that the original ADC channel is hijacked, and we are the hijacker
+					ImagerUnhijackSweeperExposure(originalValue)
+				endif
+				ImagerHijackSweeperExposure(newValue)
+				exposureADCIndex=newValue
+			endif
 		endif
-		ImagerHijackSweeperExposure(newValue)
-		exposureADCIndex=newValue
 	endif
+
+
 
 	// Restore the original DF
 	SetDataFolder savedDF	

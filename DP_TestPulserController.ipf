@@ -46,7 +46,10 @@ Function TestPulserContSetADCIndex(newValue)
 	Variable newValue
 	
 	TestPulserSetADCIndex(newValue)
-	TestPulserViewUpdate()			
+	TestPulserViewUpdate()
+	if ( IsImagingModuleInUse() )
+		ImagerViewTestPulserChanged()
+	endif
 End	
 
 
@@ -297,4 +300,14 @@ Function TPContTTLOutputIndexSVTouched(ctrlName,varNum,varStr,varName) : SetVari
 	endif
 End	
 
+
+//----------------------------------------------------------------------------------------------------------------------------
+Function TPContADCIndexSVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum
+	String varStr
+	String varName
+	
+	TestPulserContSetADCIndex(varNum)
+End	
 

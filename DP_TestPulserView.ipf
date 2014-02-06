@@ -54,7 +54,7 @@ Function TestPulserViewConstructor() : Graph
 	TitleBox proTipTitleBox,win=TestPulserView,pos={10,30+4},frame=0,title="(hit ESC key to stop)",disable=1
 
 	SetVariable adcIndexSV,win=TestPulserView,pos={110+30,10},size={60,1},title="ADC:"
-	SetVariable adcIndexSV,win=TestPulserView,limits={0,7,1},value= root:DP_TestPulser:adcIndex
+	SetVariable adcIndexSV,win=TestPulserView,limits={0,7,1}, proc=TPContADCIndexSVTouched
 	SetVariable dacIndexSV,win=TestPulserView,pos={110+30,30},size={60,1},title="DAC:",proc=TestPulserContDacIndexTwiddled
 	SetVariable dacIndexSV,win=TestPulserView,limits={0,3,1},value= root:DP_TestPulser:dacIndex
 
@@ -135,6 +135,7 @@ Function TestPulserViewUpdate()
 	endif
 
 	// Controls that don't update themselves	
+	SetVariable adcIndexSV, win=TestPulserView, value= _NUM:TestPulserGetADCIndex()
 	String amplitudeUnits=DigitizerModelGetDACUnitsString(dacIndex)		// Get units from the Digitizer model
 	TitleBox amplitudeTitleBox,win=TestPulserView,title=amplitudeUnits
 	CheckBox testPulseBaseSubCheckbox,win=TestPulserView,value=doBaselineSubtraction
