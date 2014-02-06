@@ -29,7 +29,7 @@ Function EpiLightConstructor()
 		// We ensure that isInControl=0, isOn=1 never happens
 	Variable /G ttlOutputIndex=1		// the TTL channel to which the light is hooked up
 	Variable /G triggeredDelay=10		// ms
-	Variable /G triggeredDuration=180		// ms
+	Variable /G triggeredDuration=210		// ms
 	
 	// Restore the original data folder
 	SetDataFolder savedDF	

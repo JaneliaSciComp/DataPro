@@ -362,14 +362,37 @@ Function CameraTryToGetSidxCameraHandle(sidxRoot)
 	// Note that this doesn't change any instance vars except the Camera error msg on failure.
 	Variable sidxRoot
 
-	// Create the SIDX camera object, referenced by sidxCamera
 	Variable sidxStatus
 	String errorMessage
+	Variable nCameras
+	SIDXRootCameraScan sidxRoot, sidxStatus
+	if (sidxStatus != 0)
+		// Scan didn't work
+		nCameras=0
+	else
+		// Scan worked				
+		// For debugging purposes
+		String report
+		SIDXRootCameraScanGetReport sidxRoot, report, sidxStatus
+		Print report
+		// Get the number of cameras
+		SIDXRootCameraScanGetCount sidxRoot, nCameras,sidxStatus
+		if (sidxStatus != 0)
+			nCameras=0
+		endif
+	endif
+	//Printf "# of cameras: %d\r", nCameras
+	if (nCameras<=0)
+		CameraSetErrorMessage("No cameras detected during scan")
+		return -1
+	endif		
+	// Create the SIDX camera object, referenced by sidxCamera
 	String sidxCameraName
 	SIDXRootCameraScanGetName sidxRoot, 0, sidxCameraName, sidxStatus
 	if (sidxStatus!=0)
 		SIDXRootGetLastError sidxRoot, errorMessage
 		CameraSetErrorMessage(sprintf1s("Error in SIDXRootCameraScanGetName: %s",errorMessage))
+		return -1
 	endif
 	//printf "sidxCameraName: %s\r", sidxCameraName
 	Variable sidxCamera

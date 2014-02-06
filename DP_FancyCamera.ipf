@@ -447,3 +447,10 @@ Function FancyCameraDestructor()
 	// Delete the FancyCamera DF
 	KillDataFolder /Z root:DP_FancyCamera
 End
+
+
+
+
+Function FancyCameraGetIsForReal()
+	return CameraGetIsForReal()
+End

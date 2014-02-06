@@ -528,14 +528,20 @@ Function ImagerContAcquireFinish(iSweep)
 		String exposureWaveNameAbs=sprintf1v("root:exposure_%d",iSweep)
 		WAVE exposureWave=$exposureWaveNameAbs
 		WAVE offsetEtc=offsetAndIntervalFromExposure(exposureWave)
-		Variable frameOffset=offsetEtc[0]
-		Variable frameInterval=offsetEtc[1]
-		Variable frameIntervalMin=offsetEtc[2]
-		Variable frameIntervalMax=offsetEtc[3]
-		if ((frameIntervalMax-frameIntervalMin)/frameInterval>0.01)
-			DoAlert /T="Warning" 0, "The frame intervals are highly variable (>1%)"
+		if ( numpnts(offsetEtc)<4 )
+			// This signals a problem with the exposure signal
+			DoAlert /T="Warning" 0, "There is a problem with the exposure signal.  Unable to guarantee frame times are properly synchronized with other data."
+		else
+			// The exposure signal appears to be good
+			Variable frameOffset=offsetEtc[0]
+			Variable frameInterval=offsetEtc[1]
+			Variable frameIntervalMin=offsetEtc[2]
+			Variable frameIntervalMax=offsetEtc[3]
+			if ((frameIntervalMax-frameIntervalMin)/frameInterval>0.01)
+				DoAlert /T="Warning" 0, "The frame intervals are highly variable (>1%)"
+			endif
+			SetScale /P z, frameOffset, frameInterval, "ms", $imageWaveName
 		endif
-		SetScale /P z, frameOffset, frameInterval, "ms", $imageWaveName
 	endif
 	
 	// Calculate ROI signals, store in root DF

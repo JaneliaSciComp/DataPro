@@ -182,6 +182,9 @@ Function InitializeDataPro()
 	if ( IsImagingModuleInUse() )
 		EpiLightConstructor()
 		FancyCameraConstructor()
+		if (!FancyCameraGetIsForReal())
+			DoAlert /T="Unable to Find Camera" 0, "Unable to find camera.  Using faux software camera."
+		endif
 		ImagerConstructor()
 		ImageBrowserModelConstructor()
 	endif

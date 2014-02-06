@@ -42,7 +42,7 @@ Function SweeperConstructor()
 
 	// These are used by all kinds of Sweeper stimuli
 	Variable /G dtWanted=0.05	// desired sampling interval, ms
-	Variable /G totalDuration=200		// total duration, ms
+	Variable /G totalDuration=250		// total duration, ms
 
 	// Multipliers for the DAC channels
 	Variable nDACChannels=DigitizerModelGetNumDACChans()

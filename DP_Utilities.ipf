@@ -891,9 +891,23 @@ Function /WAVE offsetAndIntervalFromExposure(exposure)
 	Make /FREE fallingEdgeTimes		// ms
 	FindLevels /DEST=fallingEdgeTimes /EDGE=2 /M=1 /Q exposure, threshold
 	
-	// Check that there are the same number of rising edges as falling edges
+	// Check for at least one rising, falling edge
 	Variable nRisingEdges=numpnts(risingEdgeTimes)
 	Variable nFallingEdges=numpnts(fallingEdgeTimes)
+	if ( nRisingEdges<1 || nFallingEdges<1 )
+		// if not, signal an error condition (a length-zero return wave)
+		Make /FREE /N=0 result		
+		return result		
+	endif
+
+	// Check that the first rising edge comes before the first falling edge
+	if (fallingEdgeTimes[0]<=risingEdgeTimes[0])
+		// if not, signal an error condition (a length-zero return wave)
+		Make /FREE /N=0 result		
+		return result
+	endif
+	
+	// Check that there are the same number of rising edges as falling edges
 	if (nRisingEdges!=nFallingEdges)
 		// if not, signal an error condition (a length-zero return wave)
 		Make /FREE /N=0 result		
@@ -906,39 +920,29 @@ Function /WAVE offsetAndIntervalFromExposure(exposure)
 	Variable frameIntervalMax
 	Variable frameInterval
 	
-	// Check for zero edges
-	if (nRisingEdges==0)
-		frameOffset=nan
+	// Compute the time at the center of each frame
+	Duplicate /FREE risingEdgeTimes, frameCenterTimes
+	frameCenterTimes+=fallingEdgeTimes
+	frameCenterTimes/=2
+
+	// The offset is the center time of the first frame
+	frameOffset=frameCenterTimes[0]
+	
+	// Compute the n-1 frame intervals
+	Variable n=numpnts(exposure)
+	Make /FREE /N=(nRisingEdges-1) frameIntervals
+	frameIntervals=frameCenterTimes[p+1]-frameCenterTimes[p]
+
+	// Compute min, max, and mean of the frame intervals
+	// We'll return the mean as our overall frame interval
+	if ( numpnts(frameIntervals)==0 )
 		frameIntervalMin=+inf
 		frameIntervalMax=-inf
 		frameInterval=nan
 	else	
-		// At least one rising edge
-
-		// Compute the time at the center of each frame
-		Duplicate /FREE risingEdgeTimes, frameCenterTimes
-		frameCenterTimes+=fallingEdgeTimes
-		frameCenterTimes/=2
-
-		// The offset is the center time of the first frame
-		frameOffset=frameCenterTimes[0]
-		
-		// Compute the n-1 frame intervals
-		Variable n=numpnts(exposure)
-		Make /FREE /N=(nRisingEdges-1) frameIntervals
-		frameIntervals=frameCenterTimes[p+1]-frameCenterTimes[p]
-	
-		// Compute min, max, and mean of the frame intervals
-		// We'll return the mean as our overall frame interval
-		if ( numpnts(frameIntervals)==0 )
-			frameIntervalMin=+inf
-			frameIntervalMax=-inf
-			frameInterval=nan
-		else	
-			frameIntervalMin=WaveMin(frameIntervals)
-			frameIntervalMax=WaveMax(frameIntervals)
-			frameInterval=mean(frameIntervals)
-		endif
+		frameIntervalMin=WaveMin(frameIntervals)
+		frameIntervalMax=WaveMax(frameIntervals)
+		frameInterval=mean(frameIntervals)
 	endif
 
 	// Package results in a wave

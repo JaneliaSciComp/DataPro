@@ -69,15 +69,17 @@ Function CameraConstructor()
 		sidxRoot=CameraTryToGetSidxRootHandle()
 		isSidxRootValid=(sidxRoot>=0)
 		if (isSidxRootValid)
-			sidxCamera=CameraTryToGetSidxRootHandle()
-			if (sidxCamera>=0)
+			sidxCamera=CameraTryToGetSidxCameraHandle(sidxRoot)
+			if (sidxCamera<0)
+				isSidxCameraValid=0
+			else
 				CameraInitCCDDims()
 				isSidxCameraValid=CameraInitSidxCamera(sidxCamera)
 			endif
 		endif
-		if (!isSidxCameraValid)
+		areWeForReal=isSidxCameraValid
+		if (!areWeForReal)
 			// if unable to get a camera object, we fake
-			areWeForReal=0
 			widthCCD=512
 			heightCCD=512
 			iBottom=heightCCD-1
@@ -1032,6 +1034,19 @@ Function CameraDestructor()
 End
 
 
+
+
+
+
+Function CameraGetIsForReal()
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+	NVAR areWeForReal
+	Variable value=areWeForReal
+	SetDataFolder savedDF		
+	return value
+End
 
 
 
