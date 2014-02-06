@@ -23,11 +23,22 @@ Function ImagerViewConstructor() : Panel
 	// This is used in several places
 	String absVarName
 	
+	// Heights of each of the group boxes, and hence the panel
+	Variable groupBoxPadHeight=4
+	Variable groupBoxSpaceHeight=8
+	Variable illuminationGroupBoxHeight=54+24
+	Variable temperatureGroupBoxHeight=44
+	Variable snapshotsGroupBoxHeight=80
+	Variable videoGroupBoxHeight=96+21+26
+	Variable roiGroupBoxHeight=250
+	Variable panelHeight= groupBoxPadHeight + illuminationGroupBoxHeight + groupBoxSpaceHeight + temperatureGroupBoxHeight + groupBoxSpaceHeight 
+	panelHeight += (snapshotsGroupBoxHeight + groupBoxSpaceHeight + videoGroupBoxHeight + groupBoxSpaceHeight + roiGroupBoxHeight +groupBoxPadHeight)
+	
 	Variable yOffsetRow
 	Variable xOffset=1550
 	Variable yOffset=54
 	Variable panelWidth=330
-	Variable panelHeight=562+21+25
+	//Variable panelHeight=562+21+25
 	NewPanel /W=(xOffset,yOffset,xOffset+panelWidth,yOffset+panelHeight)  /N=ImagerView /K=1 as "Imager Controls"
 	ModifyPanel /W=ImagerView fixedSize=1
 
@@ -35,15 +46,14 @@ Function ImagerViewConstructor() : Panel
 	Variable groupBoxTitleHeight=6
 	Variable groupBoxWidth=panelWidth-10
 	Variable groupBoxXOffset=(panelWidth-groupBoxWidth)/2
-	Variable groupBoxSpaceHeight=8
 	
 	
 	//
 	// Illumination Group
 	//
 	
-	Variable groupBoxYOffset=3
-	Variable groupBoxHeight=54+24
+	Variable groupBoxYOffset=groupBoxPadHeight
+	Variable groupBoxHeight=illuminationGroupBoxHeight
 	GroupBox illuminationGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Illumination"
 
 	// TTL Output SetVariable		
@@ -91,7 +101,7 @@ Function ImagerViewConstructor() : Panel
 	// Temperature Group
 	//
 	groupBoxYOffset+=groupBoxHeight+groupBoxSpaceHeight
-	groupBoxHeight=44
+	groupBoxHeight=temperatureGroupBoxHeight
 	GroupBox temperatureGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="CCD Temperature"
 	
 	height=14
@@ -111,7 +121,7 @@ Function ImagerViewConstructor() : Panel
 	// Snapshots Group
 	//
 	groupBoxYOffset+=groupBoxHeight+groupBoxSpaceHeight
-	groupBoxHeight=80
+	groupBoxHeight=snapshotsGroupBoxHeight
 	GroupBox fullFrameGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Snapshots"
 
 	xOffset=16
@@ -160,7 +170,7 @@ Function ImagerViewConstructor() : Panel
 	// Video Group
 	//
 	groupBoxYOffset+=groupBoxHeight+groupBoxSpaceHeight
-	groupBoxHeight=96+21
+	groupBoxHeight=videoGroupBoxHeight
 	GroupBox videoGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Video"
 
 	// Take video button
@@ -222,9 +232,6 @@ Function ImagerViewConstructor() : Panel
 	SetVariable nFramesForVideoSV, win=ImagerView, limits={1,inf,1}, proc=ICNFramesForVideoSVTouched
 
 	// Frame rate titlebox parts
-//	xOffset=204
-//	yOffset=yOffsetRow-2
-//	TitleBox frameRateTB, win=ImagerView, pos={xOffset,yOffset}, frame=0
 	yOffset=yOffsetRow-13
 	xOffset=200
 	TitleBox rateTB, win=ImagerView, pos={xOffset,yOffset}, frame=0, title="Rate:"
@@ -233,8 +240,10 @@ Function ImagerViewConstructor() : Panel
 	xOffset=302
 	TitleBox rateUnitsTB, win=ImagerView, pos={xOffset,yOffset}, frame=0, title="Hz"
 
+	// Triggering stuff
+	
 	// Set y offset for this line
-	yOffsetRow=videoYOffset+52+22
+	yOffsetRow=videoYOffset+52+24
 
 	// Is triggered SV
 	xOffset=18
@@ -257,6 +266,17 @@ Function ImagerViewConstructor() : Panel
 	SetVariable triggerDelaySV, win=ImagerView, limits={0,inf,10}, proc=ICTriggerDelaySVTouched
 	TitleBox triggerDelayUnitsTB, win=ImagerView, pos={xOffset+width+2,yOffset+2}, frame=0, title="ms"
 
+	// Set y offset for this line
+	yOffsetRow=videoYOffset+52+24+23
+	
+	// ADC for exposure
+	xOffset=106
+	yOffset=yOffsetRow
+	SetVariable exposureADCSV, win=ImagerView, pos={xOffset,yOffset}, size={120,1}, limits={0,7,1}, title="Exposure ADC:"
+	SetVariable exposureADCSV, win=ImagerView, proc=ICExposureADCSVTouched
+	
+
+
 //	// bin width SV
 //	yOffset=276
 //	SetVariable binWidthSV,win=ImagerView,pos={55,yOffset},size={90,14},proc=ICBinSVTwiddled,title="Bin Width:"
@@ -271,7 +291,7 @@ Function ImagerViewConstructor() : Panel
 	// ROI Group
 	//
 	groupBoxYOffset+=groupBoxHeight+groupBoxSpaceHeight
-	groupBoxHeight=250
+	groupBoxHeight=roiGroupBoxHeight
 	GroupBox roisGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Regions of Interest"
 	
 	// ROI Index
@@ -501,6 +521,7 @@ Function ImagerViewUpdate()
 	SetVariable triggerTTLChannelSV, win=ImagerView, value=_NUM:triggerTTLOutputIndex, disable=fromEnable(isTriggered)
 	SetVariable triggerDelaySV, win=ImagerView, value=_NUM:ImagerGetTriggerDelay(), disable=fromEnable(isTriggered)
 	TitleBox triggerDelayUnitsTB, win=ImagerView, disable=fromEnable(isTriggered)
+	SetVariable exposureADCSV, win=ImagerView, value=_NUM:ImagerGetExposureADCIndex(), disable=fromEnable(isTriggered)
 
 	// Update the CCD temperature
 	Variable ccdTemperature=ImagerGetCCDTemperature()

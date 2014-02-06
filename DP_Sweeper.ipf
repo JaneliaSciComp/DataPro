@@ -65,9 +65,9 @@ Function SweeperConstructor()
 	// directly.
 	Make /O /N=(nADCChannels) adcChannelOn
 	adcChannelOn[0]=1		// turn on ADC 0 by default, leave rest off
+	Make /O /N=(nADCChannels) adcChannelHijacked  	// all ADCs not hijacked by default
 	Make /O /N=(nDACChannels) dacChannelOn
 	dacChannelOn[0]=1		// turn on DAC 0 by default, leave rest off
-	Make /O /N=(nDACChannels) dacChannelHijacked  	// all DACs not hijacked by default
 	Make /O /N=(nTTLChannels) ttlOutputChannelOn  	// all TTL outputs off by default
 	Make /O /N=(nTTLChannels) ttlOutputChannelHijacked  	// all TTL outputs not hijacked by default
 
@@ -111,11 +111,11 @@ Function SweeperConstructor()
 	SetDataFolder root:DP_Sweeper
 	//SweeperUpdateBuiltinTTLPulse()
 
-	// If the imaging module is in use, add an analog input for the exposure signal
-	if ( IsImagingModuleInUse() )
-		adcBaseName[7]="exposure"
-		adcChannelOn[7]=1
-	endif
+//	// If the imaging module is in use, add an analog input for the exposure signal
+//	if ( IsImagingModuleInUse() )
+//		adcBaseName[7]="exposure"
+//		adcChannelOn[7]=1
+//	endif
  
  	// Variables that handle coordination with the epi light
  	//String /G epiLightWaveName="epiLight"
@@ -1001,6 +1001,65 @@ Function SweeperUnhijackTTLOutput(i)
 	SetDataFolder savedDF	
 End
 
+Function SweeperGetADCHijacked(i)
+	Variable i
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+	
+	WAVE adcChannelHijacked
+	
+	Variable result=adcChannelHijacked[i]
+	
+	SetDataFolder savedDF	
+	
+	return result
+End
+
+Function SweeperHijackADC(i,name)
+	Variable i
+	String name
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+	
+	WAVE adcChannelHijacked
+	
+	// If that TTL output is already in use, do nothing
+	if (SweeperGetADCOn(i))
+		return 0
+	endif
+
+	//// Add wave to self
+	//SweeperAddTTLWave(stim,name)
+	
+	// Set the given adcIndex to use the trigger stim, and turn it on, and mark it as hijacked
+	SweeperSetADCChannelOn(i,1)
+	SweeperSetADCBaseName(i,name)
+	adcChannelHijacked[i]=1
+	
+	SetDataFolder savedDF	
+End
+
+Function SweeperUnhijackADC(i)
+	Variable i
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+	
+	WAVE adcChannelHijacked
+	
+	// Mark channel as unhijacked, turn off
+	adcChannelHijacked[i]=0
+	SweeperSetADCBaseName(i,sprintf1v("ad%d",i))
+	SweeperSetADCChannelOn(i,0)
+
+	//// Remove the cameraTrigger wave
+	//SweeperRemoveTTLWave(SweeperGetADCWaveName(i))	
+	
+	SetDataFolder savedDF	
+End
+
 //Function SweeperAddCameraTrigger(ttlOutputIndex, delay)
 //	Variable ttlOutputIndex
 //	Variable delay	// ms
@@ -1087,6 +1146,16 @@ Function /S SweeperGetADCBaseName(i)
 	String result=adcBaseName[i]
 	SetDataFolder savedDF
 	return result
+End
+
+Function /S SweeperSetADCBaseName(i,name)
+	Variable i
+	String name
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+	WAVE /T adcBaseName
+	adcBaseName[i]=name
+	SetDataFolder savedDF
 End
 
 Function /S SweeperGetTTLWaveNamesOfType(waveTypeString)

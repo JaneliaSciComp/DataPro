@@ -400,10 +400,12 @@ Function SweeperViewADCEnablementChanged(i)
 
 	WAVE adcChannelOn
 	
+	Variable isHijacked=SweeperGetADCHijacked(i)
+	
 	String controlName=sprintf1v("ADC%dCheckbox", i)
-	CheckBox $controlName, win=SweeperView, value=adcChannelOn[i]
+	CheckBox $controlName, win=SweeperView, value=adcChannelOn[i], disable=fromEnable(!isHijacked)
 	controlName=sprintf1v("adc%dBaseNameSetVariable", i)		
-	SetVariable $controlName,win=SweeperView,disable=(adcChannelOn[i]?0:2)
+	SetVariable $controlName, win=SweeperView, disable=fromEnable(!isHijacked&&adcChannelOn[i])
 
 	// Update the dt display
 	SweeperViewUpdateDt()

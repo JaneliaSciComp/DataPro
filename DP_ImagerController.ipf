@@ -389,6 +389,21 @@ Function ICTriggerDelaySVTouched(ctrlName,varNum,varStr,varName) : SetVariableCo
 	OutputViewerViewUpdate()
 End
 
+Function ICExposureADCSVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum	// value of variable as number
+	String varStr		// value of variable as string
+	String varName	// name of variable
+
+	ImagerSetExposureADCIndex(varNum)
+	ImagerViewModelChanged()
+	SweeperViewSweeperChanged()
+	TestPulserViewSweeperChanged()
+End
+
+
+
+
 //
 // The routines that do substantial stuff are below
 //

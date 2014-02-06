@@ -25,6 +25,7 @@ Function ImagerConstructor()
 	Variable /G isTriggered		// boolean, true iff the video acquisition will be triggered (as opposed to free-running)
 	Variable /G triggerTTLOutputIndex=3
 	Variable /G triggerDelay=10	// in ms
+	Variable /G exposureADCIndex=7
 	Variable /G isFocusing=0		// boolean, whether or not we're currently focusing
 	Variable /G isAcquiringVideo=0		// boolean, whether or not we're currently taking video
 	//Variable /G image_focus	// image_focus may be unnecessary if there is a separate focus routine
@@ -955,9 +956,11 @@ Function ImagerSetIsTriggered(newValue)
 	if (isTriggered)
 		ImagerHijackSweeperCamTrigger(ImagerGetTriggerTTLOutputIndex())
 		ImagerHijackSweeperEpiGate(EpiLightGetTTLOutputIndex())
+		ImagerHijackSweeperExposure(ImagerGetExposureADCIndex())
 	else
 		ImagerUnhijackSweeperCamTrigger(ImagerGetTriggerTTLOutputIndex())
 		ImagerUnhijackSweeperEpiGate(EpiLightGetTTLOutputIndex())
+		ImagerUnhijackSweeperExposure(ImagerGetExposureADCIndex())
 	endif
 	
 	// Restore the original DF
@@ -1370,6 +1373,53 @@ End
 
 
 
+Function ImagerGetExposureADCIndex()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR exposureADCIndex
+
+	Variable result=exposureADCIndex
+
+	// Restore the original DF
+	SetDataFolder savedDF	
+	
+	// Return the target CCD temp
+	return result
+End
+
+
+
+Function ImagerSetExposureADCIndex(newValue)
+	Variable newValue
+
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR isTriggered
+	NVAR exposureADCIndex
+
+	Variable originalValue=exposureADCIndex
+	if ( (0<=newValue) && (newValue<=7) && !SweeperGetADCOn(newValue) && !SweeperGetADCHijacked(newValue) )
+		// If we get here, then the destination channel is available, so we'll proceed with the switch
+		if ( isTriggered && SweeperGetADCHijacked(originalValue) )
+			// This means that the original channel is hijacked, and we are the hijacker
+			ImagerUnhijackSweeperExposure(originalValue)
+		endif
+		ImagerHijackSweeperExposure(newValue)
+		exposureADCIndex=newValue
+	endif
+
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+
 Function ImagerGetTriggerDelay()
 	// Switch to the data folder
 	String savedDF=GetDataFolder(1)
@@ -1537,6 +1587,19 @@ End
 Function ImagerUnhijackSweeperEpiGate(ttlOutputIndex)
 	Variable ttlOutputIndex
 	SweeperUnhijackTTLOutput(ttlOutputIndex)
+End
+
+
+Function ImagerHijackSweeperExposure(adcIndex)
+	Variable adcIndex	
+	String name="exposure"
+	SweeperHijackADC(adcIndex,name)	
+End
+
+
+Function ImagerUnhijackSweeperExposure(adcIndex)
+	Variable adcIndex
+	SweeperUnhijackADC(adcIndex)
 End
 
 
