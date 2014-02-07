@@ -23,6 +23,7 @@ Function CameraConstructor()
 		// We do this in case an experiment has just been loaded.  In this case, the camera constructor gets
 		// called, so this is a good place to verify that any supposedly-valid SIDX handles really are valid.
 		CameraValidifySidxHandles()
+		CameraSetTransform( CameraGetUserFromCameraReflectX(), CameraGetUserFromCameraReflectY(), CameraGetUserFromCameraSwapXY() )
 	else
 		// If the data folder doesn't exist, create it (and switch to it)
 		// IMAGING GLOBALS
@@ -60,7 +61,7 @@ Function CameraConstructor()
 		
 		Variable /G userFromCameraReflectX=0	// boolean
 		Variable /G userFromCameraReflectY=0	// boolean
-		Variable /G userFromCameraSwapXandY=0	// boolean
+		Variable /G userFromCameraSwapXY=0	// boolean
 		// To go from camera to user, we reflect X (or not), reflect Y (or not), and then swap X and Y (or not)
 		// In that order---(possible) reflections then (possible) swap
 		// This covers all 8 possible transforms, including rotations and anything else
@@ -96,13 +97,13 @@ End
 
 
 //Function CameraSetUserFromCameraMatrix(userFromCameraMatrix)
-Function CameraSetTransform(userFromCameraReflectXNew,userFromCameraReflectYNew,userFromCameraSwapXandYNew)
+Function CameraSetTransform(userFromCameraReflectXNew,userFromCameraReflectYNew,userFromCameraSwapXYNew)
 	// This is currently hardcoded to one specific transform.
 	// Need to generalize this--it's pretty embarassing at present.
 	// Also need to handle this properly for a fake camera
 	Variable userFromCameraReflectXNew	// boolean
 	Variable userFromCameraReflectYNew	// boolean
-	Variable userFromCameraSwapXandYNew	// boolean
+	Variable userFromCameraSwapXYNew	// boolean
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
@@ -113,12 +114,12 @@ Function CameraSetTransform(userFromCameraReflectXNew,userFromCameraReflectYNew,
 	NVAR sidxCamera
 	NVAR userFromCameraReflectX
 	NVAR userFromCameraReflectY
-	NVAR userFromCameraSwapXandY
+	NVAR userFromCameraSwapXY
 
 	// Set them
 	userFromCameraReflectX=userFromCameraReflectXNew	// boolean
 	userFromCameraReflectY=userFromCameraReflectYNew	// boolean
-	userFromCameraSwapXandY=userFromCameraSwapXandYNew	// boolean
+	userFromCameraSwapXY=userFromCameraSwapXYNew	// boolean
 
 	// Need these below
 	Variable sidxStatus
@@ -146,7 +147,7 @@ Function CameraSetTransform(userFromCameraReflectXNew,userFromCameraReflectYNew,
 		endif
 	endif
 	
-	if (isSidxCameraValid && userFromCameraSwapXandY)
+	if (isSidxCameraValid && userFromCameraSwapXY)
 		// There may be a slightly cleaner way to do this, but this works.
 		SIDXCameraRotateMirrorX sidxCamera, sidxStatus
 		if (sidxStatus!=0)
@@ -234,7 +235,7 @@ Function CameraROISetToROIsInUserSpace(roisWave,nBinSize)
 	// Declare instance variables
 	NVAR userFromCameraReflectX
 	NVAR userFromCameraReflectY
-	NVAR userFromCameraSwapXandY
+	NVAR userFromCameraSwapXY
 
 	// Clear the ROI	
 	CameraROIClear(nBinSize)
@@ -243,7 +244,7 @@ Function CameraROISetToROIsInUserSpace(roisWave,nBinSize)
 	if (nROIs>0)
 		// Calc the ROI that just includes all the ROIs, in same (user image heckbertian) coords as the ROIs themselves
 		Wave boundingROIInUS=boundingROIFromROIs(roisWave)
-		Wave boundingROIInCS=cameraROIFromUserROI(boundingROIInUS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXandY)
+		Wave boundingROIInCS=cameraROIFromUserROI(boundingROIInUS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXY)
 		Wave alignedROIInCS=alignCameraROIToGrid(boundingROIInCS,nBinSize)
 		CameraSetROIInCSAndAligned(alignedROIInCS)
 	endif
@@ -1318,11 +1319,11 @@ Function /WAVE CameraGetAlignedROIInUS()
 	// Declare instance variables
 	NVAR userFromCameraReflectX
 	NVAR userFromCameraReflectY
-	NVAR userFromCameraSwapXandY
+	NVAR userFromCameraSwapXY
 
 	// Get the ROI, convert
 	Wave roiInCS=CameraGetAlignedROIInCS()
-	Wave roiInUS=userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXandY)
+	Wave roiInUS=userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXY)
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -1346,17 +1347,18 @@ Function CameraCCDWidthGetInUS()
 	// Declare instance variables
 	NVAR userFromCameraReflectX
 	NVAR userFromCameraReflectY
-	NVAR userFromCameraSwapXandY
+	NVAR userFromCameraSwapXY
 
 	// Get the ROI, convert
 	Make /FREE /N=4 roiInCS={0,0,CameraCCDWidthGet(),CameraCCDHeightGet()}
-	Wave roiInUS=userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXandY)
+	Wave roiInUS=userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXY)
 
 	// Restore the data folder
 	SetDataFolder savedDF	
 	
 	return (roiInUS[2])
 End
+
 
 
 
@@ -1373,14 +1375,57 @@ Function CameraCCDHeightGetInUS()
 	// Declare instance variables
 	NVAR userFromCameraReflectX
 	NVAR userFromCameraReflectY
-	NVAR userFromCameraSwapXandY
+	NVAR userFromCameraSwapXY
 
 	// Get the ROI, convert
 	Make /FREE /N=4 roiInCS={0,0,CameraCCDWidthGet(),CameraCCDHeightGet()}
-	Wave roiInUS=userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXandY)
+	Wave roiInUS=userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXY)
 
 	// Restore the data folder
 	SetDataFolder savedDF	
 	
 	return (roiInUS[3])
 End
+
+
+
+
+
+Function CameraGetUserFromCameraReflectX()
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera	
+	NVAR userFromCameraReflectX
+	Variable result=userFromCameraReflectX
+	SetDataFolder savedDF	
+	return result	
+End
+
+
+
+
+
+Function CameraGetUserFromCameraReflectY()
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera	
+	NVAR userFromCameraReflectY
+	Variable result=userFromCameraReflectY
+	SetDataFolder savedDF	
+	return result	
+End
+
+
+
+
+
+Function CameraGetUserFromCameraSwapXY()
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera	
+	NVAR userFromCameraSwapXY
+	Variable result=userFromCameraSwapXY
+	SetDataFolder savedDF	
+	return result	
+End
+
+
+
+

@@ -152,7 +152,7 @@ End
 
 
 
-Function /WAVE cameraROIFromUserROI(roiInUS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXandY)
+Function /WAVE cameraROIFromUserROI(roiInUS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXY)
 	// Translates a userspace image heckbertian ROI into a cameraspace
 	// image heckbertian ROI.
 	// InUS == in userspace
@@ -160,7 +160,7 @@ Function /WAVE cameraROIFromUserROI(roiInUS,userFromCameraReflectX,userFromCamer
 	Wave roiInUS
 	Variable userFromCameraReflectX	// boolean
 	Variable userFromCameraReflectY	// boolean
-	Variable userFromCameraSwapXandY	// boolean
+	Variable userFromCameraSwapXY	// boolean
 	
 	// Get the CCD size in the camera sapce
  	Variable ccdWidthInCS=CameraCCDWidthGet()
@@ -172,7 +172,7 @@ Function /WAVE cameraROIFromUserROI(roiInUS,userFromCameraReflectX,userFromCamer
 	Duplicate /FREE roiCornersInUS, roiCornersInCS
 	
 	// Swap x and y
-	if (userFromCameraSwapXandY)
+	if (userFromCameraSwapXY)
 		Duplicate /FREE roiCornersInCS, temp	
 		roiCornersInCS[0][]=temp[1][q]
 		roiCornersInCS[1][]=temp[0][q]
@@ -209,7 +209,7 @@ End
 
 
 
-Function /WAVE userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXandY)
+Function /WAVE userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXY)
 	// Translates a cameraspace image heckbertian ROI into a userspace
 	// image heckbertian ROI.
 	// InUS == in userspace
@@ -217,7 +217,7 @@ Function /WAVE userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCamer
 	Wave roiInCS
 	Variable userFromCameraReflectX	// boolean
 	Variable userFromCameraReflectY	// boolean
-	Variable userFromCameraSwapXandY	// boolean
+	Variable userFromCameraSwapXY	// boolean
 	
 	// Get the CCD size in the camera sapce
  	Variable ccdWidthInCS=CameraCCDWidthGet()
@@ -239,7 +239,7 @@ Function /WAVE userROIFromCameraROI(roiInCS,userFromCameraReflectX,userFromCamer
 	endif
 	
 	// Swap x and y
-	if (userFromCameraSwapXandY)
+	if (userFromCameraSwapXY)
 		Duplicate /FREE roiCornersInUS, temp	
 		roiCornersInUS[0][]=temp[1][q]
 		roiCornersInUS[1][]=temp[0][q]
