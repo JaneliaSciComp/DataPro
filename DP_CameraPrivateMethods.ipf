@@ -307,7 +307,7 @@ Function CameraIsSidxRootReallyValid(sidxRoot)
 	
 	// Try a sidx call that should succeed iff sidxRoot is valid
 	Variable sidxStatus
-	Variable serialNumber
+	String serialNumber
 	SIDXRootSoftwareGetSerial sidxRoot, serialNumber, sidxStatus
 	Variable result=(sidxStatus==0)
 
@@ -330,8 +330,7 @@ Function CameraTryToGetSidxRootHandle()
 	Variable sidxRoot
 	SIDXRootOpen sidxRoot, license, sidxStatus
 	if (sidxStatus!=0)
-		SIDXRootGetLastError sidxRoot, errorMessage
-		CameraSetErrorMessage(sprintf1s("Error in SIDXRootOpen: %s",errorMessage))
+		CameraSetErrorMessage("Unable to open SIDX root object")
 		sidxRoot=-1
 	endif
 	

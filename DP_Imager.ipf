@@ -21,7 +21,7 @@ Function ImagerConstructor()
 		//Variable /G wheelPositionForEpiLightOn=1	// Setting of something that results in epi-illumination being on
 		//Variable /G wheelPositionForEpiLightOff=0	// Setting of something that results in epi-illumination being off
 		Variable /G isTriggered		// boolean, true iff the video acquisition will be triggered (as opposed to free-running)
-		Variable /G triggerTTLOutputIndex=3
+		Variable /G triggerTTLOutputIndex=2
 		Variable /G triggerDelay=10	// in ms
 		Variable /G exposureADCIndex=7
 		Variable /G isFocusing=0		// boolean, whether or not we're currently focusing
