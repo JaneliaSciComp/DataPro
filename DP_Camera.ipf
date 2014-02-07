@@ -131,6 +131,14 @@ Function CameraSetTransform(userFromCameraReflectXNew,userFromCameraReflectYNew,
 	//SIDXCameraRotateSet(n) actually does n CCW rotations
 	// We'll have to keep this in mind to translate our desired transformation into SIDX calls
 
+	if (isSidxCameraValid)
+		SIDXCameraRotateClear sidxCamera, sidxStatus
+		if (sidxStatus!=0)
+			SIDXCameraGetLastError sidxCamera, errorMessage
+			DoAlert 0, sprintf1s("Error in SIDXCameraRotateClear: %s",errorMessage)
+		endif
+	endif
+		
 	if (isSidxCameraValid && userFromCameraReflectX)
 		SIDXCameraRotateMirrorY sidxCamera, sidxStatus
 		if (sidxStatus!=0)
