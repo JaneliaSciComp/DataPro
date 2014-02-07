@@ -186,6 +186,11 @@ Function InitializeDataPro()
 			DoAlert /T="Unable to Find Camera" 0, "Unable to find camera.  Using faux software camera."
 		endif
 		ImagerConstructor()
+		ImagerSetIsAcquiringVideo(0)	
+			// If something got borked during acquire, and the user had to delete the old window and get a new one, 
+			// this makes sure the view doesn't look like video is being acquired
+		ImagerViewCCDTempChanged()
+		ICStartTempUpdateBGTask()
 		ImageBrowserModelConstructor()
 	endif
 //	// Set these things 

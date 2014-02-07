@@ -7,70 +7,75 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access
 
 Function ImagerConstructor()
-	// if the DF already exists, nothing to do
-	if (DataFolderExists("root:DP_Imager"))
-		return 0		// have to return something
-	endif
-
 	// Save the current DF
 	String savedDF=GetDataFolder(1)
 
-	// Make a new DF, switch to it
-	NewDataFolder /O/S root:DP_Imager
-
-	// Instance variables
-	//String /G allVideoWaveNames		// a semicolon-separated list of all the video wave names
-	//Variable /G wheelPositionForEpiLightOn=1	// Setting of something that results in epi-illumination being on
-	//Variable /G wheelPositionForEpiLightOff=0	// Setting of something that results in epi-illumination being off
-	Variable /G isTriggered		// boolean, true iff the video acquisition will be triggered (as opposed to free-running)
-	Variable /G triggerTTLOutputIndex=3
-	Variable /G triggerDelay=10	// in ms
-	Variable /G exposureADCIndex=7
-	Variable /G isFocusing=0		// boolean, whether or not we're currently focusing
-	Variable /G isAcquiringVideo=0		// boolean, whether or not we're currently taking video
-	//Variable /G image_focus	// image_focus may be unnecessary if there is a separate focus routine
-	//Variable /G isROI=0		// is there a ROI? (false=>full frame)
-	//Variable /G isBackgroundROIToo=0		// if isROI, is there a background ROI too? (if full-frame, this is unused)
-	Variable /G ccdTargetTemperature= -40		// the setpoint CCD temperature
-	Variable /G ccdTemperature=nan			// the CCD temperature as of last check
-	Variable /G nFramesForVideo=4	// number of frames to acquire
-	//Variable /G focusingExposure=100		// duration of each exposure when focusing, in ms
-	Variable /G snapshotExposureWanted=50		// desired duration of each frame exposure for full-frame images, in ms
-	Variable /G snapshotExposure=nan		// duration of each frame exposure for full-frame images, in ms
-	Variable /G videoExposureWanted=50		// desired exposure duration for video, in ms
-	Variable /G videoExposure=nan	// duration of each frame for triggered video, in ms
-	Variable /G frameRate=nan	// Video frame rate, in Hz, based on exposure, binning, ROIs (if any)
-	//Variable /G iFrame		// Frame index to show in the browser
-	String /G snapshotWaveBaseName="snap"		// the base name of the full-frame image waves, including the underscore
-	//String /G focusWaveBaseName="full_"		// the base name of the focusing image waves, including the underscore
-	String /G videoWaveBaseName="video"	// the base name of the triggered video waves, including the underscore
-	//Variable /G iFullFrameWave=1	// The "sweep number" to use for the next full-frame image
-	//Variable /G iFocusWave=1		// The "sweep number" to use for the next focus image
-	//Variable /G iVideoWave=1		// The "sweep number" to use for the video 
-	Make /O /U binSizeList={1,2,4,8}		// CCD bin size, an unsigned int
-	Variable /G binSizeIndex=0
-	Variable /G iROI=nan		// indicates the current ROI
-	//Variable /G binnedFrameWidth=(iROIRight-iROILeft+1)/binSize	// Width of the binned ROI image
-	//Variable /G binnedFrameHeight=(iROIBottom-iROITop+1)/binSize		// Height of the binned ROI image
-	//Variable /G blackCount=0		// the CCD count that gets mapped to black
-	//Variable /G whiteCount=2^16-1	// the CCD count that gets mapped to white
-	Variable /G moveAllROIs=0		// Whether to move all the ROIs when ImagerTranslateCurrentROIOrAll() is called
+	if (!DataFolderExists("root:DP_Imager"))
+		// If the DF doesn't exist, set it up
+		
+		// Make a new DF, switch to it
+		NewDataFolder /O /S root:DP_Imager
 	
-	// the list of possible calculations
-	Make /O /T calculationList={"Mean","Sum","DF/F"}
-	Variable /G calculationIndex=0		// default is mean
-	Variable /G nBaselineFrames=1	// Number of frames to use for baseline in DF/F calculation
+		// Instance variables
+		//String /G allVideoWaveNames		// a semicolon-separated list of all the video wave names
+		//Variable /G wheelPositionForEpiLightOn=1	// Setting of something that results in epi-illumination being on
+		//Variable /G wheelPositionForEpiLightOff=0	// Setting of something that results in epi-illumination being off
+		Variable /G isTriggered		// boolean, true iff the video acquisition will be triggered (as opposed to free-running)
+		Variable /G triggerTTLOutputIndex=3
+		Variable /G triggerDelay=10	// in ms
+		Variable /G exposureADCIndex=7
+		Variable /G isFocusing=0		// boolean, whether or not we're currently focusing
+		Variable /G isAcquiringVideo=0		// boolean, whether or not we're currently taking video
+		//Variable /G image_focus	// image_focus may be unnecessary if there is a separate focus routine
+		//Variable /G isROI=0		// is there a ROI? (false=>full frame)
+		//Variable /G isBackgroundROIToo=0		// if isROI, is there a background ROI too? (if full-frame, this is unused)
+		Variable /G ccdTargetTemperature= -40		// the setpoint CCD temperature
+		Variable /G ccdTemperature=nan			// the CCD temperature as of last check
+		Variable /G nFramesForVideo=4	// number of frames to acquire
+		//Variable /G focusingExposure=100		// duration of each exposure when focusing, in ms
+		Variable /G snapshotExposureWanted=50		// desired duration of each frame exposure for full-frame images, in ms
+		Variable /G snapshotExposure=nan		// duration of each frame exposure for full-frame images, in ms
+		Variable /G videoExposureWanted=50		// desired exposure duration for video, in ms
+		Variable /G videoExposure=nan	// duration of each frame for triggered video, in ms
+		Variable /G frameRate=nan	// Video frame rate, in Hz, based on exposure, binning, ROIs (if any)
+		//Variable /G iFrame		// Frame index to show in the browser
+		String /G snapshotWaveBaseName="snap"		// the base name of the full-frame image waves, including the underscore
+		//String /G focusWaveBaseName="full_"		// the base name of the focusing image waves, including the underscore
+		String /G videoWaveBaseName="video"	// the base name of the triggered video waves, including the underscore
+		//Variable /G iFullFrameWave=1	// The "sweep number" to use for the next full-frame image
+		//Variable /G iFocusWave=1		// The "sweep number" to use for the next focus image
+		//Variable /G iVideoWave=1		// The "sweep number" to use for the video 
+		Make /O /U binSizeList={1,2,4,8}		// CCD bin size, an unsigned int
+		Variable /G binSizeIndex=0
+		Variable /G iROI=nan		// indicates the current ROI
+		//Variable /G binnedFrameWidth=(iROIRight-iROILeft+1)/binSize	// Width of the binned ROI image
+		//Variable /G binnedFrameHeight=(iROIBottom-iROITop+1)/binSize		// Height of the binned ROI image
+		//Variable /G blackCount=0		// the CCD count that gets mapped to black
+		//Variable /G whiteCount=2^16-1	// the CCD count that gets mapped to white
+		Variable /G moveAllROIs=0		// Whether to move all the ROIs when ImagerTranslateCurrentROIOrAll() is called
+		
+		// the list of possible calculations
+		Make /O /T calculationList={"Mean","Sum","DF/F"}
+		Variable /G calculationIndex=0		// default is mean
+		Variable /G nBaselineFrames=1	// Number of frames to use for baseline in DF/F calculation
+		
+		Variable nROIs=0
+		Make /O /N=(4,nROIs) roisWave		// a 2D wave holding a ROI specification in each column, order is : left, top, right, bottom
+		Make /O /I /U /N=(nROIs) isBackgroundROI		// a 1D boolean wave indicating whether each ROI is a background ROI.  This should have at most one true element.
+		
+		// make average wave for imaging
+		Variable /G nFramesInAverage=0		// number of frames to average, I think for calculating dF/F
+		Make /O /N=(nFramesInAverage) dff_avg
+	else
+		// If the DF exists, switch to it
+		SetDataFolder root:DP_Imager
+	endif
 	
-	Variable nROIs=0
-	Make /O /N=(4,nROIs) roisWave		// a 2D wave holding a ROI specification in each column, order is : left, top, right, bottom
-	Make /O /I /U /N=(nROIs) isBackgroundROI		// a 1D boolean wave indicating whether each ROI is a background ROI.  This should have at most one true element.
+	NVAR ccdTargetTemperature
 	
-	// make average wave for imaging
-	Variable /G nFramesInAverage=0		// number of frames to average, I think for calculating dF/F
-	Make /O /N=(nFramesInAverage) dff_avg
-	
-	// Set the target CCD temp
+	// Set the target CCD temp, update the current reading
 	FancyCameraSetTemp(ccdTargetTemperature)
+	ImagerUpdateCCDTemperature()
 	
 	// Update the frame rate and whatnot
 	ImagerUpdateSnapshotParams()

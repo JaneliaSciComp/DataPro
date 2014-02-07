@@ -20,10 +20,7 @@ Function ImagerContConstructor()
 	ICUpdateTemp()
 	
 	// Start the background task that will update the CCD temperature every 5 seconds
-	Variable period=5		// s
-	Variable numTicks = period * 60		// A tick is ~ 1/60 s
-	CtrlNamedBackground ICUpdateTempInBackgroundTask, period=numTicks, proc=ICUpdateTempInBackground
-	CtrlNamedBackground ICUpdateTempInBackgroundTask, start
+	ICStartTempUpdateBGTask()
 End
 
 
@@ -408,6 +405,13 @@ End
 // The routines that do substantial stuff are below
 //
 
+Function ICStartTempUpdateBGTask()
+	// Start the background task that will update the CCD temperature every 5 seconds
+	Variable period=5		// s
+	Variable numTicks = period * 60		// A tick is ~ 1/60 s
+	CtrlNamedBackground ICUpdateTempInBackgroundTask, period=numTicks, proc=ICUpdateTempInBackground
+	CtrlNamedBackground ICUpdateTempInBackgroundTask, start
+End
 
 Function ICUpdateTemp()
 	ImagerUpdateCCDTemperature()	
