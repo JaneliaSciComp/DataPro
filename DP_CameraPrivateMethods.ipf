@@ -348,7 +348,11 @@ Function CameraIsSidxCameraReallyValid(sidxCamera)
 	// Do stuff
 	Variable sidxStatus
 	Variable isTempAvailable
-	SIDXCameraTemperatureExists sidxCamera, isTempAvailable, sidxStatus
+	try
+		SIDXCameraTemperatureExists sidxCamera, isTempAvailable, sidxStatus; AbortOnRTE
+	catch
+		sidxStatus=-1	// indicates the camera is invalid
+	endtry
 	Variable result=(sidxStatus==0)
 
 	return result
@@ -499,16 +503,62 @@ Function CameraValidifySidxHandles()
 	endif
 
 	// Check the SIDX handles, and if they're not valid, restore them
+	Variable restoredSidxRoot=0
 	if (isSidxRootValid)
 		// Object claims that sidxRoot is valid, but let's check
 		Variable isSidxRootReallyValid=CameraIsSidxRootReallyValid(sidxRoot)
 		if (isSidxRootReallyValid)
-			// Well, whattaya know?  sidxRoot really is valid
-		else	
+			if (isSidxCameraValid)
+				// If we get here, we're in kind of a quandry.
+				// sidxRoot really did turn out to be valid. 
+				// But we don't really have a good way to test the validity of the sidxCamera
+				// We'll just assume that sidxCamera is OK too...
+			else
+				// nothing more to do
+			endif
+		else
 			// As we suspected, sidxRoot is not really valid.  So we try to obtain a valid sidxRoot
 			sidxRoot=CameraTryToGetSidxRootHandle()
 			if (sidxRoot>=0)
 				// Yay!  We succeeded in getting a valid sidx root handle
+				// If we get to this point, isSidxRootValid was true on call, sidxRoot is now valid, and isSidxRootValid is now true
+				// We proceed to check the sidx camera handle
+				if (isSidxCameraValid)
+					// Object claims that sidxCamera is valid, but let's check
+					// In this case, the old sdixCamera can't possibly be valid, so we try to obtain a new, valid sidxCamera
+					sidxCamera=CameraTryToGetSidxCameraHandle(sidxRoot)
+					if (sidxCamera>=0)
+						// Yay!  We succeeded in getting a valid sidx root handle
+					else
+						// Hrm.  We were unable to get a valid sidx camera handle.
+						// Hopefully CameraTryToGetSidxCameraHandle() set the camera error message
+						isSidxCameraValid=0				
+						isSidxAcquireValid=0				
+						SetDataFolder savedDF	
+						return 0
+					endif
+					// If we get to this point, isSidxRootValid was true on call, sidxRoot is now valid, and isSidxRootValid is now true
+					// If we get to this point, isSidxCameraValid was true on call, sidxCamera is now valid, and isSidxCameraValid is now true
+					// We proceed to initialize the camera
+					Variable isCameraInited=CameraInitSidxCamera(sidxCamera)
+					if (isCameraInited)
+						// Camera was sucessfully initialized.
+						isSidxCameraValid=1
+						// Go ahead and clear isSidxAcquireValid.  Doesn't matter what it was before.
+						isSidxAcquireValid=0
+						// If we get here, all is good
+					else
+						// Failure, exit with error
+						isSidxCameraValid=0
+						isSidxAcquireValid=0
+						SetDataFolder savedDF	
+						return 0				
+					endif
+				else
+					// Object makes no claim that sidxCamera is valid, so nothing more to do
+					// In this case, it should always be the case that
+					// isSidxAcquireValid==0
+				endif				
 			else
 				// Hrm.  We were unable to get a valid sidx root handle.
 				// Hopefully CameraTryToGetSidxRootHandle() set the camera error message
@@ -518,49 +568,6 @@ Function CameraValidifySidxHandles()
 				SetDataFolder savedDF	
 				return 0
 			endif
-		endif
-		// If we get to this point, isSidxRootValid was true on call, sidxRoot is now valid, and isSidxRootValid is now true
-		// We proceed to check the sidx camera handle
-		if (isSidxCameraValid)
-			// Object claims that sidxCamera is valid, but let's check
-			Variable isSidxCameraReallyValid=CameraIsSidxCameraReallyValid(sidxCamera)
-			if (isSidxCameraReallyValid)
-				// Well, whattaya know?  sidxCamera really is valid
-			else	
-				// As we suspected, sidxCamera is not really valid.  So we try to obtain a valid sidxCamera
-				sidxCamera=CameraTryToGetSidxCameraHandle(sidxRoot)
-				if (sidxCamera>=0)
-					// Yay!  We succeeded in getting a valid sidx root handle
-				else
-					// Hrm.  We were unable to get a valid sidx camera handle.
-					// Hopefully CameraTryToGetSidxCameraHandle() set the camera error message
-					isSidxCameraValid=0				
-					isSidxAcquireValid=0				
-					SetDataFolder savedDF	
-					return 0
-				endif
-			endif			
-			// If we get to this point, isSidxRootValid was true on call, sidxRoot is now valid, and isSidxRootValid is now true
-			// If we get to this point, isSidxCameraValid was true on call, sidxCamera is now valid, and isSidxCameraValid is now true
-			// We proceed to initialize the camera
-			Variable isCameraInited=CameraInitSidxCamera(sidxCamera)
-			if (isCameraInited)
-				// Camera was sucessfully initialized.
-				isSidxCameraValid=1
-				// Go ahead and clear isSidxAcquireValid.  Doesn't matter what it was before.
-				isSidxAcquireValid=0
-				// If we get here, all is good
-			else
-				// Failure, exit with error
-				isSidxCameraValid=0
-				isSidxAcquireValid=0
-				SetDataFolder savedDF	
-				return 0				
-			endif
-		else
-			// Object makes no claim that sidxCamera is valid, so nothing more to do
-			// In this case, it should always be the case that
-			// isSidxAcquireValid==0
 		endif
 	else
 		// Object makes no claim that sidxRoot is valid, so nothing to do
