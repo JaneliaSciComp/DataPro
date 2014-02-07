@@ -37,6 +37,61 @@ End
 
 
 
+Function TestSerialNumberGet()
+	// Create the SIDX root object, referenced by sidxRoot
+	String errorMessage
+	String license=""	// License file is stored in C:/Program Files/Bruxton/SIDX
+	Variable sidxStatus
+	Variable sidxRoot
+	Variable serialNumber
+	SIDXRootOpen sidxRoot, license, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxRoot, errorMessage
+		Printf "Error in SIDXRootOpen: %s\r", errorMessage
+		return -1
+	endif
+	Printf "sidxRoot: %d\r", sidxRoot
+
+	// Get the serial number
+	SIDXRootSoftwareGetSerial sidxRoot, serialNumber, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxRoot, errorMessage
+		Printf "Error in SIDXRootSoftwareGetSerial: %s\r", errorMessage
+		return -1
+	endif
+	Printf "serialNumber %d\r", serialNumber
+	
+//	// Get the serial number
+//	SIDXRootSoftwareGetSerial sidxRoot, serialNumber, sidxStatus
+//	if (sidxStatus!=0)
+//		SIDXCameraGetLastError sidxRoot, errorMessage
+//		Printf "Error in SIDXRootSoftwareGetSerial: %s\r", errorMessage
+//		return -1
+//	endif
+//	Printf "serialNumber %d\r", serialNumber
+//	
+//	// Get the serial number
+//	SIDXRootSoftwareGetSerial sidxRoot, serialNumber, sidxStatus
+//	if (sidxStatus!=0)
+//		SIDXCameraGetLastError sidxRoot, errorMessage
+//		Printf "Error in SIDXRootSoftwareGetSerial: %s\r", errorMessage
+//		return -1
+//	endif
+//	Printf "serialNumber %d\r", serialNumber
+	
+	// Close the SIDX root object
+	SIDXRootClose sidxRoot, sidxStatus
+	if (sidxStatus!=0)
+		SIDXRootGetLastError sidxRoot, errorMessage
+		Printf "Error in SIDXRootClose: %s\r", errorMessage
+		return -1
+	endif
+End
+
+
+
+
+
 Function SingleFrameTest()
 	Variable sidxRoot
 	Variable sidxCamera	
