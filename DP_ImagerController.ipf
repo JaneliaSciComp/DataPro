@@ -512,8 +512,14 @@ Function ImagerContAcquireFinish(iSweep)
 	String imageWaveName=sprintf2sv("%s_%d", videoWaveBaseName, iSweep)
 	Make /O /W /U /N=(0,0,0) $imageWaveName	// 16-bit unsigned wave to hold result
 	WAVE imageWave=$imageWaveName
-	FancyCameraWaitForFramesBang(imageWave,nFramesForVideo)
+	Variable gotFrames=FancyCameraWaitForFramesBang(imageWave,nFramesForVideo)
 	
+	// Get the error message now
+	String errorMessage
+	if (!gotFrames)	
+		errorMessage=FancyCameraGetErrorMessage()
+	endif
+
 	// Let the camera relax
 	FancyCameraDisarm()
 	
@@ -521,6 +527,19 @@ Function ImagerContAcquireFinish(iSweep)
 	//EpiLightResetToPermanent()
 	EpiLightTurnOff()
 	//SweeperEpiLightOnChanged()
+
+	// If there was a problem getting frames, delete the wave and abort
+	if (!gotFrames)	
+		ImagerSetIsAcquiringVideo(0)
+		// See changes immediately
+		ImagerViewModelChanged()	
+		DoUpdate
+		KillWaves /Z $imageWaveName
+		if (IsEmptyString(errorMessage))
+			errorMessage="Unable to acquire frames"
+		endif
+		Abort errorMessage
+	endif
 	
 	// Copy the free wave to a caged wave in the DP_Imager DF
 	//String imageWaveName=sprintf2sv("%s_%d", videoWaveBaseName, iSweep)
@@ -707,6 +726,7 @@ Function ImagerContAcquireSnapshot()
 		DoUpdate
 		//SweeperEpiLightOnChanged()
 		//FancyCameraStartAcquire()
+		Variable wereFramesAcquired=0
 		Variable wasAcqStarted=FancyCameraStartAcquire()
 		if (wasAcqStarted)
 			Variable iFullFrameWave=SweeperGetNextSweepIndex()
@@ -714,20 +734,20 @@ Function ImagerContAcquireSnapshot()
 			String imageWaveNameAbs="root:DP_Imager:"+imageWaveName
 			Make /O $imageWaveNameAbs
 			WAVE imageWave=$imageWaveNameAbs
-			FancyCameraWaitForFramesBang(imageWave,nFrames)
+			wereFramesAcquired=FancyCameraWaitForFramesBang(imageWave,nFrames)
 		endif
 		FancyCameraDisarm()
 		//EpiLightResetToPermanent()
 		EpiLightTurnOff()
 		ImagerViewSomethingChanged()
 		//SweeperEpiLightOnChanged()
-		if (wasAcqStarted)
+		if (wasAcqStarted&&wereFramesAcquired)
 			ImageBrowserContSetVideo(imageWaveName) 
 			String allVideoWaveNames=WaveList(snapshotWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
 			SweeperFreeRunVideoJustAcqd(iFullFrameWave)
 			SweeperViewSweeperChanged()
 		else
-			// acquire failed to start, so delete just-created wave
+			// acquire failed to start, or had a problem during, so delete just-created wave
 			KillWaves /Z $imageWaveName
 			Abort FancyCameraGetErrorMessage()
 		endif

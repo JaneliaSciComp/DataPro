@@ -599,6 +599,8 @@ End
 
 
 Function CameraAcquireGetStatus()
+	// Returns 1 if the camera is acquiring, 0 if not, and -1 on error
+
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Camera
@@ -617,10 +619,13 @@ Function CameraAcquireGetStatus()
 			if (sidxStatus!=0)
 				String errorMessage
 				SIDXAcquireGetLastError sidxAcquire, errorMessage
-				Abort sprintf1s("Error in SIDXAcquireGetStatus: %s",errorMessage)
+				//Abort sprintf1s("Error in SIDXAcquireGetStatus: %s",errorMessage)
+				CameraSetErrorMessage(sprintf1s("Error in SIDXAcquireGetStatus: %s",errorMessage))
+				isAcquiring=-1
 			endif
 		else
-			Abort "Called CameraAcquireGetStatus() before acquisition was armed."
+			CameraSetErrorMessage("Called CameraAcquireGetStatus() before acquisition was armed.")
+			isAcquiring=-1
 		endif
 	else
 		isAcquiring=0	// if faking, we always claim that we're done
@@ -892,7 +897,8 @@ Function CameraAcquireDisarm()
 				isSidxAcquireValid=0
 			endif
 		else
-			Abort "Called CameraAcquireDisarm() before acquisition was armed."
+			// Don't throw an error here---if the user disarms the camera before arming it, that's not really a problem.
+			//Abort "Called CameraAcquireDisarm() before acquisition was armed."
 		endif
 	else
 		if (isAcquisitionOngoingFake)

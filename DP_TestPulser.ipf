@@ -61,6 +61,10 @@ End
 
 //----------------------------------------------------------------------------------------------------------------------------
 Function TestPulserIsTTLOutputEnabled()
+	if (!TestPulserExists())
+		return 0
+	endif
+	
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_TestPulser
 
@@ -77,6 +81,10 @@ End
 //----------------------------------------------------------------------------------------------------------------------------
 Function TestPulserIsTTLInUse(ttlOutputIndexInQuestion)
 	Variable ttlOutputIndexInQuestion
+	
+	if (!TestPulserExists())
+		return 0
+	endif
 	
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_TestPulser
@@ -95,6 +103,10 @@ End
 //----------------------------------------------------------------------------------------------------------------------------
 Function TestPulserIsADCInUse(adcIndexInQuestion)
 	Variable adcIndexInQuestion
+	
+	if (!TestPulserExists())
+		return 0
+	endif
 	
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_TestPulser
