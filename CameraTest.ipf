@@ -15,8 +15,7 @@ Function RootTest()
 	Variable sidxRoot
 	SIDXRootOpen sidxRoot, license, sidxStatus
 	if (sidxStatus!=0)
-		SIDXCameraGetLastError sidxRoot, errorMessage
-		Printf "Error in SIDXRootOpen: %s\r", errorMessage
+		Printf "Error in SIDXRootOpen\r"
 		return -1
 	endif
 	Printf "sidxRoot: %d\r", sidxRoot
@@ -43,11 +42,10 @@ Function TestSerialNumberGet()
 	String license=""	// License file is stored in C:/Program Files/Bruxton/SIDX
 	Variable sidxStatus
 	Variable sidxRoot
-	Variable serialNumber
+	String serialNumber
 	SIDXRootOpen sidxRoot, license, sidxStatus
 	if (sidxStatus!=0)
-		SIDXCameraGetLastError sidxRoot, errorMessage
-		Printf "Error in SIDXRootOpen: %s\r", errorMessage
+		Printf "Error in SIDXRootOpen\r"
 		return -1
 	endif
 	Printf "sidxRoot: %d\r", sidxRoot
@@ -59,26 +57,26 @@ Function TestSerialNumberGet()
 		Printf "Error in SIDXRootSoftwareGetSerial: %s\r", errorMessage
 		return -1
 	endif
-	Printf "serialNumber %d\r", serialNumber
+	Printf "serialNumber %s\r", serialNumber
 	
-//	// Get the serial number
-//	SIDXRootSoftwareGetSerial sidxRoot, serialNumber, sidxStatus
-//	if (sidxStatus!=0)
-//		SIDXCameraGetLastError sidxRoot, errorMessage
-//		Printf "Error in SIDXRootSoftwareGetSerial: %s\r", errorMessage
-//		return -1
-//	endif
-//	Printf "serialNumber %d\r", serialNumber
-//	
-//	// Get the serial number
-//	SIDXRootSoftwareGetSerial sidxRoot, serialNumber, sidxStatus
-//	if (sidxStatus!=0)
-//		SIDXCameraGetLastError sidxRoot, errorMessage
-//		Printf "Error in SIDXRootSoftwareGetSerial: %s\r", errorMessage
-//		return -1
-//	endif
-//	Printf "serialNumber %d\r", serialNumber
+	// Get the serial number
+	SIDXRootSoftwareGetSerial sidxRoot, serialNumber, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxRoot, errorMessage
+		Printf "Error in SIDXRootSoftwareGetSerial: %s\r", errorMessage
+		return -1
+	endif
+	Printf "serialNumber %s\r", serialNumber
 	
+	// Get the serial number
+	SIDXRootSoftwareGetSerial sidxRoot, serialNumber, sidxStatus
+	if (sidxStatus!=0)
+		SIDXCameraGetLastError sidxRoot, errorMessage
+		Printf "Error in SIDXRootSoftwareGetSerial: %s\r", errorMessage
+		return -1
+	endif
+	Printf "serialNumber %s\r", serialNumber
+		
 	// Close the SIDX root object
 	SIDXRootClose sidxRoot, sidxStatus
 	if (sidxStatus!=0)
