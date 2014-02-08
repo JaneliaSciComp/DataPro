@@ -402,6 +402,8 @@ Function ICDisarmCameraButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 
 	FancyCameraDisarm()
+	ImagerSetIsAcquiringVideo(0)
+	EpiLightTurnOff()
 	ImagerViewModelChanged()
 End
 

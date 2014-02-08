@@ -398,9 +398,11 @@ Function ImagerViewConstructor() : Panel
 	buttonHeight=22
 	yOffset=groupBoxYOffset+19
 	
-	xOffset=46
-	Button disarmCameraButton, win=ImagerView, pos={xOffset,yOffset}, size={buttonWidth,buttonHeight}, proc=ICDisarmCameraButtonPressed, title="Disarm Camera"
+	buttonWidth=60
+	xOffset=60
+	Button disarmCameraButton, win=ImagerView, pos={xOffset,yOffset}, size={buttonWidth,buttonHeight}, proc=ICDisarmCameraButtonPressed, title="Disarm"
 
+	buttonWidth=100
 	xOffset=190
 	Button resetCameraButton, win=ImagerView, pos={xOffset,yOffset}, size={buttonWidth,buttonHeight}, proc=ICResetCameraButtonPressed, title="Reset Camera"
 
