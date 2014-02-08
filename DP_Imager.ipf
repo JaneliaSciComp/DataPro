@@ -29,8 +29,8 @@ Function ImagerConstructor()
 		//Variable /G image_focus	// image_focus may be unnecessary if there is a separate focus routine
 		//Variable /G isROI=0		// is there a ROI? (false=>full frame)
 		//Variable /G isBackgroundROIToo=0		// if isROI, is there a background ROI too? (if full-frame, this is unused)
-		Variable /G ccdTargetTemperature= -40		// the setpoint CCD temperature
-		Variable /G ccdTemperature=nan			// the CCD temperature as of last check
+		//Variable /G ccdTargetTemperature= -40		// the setpoint CCD temperature
+		//Variable /G ccdTemperature=nan			// the CCD temperature as of last check
 		Variable /G nFramesForVideo=4	// number of frames to acquire
 		//Variable /G focusingExposure=100		// duration of each exposure when focusing, in ms
 		Variable /G snapshotExposureWanted=50		// desired duration of each frame exposure for full-frame images, in ms
@@ -71,11 +71,11 @@ Function ImagerConstructor()
 		SetDataFolder root:DP_Imager
 	endif
 	
-	NVAR ccdTargetTemperature
+	//NVAR ccdTargetTemperature
 	
 	// Set the target CCD temp, update the current reading
-	FancyCameraSetTemp(ccdTargetTemperature)
-	ImagerUpdateCCDTemperature()
+	//FancyCameraSetTemp(ccdTargetTemperature)
+	//ImagerUpdateCCDTemperature()
 	
 	// Update the frame rate and whatnot
 	ImagerUpdateSnapshotParams()
@@ -1253,81 +1253,81 @@ End
 
 
 
-Function ImagerUpdateCCDTemperature()
-	// Sometimes this gets called by a background task, so make it extra-robust
-	if (!DataFolderExists("root:DP_Imager"))
-		return 0
-	endif
-
-	// Switch to the data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-	
-	// Declare instance vars
-	NVAR ccdTemperature
-
-	ccdTemperature=FancyCameraGetTemperature()
-
-	// Restore the original DF
-	SetDataFolder savedDF	
-End
-
-
-
-Function ImagerGetCCDTemperature()
-	// Switch to the data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-	
-	// Declare instance vars
-	NVAR ccdTemperature
-
-	Variable result=ccdTemperature
-
-	// Restore the original DF
-	SetDataFolder savedDF	
-	
-	// Return the current CCD temp
-	return result
-End
+//Function ImagerUpdateCCDTemperature()
+//	// Sometimes this gets called by a background task, so make it extra-robust
+//	if (!DataFolderExists("root:DP_Imager"))
+//		return 0
+//	endif
+//
+//	// Switch to the data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Imager
+//	
+//	// Declare instance vars
+//	NVAR ccdTemperature
+//
+//	ccdTemperature=FancyCameraGetTemperature()
+//
+//	// Restore the original DF
+//	SetDataFolder savedDF	
+//End
 
 
 
-Function ImagerSetCCDTargetTemp(newValue)
-	Variable newValue
+//Function ImagerGetCCDTemperature()
+//	// Switch to the data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Imager
+//	
+//	// Declare instance vars
+//	NVAR ccdTemperature
+//
+//	Variable result=ccdTemperature
+//
+//	// Restore the original DF
+//	SetDataFolder savedDF	
+//	
+//	// Return the current CCD temp
+//	return result
+//End
 
-	// Switch to the data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-	
-	// Declare instance vars
-	NVAR ccdTargetTemperature
-
-	ccdTargetTemperature=newValue
-	FancyCameraSetTemp(ccdTargetTemperature)
-
-	// Restore the original DF
-	SetDataFolder savedDF	
-End
 
 
+//Function ImagerSetCCDTargetTemp(newValue)
+//	Variable newValue
+//
+//	// Switch to the data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Imager
+//	
+//	// Declare instance vars
+//	//NVAR ccdTargetTemperature
+//
+//	//ccdTargetTemperature=newValue
+//	FancyCameraSetTemp(newValue)
+//
+//	// Restore the original DF
+//	SetDataFolder savedDF	
+//End
 
-Function ImagerGetCCDTargetTemp()
-	// Switch to the data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-	
-	// Declare instance vars
-	NVAR ccdTargetTemperature
 
-	Variable result=ccdTargetTemperature
 
-	// Restore the original DF
-	SetDataFolder savedDF	
-	
-	// Return the target CCD temp
-	return result
-End
+//Function ImagerGetCCDTargetTemp()
+//	// Switch to the data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Imager
+//	
+//	// Declare instance vars
+//	NVAR ccdTargetTemperature
+//
+//	Variable result=ccdTargetTemperature
+//
+//	// Restore the original DF
+//	SetDataFolder savedDF	
+//	
+//	// Return the target CCD temp
+//	return result
+//End
 
 
 

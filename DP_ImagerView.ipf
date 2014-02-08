@@ -109,7 +109,7 @@ Function ImagerViewConstructor() : Panel
 	height=14
 	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-height)/2
 	SetVariable ccdTemperatureSetpointSV,win=ImagerView,pos={30,yOffset},size={96,height},proc=ICTempSetpointSVTwiddled,title="Setpoint:"
-	SetVariable ccdTemperatureSetpointSV, win=ImagerView, limits={-50,20,5}, format="%0.1f", value= ccdTargetTemperature
+	SetVariable ccdTemperatureSetpointSV, win=ImagerView, limits={-50,20,5}, format="%0.1f"
 
 	ValDisplay ccdTemperatureVD,win=ImagerView,pos={154,yOffset+1},size={76,height},title="Current:"
 	ValDisplay ccdTemperatureVD,win=ImagerView,format="%0.1f",limits={0,0,0},barmisc={0,1000}
@@ -420,10 +420,16 @@ Function ImagerViewConstructor() : Panel
 	// Sync the view to the model
 	ImagerViewUpdate()
 	
+	// Start the background task that will update the CCD temperature every 5 seconds
+	IVStartTempUpdateBGTask()
+	
 	// Restore the original DF
 	SetDataFolder savedDF
 End
 
+Function ImagerViewDestructor()
+	CtrlNamedBackground IVUpdateTempInBackgroundTask, stop
+End
 
 
 Function ImagerViewCameraChanged()
@@ -458,8 +464,6 @@ End
 Function ImagerViewCCDTempChanged()
 	ImagerViewUpdateCCDTemp()
 End
-
-
 
 //
 // Private methods
@@ -548,9 +552,10 @@ Function ImagerViewUpdate()
 	SetVariable exposureADCSV, win=ImagerView, value=_NUM:ImagerGetExposureADCIndex(), disable=fromEnable(isTriggered)
 
 	// Update the CCD temperature
-	Variable ccdTemperature=ImagerGetCCDTemperature()
-	ValDisplay ccdTemperatureVD, win=ImagerView, value= _NUM:ccdTemperature
-	WhiteOutIffNan("ccdTemperatureVD","ImagerView",ccdTemperature)
+	ImagerViewUpdateCCDTemp()
+	Variable ccdTargetTemp=FancyCameraGetTargetTemp()
+	SetVariable ccdTemperatureSetpointSV, win=ImagerView, value= _NUM:ccdTargetTemp
+	//WhiteOutIffNan("ccdTemperatureSetpointVD","ImagerView",ccdTargetTemp)
 
 	// Update the calculation popup
 	String calculationList=ImagerGetCalculationList()
@@ -630,7 +635,22 @@ Function ImagerViewUpdateCCDTemp()
 	endif
 
 	// Update the CCD temperature
-	Variable ccdTemperature=ImagerGetCCDTemperature()
+	Variable ccdTemperature=FancyCameraGetTemperature()
 	ValDisplay ccdTemperatureVD, win=ImagerView, value= _NUM:ccdTemperature
 	WhiteOutIffNan("ccdTemperatureVD","ImagerView",ccdTemperature)
 End
+
+Function IVUpdateTempInBackground(s)		// This is the function that will be called periodically
+	STRUCT WMBackgroundStruct &s
+	ImagerViewUpdateCCDTemp()	
+	return 0	// Continue background task
+End
+
+Function IVStartTempUpdateBGTask()
+	// Start the background task that will update the CCD temperature every 5 seconds
+	Variable period=5		// s
+	Variable numTicks = period * 60		// A tick is ~ 1/60 s
+	CtrlNamedBackground ICUpdateTempInBackgroundTask, period=numTicks, proc=IVUpdateTempInBackground
+	CtrlNamedBackground ICUpdateTempInBackgroundTask, start
+End
+

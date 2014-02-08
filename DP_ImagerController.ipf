@@ -17,16 +17,13 @@ Function ImagerContConstructor()
 	ImagerViewConstructor()
 	
 	// Update the CCD temp to get a value up there
-	ICUpdateTemp()
-	
-	// Start the background task that will update the CCD temperature every 5 seconds
-	ICStartTempUpdateBGTask()
+	//ICUpdateTemp()
 End
 
 
-Function ImagerContDestructor()
-	CtrlNamedBackground ICUpdateTempInBackgroundTask, stop
-End
+//Function ImagerContDestructor()
+//	CtrlNamedBackground ICUpdateTempInBackgroundTask, stop
+//End
 
 
 //
@@ -40,8 +37,8 @@ Function ICTempSetpointSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariableC
 	String varName
 
 	//FancyCameraSetTempAndWait(varNum)
-	ImagerSetCCDTargetTemp(varNum)
-	ImagerViewModelChanged()
+	FancyCameraSetTargetTemp(varNum)
+	ImagerViewSomethingChanged()
 End
 
 
@@ -314,13 +311,7 @@ End
 
 Function ICUpdateTempButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
-	ICUpdateTemp()
-End
-
-Function ICUpdateTempInBackground(s)		// This is the function that will be called periodically
-	STRUCT WMBackgroundStruct &s
-	ICUpdateTemp()	
-	return 0	// Continue background task
+	ImagerViewUpdateCCDTemp()	
 End
 
 Function ICVideoExposureSVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
@@ -404,15 +395,14 @@ Function ICDisarmCameraButtonPressed(ctrlName) : ButtonControl
 	FancyCameraDisarm()
 	ImagerSetIsAcquiringVideo(0)
 	EpiLightTurnOff()
-	ImagerViewModelChanged()
+	ImagerViewSomethingChanged()
 End
 
 Function ICResetCameraButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 
 	FancyCameraReset()
-	FancyCameraSetTemp(ImagerGetCCDTargetTemp())
-	ImagerViewCCDTempChanged()	
+	//ImagerViewCCDTempChanged()	
 	ImagerViewSomethingChanged()
 End
 
@@ -422,18 +412,10 @@ End
 // The routines that do substantial stuff are below
 //
 
-Function ICStartTempUpdateBGTask()
-	// Start the background task that will update the CCD temperature every 5 seconds
-	Variable period=5		// s
-	Variable numTicks = period * 60		// A tick is ~ 1/60 s
-	CtrlNamedBackground ICUpdateTempInBackgroundTask, period=numTicks, proc=ICUpdateTempInBackground
-	CtrlNamedBackground ICUpdateTempInBackgroundTask, start
-End
-
-Function ICUpdateTemp()
-	ImagerUpdateCCDTemperature()	
-	ImagerViewCCDTempChanged()
-End
+//Function ICUpdateTemp()
+//	ImagerUpdateCCDTemperature()	
+//	ImagerViewCCDTempChanged()
+//End
 
 
 

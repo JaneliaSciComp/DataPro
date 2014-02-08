@@ -190,7 +190,7 @@ Function InitializeDataPro()
 			// If something got borked during acquire, and the user had to delete the old window and get a new one, 
 			// this makes sure the view doesn't look like video is being acquired
 		ImagerViewCCDTempChanged()
-		ICStartTempUpdateBGTask()
+		IVStartTempUpdateBGTask()
 		ImageBrowserModelConstructor()
 	endif
 //	// Set these things 
@@ -249,7 +249,7 @@ Function IgorBeforeQuitHook(unsavedExp, unsavedNotebooks, unsavedProcedures)
 	Variable unsavedNotebooks
 	Variable unsavedProcedures
 	
-	ImagerContDestructor()
+	ImagerViewDestructor()
 	CameraDestructor()
 End
 

@@ -89,6 +89,75 @@ End
 
 
 
+Function CameraSyncTemperatureTarget()
+	// Copy the target temp according to the hardware into the instance var
+	
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxCameraValid
+	NVAR sidxCamera
+	NVAR temperatureTarget
+
+	Variable sidxStatus
+	if (areWeForReal)
+		if (isSidxCameraValid)
+			SIDXCameraCoolingGet sidxCamera, temperatureTarget, sidxStatus
+				// Get the thermostat setpoint temperature
+			if (sidxStatus!=0)
+				String errorMessage
+				SIDXCameraGetLastError sidxCamera, errorMessage
+				Abort sprintf1s("Error in SIDXCameraCoolingGet: %s",errorMessage)
+			endif
+		else
+			temperatureTarget=nan
+		endif
+	endif
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+End
+
+
+
+
+Function CameraCoolingSetToInstanceVar()
+	// Set the target temp in the hardware to the instance var value in temperatureTarget
+	
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxCameraValid
+	NVAR sidxCamera
+	NVAR temperatureTarget
+
+	Variable sidxStatus
+	if (areWeForReal)
+		if (isSidxCameraValid)
+			SIDXCameraCoolingSet sidxCamera, temperatureTarget, sidxStatus
+			if (sidxStatus!=0)
+				String errorMessage
+				SIDXCameraGetLastError sidxCamera, errorMessage
+				Abort sprintf1s("Error in SIDXCameraCoolingSet: %s",errorMessage)
+			endif
+		else
+			Abort "Called CameraCoolingSet() before camera was created."
+		endif
+	endif
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+End
+
+
+
+
 Function CameraSetROIInCSAndAligned(roiInCSAndAlignedNew)
 	// Set the camera ROI
 	// The ROI is specified in the unbinned pixel coordinates, which are image-style coordinates, 

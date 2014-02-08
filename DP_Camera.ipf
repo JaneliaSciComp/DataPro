@@ -51,7 +51,7 @@ Function CameraConstructor()
 		Variable /G iBottom=nan
 		Variable /G iRight=nan
 		Variable /G exposureWantedInSeconds=nan		// cached exposure wanted for the camera, in sec
-		Variable /G temperatureTargetFake=-40		// degC
+		Variable /G temperatureTarget=-40		// degC
 		Variable /G nFramesBufferFake=1		// How many frames in the fake on-camera frame buffer
 		Variable /G nFramesToAcquireFake=1		
 		Variable /G isAcquireOpenFake=0		// Whether acquisition is "armed"
@@ -87,8 +87,11 @@ Function CameraConstructor()
 			iRight=widthCCD-1
 			binSize=1
 			exposureWantedInSeconds=0.05
-		endif
+		endif		
 	endif
+
+	// Notify the hardware of the target temp
+	CameraCoolingSetToInstanceVar()
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -916,8 +919,8 @@ End
 
 
 
-Function CameraCoolingSet(temperatureTarget)
-	Variable temperatureTarget
+Function CameraCoolingSet(newValue)
+	Variable newValue
 
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
@@ -927,22 +930,23 @@ Function CameraCoolingSet(temperatureTarget)
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR temperatureTargetFake
+	NVAR temperatureTarget
 
 	Variable sidxStatus
 	if (areWeForReal)
 		if (isSidxCameraValid)
-			SIDXCameraCoolingSet sidxCamera, temperatureTarget, sidxStatus
+			SIDXCameraCoolingSet sidxCamera, newValue, sidxStatus
 			if (sidxStatus!=0)
 				String errorMessage
 				SIDXCameraGetLastError sidxCamera, errorMessage
 				Abort sprintf1s("Error in SIDXCameraCoolingSet: %s",errorMessage)
 			endif
+			CameraSyncTemperatureTarget()	// copy the temp target in the hardware (which is hopefully the new value) back to the instance var
 		else
 			Abort "Called CameraCoolingSet() before camera was created."
 		endif
 	else
-		temperatureTargetFake=temperatureTarget
+		temperatureTarget=newValue
 	endif
 
 	// Restore the data folder
@@ -954,7 +958,7 @@ End
 
 
 
-Function CameraCoolingGetValue()
+Function CameraCoolingGet()
 	// Switch to the imaging data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Camera
@@ -963,7 +967,52 @@ Function CameraCoolingGetValue()
 	NVAR areWeForReal
 	NVAR isSidxCameraValid
 	NVAR sidxCamera
-	NVAR temperatureTargetFake
+	NVAR temperatureTarget
+
+	Variable sidxStatus
+	Variable targetTemp
+	if (areWeForReal)
+		if (isSidxCameraValid)
+			SIDXCameraCoolingGet sidxCamera, targetTemp, sidxStatus
+			if (sidxStatus!=0)
+				String errorMessage
+				SIDXCameraGetLastError sidxCamera, errorMessage
+				//Abort sprintf1s("Error in SIDXCameraCoolingGetValue: %s",errorMessage)
+				Printf "Error in SIDXCameraCoolingGet: %s\r", errorMessage
+				targetTemp=nan
+			endif
+		else
+			Abort "Called CameraCoolingGet() before camera was created."
+		endif
+	else
+		targetTemp=temperatureTarget
+	endif
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+	
+	return targetTemp
+End
+
+
+
+
+
+
+Function CameraCoolingGetValue()
+	if (!CameraExists())
+		return nan
+	endif
+	
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxCameraValid
+	NVAR sidxCamera
+	NVAR temperatureTarget
 
 	Variable sidxStatus
 	Variable temperature
@@ -981,7 +1030,7 @@ Function CameraCoolingGetValue()
 			Abort "Called CameraCoolingGetValue() before camera was created."
 		endif
 	else
-		temperature=temperatureTargetFake
+		temperature=temperatureTarget
 	endif
 
 	// Restore the data folder

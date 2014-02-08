@@ -265,3 +265,6 @@ End
 
 
 
+Function CameraExists()
+	return DataFolderExists("root:DP_Camera")
+End

@@ -56,6 +56,8 @@ Function FancyCameraConstructor()
 //	userFromCameraReflectY=0	// boolean
 //	userFromCameraSwapXY=0	// boolean
 	CameraSetTransform(userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXY)
+	//Variable defaultSetpointTemp=-40		// degC
+	//FancyCameraSetTargetTemp(defaultSetpointTemp)
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -84,7 +86,7 @@ Function FancyCameraSetupSnapshotAcq(exposure)
 	CameraExposeSet(exposureInSeconds)
 	
 	// Set the CCD temp, wait for it to stabilize
-	//FancyCameraSetTempAndWait(targetTemperature)
+	//FancyCameraSetTargetTempAndWait(targetTemperature)
 End
 
 
@@ -363,7 +365,7 @@ End
 
 
 
-Function FancyCameraSetTemp(targetTemperature)
+Function FancyCameraSetTargetTemp(targetTemperature)
 	Variable targetTemperature
 
 	// Switch to the imaging data folder
@@ -381,6 +383,13 @@ End
 
 
 
+Function FancyCameraGetTargetTemp()
+	// Check the CCD temperature
+	Variable targetTemp=CameraCoolingGet()
+	
+	// Return the temp
+	return targetTemp
+End
 
 
 
@@ -479,6 +488,7 @@ Function FancyCameraReset()
 	Variable userFromCameraReflectX=CameraGetUserFromCameraReflectX()
 	Variable userFromCameraReflectY=CameraGetUserFromCameraReflectY()
 	Variable userFromCameraSwapXY=CameraGetUserFromCameraSwapXY()
+	Variable targetTemp=CameraCoolingGet()
 
 	// Destruct the underlying camera
 	CameraDestructor()
@@ -486,8 +496,9 @@ Function FancyCameraReset()
 	// Initialize the camera
 	CameraConstructor()
 
-	// Re-set the transform
+	// Re-set the transform, temp
 	CameraSetTransform(userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXY)
+	CameraCoolingSet(targetTemp)
 End
 
 
