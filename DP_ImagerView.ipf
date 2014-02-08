@@ -31,8 +31,10 @@ Function ImagerViewConstructor() : Panel
 	Variable snapshotsGroupBoxHeight=80
 	Variable videoGroupBoxHeight=96+21+26
 	Variable roiGroupBoxHeight=250
+	Variable emergencyGroupBoxHeight=48
 	Variable panelHeight= groupBoxPadHeight + illuminationGroupBoxHeight + groupBoxSpaceHeight + temperatureGroupBoxHeight + groupBoxSpaceHeight 
-	panelHeight += (snapshotsGroupBoxHeight + groupBoxSpaceHeight + videoGroupBoxHeight + groupBoxSpaceHeight + roiGroupBoxHeight +groupBoxPadHeight)
+	panelHeight += (snapshotsGroupBoxHeight + groupBoxSpaceHeight + videoGroupBoxHeight + groupBoxSpaceHeight + roiGroupBoxHeight)
+	panelHeight += (groupBoxSpaceHeight + emergencyGroupBoxHeight + groupBoxPadHeight)
 	
 	Variable yOffsetRow
 	Variable xOffset=1550
@@ -385,6 +387,22 @@ Function ImagerViewConstructor() : Panel
 	CheckBox moveAllCB, win=ImagerView, pos={xOffset,yOffset}, title="Move All"
 	CheckBox moveAllCB, win=ImagerView, proc=ICMoveAllCBTouched
 	
+	//
+	// Emergency Group
+	//
+	groupBoxYOffset+=groupBoxHeight+groupBoxSpaceHeight
+	groupBoxHeight=emergencyGroupBoxHeight
+	GroupBox emergencyGroup,win=ImagerView,pos={groupBoxXOffset,groupBoxYOffset},size={groupBoxWidth,groupBoxHeight},title="Emergency"
+	
+	buttonWidth=100
+	buttonHeight=22
+	yOffset=groupBoxYOffset+19
+	
+	xOffset=46
+	Button disarmCameraButton, win=ImagerView, pos={xOffset,yOffset}, size={buttonWidth,buttonHeight}, proc=ICDisarmCameraButtonPressed, title="Disarm Camera"
+
+	xOffset=190
+	Button resetCameraButton, win=ImagerView, pos={xOffset,yOffset}, size={buttonWidth,buttonHeight}, proc=ICResetCameraButtonPressed, title="Reset Camera"
 
 //	// Binned width, height
 //	yOffset=yCenter+32

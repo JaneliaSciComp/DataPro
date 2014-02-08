@@ -469,3 +469,25 @@ End
 Function FancyCameraGetIsForReal()
 	return CameraGetIsForReal()
 End
+
+
+
+
+
+Function FancyCameraReset()
+	// Get the properties of the camera we want to preserve
+	Variable userFromCameraReflectX=CameraGetUserFromCameraReflectX()
+	Variable userFromCameraReflectY=CameraGetUserFromCameraReflectY()
+	Variable userFromCameraSwapXY=CameraGetUserFromCameraSwapXY()
+
+	// Destruct the underlying camera
+	CameraDestructor()
+
+	// Initialize the camera
+	CameraConstructor()
+
+	// Re-set the transform
+	CameraSetTransform(userFromCameraReflectX,userFromCameraReflectY,userFromCameraSwapXY)
+End
+
+

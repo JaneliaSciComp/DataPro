@@ -398,6 +398,21 @@ Function ICExposureADCSVTouched(ctrlName,varNum,varStr,varName) : SetVariableCon
 	TestPulserViewSweeperChanged()
 End
 
+Function ICDisarmCameraButtonPressed(ctrlName) : ButtonControl
+	String ctrlName
+
+	FancyCameraDisarm()
+	ImagerViewModelChanged()
+End
+
+Function ICResetCameraButtonPressed(ctrlName) : ButtonControl
+	String ctrlName
+
+	FancyCameraReset()
+	FancyCameraSetTemp(ImagerGetCCDTargetTemp())
+	ImagerViewCCDTempChanged()	
+	ImagerViewSomethingChanged()
+End
 
 
 
