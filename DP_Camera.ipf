@@ -1045,6 +1045,10 @@ End
 
 
 Function CameraDestructor()
+	if (!CameraExists())
+		return 0
+	endif
+	
 	// Switch to the imaging data folder
 	SetDataFolder root:DP_Camera
 

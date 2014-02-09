@@ -250,7 +250,9 @@ Function IgorBeforeQuitHook(unsavedExp, unsavedNotebooks, unsavedProcedures)
 	Variable unsavedNotebooks
 	Variable unsavedProcedures
 	
-	ImagerViewDestructor()
-	CameraDestructor()
+	if ( IsImagingModuleInUse() )
+		ImagerViewDestructor()
+		CameraDestructor()
+	endif
 End
 
