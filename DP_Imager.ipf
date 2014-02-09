@@ -1482,14 +1482,21 @@ Function ImagerSetTriggerDelay(newValue)
 	SetDataFolder savedDF	
 End
 
+Function ImagerUpdateSnapshotParams()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR snapshotExposure  // Hz
 
+	// Get the frame interval for video acquisition, given the current settings, in ms
+	Variable snapshotExposureWanted=ImagerGetSnapshotExposureWanted()
+	snapshotExposure=FancyCameraGetSnapshotExposure(snapshotExposureWanted)		// ms
 
-
-
-
-//
-// Private methods
-//
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
 
 Function ImagerUpdateVideoParams()
 	// Switch to the data folder
@@ -1517,23 +1524,16 @@ End
 
 
 
-Function ImagerUpdateSnapshotParams()
-	// Switch to the data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Imager
-	
-	// Declare instance vars
-	NVAR snapshotExposure  // Hz
-
-	// Get the frame interval for video acquisition, given the current settings, in ms
-	Variable snapshotExposureWanted=ImagerGetSnapshotExposureWanted()
-	snapshotExposure=FancyCameraGetSnapshotExposure(snapshotExposureWanted)		// ms
-
-	// Restore the original DF
-	SetDataFolder savedDF	
-End
 
 
+
+
+
+
+
+//
+// Private methods
+//
 
 Function ImagerTranslateROIRaw(iROI,dx,dy)
 	// Translate the ROI iROI.  We assume it exists.

@@ -163,6 +163,11 @@ Function ImagerViewConstructor() : Panel
 	TitleBox actualSnapshotExposureTB, win=ImagerView, pos={xOffset,yOffset}, frame=0
 	xOffset=302
 	TitleBox actualSnapshotUnitsTB, win=ImagerView, pos={xOffset,yOffset}, frame=0, title="ms"
+	
+	// Button to update actual exposure duration
+	yOffset=snapshotYOffset+36
+	Button updateSnapExpButton,win=ImagerView,pos={268,yOffset},size={50,19},proc=ICUpdateSnapExpButtonPressed,title="Update"
+
 
 	// "(hit ESC key to stop)" title box
 	TitleBox focusingEscapeTB, win=ImagerView, pos={106,focusYOffset+3}, frame=0, title="(hit ESC to stop)",disable=1
@@ -241,6 +246,10 @@ Function ImagerViewConstructor() : Panel
 	TitleBox frameRateTB, win=ImagerView, pos={xOffset,yOffset}, frame=0
 	xOffset=302
 	TitleBox rateUnitsTB, win=ImagerView, pos={xOffset,yOffset}, frame=0, title="Hz"
+
+	// Button to update actual exposure duration
+	yOffset=yOffsetRow+1
+	Button updateVideoExpButton,win=ImagerView,pos={268,yOffset},size={50,19},proc=ICUpdateVideoExpButtonPressed,title="Update"
 
 	// Triggering stuff
 	

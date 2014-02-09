@@ -324,6 +324,13 @@ Function ICVideoExposureSVTouched(ctrlName,varNum,varStr,varName) : SetVariableC
 	ImagerViewModelChanged()
 End
 
+Function ICUpdateVideoExpButtonPressed(ctrlName) : ButtonControl
+	String ctrlName
+
+	ImagerUpdateVideoParams()
+	ImagerViewModelChanged()
+End
+
 Function ICSnapshotExposureSVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName
 	Variable varNum	// value of variable as number
@@ -331,6 +338,13 @@ Function ICSnapshotExposureSVTouched(ctrlName,varNum,varStr,varName) : SetVariab
 	String varName	// name of variable
 
 	ImagerSetSnapshotExposureWanted(varNum)
+	ImagerViewModelChanged()
+End
+
+Function ICUpdateSnapExpButtonPressed(ctrlName) : ButtonControl
+	String ctrlName
+
+	ImagerUpdateSnapshotParams()
 	ImagerViewModelChanged()
 End
 
