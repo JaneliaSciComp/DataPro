@@ -584,12 +584,7 @@ Function ImagerContAcquireFinish(iSweep)
 	SweeperViewSweeperChanged()
 	
 	// Update the sweep number and signals in the DP Browsers
-	Wave browserNumbers=GetAllBrowserNumbers()  // returns a free wave	
-	Variable nBrowsers=numpnts(browserNumbers)
-	Variable i
-	for (i=0; i<nBrowsers; i+=1)
-		BrowserContSetCurSweepIndex(browserNumbers[i],iSweep)
-	endfor
+	BCSetCurSweepIndexForAll(iSweep)
 	
 	// Tell that model that we're done acquiring video, and update the view to reflect
 	ImagerSetIsAcquiringVideo(0)
@@ -686,6 +681,9 @@ Function ImagerContFocus()
 		SweeperFreeRunVideoJustAcqd(iFullFrameWave)
 		SweeperViewSweeperChanged()
 	
+		// Update the sweep number and signals in the DP Browsers
+		BCSetCurSweepIndexForAll(iFullFrameWave)
+
 		// Call this to make sure the image gets auto-scaled properly if needed
 		ImageBrowserModelSetVideo(imageWaveNameRel)
 		ImageBrowserViewModelEtcChanged()	
@@ -746,6 +744,8 @@ Function ImagerContAcquireSnapshot()
 			String allVideoWaveNames=WaveList(snapshotWaveBaseName+"*",";","")+WaveList(videoWaveBaseName+"*",";","")
 			SweeperFreeRunVideoJustAcqd(iFullFrameWave)
 			SweeperViewSweeperChanged()
+			// Update the sweep number and signals in the DP Browsers
+			BCSetCurSweepIndexForAll(iFullFrameWave)
 		else
 			// acquire failed to start, or had a problem during, so delete just-created wave
 			KillWaves /Z $imageWaveName

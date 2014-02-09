@@ -758,3 +758,21 @@ Function BrowserContComputeAverageWaves(destWaveName,waveBaseName,iFrom,iTo,filt
 	Printf "%d sweeps of %s were averaged and stored in %s\r", nWavesToAvg, waveBaseName, destWaveName
 End
 
+
+
+
+
+//
+// Class methods
+//
+
+Function BCSetCurSweepIndexForAll(iSweep)
+	Variable iSweep
+	
+	Wave browserNumbers=GetAllBrowserNumbers()  // returns a free wave	
+	Variable nBrowsers=numpnts(browserNumbers)
+	Variable i
+	for (i=0; i<nBrowsers; i+=1)
+		BrowserContSetCurSweepIndex(browserNumbers[i],iSweep)
+	endfor
+End
