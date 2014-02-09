@@ -79,6 +79,7 @@ Function SweeperControllerADCCheckbox(ctrlName,checked) : CheckBoxControl
 	SweeperContSetADCChannelOn(iChannel,checked)
 	SwitcherViewUpdate()
 	ASwitcherViewUpdate()
+	ImagerViewSomethingChanged()
 End
 
 Function SweeperContSetADCChannelOn(iChannel,on)
