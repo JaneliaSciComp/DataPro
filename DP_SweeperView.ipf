@@ -219,9 +219,9 @@ Function SweeperViewDigitizerChanged()
 	SweeperViewUpdate()
 End
 
-//Function SweeperViewEpiLightChanged()
-//	SweeperViewUpdate()
-//End
+Function SweeperViewEpiLightChanged()
+	SweeperViewUpdate()
+End
 
 Function SweeperViewUpdate()
 	// This is intended to be a private method in SweeperView.

@@ -86,7 +86,7 @@ Function ICEpiTTLChannelSVTouched(ctrlName,varNum,varStr,varName) : SetVariableC
 	//SweeperEpiLightTTLOutputChanged()
 	SamplerEpiLightTTLOutputChanged()
 	ImagerViewEpiLightChanged()	
-	//SweeperViewEpiLightChanged()
+	SweeperViewEpiLightChanged()
 	TestPulserViewSomethingChanged()
 End
 
