@@ -415,8 +415,11 @@ End
 Function ICResetCameraButtonPressed(ctrlName) : ButtonControl
 	String ctrlName
 
+	ImagerDisableCameraReset()
+	ImagerViewModelChanged()
+	DoUpdate
 	FancyCameraReset()
-	//ImagerViewCCDTempChanged()	
+	ImagerEnableCameraReset()
 	ImagerViewSomethingChanged()
 End
 

@@ -53,6 +53,7 @@ Function ImagerConstructor()
 		//Variable /G blackCount=0		// the CCD count that gets mapped to black
 		//Variable /G whiteCount=2^16-1	// the CCD count that gets mapped to white
 		Variable /G moveAllROIs=0		// Whether to move all the ROIs when ImagerTranslateCurrentROIOrAll() is called
+		Variable /G isCameraResetEnabled=1	// Whether the user is allowed reset the camera right now
 		
 		// the list of possible calculations
 		Make /O /T calculationList={"Mean","Sum","DF/F"}
@@ -158,6 +159,57 @@ Function ImagerGetNFramesForVideo()
 	
 	// get the value
 	Variable value=nFramesForVideo
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+
+	// Return the value
+	return value
+End
+
+
+Function ImagerDisableCameraReset()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR isCameraResetEnabled
+	
+	// get the value
+	isCameraResetEnabled=0
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+Function ImagerEnableCameraReset()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR isCameraResetEnabled
+	
+	// get the value
+	isCameraResetEnabled=1
+	
+	// Restore the original DF
+	SetDataFolder savedDF	
+End
+
+
+Function ImagerGetIsCameraResetEnabled()
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR isCameraResetEnabled
+	
+	// get the value
+	Variable value=isCameraResetEnabled
 	
 	// Restore the original DF
 	SetDataFolder savedDF	

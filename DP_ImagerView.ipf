@@ -628,6 +628,9 @@ Function ImagerViewUpdate()
 //	ValDisplay binnedFrameHeightVD, win=ImagerView, value= _NUM:roiHeightInBins
 //	WhiteOutIffNan("binnedFrameHeightVD","ImagerView",roiHeightInBins)
 	
+	// Camera Reset button, so user doesn't press it a zillion times when it seems like nothing is happening
+	Button resetCameraButton, win=ImagerView, disable=fromEnable(ImagerGetIsCameraResetEnabled())
+
 	// Restore the original DF
 	SetDataFolder savedDF
 End
