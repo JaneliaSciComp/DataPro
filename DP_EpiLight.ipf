@@ -173,13 +173,17 @@ Function EpiLightSetTTLOutputIndex(newValue)
 		// Make sure the value is in-range
 		if ( (0<=newValue) && (newValue<=3) )
 			// Check that the new TTL output is not in use by the test pulser
-			if ( !(TestPulserExists() && TestPulserIsTTLInUse(newValue) ) && !SweeperGetTTLOutputChannelOn(newValue) && !SweeperGetTTLOutputHijacked(newValue) )
+			Variable conflictsWithTestPulser=( TestPulserExists() && TestPulserIsTTLInUse(newValue) )
+			Variable conflictsWithSweeper=( SweeperGetTTLOutputChannelOn(newValue) || SweeperGetTTLOutputHijacked(newValue) )
+			if ( !(conflictsWithTestPulser || conflictsWithSweeper) )
 				// If we get here, then the destination TTL channel is available, so we'll proceed with the switch
-				if ( ImagerGetIsTriggered() && SweeperGetTTLOutputHijacked(originalValue) )
-					// This means that the original TTL channel is hijacked, and we are the hijacker
-					ImagerUnhijackSweeperEpiGate(originalValue)
+				if ( ImagerGetIsTriggered() )
+					if ( SweeperGetTTLOutputHijacked(originalValue) )
+						// This means that the original TTL channel is hijacked, and we are the hijacker
+						ImagerUnhijackSweeperEpiGate(originalValue)
+					endif
+					ImagerHijackSweeperEpiGate(newValue)
 				endif
-				ImagerHijackSweeperEpiGate(newValue)
 				ttlOutputIndex=newValue
 			endif
 		endif
@@ -195,6 +199,18 @@ Function EpiLightGetTTLOutputIndex()
 	SetDataFolder root:DP_EpiLight
 	NVAR ttlOutputIndex
 	Variable value=ttlOutputIndex
+	SetDataFolder savedDF	
+	return value
+End
+
+
+
+Function EpiLightIsTTLOutputInUse(i)
+	Variable i 
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_EpiLight
+	NVAR ttlOutputIndex
+	Variable value=(ttlOutputIndex==i)
 	SetDataFolder savedDF	
 	return value
 End
