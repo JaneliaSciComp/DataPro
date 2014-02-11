@@ -102,3 +102,10 @@ Made ramp builder slightly more flexible.
 7.10 -> 7.11    (November 5, 2013)
 
 Added white noise builder.
+
+
+
+
+7.11 -> 8.00    (February 11, 2014)
+
+Added imaging module, for imaging with Andor iXon Ultra camera.

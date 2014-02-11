@@ -1,4 +1,4 @@
-All files included in DataPro are Copyright (c) 1998-2013, Nelson
+All files included in DataPro are Copyright (c) 1998-2014, Nelson
 Spruston and Adam L. Taylor.
 All rights reserved.
 
