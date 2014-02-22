@@ -278,7 +278,16 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	// Actually acquire the data for this sweep
 	Variable absoluteTime=DateTime	// "Unlike most Igor functions, DateTime is used without parentheses."
 	Make /O /N=(0) FIFOin
-	SamplerSampleDataBang(FIFOin,adSequence,daSequence,FIFOout)
+	SamplerSampleDataStart(adSequence,daSequence,FIFOout)
+	//SamplerSampleDataBang(FIFOin,adSequence,daSequence,FIFOout)
+		
+	// If doing imaging, and triggered acquistion, babysit the camera to get the frames without overflowing the buffer
+	if ( IsImagingModuleInUse() && ImagerGetIsTriggered() )
+		 ImagerContAcquireFramesLoop(thisSweepIndex)
+	endif
+
+	// Now that that's done, read the data out of the digitizer once it's ready	
+	SamplerSampleDataFinishBang(FIFOin,FIFOout)
 	// raw acquired data is now in root:DP_Sweeper:FIFOin wave
 		
 	// Get the number of ADC channels in use
@@ -312,11 +321,6 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 		SetScale d 0, 0, units, thisWave
 	endfor
 
-	// If doing imaging, and triggered acquistion, get the frames
-	if ( IsImagingModuleInUse() && ImagerGetIsTriggered() )
-		 ImagerContAcquireFramesLoop(thisSweepIndex)
-	endif
-	
 	// Notify the sweeper model that a sweep has just been acquired
 	SweeperSweepJustAcquired(thisSweepIndex,iSweepWithinTrial)
 	//SweeperAddHistoryForSweep(thisSweepIndex,iSweepWithinTrial)

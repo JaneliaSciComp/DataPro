@@ -102,14 +102,14 @@ Function SamplerSampleDataBang(FIFOin,adSequence,daSequence,FIFOout)
 		Execute commandLine
 		String FIFOoutName=GetWavesDataFolder(FIFOout,2)
 		commandLine=sprintf1s("ITC18Stim %s",FIFOoutName)
-		Printf "%s\r", commandLine
+		//Printf "%s\r", commandLine
 		Execute commandLine		// This line throws an error if the FIFO is not big enough
 		//Execute "ITC18Stim FIFOout"		// This line throws an error if the FIFO is not big enough
 		sprintf commandLine, "ITC18StartAcq %d,2,0", nDigitizerClockTicksPerDt
 		Execute commandLine
 		String FIFOinName=GetWavesDataFolder(FIFOin,2)
 		commandLine=sprintf1s("ITC18Samp %s",FIFOinName)
-		Printf "%s\r", commandLine
+		//Printf "%s\r", commandLine
 		Execute commandLine
 		//Execute "ITC18Samp FIFOin"
 		Execute "ITC18StopAcq"
@@ -249,7 +249,10 @@ Function SamplerSampleDataStart(adSequence,daSequence,FIFOout)
 		//Execute "ITC18Seq daSequence, adSequence"
 		sprintf commandLine "ITC18Seq \"%s\", \"%s\"", daSequence, adSequence
 		Execute commandLine
-		Execute "ITC18Stim FIFOout"		// This line throws an error if the FIFO is not big enough
+		String FIFOoutName=GetWavesDataFolder(FIFOout,2)
+		commandLine=sprintf1s("ITC18Stim %s",FIFOoutName)
+		//Printf "%s\r", commandLine
+		Execute commandLine		// This line throws an error if the FIFO is not big enough
 		sprintf commandLine, "ITC18StartAcq %d,2,0", nDigitizerClockTicksPerDt
 		Execute commandLine
 		//Execute "ITC18Samp FIFOin"
@@ -320,7 +323,11 @@ Function /WAVE SamplerSampleDataFinishBang(FIFOin,FIFOout)
 		//Execute "ITC18Stim FIFOout"		// This line throws an error if the FIFO is not big enough
 		//sprintf commandLine, "ITC18StartAcq %d,2,0", nDigitizerClockTicksPerDt
 		//Execute commandLine
-		Execute "ITC18Samp FIFOin"
+		String FIFOinName=GetWavesDataFolder(FIFOin,2)
+		commandLine=sprintf1s("ITC18Samp %s",FIFOinName)
+		//Printf "%s\r", commandLine
+		Execute commandLine		
+		//Execute "ITC18Samp FIFOin"
 		Execute "ITC18StopAcq"
 	else
 		// do nothing
