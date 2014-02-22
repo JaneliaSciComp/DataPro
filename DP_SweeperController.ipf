@@ -262,7 +262,8 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	endif
 
 	// Get the wave that will be fed into the FIFO	(Have to do it after starting the video, b/c that's where the epi light gets turned on.
-	Wave FIFOout=SweeperGetFIFOout()
+	Make /O /N=0 FIFOout
+	SweeperGetFIFOoutBang(FIFOout)
 	Variable nSamplesFIFO=numpnts(FIFOout)
 	Printf "nSamplesFIFO: %d\r", nSamplesFIFO
 	// This shouldn't happen anymore, b/c the interface no longer allows it, but I'll leave it in
@@ -276,7 +277,8 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	
 	// Actually acquire the data for this sweep
 	Variable absoluteTime=DateTime	// "Unlike most Igor functions, DateTime is used without parentheses."
-	Wave FIFOin=SamplerSampleData(adSequence,daSequence,FIFOout) 
+	Make /O /N=(0) FIFOin
+	SamplerSampleDataBang(FIFOin,adSequence,daSequence,FIFOout)
 	// raw acquired data is now in root:DP_Sweeper:FIFOin wave
 		
 	// Get the number of ADC channels in use
@@ -312,7 +314,7 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 
 	// If doing imaging, and triggered acquistion, get the frames
 	if ( IsImagingModuleInUse() && ImagerGetIsTriggered() )
-		 ImagerContAcquireFinish(thisSweepIndex)
+		 ImagerContAcquireFramesLoop(thisSweepIndex)
 	endif
 	
 	// Notify the sweeper model that a sweep has just been acquired

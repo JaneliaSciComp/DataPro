@@ -24,7 +24,7 @@ Function ImageBrowserViewConstructor()
 	PopupMenu image_popup0,win=ImageBrowserView,pos={16,6},size={110,24},proc=ImagePopMenuProc,title="Image"
 	PopupMenu image_popup0,win=ImageBrowserView,value="(none)",mode=1
 
-	SetVariable plane_setvar0,win=ImageBrowserView,pos={26,32},size={70,16},proc=ImagePlaneSetVarProc,title="Frame:"
+	SetVariable plane_setvar0,win=ImageBrowserView,pos={16,32},size={90,16},proc=ImagePlaneSetVarProc,title="Frame:"
 	
 	SetVariable gray_setvar0,win=ImageBrowserView,pos={126,8},size={130,16},proc=BlackCountSetVarProc,title="Black Count:"
 	SetVariable gray_setvar0,win=ImageBrowserView,limits={0,2^16-1,1024}

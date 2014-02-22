@@ -440,7 +440,7 @@ Function ImagerContAcquireVideo()
 	Variable iSweep=SweeperGetNextSweepIndex()
 	Variable wasVideoAcqStarted=ImagerContAcquireVideoStart()
 	if (wasVideoAcqStarted)
-		ImagerContAcquireFinish(iSweep)
+		ImagerContAcquireFramesLoop(iSweep)
 	else
 		Abort FancyCameraGetErrorMessage()
 	endif
@@ -506,7 +506,7 @@ End
 
 
 
-Function ImagerContAcquireFinish(iSweep)
+Function ImagerContAcquireFramesLoop(iSweep)
 	Variable iSweep
 
 	// Switch to the imaging data folder
@@ -528,7 +528,7 @@ Function ImagerContAcquireFinish(iSweep)
 	String imageWaveName=sprintf2sv("%s_%d", videoWaveBaseName, iSweep)
 	Make /O /W /U /N=(0,0,0) $imageWaveName	// 16-bit unsigned wave to hold result
 	WAVE imageWave=$imageWaveName
-	Variable gotFrames=FancyCameraWaitForFramesBang(imageWave,nFramesForVideo)
+	Variable gotFrames=FancyCameraLoopForFramesBang(imageWave,nFramesForVideo)
 	
 	// Get the error message now
 	String errorMessage
@@ -666,7 +666,7 @@ Function ImagerContFocus()
 			//Wave imageWaveFree=FancyCameraAcquire(nFrames)
 			Variable wasAcqStarted=FancyCameraStartAcquire()
 			if (wasAcqStarted)
-				FancyCameraWaitForFramesBang(imageWaveCaged,nFrames)
+				FancyCameraLoopForFramesBang(imageWaveCaged,nFrames)
 				ImageBrowserContSetVideo(imageWaveNameRel)
 				if (iFrame==0)
 					ImageBrowserContSetVideo(imageWaveNameRel)
@@ -749,7 +749,7 @@ Function ImagerContAcquireSnapshot()
 			String imageWaveNameAbs="root:DP_Imager:"+imageWaveName
 			Make /O $imageWaveNameAbs
 			WAVE imageWave=$imageWaveNameAbs
-			wereFramesAcquired=FancyCameraWaitForFramesBang(imageWave,nFrames)
+			wereFramesAcquired=FancyCameraLoopForFramesBang(imageWave,nFrames)
 		endif
 		FancyCameraDisarm()
 		//EpiLightResetToPermanent()

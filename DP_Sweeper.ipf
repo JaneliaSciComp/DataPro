@@ -479,6 +479,94 @@ Function /WAVE SweeperGetFIFOout()
 	return FIFOout
 End
 
+Function SweeperGetFIFOoutBang(FIFOout)
+	// Builds the FIFOout wave, storing it in the wave FIFOout.
+	// FIFOout is redimensioned in this function, and any data in FIFOout is overwritten.
+	Wave FIFOout
+	
+	// Switch to the digitizer control data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+	
+	// Declare data folder vars we access
+	WAVE /T dacWaveName
+	WAVE dacMultiplier
+		
+	// get the DAC sequence
+	String daSequence=SweeperGetDACSequence()
+	Variable sequenceLength=strlen(daSequence)
+	
+	Variable dt=SweeperGetDt() 	// sampling interval, ms
+	NVAR totalDuration		// total duration, ms
+	Variable nScans=SweeperGetNumberOfScans()		// number of samples in each output wave ("scans" is an NI-ism)
+	
+	// Dimension the FIFOout wave
+	Redimension /N=(sequenceLength*nScans) FIFOout
+	
+	// First, need to multiplex all the TTL outputs the user has specified onto a single wave, where each
+	// sample is interpreted 16-bit number that specifies all the 16 TTL outputs, only the first four
+	// of which are exposed on the front panel.
+	// Source TTL waves should consist of zeros (low) and ones (high) only.
+	// The multiplexed wave is called multiplexedTTL
+	Wave multiplexedTTL=SweeperGetMultiplexedTTLOutput()
+
+	// now assign values to FIFOout according to the DAC sequence
+	Variable outgain
+	String stepAsString=""
+	Variable i
+	Variable thisOneIsDAC
+	for (i=0; i<sequenceLength; i+=1)
+		// Either use the specified DAC wave, or use the multiplexed TTL wave, as appropriate
+		if ( AreStringsEqual(daSequence[i],"D") )
+			// Means this is the slot for the multiplexed TTL output
+			Wave thisDACWave=multiplexedTTL
+			thisOneIsDAC=0
+		else			
+			Variable iDACChannel=str2num(daSequence[i])
+			if ( AreStringsEqual(dacWaveName[iDACChannel],"(none)") )
+				Abort "An active DAC channel can't have the wave set to \"(none)\"."
+			endif
+			String thisDACWaveNameRel=dacWaveName[iDACChannel]
+			SetDataFolder root:DP_Sweeper:dacWaves			
+			Wave thisDACWave=$thisDACWaveNameRel
+			SetDataFolder root:DP_Sweeper
+			outgain=DigitizerModelGetDACPntsPerNtv(iDACChannel)
+			thisOneIsDAC=1
+		endif
+		// Make sure this wave has the correct dt
+		if (dt!=deltax(thisDACWave))
+			Abort "Internal error: There is a sample interval mismatch in your DAC and/or TTL output waves."
+		endif
+		// Make sure this wave has the correct nScans
+		if (nScans!=numpnts(thisDACWave))
+			Abort "Internal error: There is a mismatch in the number of points in your DAC and/or TTL output waves."
+		endif
+		// Get the step value, if it's present in this wave
+		String stepAsStringThis=StringByKeyInWaveNote(thisDACWave,"STEP")
+		if ( !IsEmptyString(stepAsStringThis) )
+			stepAsString=stepAsStringThis
+		endif
+		// Finally, write this output wave into FIFOout
+		if (thisOneIsDAC)
+			FIFOout[i,;sequenceLength]=min(max(-32768,thisDACWave[floor(p/sequenceLength)]*outgain*dacMultiplier[iDACChannel]),32767)		// limit to 16-bits
+		else
+			// this one is TTL
+			FIFOout[i,;sequenceLength]=thisDACWave[floor(p/sequenceLength)]
+		endif
+	endfor
+		
+	// Set the time scaling for FIFOout
+	Setscale /P x, 0, dt/sequenceLength, "ms", FIFOout
+	
+	// Set the STEP wave note in FIFOout, so that it can be copied into the ADC waves eventually
+	if (!IsEmptyString(stepAsString))
+		ReplaceStringByKeyInWaveNote(FIFOout,"STEP",stepAsString)
+	endif
+	
+	// Restore the data folder
+	SetDataFolder savedDF
+End
+
 //Function /S GetSweeperWaveNamesEndingIn(suffix)
 //	String suffix
 //	String theFolderPath = "root:DP_Sweeper"

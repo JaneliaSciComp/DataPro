@@ -52,6 +52,84 @@ End
 
 
 
+Function SamplerSampleDataBang(FIFOin,adSequence,daSequence,FIFOout)
+	// The heart of the data acquisition.
+	Wave FIFOin
+	String adSequence
+	String daSequence
+	Wave FIFOout
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sampler
+
+	NVAR itc
+	NVAR usPerDigitizerClockTick
+	//WAVE FIFOout, FIFOin	// wave references to bound waves that don't exist yet.
+
+	// Duplicate FIFOoutFree into a bound wave
+	//Duplicate /O FIFOoutFree, FIFOout
+
+	// Make the FIFOin wave (cannot be free)
+	Variable nSamplesFIFO=numpnts(FIFOout)
+	Variable dtFIFO=deltax(FIFOout)
+	Redimension /N=(nSamplesFIFO) FIFOin
+	SetScale /P x, 0, dtFIFO, "ms", FIFOin
+
+	// Calculate the number of digitizer clock ticks per FIFO sampling interval
+	// This must be an integer, and must be >=4, or problems will ensue
+	Variable usPerFIFODt=1000*dtFIFO	// us
+	Variable nDigitizerClockTicksPerDt=round(usPerFIFODt/usPerDigitizerClockTick)
+	if (nDigitizerClockTicksPerDt<4)
+		Abort "Requested sampling rate is faster than the hardware can achieve.."
+	endif
+	
+	String commandLine
+	if (itc==0)
+		FIFOin=sin(0.05*x)+gnoise(0.1)
+	elseif (itc==16)
+		Execute "ITC16StimClear 0"
+		//Execute "ITC16Seq daSequence, adSequence"
+		sprintf commandLine "ITC16Seq \"%s\", \"%s\"", daSequence, adSequence
+		Execute commandLine
+		sprintf commandLine, "ITC16StimAndSample FIFOout, FIFOin, %d, 14", nDigitizerClockTicksPerDt
+		Execute commandLine
+		Execute "ITC16StopAcq"
+	elseif (itc==18)
+		// might need to change acqflags to 14 to make this work
+		//Execute "ITC18StimClear 0"  // ALT, 2012/05/23
+		//Execute "ITC18Seq daSequence, adSequence"
+		sprintf commandLine "ITC18Seq \"%s\", \"%s\"", daSequence, adSequence
+		Execute commandLine
+		String FIFOoutName=GetWavesDataFolder(FIFOout,2)
+		commandLine=sprintf1s("ITC18Stim %s",FIFOoutName)
+		Printf "%s\r", commandLine
+		Execute commandLine		// This line throws an error if the FIFO is not big enough
+		//Execute "ITC18Stim FIFOout"		// This line throws an error if the FIFO is not big enough
+		sprintf commandLine, "ITC18StartAcq %d,2,0", nDigitizerClockTicksPerDt
+		Execute commandLine
+		String FIFOinName=GetWavesDataFolder(FIFOin,2)
+		commandLine=sprintf1s("ITC18Samp %s",FIFOinName)
+		Printf "%s\r", commandLine
+		Execute commandLine
+		//Execute "ITC18Samp FIFOin"
+		Execute "ITC18StopAcq"
+	else
+		// do nothing
+	endif
+	
+	// Set the TTL signals back to the background settings
+	SamplerSyncTTLOutputToBG()
+	
+	//// Copy the FIFOin wave to a free wave, then delete the non-free wave
+	//Duplicate /FREE FIFOin, FIFOinFree
+	//KillWaves FIFOin, FIFOout
+	
+	SetDataFolder savedDF
+End
+
+
+
+
 Function /WAVE SamplerSampleData(adSequence,daSequence,FIFOoutFree)
 	// The heart of the data acquisition.
 	String adSequence
@@ -118,6 +196,142 @@ Function /WAVE SamplerSampleData(adSequence,daSequence,FIFOoutFree)
 	SetDataFolder savedDF
 	return FIFOinFree
 End
+
+
+
+Function SamplerSampleDataStart(adSequence,daSequence,FIFOout)
+	// The heart of the data acquisition.
+	String adSequence
+	String daSequence
+	Wave FIFOout
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sampler
+
+	NVAR itc
+	NVAR usPerDigitizerClockTick
+	//WAVE FIFOout, FIFOin	// wave references to bound waves that don't exist yet.
+
+	// Duplicate FIFOoutFree into a bound wave
+	//Duplicate /O FIFOoutFree, FIFOout
+
+//	// Make the FIFOin wave (cannot be free)
+//	Variable nSamplesFIFO=numpnts(FIFOout)
+	Variable dtFIFO=deltax(FIFOout)
+//	Make /O /N=(nSamplesFIFO) FIFOin
+//	SetScale /P x, 0, dtFIFO, "ms", FIFOin
+
+	// Calculate the number of digitizer clock ticks per FIFO sampling interval
+	// This must be an integer, and must be >=4, or problems will ensue
+	Variable usPerFIFODt=1000*dtFIFO	// us
+	Variable nDigitizerClockTicksPerDt=round(usPerFIFODt/usPerDigitizerClockTick)
+	if (nDigitizerClockTicksPerDt<4)
+		Abort "Requested sampling rate is faster than the hardware can achieve.."
+	endif
+	
+	String commandLine
+	if (itc==0)
+		// Do nothing
+	elseif (itc==16)
+		Execute "ITC16StimClear 0"
+		//Execute "ITC16Seq daSequence, adSequence"
+		sprintf commandLine "ITC16Seq \"%s\", \"%s\"", daSequence, adSequence
+		Execute commandLine
+		sprintf commandLine, "ITC16StimAndSample FIFOout, FIFOin, %d, 14", nDigitizerClockTicksPerDt
+		Execute commandLine
+		// N.B.: This is probably broken for the ITC 16.  Not sure how you tell it to start sampling but not block
+		// until all data is acquired.  But there don't seem to be any ITC-16s left in Nelson's lab, so maybe it doesn't 
+		// much matter?  -- ALT, 2013-02-22
+		//Execute "ITC16StopAcq"
+	elseif (itc==18)
+		// might need to change acqflags to 14 to make this work
+		//Execute "ITC18StimClear 0"  // ALT, 2012/05/23
+		//Execute "ITC18Seq daSequence, adSequence"
+		sprintf commandLine "ITC18Seq \"%s\", \"%s\"", daSequence, adSequence
+		Execute commandLine
+		Execute "ITC18Stim FIFOout"		// This line throws an error if the FIFO is not big enough
+		sprintf commandLine, "ITC18StartAcq %d,2,0", nDigitizerClockTicksPerDt
+		Execute commandLine
+		//Execute "ITC18Samp FIFOin"
+		//Execute "ITC18StopAcq"
+	else
+		// do nothing
+	endif
+	
+	//// Set the TTL signals back to the background settings
+	//SamplerSyncTTLOutputToBG()
+	
+	//// Copy the FIFOin wave to a free wave, then delete the non-free wave
+	//Duplicate /FREE FIFOin, FIFOinFree
+	//KillWaves FIFOin, FIFOout
+	
+	SetDataFolder savedDF
+	//return FIFOinFree
+End
+
+
+
+Function /WAVE SamplerSampleDataFinishBang(FIFOin,FIFOout)
+	// The heart of the data acquisition.
+	Wave FIFOin
+	Wave FIFOout
+	
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sampler
+
+	NVAR itc
+	//NVAR usPerDigitizerClockTick
+	//WAVE FIFOout, FIFOin	// wave references to bound waves that don't exist yet.
+
+	// Duplicate FIFOoutFree into a bound wave
+	//Duplicate /O FIFOoutFree, FIFOout
+
+	// Make the FIFOin wave (cannot be free)
+	Variable nSamplesFIFO=numpnts(FIFOout)
+	Variable dtFIFO=deltax(FIFOout)
+	Redimension /N=(nSamplesFIFO) FIFOin
+	SetScale /P x, 0, dtFIFO, "ms", FIFOin
+
+//	// Calculate the number of digitizer clock ticks per FIFO sampling interval
+//	// This must be an integer, and must be >=4, or problems will ensue
+//	Variable usPerFIFODt=1000*dtFIFO	// us
+//	Variable nDigitizerClockTicksPerDt=round(usPerFIFODt/usPerDigitizerClockTick)
+//	if (nDigitizerClockTicksPerDt<4)
+//		Abort "Requested sampling rate is faster than the hardware can achieve.."
+//	endif
+	
+	String commandLine
+	if (itc==0)
+		FIFOin=sin(0.05*x)+gnoise(0.1)
+	elseif (itc==16)
+//		Execute "ITC16StimClear 0"
+//		//Execute "ITC16Seq daSequence, adSequence"
+//		sprintf commandLine "ITC16Seq \"%s\", \"%s\"", daSequence, adSequence
+//		Execute commandLine
+//		sprintf commandLine, "ITC16StimAndSample FIFOout, FIFOin, %d, 14", nDigitizerClockTicksPerDt
+//		Execute commandLine
+		Execute "ITC16StopAcq"
+	elseif (itc==18)
+		// might need to change acqflags to 14 to make this work
+		//Execute "ITC18StimClear 0"  // ALT, 2012/05/23
+		//Execute "ITC18Seq daSequence, adSequence"
+		//sprintf commandLine "ITC18Seq \"%s\", \"%s\"", daSequence, adSequence
+		//Execute commandLine
+		//Execute "ITC18Stim FIFOout"		// This line throws an error if the FIFO is not big enough
+		//sprintf commandLine, "ITC18StartAcq %d,2,0", nDigitizerClockTicksPerDt
+		//Execute commandLine
+		Execute "ITC18Samp FIFOin"
+		Execute "ITC18StopAcq"
+	else
+		// do nothing
+	endif
+	
+	// Set the TTL signals back to the background settings
+	SamplerSyncTTLOutputToBG()
+		
+	SetDataFolder savedDF
+End
+
 
 
 

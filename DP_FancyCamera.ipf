@@ -227,7 +227,8 @@ Function FancyCameraArm(nFrames)
 
 	// Allocate space in the frame buffer
 	//CameraAcquireImageSetLimit(nFrames)
-	//CameraBufferCountSet(nFrames)
+	Variable nFramesBuffer=500
+	CameraBufferCountSet(nFramesBuffer)
 
 	// Arm the acquisition
 	Variable success=CameraAcquireArm()
@@ -262,7 +263,7 @@ End
 
 
 
-Function FancyCameraWaitForFramesBang(framesCaged,nFrames)
+Function FancyCameraLoopForFramesBang(framesCaged,nFrames)
 	// Block until the camera is done acquiring, then write the acquired frames to framesCaged.
 	// Note that the returned wave will not have an accurate time offset, the offset will just be zero.
 	// And the frame interval scaling for the time dimension will be whatever the camera tells us it was.
