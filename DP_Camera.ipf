@@ -56,6 +56,7 @@ Function CameraConstructor()
 		Variable /G nFramesToAcquireFake=1		
 		Variable /G isAcquireOpenFake=0		// Whether acquisition is "armed"
 		Variable /G isAcquisitionOngoingFake=0
+		Variable /G nFramesAcquiredFake
 		//Variable /G countReadFrameFake=0		// the first frame to be read by subsequent read commands
 		String /G mostRecentErrorMessage=""		// When errors occur, they get stored here.
 		
@@ -568,6 +569,7 @@ Function CameraAcquireStart()
 	NVAR isSidxAcquireValid
 	NVAR sidxAcquire
 	NVAR isAcquisitionOngoingFake
+	NVAR nFramesAcquiredFake
 
 	Variable success
 	Variable sidxStatus
@@ -589,6 +591,7 @@ Function CameraAcquireStart()
 		endif
 	else
 		isAcquisitionOngoingFake=1
+		nFramesAcquiredFake=0
 		success=1
 	endif
 
@@ -639,6 +642,55 @@ Function CameraAcquireGetStatus()
 	
 	// return
 	return isAcquiring
+End
+
+
+
+
+
+Function CameraAcquireImageGetCount()
+	// Returns number of images acquires since acquisition started, or -1 on error
+
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR isSidxAcquireValid
+	NVAR sidxAcquire
+	NVAR isAcquisitionOngoingFake
+	NVAR nFramesAcquiredFake
+	NVAR nFramesToAcquireFake
+
+	Variable nFramesAcquired
+	Variable sidxStatus
+	if (areWeForReal)
+		if (isSidxAcquireValid)
+			SIDXAcquireImageGetCount sidxAcquire, nFramesAcquired, sidxStatus
+			if (sidxStatus!=0)
+				String errorMessage
+				SIDXAcquireGetLastError sidxAcquire, errorMessage
+				//Abort sprintf1s("Error in SIDXAcquireGetStatus: %s",errorMessage)
+				CameraSetErrorMessage(sprintf1s("Error in SIDXAcquireImageGetCount: %s",errorMessage))
+				nFramesAcquired=-1
+			endif
+		else
+			CameraSetErrorMessage("Called CameraAcquireImageGetCount() before acquisition was armed.")
+			nFramesAcquired=-1
+		endif
+	else
+		if (nFramesAcquiredFake<nFramesToAcquireFake)
+			nFramesAcquiredFake+=1
+		endif
+		nFramesAcquired=nFramesAcquiredFake	// if faking, we always say we've acquired one more frame than last time, unless we've acquired the full number of frames
+	endif
+
+	// Restore the data folder
+	SetDataFolder savedDF	
+	
+	// return
+	return nFramesAcquired
 End
 
 
@@ -805,6 +857,58 @@ Function CameraAcquireReadBang(framesCaged,nFramesToRead)
 	Variable yTop=roiInUS[1]
 	SetScale /P x, xLeft+0.5*binSize, binSize, "px", framesCaged		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
 	SetScale /P y, yTop+0.5*binSize, binSize, "px", framesCaged
+
+	// Restore the data folder
+	SetDataFolder savedDF		
+End
+
+
+
+
+
+
+Function CameraAcquireReadAndAppendBang(framesCaged,nFramesToRead,nFramesReadAlready)
+	// Read the just-acquired frames from the camera, and append them into framesCaged.
+	// Note that this assumes framesCaged has been dimensioned already, and it doesn't change any 
+	// of the axis scaling.
+	Wave framesCaged	// A ref to a caged (non-free) wave, where the result is stored
+	Variable nFramesToRead
+	Variable nFramesReadAlready
+
+	// Switch to the imaging data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Camera
+
+	// Declare instance variables
+	NVAR areWeForReal
+	NVAR sidxCamera
+	NVAR isSidxAcquireValid
+	NVAR sidxAcquire
+
+	Variable i
+	Variable sidxStatus
+	String errorMessage
+	if (areWeForReal)
+		if (isSidxAcquireValid)
+			Make /O newFramesCagedTemp
+			SIDXAcquireRead sidxAcquire, nFramesToRead, newFramesCagedTemp, sidxStatus	
+				// doesn't seem to work if frames is a free wave, or a wave reference
+			if (sidxStatus!=0)
+				SIDXAcquireGetLastError sidxAcquire, errorMessage
+				Abort sprintf1s("Error in SIDXAcquireRead: %s",errorMessage)
+			endif
+			// Copy the new frames into framesCaged, in the right place
+			for (i=0; i<nFramesToRead; i+=1)
+				framesCaged[][][nFramesReadAlready+i]=newFramesCagedTemp[p][q][i]
+			endfor
+		else
+			Abort "Called CameraAcquireReadAndAppendBang() before acquisition was armed."
+		endif
+	else
+		for (i=0; i<nFramesToRead; i+=1)
+			framesCaged[][][nFramesReadAlready+i]=2^15+(2^12)*gnoise(1)	// fill with noise
+		endfor
+	endif
 
 	// Restore the data folder
 	SetDataFolder savedDF		

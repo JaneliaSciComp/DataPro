@@ -227,7 +227,7 @@ Function FancyCameraArm(nFrames)
 
 	// Allocate space in the frame buffer
 	CameraAcquireImageSetLimit(nFrames)
-	CameraBufferCountSet(nFrames)
+	//CameraBufferCountSet(nFrames)
 
 	// Arm the acquisition
 	Variable success=CameraAcquireArm()
@@ -266,12 +266,16 @@ Function FancyCameraWaitForFramesBang(framesCaged,nFrames)
 	// Block until the camera is done acquiring, then write the acquired frames to framesCaged.
 	// Note that the returned wave will not have an accurate time offset, the offset will just be zero.
 	// And the frame interval scaling for the time dimension will be whatever the camera tells us it was.
+	// Also note that this function assumes responsibility for redimensioning framesCaged as needed, 
+	// And any did in framesCaged on entry will be overwritten.
 	// Returns 1 is successful, 0 otherwise.
 	Wave framesCaged	// a ref to a caged (non-free) wave, where the result is stored
 	Variable nFrames
 	
 	// Spin until the acquisition is done
 	Variable isAcquiring
+	Variable nFramesAcquiredLastIteration
+	Variable nFramesAcquired	
 	do
 		Sleep /S 0.1		// Sleep 0.1 seconds
 		isAcquiring=CameraAcquireGetStatus()
@@ -279,21 +283,31 @@ Function FancyCameraWaitForFramesBang(framesCaged,nFrames)
 			// This signals an error in getting the camera status
 			break
 		endif
+		nFramesAcquired=CameraAcquireImageGetCount()
+		if (nFramesAcquired<0)
+			// This signals an error
+			break
+		endif		
+		if (nFramesAcquired>nFramesAcquiredLastIteration)
+			Variable nFramesRecent=nFramesAcquired-nFramesAcquiredLastIteration
+			if (nFramesAcquiredLastIteration==0)
+				// If this is the first bunch of frames, read them, then redimension the wave to accomodate the rest
+				CameraAcquireReadBang(framesCaged,nFramesRecent)
+				Variable nX=DimSize(framesCaged,0)
+				Variable nY=DimSize(framesCaged,1)
+				Redimension /N=(nX,nY,nFrames) framesCaged
+			else
+				CameraAcquireReadAndAppendBang(framesCaged,nFramesRecent,nFramesAcquiredLastIteration)
+			endif
+			nFramesAcquiredLastIteration=nFramesAcquired
+		endif
 	while (isAcquiring)
 	
 	// "Stop" the acquisition.  You're only supposed to call this after all frames are acquired...
 	CameraAcquireStop()
 	
 	// Read frames if no problems so far
-	Variable sucess
-	if (isAcquiring<0)
-		// If there was an error, note this for return and don't read frames
-		sucess=0
-	else	
-		// Transfer images from acquisition buffer to IGOR wave
-		CameraAcquireReadBang(framesCaged,nFrames)
-		sucess=1
-	endif
+	Variable sucess=!(isAcquiring<0 || nFramesAcquired<nFrames)
 	
 	return sucess
 End
