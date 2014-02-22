@@ -226,7 +226,7 @@ Function FancyCameraArm(nFrames)
 	// instance vars
 
 	// Allocate space in the frame buffer
-	CameraAcquireImageSetLimit(nFrames)
+	//CameraAcquireImageSetLimit(nFrames)
 	//CameraBufferCountSet(nFrames)
 
 	// Arm the acquisition
@@ -273,41 +273,48 @@ Function FancyCameraWaitForFramesBang(framesCaged,nFrames)
 	Variable nFrames
 	
 	// Spin until the acquisition is done
-	Variable isAcquiring
-	Variable nFramesAcquiredLastIteration
-	Variable nFramesAcquired	
-	do
-		Sleep /S 0.1		// Sleep 0.1 seconds
-		isAcquiring=CameraAcquireGetStatus()
-		if (isAcquiring<0)
-			// This signals an error in getting the camera status
+	Variable nFramesRead=0	// the means acuired by the camera and the then read out by the PC
+	Variable areAllFramesRead=(nFramesRead>=nFrames)
+	for (;!areAllFramesRead;)
+		//Sleep /S 0.1		// Sleep 0.1 seconds
+		Variable isAcquiring=CameraAcquireGetStatus()
+		if (isAcquiring<=0)
+			// Negative isAcquiring signals an error in getting the camera status
 			break
 		endif
-		nFramesAcquired=CameraAcquireImageGetCount()
+		Variable nFramesAcquired=CameraAcquireImageGetCount()  // this means acquired by the camera
 		if (nFramesAcquired<0)
 			// This signals an error
 			break
-		endif		
-		if (nFramesAcquired>nFramesAcquiredLastIteration)
-			Variable nFramesRecent=nFramesAcquired-nFramesAcquiredLastIteration
-			if (nFramesAcquiredLastIteration==0)
-				// If this is the first bunch of frames, read them, then redimension the wave to accomodate the rest
-				CameraAcquireReadBang(framesCaged,nFramesRecent)
-				Variable nX=DimSize(framesCaged,0)
-				Variable nY=DimSize(framesCaged,1)
-				Redimension /N=(nX,nY,nFrames) framesCaged
-			else
-				CameraAcquireReadAndAppendBang(framesCaged,nFramesRecent,nFramesAcquiredLastIteration)
-			endif
-			nFramesAcquiredLastIteration=nFramesAcquired
 		endif
-	while (isAcquiring)
+		if (nFramesAcquired>nFramesRead)
+			Variable nFramesToRead=min(nFrames,nFramesAcquired)-nFramesRead
+			if (nFramesToRead==0)
+				Sleep /S 0.001
+			endif
+			if (nFramesToRead>0)
+				if (nFramesRead==0)
+					// If this is the first bunch of frames, read them, then redimension the wave to accomodate the rest
+					CameraAcquireReadBang(framesCaged,nFramesToRead)
+					Variable nX=DimSize(framesCaged,0)
+					Variable nY=DimSize(framesCaged,1)
+					Redimension /N=(nX,nY,nFrames) framesCaged
+				else
+					CameraAcquireReadAndAppendBang(framesCaged,nFramesToRead,nFramesRead)
+				endif
+				nFramesRead+=nFramesToRead
+			endif
+		endif
+		if (nFramesRead>=nFrames)
+			areAllFramesRead=1;
+		endif
+	endfor
 	
-	// "Stop" the acquisition.  You're only supposed to call this after all frames are acquired...
-	CameraAcquireStop()
+	// Abort the acquisition.
+	CameraAcquireAbort()
 	
 	// Read frames if no problems so far
-	Variable sucess=!(isAcquiring<0 || nFramesAcquired<nFrames)
+	Variable sucess=(nFramesAcquired>=nFrames)
 	
 	return sucess
 End
