@@ -321,6 +321,11 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 		SetScale d 0, 0, units, thisWave
 	endfor
 
+	// If doing imaging, and triggered acquistion, babysit the camera to get the frames without overflowing the buffer
+	if ( IsImagingModuleInUse() && ImagerGetIsTriggered() )
+		 ImagerContExtractROIs(thisSweepIndex)
+	endif
+
 	// Notify the sweeper model that a sweep has just been acquired
 	SweeperSweepJustAcquired(thisSweepIndex,iSweepWithinTrial)
 	//SweeperAddHistoryForSweep(thisSweepIndex,iSweepWithinTrial)
