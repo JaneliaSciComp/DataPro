@@ -542,7 +542,9 @@ Function ImagerContAcquireFramesLoop(iSweep)
 	
 	// Turn off illumination
 	//EpiLightResetToPermanent()
-	EpiLightTurnOff()
+	if (!isTriggered)
+		EpiLightTurnOff()
+	endif
 	//SweeperEpiLightOnChanged()
 
 	// If there was a problem getting frames, delete the wave and abort
@@ -681,7 +683,7 @@ Function ImagerContExtractROIs(iSweep)
 		// Determine the time of each from from the exposure signal
 		String exposureWaveNameAbs=sprintf1v("root:exposure_%d",iSweep)
 		WAVE exposureWave=$exposureWaveNameAbs
-		WAVE offsetEtc=offsetAndIntervalFromExposure(exposureWave)
+		WAVE offsetEtc=offsetAndIntervalFromExposure(exposureWave,nFramesForVideo)
 		if ( numpnts(offsetEtc)<4 )
 			// This signals a problem with the exposure signal
 			DoAlert /T="Warning" 0, "There is a problem with the exposure signal.  Unable to guarantee frame times are properly synchronized with other data."

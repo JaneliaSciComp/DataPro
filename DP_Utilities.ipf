@@ -869,7 +869,7 @@ End
 
 
 
-Function /WAVE offsetAndIntervalFromExposure(exposure)
+Function /WAVE offsetAndIntervalFromExposure(exposure,nFrames)
 	// In most cases, this returns a 4-element wave like so:
 	// 	result[0]=frameOffset
 	// 	result[1]=frameInterval
@@ -878,7 +878,15 @@ Function /WAVE offsetAndIntervalFromExposure(exposure)
 	// If there are <2 pulses in exposure, some of the above will be set to funny values like nan, -inf, +inf
 	// If there is a more serious problem, this function returns a zero-length wave
 	Wave exposure	// a TTL or CMOS signal, high when CCD is absorbing light for a frame
-	
+	Variable nFrames   // the number of frames expected.  Edges beyond this number are ignored.
+
+	// Calling this function with nFrames<1 is an error
+	if (nFrames<1)
+		// if not, signal an error condition (a length-zero return wave)
+		Make /FREE /N=0 result		
+		return result				
+	endif
+		
 	// Convert the analog exposure wave to a boolean representation
 	Variable threshold=(WaveMax(exposure)-WaveMin(exposure))/2
 	
@@ -891,10 +899,10 @@ Function /WAVE offsetAndIntervalFromExposure(exposure)
 	Make /FREE fallingEdgeTimes		// ms
 	FindLevels /DEST=fallingEdgeTimes /EDGE=2 /M=1 /Q exposure, threshold
 	
-	// Check for at least one rising, falling edge
+	// Check for the expected number of rising, falling edges
 	Variable nRisingEdges=numpnts(risingEdgeTimes)
 	Variable nFallingEdges=numpnts(fallingEdgeTimes)
-	if ( nRisingEdges<1 || nFallingEdges<1 )
+	if ( nRisingEdges<nFrames || nFallingEdges<nFrames )
 		// if not, signal an error condition (a length-zero return wave)
 		Make /FREE /N=0 result		
 		return result		
@@ -906,14 +914,11 @@ Function /WAVE offsetAndIntervalFromExposure(exposure)
 		Make /FREE /N=0 result		
 		return result
 	endif
-	
-	// Check that there are the same number of rising edges as falling edges
-	if (nRisingEdges!=nFallingEdges)
-		// if not, signal an error condition (a length-zero return wave)
-		Make /FREE /N=0 result		
-		return result
-	endif
-	
+
+	// Trim risingEdgeTimes, fallingEdgeTimes to the expected length
+	Redimension /N=(nFrames) risingEdgeTimes
+	Redimension /N=(nFrames) fallingEdgeTimes
+		
 	// Things we'll return
 	Variable frameOffset
 	Variable frameIntervalMin
@@ -925,12 +930,34 @@ Function /WAVE offsetAndIntervalFromExposure(exposure)
 	frameCenterTimes+=fallingEdgeTimes
 	frameCenterTimes/=2
 
+
+	//
+	// Compute some things for debugging
+	//
+	
+	// frame durations
+	Duplicate /FREE fallingEdgeTimes, frameDurations
+	frameDurations-=risingEdgeTimes
+	
+	// rising edge intervals
+	Make /FREE /N=(nFrames-1) risingEdgeIntervals
+	risingEdgeIntervals=risingEdgeTimes[p+1]-risingEdgeTimes[p]
+	
+	// falling edge intervals
+	Make /FREE /N=(nFrames-1) fallingEdgeIntervals
+	fallingEdgeIntervals=fallingEdgeTimes[p+1]-fallingEdgeTimes[p]
+	
+	//
+	// Back to non-debugging stuff
+	//
+
+	
 	// The offset is the center time of the first frame
 	frameOffset=frameCenterTimes[0]
 	
 	// Compute the n-1 frame intervals
 	Variable n=numpnts(exposure)
-	Make /FREE /N=(nRisingEdges-1) frameIntervals
+	Make /FREE /N=(nFrames-1) frameIntervals
 	frameIntervals=frameCenterTimes[p+1]-frameCenterTimes[p]
 
 	// Compute min, max, and mean of the frame intervals

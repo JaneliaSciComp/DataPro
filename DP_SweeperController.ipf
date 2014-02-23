@@ -280,15 +280,26 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	Make /O /N=(0) FIFOin
 	SamplerSampleDataStart(adSequence,daSequence,FIFOout)
 	//SamplerSampleDataBang(FIFOin,adSequence,daSequence,FIFOout)
-		
+	
 	// If doing imaging, and triggered acquistion, babysit the camera to get the frames without overflowing the buffer
+	Variable timerRef=startMSTimer
+	//Sleep /S 10
 	if ( IsImagingModuleInUse() && ImagerGetIsTriggered() )
 		 ImagerContAcquireFramesLoop(thisSweepIndex)
 	endif
+	Variable usElapsed=stopMSTimer(timerRef)
+	Variable secondsElapsed=usElapsed/1e6
+	Printf "Time inside (or skipping) ImagerContAcquireFramesLoop(): %f s\r", secondsElapsed
 
 	// Now that that's done, read the data out of the digitizer once it's ready	
 	SamplerSampleDataFinishBang(FIFOin,FIFOout)
 	// raw acquired data is now in root:DP_Sweeper:FIFOin wave
+
+	// Turn off the EpiLight (can't do this before getting the ephys data, b/c that screws up the digitizer)
+	if ( IsImagingModuleInUse() && ImagerGetIsTriggered() )
+		 EpiLightTurnOff()
+		 ImagerViewEpiLightChanged()
+	endif
 		
 	// Get the number of ADC channels in use
 	Variable nADCInUse=SweeperGetNumADCsOn()
