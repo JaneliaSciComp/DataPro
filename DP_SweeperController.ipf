@@ -265,7 +265,7 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	Make /O /N=0 FIFOout
 	SweeperGetFIFOoutBang(FIFOout)
 	Variable nSamplesFIFO=numpnts(FIFOout)
-	Printf "nSamplesFIFO: %d\r", nSamplesFIFO
+	//Printf "nSamplesFIFO: %d\r", nSamplesFIFO
 	// This shouldn't happen anymore, b/c the interface no longer allows it, but I'll leave it in
 	if (numpnts(FIFOout)==0)
 		Abort "There must be at least one valid DAC or TTL output wave"
@@ -273,7 +273,7 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	
 	// Predict how many samples large the FIFO needs to be
 	Variable nFIFOSamplesNeededNow=nFIFOSamplesNeeded(SweeperGetNumADCsOn(),SweeperGetNumDACsOn(),SweeperGetNumTTLOutputsOn(),SweeperGetNumberOfScans())
-	Printf "nFIFOSamplesNeededNow: %d\r", nFIFOSamplesNeededNow
+	//Printf "nFIFOSamplesNeededNow: %d\r", nFIFOSamplesNeededNow
 	
 	// Actually acquire the data for this sweep
 	Variable absoluteTime=DateTime	// "Unlike most Igor functions, DateTime is used without parentheses."
@@ -282,14 +282,14 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	//SamplerSampleDataBang(FIFOin,adSequence,daSequence,FIFOout)
 	
 	// If doing imaging, and triggered acquistion, babysit the camera to get the frames without overflowing the buffer
-	Variable timerRef=startMSTimer
+	//Variable timerRef=startMSTimer
 	//Sleep /S 10
 	if ( IsImagingModuleInUse() && ImagerGetIsTriggered() )
 		 ImagerContAcquireFramesLoop(thisSweepIndex)
 	endif
-	Variable usElapsed=stopMSTimer(timerRef)
-	Variable secondsElapsed=usElapsed/1e6
-	Printf "Time inside (or skipping) ImagerContAcquireFramesLoop(): %f s\r", secondsElapsed
+	//Variable usElapsed=stopMSTimer(timerRef)
+	//Variable secondsElapsed=usElapsed/1e6
+	//Printf "Time inside (or skipping) ImagerContAcquireFramesLoop(): %f s\r", secondsElapsed
 
 	// Now that that's done, read the data out of the digitizer once it's ready	
 	SamplerSampleDataFinishBang(FIFOin,FIFOout)
