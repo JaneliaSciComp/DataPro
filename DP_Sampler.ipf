@@ -95,24 +95,31 @@ Function SamplerSampleDataBang(FIFOin,adSequence,daSequence,FIFOout)
 		Execute commandLine
 		Execute "ITC16StopAcq"
 	elseif (itc==18)
-		// might need to change acqflags to 14 to make this work
-		//Execute "ITC18StimClear 0"  // ALT, 2012/05/23
-		//Execute "ITC18Seq daSequence, adSequence"
-		sprintf commandLine "ITC18Seq \"%s\", \"%s\"", daSequence, adSequence
+		Printf "\r\r"
+
+		commandLine=sprintf2ss("ITC18Seq \"%s\", \"%s\"", daSequence, adSequence)
+		Printf "%s\r", commandLine
 		Execute commandLine
+		
 		String FIFOoutName=GetWavesDataFolder(FIFOout,2)
 		commandLine=sprintf1s("ITC18Stim %s",FIFOoutName)
-		//Printf "%s\r", commandLine
+		Printf "%s\r", commandLine
 		Execute commandLine		// This line throws an error if the FIFO is not big enough
-		//Execute "ITC18Stim FIFOout"		// This line throws an error if the FIFO is not big enough
-		sprintf commandLine, "ITC18StartAcq %d,2,0", nDigitizerClockTicksPerDt
+		
+		commandLine=sprintf1v("ITC18StartAcq %d,2,0", nDigitizerClockTicksPerDt)
+		Printf "%s\r", commandLine
 		Execute commandLine
+		
 		String FIFOinName=GetWavesDataFolder(FIFOin,2)
 		commandLine=sprintf1s("ITC18Samp %s",FIFOinName)
-		//Printf "%s\r", commandLine
+		Printf "%s\r", commandLine
 		Execute commandLine
-		//Execute "ITC18Samp FIFOin"
-		Execute "ITC18StopAcq"
+		
+		commandLine="ITC18StopAcq"
+		Printf "%s\r", commandLine
+		Execute commandLine
+
+		Printf "\r\r"
 	else
 		// do nothing
 	endif
@@ -244,19 +251,20 @@ Function SamplerSampleDataStart(adSequence,daSequence,FIFOout)
 		// much matter?  -- ALT, 2013-02-22
 		//Execute "ITC16StopAcq"
 	elseif (itc==18)
-		// might need to change acqflags to 14 to make this work
-		//Execute "ITC18StimClear 0"  // ALT, 2012/05/23
-		//Execute "ITC18Seq daSequence, adSequence"
-		sprintf commandLine "ITC18Seq \"%s\", \"%s\"", daSequence, adSequence
+		Printf "\r\r"
+
+		commandLine=sprintf2ss("ITC18Seq \"%s\", \"%s\"", daSequence, adSequence)
+		Printf "%s\r", commandLine
 		Execute commandLine
+		
 		String FIFOoutName=GetWavesDataFolder(FIFOout,2)
 		commandLine=sprintf1s("ITC18Stim %s",FIFOoutName)
-		//Printf "%s\r", commandLine
+		Printf "%s\r", commandLine
 		Execute commandLine		// This line throws an error if the FIFO is not big enough
-		sprintf commandLine, "ITC18StartAcq %d,2,0", nDigitizerClockTicksPerDt
+		
+		commandLine=sprintf1v("ITC18StartAcq %d,2,0", nDigitizerClockTicksPerDt)
+		Printf "%s\r", commandLine
 		Execute commandLine
-		//Execute "ITC18Samp FIFOin"
-		//Execute "ITC18StopAcq"
 	else
 		// do nothing
 	endif
@@ -315,20 +323,16 @@ Function /WAVE SamplerSampleDataFinishBang(FIFOin,FIFOout)
 //		Execute commandLine
 		Execute "ITC16StopAcq"
 	elseif (itc==18)
-		// might need to change acqflags to 14 to make this work
-		//Execute "ITC18StimClear 0"  // ALT, 2012/05/23
-		//Execute "ITC18Seq daSequence, adSequence"
-		//sprintf commandLine "ITC18Seq \"%s\", \"%s\"", daSequence, adSequence
-		//Execute commandLine
-		//Execute "ITC18Stim FIFOout"		// This line throws an error if the FIFO is not big enough
-		//sprintf commandLine, "ITC18StartAcq %d,2,0", nDigitizerClockTicksPerDt
-		//Execute commandLine
 		String FIFOinName=GetWavesDataFolder(FIFOin,2)
 		commandLine=sprintf1s("ITC18Samp %s",FIFOinName)
-		//Printf "%s\r", commandLine
-		Execute commandLine		
-		//Execute "ITC18Samp FIFOin"
-		Execute "ITC18StopAcq"
+		Printf "%s\r", commandLine
+		Execute commandLine
+		
+		commandLine="ITC18StopAcq"
+		Printf "%s\r", commandLine
+		Execute commandLine
+
+		Printf "\r\r"
 	else
 		// do nothing
 	endif
