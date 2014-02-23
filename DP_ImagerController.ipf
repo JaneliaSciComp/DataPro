@@ -559,53 +559,10 @@ Function ImagerContAcquireFramesLoop(iSweep)
 		endif
 		Abort errorMessage
 	endif
-	
-	// Copy the free wave to a caged wave in the DP_Imager DF
-	//String imageWaveName=sprintf2sv("%s_%d", videoWaveBaseName, iSweep)
-	//MoveWave imageWaveFree, $imageWaveName 	// Cage the once-free wave
-	
-//	// If is triggered, use the exposure signal to get more accurate frame offset and interval
-//	if (isTriggered)
-//		// Determine the time of each from from the exposure signal
-//		String exposureWaveNameAbs=sprintf1v("root:exposure_%d",iSweep)
-//		WAVE exposureWave=$exposureWaveNameAbs
-//		WAVE offsetEtc=offsetAndIntervalFromExposure(exposureWave)
-//		if ( numpnts(offsetEtc)<4 )
-//			// This signals a problem with the exposure signal
-//			DoAlert /T="Warning" 0, "There is a problem with the exposure signal.  Unable to guarantee frame times are properly synchronized with other data."
-//		else
-//			// The exposure signal appears to be good
-//			Variable frameOffset=offsetEtc[0]
-//			Variable frameInterval=offsetEtc[1]
-//			Variable frameIntervalMin=offsetEtc[2]
-//			Variable frameIntervalMax=offsetEtc[3]
-//			Variable variability=(frameIntervalMax-frameIntervalMin)/frameInterval
-//			if (variability>0.01)
-//				DoAlert /T="Warning" 0, sprintf1v("The frame intervals are highly variable ((max-min)/mean = %0.2f%%)",100*variability)
-//			endif
-//			SetScale /P z, frameOffset, frameInterval, "ms", $imageWaveName
-//		endif
-//	endif
-	
-//	// Calculate ROI signals, store in root DF
-//	String calculationName=ImagerGetCalculationName()
-//	Variable nBaselineFrames=ImagerGetNBaselineFrames()
-//	AddROIWavesToRoot($imageWaveName,roisWave,iSweep,calculationName,nBaselineFrames,isBackgroundROI)
-	
+		
 	// Tell the image browser controller to show the newly-acquired video
 	ImageBrowserContSetVideo(imageWaveName)
-	
-//	// If video acquisition is free-running, notify the Sweeper that free-running video was just acquired.
-//	// This updates the next sweep index.  We don't need to do this for triggered video b/c the call to
-//	// SweeperControllerAcquireTrial()
-//	if (!isTriggered)
-//		SweeperFreeRunVideoJustAcqd(iSweep)
-//	endif
-//	SweeperViewSweeperChanged()
-	
-//	// Update the sweep number and signals in the DP Browsers
-//	BCSetCurSweepIndexForAll(iSweep)
-	
+		
 	// Tell that model that we're done acquiring video, and update the view to reflect
 	ImagerSetIsAcquiringVideo(0)
 	ImagerViewModelChanged()

@@ -279,7 +279,6 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	Variable absoluteTime=DateTime	// "Unlike most Igor functions, DateTime is used without parentheses."
 	Make /O /N=(0) FIFOin
 	SamplerSampleDataStart(adSequence,daSequence,FIFOout)
-	//SamplerSampleDataBang(FIFOin,adSequence,daSequence,FIFOout)
 	
 	// If doing imaging, and triggered acquistion, babysit the camera to get the frames without overflowing the buffer
 	//Variable timerRef=startMSTimer

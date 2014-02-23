@@ -106,7 +106,7 @@ Function TestPulserContStart()
 	if (isTTLOutputEnabled)
 		daSequence+="D"
 		adSequence+=num2str(adcIndex)
-		Make /FREE /N=(nScans*2) FIFOout
+		Make /O /N=(nScans*2) FIFOout
 		Setscale /P x, 0, dt/2, "ms", FIFOout
 		//FIFOout[0,;2]=testPulse[p/2]*outGain*dacMultiplier[dacIndex]
 		FIFOout[0,;2]=testPulse[p/2]*outGain		// units: digitizer points
@@ -114,7 +114,7 @@ Function TestPulserContStart()
 		FIFOout[1,;2]=testPulseTTL[p/2]
 	else
 		//Duplicate /FREE testPulse FIFOout	
-		Make /FREE /N=(nScans) FIFOout
+		Make /O /N=(nScans) FIFOout
 		Setscale /P x, 0, dt, "ms", FIFOout
 		//Duplicate /FREE testPulse FIFOout	
 		//FIFOout=testPulse*outGain*dacMultiplier[dacIndex]
@@ -138,10 +138,14 @@ Function TestPulserContStart()
 	Variable dacMode=DigitizerModelGetDACMode(dacIndex)		
 	Variable i
 	TitleBox proTipTitleBox,win=TestPulserView,disable=0		// tell the user how to break out of the loop
+	Make /O /N=0 FIFOin
 	timer=startMSTimer		// start the timer
 	for (i=0; !EscapeKeyWasPressed(); i+=1)
 		// execute the sample sequence
-		Wave FIFOin=SamplerSampleData(adSequence,daSequence,FIFOout)
+		//Wave FIFOin=SamplerSampleData(adSequence,daSequence,FIFOout)
+		SamplerSampleDataStart(adSequence,daSequence,FIFOout)
+		SamplerSampleDataFinishBang(FIFOin,FIFOout)
+		
 		// extract TestPulse_ADC from FIFOin
 		if (isTTLOutputEnabled)
 			TestPulse_ADC=FIFOin[2*p]*inGain
