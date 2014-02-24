@@ -109,3 +109,13 @@ Added white noise builder.
 7.11 -> 8.00    (February 11, 2014)
 
 Added imaging module, for imaging with Andor iXon Ultra camera.
+
+
+
+
+7.00 -> 8.10    (February 24, 2014)
+
+Enhanced imaging module to read frames from camera as they come in,
+not all at end.  This allows users to acquire videos longer than 500
+frames. 
+
