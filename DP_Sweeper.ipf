@@ -1338,8 +1338,10 @@ Function SweeperIsSamplingPossible()
 	Variable isAtLeastOneInput= (nADCChannelsOn>0)
 	Variable isAtLeastOneOutput= ( (  nDACChannelsOn>0) || ( nTTLOutputChannelsOn>0) )
 	Variable isFIFOBigEnough=SweeperIsFIFOBigEnough(dt,totalDuration,nADCChannelsOn,nDACChannelsOn,nTTLOutputChannelsOn)
+	Variable trialNotLongEnoughForVideo=  IsImagingModuleInUse() && ImagerGetIsTriggered() && ImagerTimeOfLastFrameEnd()>=totalDuration
+	Variable trialLongEnoughForVideo= !trialNotLongEnoughForVideo
 	
-	Variable isSamplingPossible= isAtLeastOneInput && isAtLeastOneOutput && isFIFOBigEnough
+	Variable isSamplingPossible= isAtLeastOneInput && isAtLeastOneOutput && isFIFOBigEnough && trialLongEnoughForVideo
 	return isSamplingPossible
 End
 

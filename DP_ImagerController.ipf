@@ -159,7 +159,8 @@ Function ICBinSizePMTouched(ctrlName,popNum,popStr) : PopupMenuControl
 	String popStr		// contents of current popup item as string
 	
 	ImagerSetBinSizeIndex(popNum-1)
-	ImagerViewModelChanged()		
+	ImagerViewModelChanged()
+	SweeperViewImagerChanged()
 End
 
 
@@ -322,6 +323,7 @@ Function ICVideoExposureSVTouched(ctrlName,varNum,varStr,varName) : SetVariableC
 
 	ImagerSetVideoExposureWanted(varNum)
 	ImagerViewModelChanged()
+	SweeperViewImagerChanged()
 End
 
 Function ICUpdateVideoExpButtonPressed(ctrlName) : ButtonControl
@@ -329,6 +331,7 @@ Function ICUpdateVideoExpButtonPressed(ctrlName) : ButtonControl
 
 	ImagerUpdateVideoParams()
 	ImagerViewModelChanged()
+	SweeperViewImagerChanged()
 End
 
 Function ICSnapshotExposureSVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
@@ -356,6 +359,7 @@ Function ICNFramesForVideoSVTouched(ctrlName,varNum,varStr,varName) : SetVariabl
 
 	ImagerSetNFramesForVideo(varNum)
 	ImagerViewModelChanged()
+	SweeperViewImagerChanged()
 End
 
 Function ICNBaselineFramesSVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl
@@ -389,6 +393,7 @@ Function ICTriggerDelaySVTouched(ctrlName,varNum,varStr,varName) : SetVariableCo
 	ImagerSetTriggerDelay(varNum)
 	ImagerViewModelChanged()
 	OutputViewerViewUpdate()
+	SweeperViewImagerChanged()	
 End
 
 Function ICExposureADCSVTouched(ctrlName,varNum,varStr,varName) : SetVariableControl

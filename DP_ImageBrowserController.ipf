@@ -58,6 +58,14 @@ Function ImageBrowserContFullScale(ctrlName) : ButtonControl
 End
 
 
+Function ImageBrowserContExportAsTiff(ctrlName) : ButtonControl
+	String ctrlName
+
+	String imageWaveNameAbs=ImageBrowserModGetImWaveNameAbs()	
+	ImageSave /S /T="tiff" /D=16 /U $imageWaveNameAbs
+End
+
+
 Function ImagePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
 	Variable popNum

@@ -33,12 +33,13 @@ Function ImageBrowserViewConstructor()
 	SetVariable gray_setvar1,win=ImageBrowserView,limits={0,2^16-1,1024}
 
 	Variable xOffset=268
-	Button fullScaleButton,win=ImageBrowserView,pos={xOffset,18},size={80,20},proc=ImageBrowserContFullScale,title="Full Scale"
+	Button fullScaleButton,win=ImageBrowserView,pos={xOffset,8},size={80,20},proc=ImageBrowserContFullScale,title="Full Scale"
+	Button exportAsTiffButton,win=ImageBrowserView,pos={xOffset-5,32},size={90,20},proc=ImageBrowserContExportAsTiff,title="Export as TIFF..."
 
-	xOffset+=94
-	Button scaleToDataButton,win=ImageBrowserView,pos={xOffset,8},size={100,20},proc=ImageBrowserContScaleToData,title="Scale to Data"
+	xOffset+=98
+	Button scaleToDataButton,win=ImageBrowserView,pos={xOffset,10},size={100,20},proc=ImageBrowserContScaleToData,title="Scale to Data"
 
-	CheckBox autoscaleToDataCB,win=ImageBrowserView,pos={xOffset,32},size={112,14},title="Autoscale to Data"
+	CheckBox autoscaleToDataCB,win=ImageBrowserView,pos={xOffset,34},size={112,14},title="Autoscale to Data"
 	CheckBox autoscaleToDataCB,win=ImageBrowserView, proc=ImageBrowserContAutoscToData
 	
 	// Update the view to sync to the model
@@ -143,6 +144,9 @@ Function ImageBrowserViewUpdate()
 
 	// Update the enablement of the autoscale checkbox
 	CheckBox autoscaleToDataCB,win=ImageBrowserView, value=(isCurrentImageWave&&autoscaleToData), disable=( !isCurrentImageWave ? 2 : 0 )
+
+	// Update the enablement of the Export as TIFF button
+	Button exportAsTiffButton, win=ImageBrowserView, disable=fromEnable(isCurrentImageWave)
 
 	// Update the image
 	//String oldImageName=ImageNameList("ImageBrowserView",";")

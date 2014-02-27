@@ -219,6 +219,10 @@ Function SweeperViewDigitizerChanged()
 	SweeperViewUpdate()
 End
 
+Function SweeperViewImagerChanged()
+	SweeperViewUpdate()
+End
+
 Function SweeperViewEpiLightChanged()
 	SweeperViewUpdate()
 End

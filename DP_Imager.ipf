@@ -1574,7 +1574,27 @@ Function ImagerUpdateVideoParams()
 	SetDataFolder savedDF	
 End
 
+Function ImagerTimeOfLastFrameEnd()
+	// The time of the last frame end if run in triggered mode
+	
+	// Switch to the data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Imager
+	
+	// Declare instance vars
+	NVAR nFramesForVideo
+	NVAR videoExposure  // ms
+	NVAR frameRate		// Hz
+	NVAR triggerDelay
 
+	Variable frameInterval=1000/frameRate	// ms
+	Variable timeOfLastFrameEnd=triggerDelay+(nFramesForVideo-1)*frameInterval+videoExposure
+
+	// Restore the original DF
+	SetDataFolder savedDF	
+	
+	return timeOfLastFrameEnd
+End
 
 
 
