@@ -3,14 +3,14 @@ it.
 
 Before tagging a release:
 
-1. Update how_to_install.txt
-2. Update changes.txt
-3. Make sure copyright.txt covers the current year.
+1. Update "How to Install" section of the README.
+2. Add an entry to the "Release History" section of the README.
+3. Make sure the copyright notice in the README covers the current
+   year.
 
-The how_to_install assumes you're doing to distribute the Github-made
-.zip file for the release.  The file-naming convention is set by
-Github.
+The "How to Install" section assumes you're doing to distribute the
+Github-made .zip file for the release.  The file-naming convention is
+set by Github.
 
 ALT
-2013-09-11
-
+2014-02-27

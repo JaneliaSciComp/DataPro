@@ -1,10 +1,219 @@
 DataPro
--------
+=======
 
 Package of Igor Pro scripts for doing data acquisition using
 Instrutech ITC 18 or ITC 16.  Also includes an imaging module for
 imaging using the Andor iXon Ultra camera via the Bruxton Corporation
 SIDX 7.28 API.
 
-For instructions on how to install, see "how_to_install.txt".
 
+
+
+
+How to Install
+--------------
+
+0. Unzip the DataPro-release_8.11.zip file, which creates a folder called 
+   DataPro-release_8.11.
+
+1. Copy the folder DataPro-release_8.11 to the "Igor Pro 6 User Files"
+   folder.  (You must copy the whole folder, not just the files within
+   the folder.)
+
+2. In experiments where you want to use this version of DataPro, add
+   the line
+
+     #include ":DataPro-release_8.11:DataPro"
+
+   to the experiment's procedure file.  You can access this from the
+   Igor Pro menu by going to
+   Windows > Procedure Windows > Procedure Window.  (Note: You will
+   have to do this for each experiment and/or template that you want
+   to use this version of DataPro with.  Usually it's best to create a
+   template where you've added the above line to the template's
+   procedure file.)
+
+If DataPro is installed correctly, you should have a
+menu item called "DataPro" in the Igor Pro main menu.
+
+To get started using DataPro, select "All Controls" from the "DataPro"
+menu.
+
+
+
+
+
+Copyright Notice
+----------------
+
+All files included in DataPro are Copyright (c) 1998-2014, Nelson
+Spruston and Adam L. Taylor.
+All rights reserved.
+
+
+
+
+
+License
+-------
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met: 
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer. 
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution. 
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies, 
+either expressed or implied, of the Howard Hughes Medical Institute.
+
+
+
+
+
+Release History
+---------------
+
+7.00   (August 23, 2012)
+
+Initial release of DataPro at Janelia Farm.
+
+
+
+
+
+7.00 -> 7.01    (August 24, 2012)
+
+Aquiring a sweep now updates all DataPro browser windows.
+
+Reduced minimum y limits in Test Pulse Display from [-1,+1] to [-0.2,+0.2].
+
+Updated installation instructions.
+
+
+
+
+
+7.01 -> 7.02     (August 31, 2012)
+
+Mainly code refactoring.  Some minor user-facing changes.
+
+
+
+
+
+7.02 -> 7.03     (March 7, 2013)
+
+Improved in many, many ways.  This release marks the completion of 
+"Phase I" of the DataPro project at Janelia.
+
+
+
+
+
+7.03 -> 7.04     (March 11, 2013)
+
+Added a Switcher to work with Axon Instruments computer-controlled amplifier.
+DataPro now gets initialized after a compile instead of on Igor Pro start up, 
+which is more generally appropriate.
+
+DataPro used to not allow you to turn of all input channels, or all output 
+channels, in the Sweeper.  It now allows you to do this, but disables the 
+Get Data until you turn on at least one input and one output channel.
+
+
+
+
+7.04 -> 7.05    (May 14, 2013)
+
+Made it easier for a single user to use different versions of DataPro
+without going insane.
+
+
+
+
+7.05 -> 7.06    (June 3, 2013)
+
+Added Chirp Builder, Multiple Train Builder, Multiple TTL Train
+Builder.  Split Train Builder in Train Builder and TTL Train Builder.
+Renamed Step Builder to Stair Builder.  In general, each builder is
+now designed for either analog output or TTL output, but not both.
+
+Reimplemented how many of the builder outputs are constructed, for
+greater robustness.
+
+
+
+
+7.06 -> 7.07    (June 4, 2013)
+
+Small change to builders that have discontinuities in their outputs,
+to make them more predictable in the common case.
+
+
+
+
+7.07 -> 7.08    (September 11, 2013)
+
+Added history to the Sweeper.  Similar to the stimHistory in 
+DataPro 6, but contains more information.
+
+
+
+
+7.08 -> 7.09    (September 13, 2013)
+
+Added more precise date/time information to acquired ADC waves.
+
+
+
+
+7.09 -> 7.10    (October 11, 2013)
+
+Made ramp builder slightly more flexible.
+
+
+
+
+7.10 -> 7.11    (November 5, 2013)
+
+Added white noise builder.
+
+
+
+
+7.11 -> 8.00    (February 11, 2014)
+
+Added imaging module, for imaging with Andor iXon Ultra camera.
+
+
+
+
+8.00 -> 8.10    (February 24, 2014)
+
+Enhanced imaging module to read frames from camera as they come in,
+not all at end.  This allows users to acquire videos longer than 500
+frames. 
+
+
+
+
+8.10 -> 8.11    (February 27, 2014)
+
+Added ability to export videos as TIFF files.  "Get Data" button is
+now disabled if doing triggered video acquisition and the sweep
+duration is not long enough to accommodate the video.
