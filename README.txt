@@ -4,7 +4,9 @@ DataPro
 Package of Igor Pro scripts for doing data acquisition using
 Instrutech ITC 18 or ITC 16.  Also includes an imaging module for
 imaging using the Andor iXon Ultra camera via the Bruxton Corporation
-SIDX 7.28 API.
+SIDX 7.2 API.  DataPro only works with the Windows version of Igor Pro
+6, and development and testing has all been done on the 32-bit version of
+Igor Pro.
 
 
 
@@ -13,14 +15,29 @@ SIDX 7.28 API.
 How to Install
 --------------
 
-0. Unzip the DataPro-release_8.11.zip file, which creates a folder called 
+1. Make sure you have the Igor Pro XOPs that you need installed.  For
+   the ITC 16, you need the Igor Pro 6 legacy ITC 16 XOP:
+
+       http://www.heka.com/instrutech/IgorXOPs/Win/ITC16_X86_XOP.zip
+
+   For the ITC 18, you need the Igor Pro 6 legacy ITC 18 XOP:
+
+       http://www.heka.com/instrutech/IgorXOPs/Win/ITC18_X86.zip
+
+   If you want to do imaging (which currently only works with the
+   Andor iXon Ultra camera), you need the Bruxton Corporation SIDX
+   7.2 XOP, which costs money:
+
+       http://www.bruxton.com/SIDX/index.html  
+
+2. Unzip the DataPro-release_8.11.zip file, which creates a folder called 
    DataPro-release_8.11.
 
-1. Copy the folder DataPro-release_8.11 to the "Igor Pro 6 User Files"
+3. Copy the folder DataPro-release_8.11 to the "Igor Pro 6 User Files"
    folder.  (You must copy the whole folder, not just the files within
    the folder.)
 
-2. In experiments where you want to use this version of DataPro, add
+4. In experiments where you want to use this version of DataPro, add
    the line
 
      #include ":DataPro-release_8.11:DataPro"
