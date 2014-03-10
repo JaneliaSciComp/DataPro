@@ -153,19 +153,24 @@ Function SamplerSampleDataStart(adSequence,daSequence,FIFOout)
 	endif
 	
 	String commandLine
+	String FIFOoutName
 	if (itc==0)
 		// Do nothing
 	elseif (itc==16)
-		Execute "ITC16StimClear 0"
-		//Execute "ITC16Seq daSequence, adSequence"
-		sprintf commandLine "ITC16Seq \"%s\", \"%s\"", daSequence, adSequence
+		//Printf "\r\r"
+
+		commandLine=sprintf2ss("ITC16Seq \"%s\", \"%s\"", daSequence, adSequence)
+		//Printf "%s\r", commandLine
 		Execute commandLine
-		sprintf commandLine, "ITC16StimAndSample FIFOout, FIFOin, %d, 14", nDigitizerClockTicksPerDt
+		
+		FIFOoutName=GetWavesDataFolder(FIFOout,2)
+		commandLine=sprintf1s("ITC16Stim %s",FIFOoutName)
+		//Printf "%s\r", commandLine
+		Execute commandLine		// This line throws an error if the FIFO is not big enough
+		
+		commandLine=sprintf1v("ITC16StartAcq %d,2,0", nDigitizerClockTicksPerDt)
+		//Printf "%s\r", commandLine
 		Execute commandLine
-		// N.B.: This is probably broken for the ITC 16.  Not sure how you tell it to start sampling but not block
-		// until all data is acquired.  But there don't seem to be any ITC-16s left in Nelson's lab, so maybe it doesn't 
-		// much matter?  -- ALT, 2013-02-22
-		//Execute "ITC16StopAcq"
 	elseif (itc==18)
 		//Printf "\r\r"
 
@@ -173,7 +178,7 @@ Function SamplerSampleDataStart(adSequence,daSequence,FIFOout)
 		//Printf "%s\r", commandLine
 		Execute commandLine
 		
-		String FIFOoutName=GetWavesDataFolder(FIFOout,2)
+		FIFOoutName=GetWavesDataFolder(FIFOout,2)
 		commandLine=sprintf1s("ITC18Stim %s",FIFOoutName)
 		//Printf "%s\r", commandLine
 		Execute commandLine		// This line throws an error if the FIFO is not big enough
