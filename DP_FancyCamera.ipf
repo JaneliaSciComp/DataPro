@@ -276,10 +276,11 @@ Function FancyCameraLoopForFramesBang(framesCaged,nFrames)
 	// Spin until the acquisition is done
 	Variable nFramesRead=0	// the means acuired by the camera and the then read out by the PC
 	Variable areAllFramesRead=(nFramesRead>=nFrames)
-	for (;!areAllFramesRead;)
+	Variable isAcquiring=1	// Just so we get into the loop
+	for (;isAcquiring&&!areAllFramesRead;)
 		//Sleep /S 0.1		// Sleep 0.1 seconds
-		Variable isAcquiring=CameraAcquireGetStatus()
-		if (isAcquiring<=0)
+		isAcquiring=CameraAcquireGetStatus()
+		if (isAcquiring<0)
 			// Negative isAcquiring signals an error in getting the camera status
 			break
 		endif
@@ -314,8 +315,8 @@ Function FancyCameraLoopForFramesBang(framesCaged,nFrames)
 	// Abort the acquisition.
 	CameraAcquireAbort()
 	
-	// Read frames if no problems so far
-	Variable sucess=(nFramesAcquired>=nFrames)
+	// If we've read all the frames asked for, we declare success
+	Variable sucess=(nFramesRead>=nFrames)
 	
 	return sucess
 End

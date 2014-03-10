@@ -523,7 +523,7 @@ Function ImagerContAcquireFramesLoop(iSweep)
 	WAVE roisWave
 	WAVE isBackgroundROI
 	NVAR videoExposure
-	NVAR ccdTargetTemperature	
+	//NVAR ccdTargetTemperature	
 	//NVAR binSize
 	//NVAR binHeight
 	SVAR videoWaveBaseName
@@ -596,7 +596,7 @@ Function ImagerContExtractROIs(iSweep)
 	WAVE roisWave
 	WAVE isBackgroundROI
 	NVAR videoExposure
-	NVAR ccdTargetTemperature	
+	//NVAR ccdTargetTemperature	
 	//NVAR binSize
 	//NVAR binHeight
 	SVAR videoWaveBaseName
@@ -845,7 +845,8 @@ Function ImagerContAcquireSnapshot()
 		else
 			// acquire failed to start, or had a problem during, so delete just-created wave
 			KillWaves /Z $imageWaveName
-			Abort FancyCameraGetErrorMessage()
+			String errorMessage=FancyCameraGetErrorMessage()
+			Abort stringFif(IsEmptyString(errorMessage),"Some sort of camera error occured.",errorMessage)		
 		endif
 	else
 		// camera failed to arm

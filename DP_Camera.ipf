@@ -53,7 +53,7 @@ Function CameraConstructor()
 		Variable /G exposureWantedInSeconds=nan		// cached exposure wanted for the camera, in sec
 		Variable /G temperatureTarget=-40		// degC
 		Variable /G nFramesBufferFake=1		// How many frames in the fake on-camera frame buffer
-		Variable /G nFramesToAcquireFake=1		
+		//Variable /G nFramesToAcquireFake=1		
 		Variable /G isAcquireOpenFake=0		// Whether acquisition is "armed"
 		Variable /G isAcquisitionOngoingFake=0
 		Variable /G nFramesAcquiredFake
@@ -448,42 +448,42 @@ End
 
 
 
-Function CameraAcquireImageSetLimit(nFrames)
-	Variable nFrames
-	
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
-
-	// Declare instance variables
-	NVAR areWeForReal
-	NVAR isSidxCameraValid
-	NVAR sidxCamera
-	NVAR nFramesToAcquireFake
-
-	Variable sidxStatus
-#if (exists("SIDXRootOpen")==4)
-	if (areWeForReal)
-		if (isSidxCameraValid)
-			SIDXCameraAcquireImageSetLimit sidxCamera, nFrames, sidxStatus
-			if (sidxStatus!=0)
-				String errorMessage
-				SIDXCameraGetLastError sidxCamera, errorMessage
-				Abort sprintf1s("Error in SIDXCameraAcquireImageSetLimit: %s",errorMessage)
-			endif
-		else
-			Abort "Called CameraAcquireImageSetLimit() before camera was created."
-		endif
-	else
-#endif
-		 nFramesToAcquireFake=nFrames
-#if (exists("SIDXRootOpen")==4)
-	endif
-#endif
-
-	// Restore the data folder
-	SetDataFolder savedDF	
-End
+//Function CameraAcquireImageSetLimit(nFrames)
+//	Variable nFrames
+//	
+//	// Switch to the imaging data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Camera
+//
+//	// Declare instance variables
+//	NVAR areWeForReal
+//	NVAR isSidxCameraValid
+//	NVAR sidxCamera
+//	NVAR nFramesToAcquireFake
+//
+//	Variable sidxStatus
+//#if (exists("SIDXRootOpen")==4)
+//	if (areWeForReal)
+//		if (isSidxCameraValid)
+//			SIDXCameraAcquireImageSetLimit sidxCamera, nFrames, sidxStatus
+//			if (sidxStatus!=0)
+//				String errorMessage
+//				SIDXCameraGetLastError sidxCamera, errorMessage
+//				Abort sprintf1s("Error in SIDXCameraAcquireImageSetLimit: %s",errorMessage)
+//			endif
+//		else
+//			Abort "Called CameraAcquireImageSetLimit() before camera was created."
+//		endif
+//	else
+//#endif
+//		 nFramesToAcquireFake=nFrames
+//#if (exists("SIDXRootOpen")==4)
+//	endif
+//#endif
+//
+//	// Restore the data folder
+//	SetDataFolder savedDF	
+//End
 
 
 
@@ -675,7 +675,7 @@ Function CameraAcquireGetStatus()
 		endif
 	else
 #endif
-		isAcquiring=0	// if faking, we always claim that we're done
+		isAcquiring=isAcquisitionOngoingFake
 #if (exists("SIDXRootOpen")==4)
 	endif
 #endif
@@ -704,7 +704,7 @@ Function CameraAcquireImageGetCount()
 	NVAR sidxAcquire
 	NVAR isAcquisitionOngoingFake
 	NVAR nFramesAcquiredFake
-	NVAR nFramesToAcquireFake
+	//NVAR nFramesToAcquireFake
 
 	Variable nFramesAcquired
 	Variable sidxStatus
@@ -725,9 +725,7 @@ Function CameraAcquireImageGetCount()
 		endif
 	else
 #endif
-		if (nFramesAcquiredFake<nFramesToAcquireFake)
-			nFramesAcquiredFake+=1
-		endif
+		nFramesAcquiredFake+=1
 		nFramesAcquired=nFramesAcquiredFake	// if faking, we always say we've acquired one more frame than last time, unless we've acquired the full number of frames
 #if (exists("SIDXRootOpen")==4)
 	endif
@@ -760,7 +758,8 @@ Function CameraAcquireStop()
 	NVAR iLeft, iTop
 	NVAR iRight, iBottom	// the ROI boundaries
 	NVAR nFramesBufferFake
-	NVAR nFramesToAcquireFake
+	//NVAR nFramesToAcquireFake
+	NVAR nFramesAcquiredFake
 	//NVAR countReadFrameFake
 	NVAR exposureWantedInSeconds
 	
@@ -806,7 +805,7 @@ Function CameraAcquireStop()
 			Variable dt=DimDelta(exposure,0)	// ms
 			Variable nScans=DimSize(exposure,0)
 			Variable delay=0	// ms
-			Variable duration=1000*(frameInterval*nFramesToAcquireFake)	// s->ms
+			Variable duration=1000*(frameInterval*nFramesAcquiredFake)	// s->ms
 			Variable pulseRate=1/frameInterval	// Hz
 			Variable pulseDuration=1000*exposureWantedInSeconds	// s->ms
 			Variable baseLevel=0		// V
@@ -847,7 +846,8 @@ Function CameraAcquireAbort()
 	NVAR iLeft, iTop
 	NVAR iRight, iBottom	// the ROI boundaries
 	NVAR nFramesBufferFake
-	NVAR nFramesToAcquireFake
+	//NVAR nFramesToAcquireFake
+	NVAR nFramesAcquiredFake
 	//NVAR countReadFrameFake
 	NVAR exposureWantedInSeconds
 	
@@ -893,7 +893,7 @@ Function CameraAcquireAbort()
 			Variable dt=DimDelta(exposure,0)	// ms
 			Variable nScans=DimSize(exposure,0)
 			Variable delay=0	// ms
-			Variable duration=1000*(frameInterval*nFramesToAcquireFake)	// s->ms
+			Variable duration=1000*(frameInterval*nFramesAcquiredFake)	// s->ms
 			Variable pulseRate=1/frameInterval	// Hz
 			Variable pulseDuration=1000*exposureWantedInSeconds	// s->ms
 			Variable baseLevel=0		// V
@@ -970,9 +970,9 @@ Function CameraAcquireReadBang(framesCaged,nFramesToRead)
 		endif
 	else
 #endif
-		if (isAcquisitionOngoingFake)
-			Abort "Have to stop the fake acquisition before reading the fake data."
-		endif
+		//if (isAcquisitionOngoingFake)
+		//	Abort "Have to stop the fake acquisition before reading the fake data."
+		//endif
 		Variable widthROIFake=iRight-iLeft+1
 		Variable heightROIFake=iBottom-iTop+1
 		Variable widthROIBinnedFake=round(widthROIFake/binSize)
@@ -1160,9 +1160,10 @@ Function CameraAcquireDisarm()
 		endif
 	else
 #endif
-		if (isAcquisitionOngoingFake)
-			Abort "Have to stop the fake acquisition before disarming."
-		endif
+		//if (isAcquisitionOngoingFake)
+		//	Abort "Have to stop the fake acquisition before disarming."
+		//endif
+		isAcquisitionOngoingFake=0
 		isAcquireOpenFake=0		// Whether acquisition is "armed"
 #if (exists("SIDXRootOpen")==4)
 	endif
