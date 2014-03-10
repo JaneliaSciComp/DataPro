@@ -233,18 +233,22 @@ Function /WAVE SamplerSampleDataFinishBang(FIFOin,FIFOout)
 //	endif
 	
 	String commandLine
+	String FIFOinName
 	if (itc==0)
 		FIFOin=sin(0.05*x)+gnoise(0.1)
 	elseif (itc==16)
-//		Execute "ITC16StimClear 0"
-//		//Execute "ITC16Seq daSequence, adSequence"
-//		sprintf commandLine "ITC16Seq \"%s\", \"%s\"", daSequence, adSequence
-//		Execute commandLine
-//		sprintf commandLine, "ITC16StimAndSample FIFOout, FIFOin, %d, 14", nDigitizerClockTicksPerDt
-//		Execute commandLine
-		Execute "ITC16StopAcq"
+		FIFOinName=GetWavesDataFolder(FIFOin,2)
+		commandLine=sprintf1s("ITC16Samp %s",FIFOinName)
+		//Printf "%s\r", commandLine
+		Execute commandLine
+		
+		commandLine="ITC16StopAcq"
+		//Printf "%s\r", commandLine
+		Execute commandLine
+
+		//Printf "\r\r"
 	elseif (itc==18)
-		String FIFOinName=GetWavesDataFolder(FIFOin,2)
+		FIFOinName=GetWavesDataFolder(FIFOin,2)
 		commandLine=sprintf1s("ITC18Samp %s",FIFOinName)
 		//Printf "%s\r", commandLine
 		Execute commandLine

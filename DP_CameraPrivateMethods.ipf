@@ -29,6 +29,7 @@ Function CameraSyncBinSize()
 	NVAR sidxCamera
 	NVAR binSize
 
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			Variable sidxStatus
@@ -47,6 +48,7 @@ Function CameraSyncBinSize()
 			binSize=nan
 		endif
 	endif
+#endif	
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -68,6 +70,7 @@ Function CameraSyncExposureWanted()
 	NVAR exposureWantedInSeconds		// in seconds
 
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			SIDXCameraExposeGet sidxCamera, exposureWantedInSeconds, sidxStatus
@@ -81,6 +84,7 @@ Function CameraSyncExposureWanted()
 			exposureWantedInSeconds=nan
 		endif
 	endif
+#endif	
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -103,6 +107,7 @@ Function CameraSyncTemperatureTarget()
 	NVAR temperatureTarget
 
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			SIDXCameraCoolingGet sidxCamera, temperatureTarget, sidxStatus
@@ -116,6 +121,7 @@ Function CameraSyncTemperatureTarget()
 			temperatureTarget=nan
 		endif
 	endif
+#endif	
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -138,6 +144,7 @@ Function CameraCoolingSetToInstanceVar()
 	NVAR temperatureTarget
 
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			SIDXCameraCoolingSet sidxCamera, temperatureTarget, sidxStatus
@@ -150,6 +157,7 @@ Function CameraCoolingSetToInstanceVar()
 			Abort "Called CameraCoolingSet() before camera was created."
 		endif
 	endif
+#endif	
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -194,6 +202,7 @@ Function CameraSetROIInCSAndAligned(roiInCSAndAlignedNew)
 
 	// Actually set the ROI coordinates
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			String errorMessage
@@ -214,11 +223,14 @@ Function CameraSetROIInCSAndAligned(roiInCSAndAlignedNew)
 			Abort "Called CameraROISet() before camera was created."
 		endif
 	else
+#endif	
 		iLeft=iLeftNew
 		iTop=iTopNew
 		iRight=iRightNew
 		iBottom=iBottomNew
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif	
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -259,6 +271,7 @@ Function CameraBinSizeSet(nBinSizeNew)
 
 	// Set the bin sizes
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			SIDXCameraBinningItemSet sidxCamera, binningModeIndex, sidxStatus
@@ -272,10 +285,13 @@ Function CameraBinSizeSet(nBinSizeNew)
 			Abort "Called CameraBinningItemSet() before camera was created."
 		endif
 	else
+#endif	
 		//iBinningModeFake=binningModeIndex
 		// This next is entirely Ander iXon Ultra-specific
 		binSize=2^binningModeIndex
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif	
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -377,7 +393,11 @@ Function CameraIsSidxRootReallyValid(sidxRoot)
 	// Try a sidx call that should succeed iff sidxRoot is valid
 	Variable sidxStatus
 	String serialNumber
+#if (exists("SIDXRootOpen")==4)
 	SIDXRootSoftwareGetSerial sidxRoot, serialNumber, sidxStatus
+#else
+	sidxStatus= -1
+#endif
 	Variable result=(sidxStatus==0)
 
 	return result
@@ -397,7 +417,11 @@ Function CameraTryToGetSidxRootHandle()
 	String license=""	// License file is stored in C:/Program Files/Bruxton/SIDX
 	Variable sidxStatus
 	Variable sidxRoot
+#if (exists("SIDXRootOpen")==4)
 	SIDXRootOpen sidxRoot, license, sidxStatus
+#else
+	sidxStatus= -1
+#endif
 	if (sidxStatus!=0)
 		CameraSetErrorMessage("Unable to open SIDX root object")
 		sidxRoot=-1
@@ -416,11 +440,15 @@ Function CameraIsSidxCameraReallyValid(sidxCamera)
 	// Do stuff
 	Variable sidxStatus
 	Variable isTempAvailable
+#if (exists("SIDXRootOpen")==4)
 	try
 		SIDXCameraTemperatureExists sidxCamera, isTempAvailable, sidxStatus; AbortOnRTE
 	catch
 		sidxStatus=-1	// indicates the camera is invalid
 	endtry
+#else
+	sidxStatus= -1
+#endif
 	Variable result=(sidxStatus==0)
 
 	return result
@@ -437,6 +465,7 @@ Function CameraTryToGetSidxCameraHandle(sidxRoot)
 	Variable sidxStatus
 	String errorMessage
 	Variable nCameras
+#if (exists("SIDXRootOpen")==4)
 	SIDXRootCameraScan sidxRoot, sidxStatus
 	if (sidxStatus != 0)
 		// Scan didn't work
@@ -474,6 +503,9 @@ Function CameraTryToGetSidxCameraHandle(sidxRoot)
 		CameraSetErrorMessage(sprintf1s("Error in SIDXRootCameraOpenName: %s",errorMessage))
 		sidxCamera=-1
 	endif
+#else
+	Variable sidxCamera= -1
+#endif
 	
 	return sidxCamera
 End
@@ -489,6 +521,7 @@ Function CameraInitSidxCamera(sidxCamera)
 	Variable sidxStatus
 	String errorMessage
 	Variable emGainSettingWant=100
+#if (exists("SIDXRootOpen")==4)
 	SIDXCameraEMGainSet sidxCamera, emGainSettingWant, sidxStatus
 	if (sidxStatus!=0)
 		SIDXCameraGetLastError sidxCamera, errorMessage
@@ -504,6 +537,7 @@ Function CameraInitSidxCamera(sidxCamera)
 		CameraSetErrorMessage(sprintf1s("Error in SIDXDeviceExtraListSet: %s",errorMessage))
 		return 0
 	endif
+#endif
 	// Report on the camera state
 	CameraProbeStatusAndPrintf(sidxCamera)
 
@@ -532,6 +566,7 @@ Function CameraInitCCDDims()
 	// Initialize the camera
 	Variable sidxStatus
 	String errorMessage	
+#if (exists("SIDXRootOpen")==4)
 	SIDXCameraROIGetValue sidxCamera, iLeft, iTop, iRight, iBottom, sidxStatus
 	if (sidxStatus!=0)
 		SIDXCameraGetLastError sidxCamera, errorMessage
@@ -539,6 +574,12 @@ Function CameraInitCCDDims()
 		SetDataFolder savedDF		
 		return 0
 	endif						
+#else
+	iLeft=1
+	iRight=512
+	iTop=1
+	iBottom=512
+#endif
 	Printf "ROI: %d %d %d %d\r", iLeft, iTop, iRight, iBottom
 	widthCCD=iRight-iLeft+1
 	heightCCD=iBottom-iTop+1

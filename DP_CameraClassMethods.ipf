@@ -39,6 +39,8 @@ Function /S getDeviceSettingValueAsString(sidxCamera, settingIndex)
 	Variable sidxCamera
 	Variable settingIndex
 
+	String valueAsString=""
+#if (exists("SIDXRootOpen")==4)
 	Variable sidxStatus
 	Variable errorMessage
 
@@ -49,7 +51,6 @@ Function /S getDeviceSettingValueAsString(sidxCamera, settingIndex)
 	
 	// Use the proper function to get that kind of setting, convert to string
 	Variable value
-	String valueAsString=""
 	if ( AreStringsEqual(settingType,"boolean") )
 		SIDXDeviceExtraBooleanGet sidxCamera, settingIndex, value, sidxStatus
 		valueAsString=stringFif(value,"true","false")
@@ -71,6 +72,10 @@ Function /S getDeviceSettingValueAsString(sidxCamera, settingIndex)
 	elseif ( AreStringsEqual(settingType,"string") )
 		SIDXDeviceExtraStringGet sidxCamera, settingIndex, valueAsString, sidxStatus
 	endif
+#else
+	// This code should never be reached
+	Abort "Error: Tried to get a camera device setting, but the SIDX XOP is not installed."
+#endif
 
 	return valueAsString
 End

@@ -135,6 +135,7 @@ Function CameraSetTransform(userFromCameraReflectXNew,userFromCameraReflectYNew,
 	//SIDXCameraRotateSet(n) actually does n CCW rotations
 	// We'll have to keep this in mind to translate our desired transformation into SIDX calls
 
+#if (exists("SIDXRootOpen")==4)
 	if (isSidxCameraValid)
 		SIDXCameraRotateClear sidxCamera, sidxStatus
 		if (sidxStatus!=0)
@@ -174,6 +175,7 @@ Function CameraSetTransform(userFromCameraReflectXNew,userFromCameraReflectYNew,
 			DoAlert 0, sprintf1s("Error in SIDXCameraRotateSet: %s",errorMessage)
 		endif
 	endif
+#endif	
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -200,6 +202,7 @@ Function CameraROIClear(nBinSize)
 	NVAR widthCCD, heightCCD
 
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			String errorMessage
@@ -217,11 +220,14 @@ Function CameraROIClear(nBinSize)
 			Abort "Called CameraROIClear() before camera was created."
 		endif
 	else
+#endif
 		iLeft=0
 		iTop=0
 		iRight=widthCCD-1
-		iBottom=heightCCD-1
+		iBottom=heightCCD-1		
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif		
 
 	// Now, set the bin size
 	CameraBinSizeSet(nBinSize)
@@ -282,6 +288,8 @@ Function CameraTriggerModeSet(triggerMode)
 	NVAR modeTriggerFake
 
 	Variable sidxStatus
+	
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			SIDXCameraTriggerModeSet sidxCamera, triggerMode, sidxStatus
@@ -294,8 +302,11 @@ Function CameraTriggerModeSet(triggerMode)
 			Abort "Called CameraTriggerModeSet() before camera was created."
 		endif
 	else
+#endif
 		modeTriggerFake=triggerMode
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -316,6 +327,7 @@ Function CameraTriggerModeGet()
 
 	Variable triggerMode
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			SIDXCameraTriggerModeGet sidxCamera, triggerMode, sidxStatus
@@ -328,8 +340,11 @@ Function CameraTriggerModeGet()
 			Abort "Called CameraTriggerModeGet() before camera was created."
 		endif
 	else
+#endif
 		triggerMode=modeTriggerFake
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -359,6 +374,7 @@ Function CameraExposeGetValue()
 	Variable exposureInSeconds
 	Variable sidxStatus
 	String errorMessage
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			SIDXCameraExposeGetValue sidxCamera, exposureInSeconds, sidxStatus
@@ -372,8 +388,11 @@ Function CameraExposeGetValue()
 			exposureInSeconds=nan
 		endif
 	else
+#endif
 		exposureInSeconds=exposureWantedInSeconds
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -400,6 +419,7 @@ Function CameraExposeSet(newValue)
 	NVAR exposureWantedInSeconds		// in seconds
 
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			SIDXCameraExposeSet sidxCamera, newValue, sidxStatus
@@ -413,8 +433,11 @@ Function CameraExposeSet(newValue)
 			Abort "Called CameraExposeSet() before camera was created."
 		endif
 	else
+#endif
 		exposureWantedInSeconds=newValue
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -439,6 +462,7 @@ Function CameraAcquireImageSetLimit(nFrames)
 	NVAR nFramesToAcquireFake
 
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			SIDXCameraAcquireImageSetLimit sidxCamera, nFrames, sidxStatus
@@ -451,8 +475,11 @@ Function CameraAcquireImageSetLimit(nFrames)
 			Abort "Called CameraAcquireImageSetLimit() before camera was created."
 		endif
 	else
+#endif
 		 nFramesToAcquireFake=nFrames
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -477,6 +504,7 @@ Function CameraBufferCountSet(nFrames)
 	NVAR  nFramesBufferFake
 
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			SIDXCameraBufferCountSet sidxCamera, nFrames, sidxStatus
@@ -489,8 +517,11 @@ Function CameraBufferCountSet(nFrames)
 			Abort "Called CameraBufferCountSet() before camera was created."
 		endif
 	else
+#endif
 		 nFramesBufferFake=nFrames
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -520,6 +551,7 @@ Function CameraAcquireArm()
 	Variable success
 	Variable sidxStatus
 	String errorMessage
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			// debug code here
@@ -541,9 +573,12 @@ Function CameraAcquireArm()
 			success=0
 		endif
 	else
+#endif
 		isAcquireOpenFake=1
 		success=1
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -573,6 +608,7 @@ Function CameraAcquireStart()
 
 	Variable success
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxAcquireValid)
 			SIDXAcquireStart sidxAcquire, sidxStatus
@@ -590,10 +626,13 @@ Function CameraAcquireStart()
 			success=0
 		endif
 	else
+#endif
 		isAcquisitionOngoingFake=1
 		nFramesAcquiredFake=0
 		success=1
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -619,6 +658,7 @@ Function CameraAcquireGetStatus()
 
 	Variable isAcquiring
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxAcquireValid)
 			SIDXAcquireGetStatus sidxAcquire, isAcquiring, sidxStatus
@@ -634,8 +674,11 @@ Function CameraAcquireGetStatus()
 			isAcquiring=-1
 		endif
 	else
+#endif
 		isAcquiring=0	// if faking, we always claim that we're done
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -665,6 +708,7 @@ Function CameraAcquireImageGetCount()
 
 	Variable nFramesAcquired
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxAcquireValid)
 			SIDXAcquireImageGetCount sidxAcquire, nFramesAcquired, sidxStatus
@@ -680,11 +724,14 @@ Function CameraAcquireImageGetCount()
 			nFramesAcquired=-1
 		endif
 	else
+#endif
 		if (nFramesAcquiredFake<nFramesToAcquireFake)
 			nFramesAcquiredFake+=1
 		endif
 		nFramesAcquired=nFramesAcquiredFake	// if faking, we always say we've acquired one more frame than last time, unless we've acquired the full number of frames
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -718,6 +765,7 @@ Function CameraAcquireStop()
 	NVAR exposureWantedInSeconds
 	
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxAcquireValid)
 			SIDXAcquireStop sidxAcquire, sidxStatus
@@ -730,6 +778,7 @@ Function CameraAcquireStop()
 			Abort "Called CameraAcquireStop() before acquisition was armed."
 		endif
 	else
+#endif
 		// Fill the framebuffer with fake data
 		//Variable widthROIFake=iRight-iLeft+1
 		//Variable heightROIFake=iBottom-iTop+1
@@ -770,7 +819,9 @@ Function CameraAcquireStop()
 		
 		// Note that the acquisiton is done
 		isAcquisitionOngoingFake=0
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -801,6 +852,7 @@ Function CameraAcquireAbort()
 	NVAR exposureWantedInSeconds
 	
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxAcquireValid)
 			SIDXAcquireAbort sidxAcquire, sidxStatus
@@ -813,6 +865,7 @@ Function CameraAcquireAbort()
 			Abort "Called CameraAcquireAbort() before acquisition was armed."
 		endif
 	else
+#endif
 		// Fill the framebuffer with fake data
 		//Variable widthROIFake=iRight-iLeft+1
 		//Variable heightROIFake=iBottom-iTop+1
@@ -853,7 +906,9 @@ Function CameraAcquireAbort()
 		
 		// Note that the acquisiton is done
 		isAcquisitionOngoingFake=0
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -890,6 +945,7 @@ Function CameraAcquireReadBang(framesCaged,nFramesToRead)
 	Variable frameIntervalInSeconds	
 	Variable sidxStatus
 	String errorMessage
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxAcquireValid)
 			Make /O framesCagedTemp
@@ -913,6 +969,7 @@ Function CameraAcquireReadBang(framesCaged,nFramesToRead)
 			Abort "Called CameraAcquireReadBang() before acquisition was armed."
 		endif
 	else
+#endif
 		if (isAcquisitionOngoingFake)
 			Abort "Have to stop the fake acquisition before reading the fake data."
 		endif
@@ -923,7 +980,9 @@ Function CameraAcquireReadBang(framesCaged,nFramesToRead)
 		Redimension /N=(widthROIBinnedFake,heightROIBinnedFake,nFramesToRead) framesCaged
 		framesCaged=2^15+(2^12)*gnoise(1)	// fill with noise
 		frameIntervalInSeconds=exposureWantedInSeconds		// in a real acquire, the frame interval is always longer than the exposure, but whatevs
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	//
 	// Set x, y, t axis for the frames
@@ -971,6 +1030,7 @@ Function CameraAcquireReadAndAppendBang(framesCaged,nFramesToRead,nFramesReadAlr
 	Variable i
 	Variable sidxStatus
 	String errorMessage
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxAcquireValid)
 			Make /O newFramesCagedTemp
@@ -988,10 +1048,13 @@ Function CameraAcquireReadAndAppendBang(framesCaged,nFramesToRead,nFramesReadAlr
 			Abort "Called CameraAcquireReadAndAppendBang() before acquisition was armed."
 		endif
 	else
+#endif
 		for (i=0; i<nFramesToRead; i+=1)
 			framesCaged[][][nFramesReadAlready+i]=2^15+(2^12)*gnoise(1)	// fill with noise
 		endfor
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Restore the data folder
 	SetDataFolder savedDF		
@@ -1020,6 +1083,7 @@ Function CameraGetImageInterval()
 	Variable sidxStatus
 	String errorMessage
 	Variable wasCameraArmedAtEntry=isSidxAcquireValid
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (!isSidxAcquireValid)
 			// If no valid acquire, need to get one
@@ -1038,9 +1102,12 @@ Function CameraGetImageInterval()
 			endif
 		endif
 	else
+#endif
 		// We're faking
 		frameIntervalInSeconds=exposureWantedInSeconds		// in a real acquire, the frame interval is always longer than the exposure, but whatevs
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Disarm the camera if it was not armed on entry
 	if (isSidxAcquireValid && !wasCameraArmedAtEntry)
@@ -1075,6 +1142,7 @@ Function CameraAcquireDisarm()
 
 	// Close the SIDX Acquire object	
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxAcquireValid)
 			SIDXAcquireClose sidxAcquire, sidxStatus
@@ -1091,11 +1159,14 @@ Function CameraAcquireDisarm()
 			//Abort "Called CameraAcquireDisarm() before acquisition was armed."
 		endif
 	else
+#endif
 		if (isAcquisitionOngoingFake)
 			Abort "Have to stop the fake acquisition before disarming."
 		endif
 		isAcquireOpenFake=0		// Whether acquisition is "armed"
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 	
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -1120,6 +1191,7 @@ Function CameraCoolingSet(newValue)
 	NVAR temperatureTarget
 
 	Variable sidxStatus
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			SIDXCameraCoolingSet sidxCamera, newValue, sidxStatus
@@ -1133,8 +1205,11 @@ Function CameraCoolingSet(newValue)
 			Abort "Called CameraCoolingSet() before camera was created."
 		endif
 	else
+#endif
 		temperatureTarget=newValue
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -1158,6 +1233,7 @@ Function CameraCoolingGet()
 
 	Variable sidxStatus
 	Variable targetTemp
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			SIDXCameraCoolingGet sidxCamera, targetTemp, sidxStatus
@@ -1172,8 +1248,11 @@ Function CameraCoolingGet()
 			Abort "Called CameraCoolingGet() before camera was created."
 		endif
 	else
+#endif
 		targetTemp=temperatureTarget
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -1203,6 +1282,7 @@ Function CameraCoolingGetValue()
 
 	Variable sidxStatus
 	Variable temperature
+#if (exists("SIDXRootOpen")==4)
 	if (areWeForReal)
 		if (isSidxCameraValid)
 			SIDXCameraCoolingGetValue sidxCamera, temperature, sidxStatus
@@ -1217,8 +1297,11 @@ Function CameraCoolingGetValue()
 			Abort "Called CameraCoolingGetValue() before camera was created."
 		endif
 	else
+#endif
 		temperature=temperatureTarget
+#if (exists("SIDXRootOpen")==4)
 	endif
+#endif
 
 	// Restore the data folder
 	SetDataFolder savedDF	
@@ -1251,6 +1334,7 @@ Function CameraDestructor()
 	Variable sidxStatus
 	String errorMessage
 
+#if (exists("SIDXRootOpen")==4)
 	// Close the SIDX Acquire object
 	if (isSidxAcquireValid)
 		SIDXAcquireClose sidxAcquire, sidxStatus
@@ -1280,6 +1364,7 @@ Function CameraDestructor()
 		endif
 		isSidxRootValid=0
 	endif
+#endif
 	
 	// Switch to the root data folder
 	SetDataFolder root:
@@ -1436,6 +1521,7 @@ Function CameraProbeStatusAndPrintf(sidxCamera)
 	Variable sidxStatus
 	String errorMessage
 
+#if (exists("SIDXRootOpen")==4)
 	// Get the current operating mode, and the list of possible modes
 	String modeAsString
 	SIDXCameraOperateGet sidxCamera, modeAsString, sidxStatus
@@ -1539,6 +1625,7 @@ Function CameraProbeStatusAndPrintf(sidxCamera)
 		SIDXDeviceActionGetName sidxCamera, actionIndex, actionName, sidxStatus
 		Printf "Camera device-specific action %d is %s\r", actionIndex, actionName
 	endfor
+#endif
 
 End
 
