@@ -742,89 +742,75 @@ End
 
 
 
-Function CameraAcquireStop()
-	// Switch to the imaging data folder
-	String savedDF=GetDataFolder(1)
-	SetDataFolder root:DP_Camera
-
-	// Declare instance variables
-	NVAR areWeForReal
-	NVAR isSidxAcquireValid
-	NVAR sidxAcquire
-	NVAR isAcquisitionOngoingFake
-	//WAVE bufferFrame
-	NVAR widthCCD, heightCCD
-	NVAR binSize
-	NVAR iLeft, iTop
-	NVAR iRight, iBottom	// the ROI boundaries
-	NVAR nFramesBufferFake
-	//NVAR nFramesToAcquireFake
-	NVAR nFramesAcquiredFake
-	//NVAR countReadFrameFake
-	NVAR exposureWantedInSeconds
-	
-	Variable sidxStatus
-#if (exists("SIDXRootOpen")==4)
-	if (areWeForReal)
-		if (isSidxAcquireValid)
-			SIDXAcquireStop sidxAcquire, sidxStatus
-			if (sidxStatus!=0)
-				String errorMessage
-				SIDXAcquireGetLastError sidxAcquire, errorMessage
-				Abort sprintf1s("Error in SIDXAcquireStop: %s",errorMessage)
-			endif
-		else
-			Abort "Called CameraAcquireStop() before acquisition was armed."
-		endif
-	else
-#endif
-		// Fill the framebuffer with fake data
-		//Variable widthROIFake=iRight-iLeft+1
-		//Variable heightROIFake=iBottom-iTop+1
-		//Variable widthROIBinnedFake=round(widthROIFake/binSize)
-		//Variable heightROIBinnedFake=round(heightROIFake/binSize)
-		//Redimension /N=(widthROIBinnedFake,heightROIBinnedFake,nFramesBufferFake) bufferFrame	// sic, this is how Igor Pro organizes image data
-		//SetScale /P x, iLeft+0.5*binSize, binSize, "px", bufferFrame		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
-		//SetScale /P y, iTop+0.5*binSize, binHeight, "px", bufferFrame
-		Variable interExposureDelay=0.001		// s, could be shift time for FT camera, or readout time for non-FT camera
-		Variable frameInterval=exposureWantedInSeconds+interExposureDelay		// s, Add a millisecond of shift time, for fun
-		Variable frameOffset=exposureWantedInSeconds/2
-		// Assumes the first exposure starts at t==0, so the middle of it occurs at exposureWantedInSeconds/2.
-		// After that, the middle of the next exposure comes frameInterval later, etc.
-		//SetScale /P z, 1000*frameOffset, 1000*frameInterval, "ms", bufferFrame		// s -> ms
-		//bufferFrame=2^15+(2^12)*gnoise(1)
-		//countReadFrameFake=0
-		//bufferFrame=p
-		
-		// If there's a wave with base name "exposure" for this trial, overwrite it with a fake TTL exposure signal
-		Variable iSweep=SweeperGetLastAcqSweepIndex()
-		String exposureWaveNameRel=WaveNameFromBaseAndSweep("exposure",iSweep)
-		String exposureWaveNameAbs=sprintf1s("root:%s",exposureWaveNameRel)
-		if ( WaveExistsByName(exposureWaveNameAbs) )
-			Wave exposure=$exposureWaveNameAbs
-			Variable dt=DimDelta(exposure,0)	// ms
-			Variable nScans=DimSize(exposure,0)
-			Variable delay=0	// ms
-			Variable duration=1000*(frameInterval*nFramesAcquiredFake)	// s->ms
-			Variable pulseRate=1/frameInterval	// Hz
-			Variable pulseDuration=1000*exposureWantedInSeconds	// s->ms
-			Variable baseLevel=0		// V
-			Variable amplitude=5		// V, for a TTL signal
-			Make /FREE parameters={delay,duration,pulseRate,pulseDuration,baseLevel,amplitude}
-			Make /FREE /T parameterNames={"delay","duration","pulseRate","pulseDuration","baseLevel","amplitude"}
-			//fillTrainFromParamsBang(exposure,dt,nScans,parameters,parameterNames)
-			StimulusSetParams(exposure,parameters)
-		endif
-		
-		// Note that the acquisiton is done
-		isAcquisitionOngoingFake=0
-#if (exists("SIDXRootOpen")==4)
-	endif
-#endif
-
-	// Restore the data folder
-	SetDataFolder savedDF	
-End
+//Function CameraAcquireStop()
+//	// Switch to the imaging data folder
+//	String savedDF=GetDataFolder(1)
+//	SetDataFolder root:DP_Camera
+//
+//	// Declare instance variables
+//	NVAR areWeForReal
+//	NVAR isSidxAcquireValid
+//	NVAR sidxAcquire
+//	NVAR isAcquisitionOngoingFake
+//	//WAVE bufferFrame
+//	NVAR widthCCD, heightCCD
+//	NVAR binSize
+//	NVAR iLeft, iTop
+//	NVAR iRight, iBottom	// the ROI boundaries
+//	NVAR nFramesBufferFake
+//	//NVAR nFramesToAcquireFake
+//	NVAR nFramesAcquiredFake
+//	//NVAR countReadFrameFake
+//	NVAR exposureWantedInSeconds
+//	
+//	Variable sidxStatus
+//#if (exists("SIDXRootOpen")==4)
+//	if (areWeForReal)
+//		if (isSidxAcquireValid)
+//			SIDXAcquireStop sidxAcquire, sidxStatus
+//			if (sidxStatus!=0)
+//				String errorMessage
+//				SIDXAcquireGetLastError sidxAcquire, errorMessage
+//				Abort sprintf1s("Error in SIDXAcquireStop: %s",errorMessage)
+//			endif
+//		else
+//			Abort "Called CameraAcquireStop() before acquisition was armed."
+//		endif
+//	else
+//#endif
+////		Variable interExposureDelay=0.001		// s, could be shift time for FT camera, or readout time for non-FT camera
+////		Variable frameInterval=exposureWantedInSeconds+interExposureDelay		// s, Add a millisecond of shift time, for fun
+////		Variable frameOffset=exposureWantedInSeconds/2
+////		
+////		// If there's a wave with base name "exposure" for this trial, overwrite it with a fake TTL exposure signal
+////		Variable iSweep=SweeperGetLastAcqSweepIndex()
+////		String exposureWaveNameRel=WaveNameFromBaseAndSweep("exposure",iSweep)
+////		String exposureWaveNameAbs=sprintf1s("root:%s",exposureWaveNameRel)
+////		if ( WaveExistsByName(exposureWaveNameAbs) )
+////			Wave exposure=$exposureWaveNameAbs
+////			Variable dt=DimDelta(exposure,0)	// ms
+////			Variable nScans=DimSize(exposure,0)
+////			Variable delay=0	// ms
+////			Variable duration=1000*(frameInterval*nFramesAcquiredFake)	// s->ms
+////			Variable pulseRate=1/frameInterval	// Hz
+////			Variable pulseDuration=1000*exposureWantedInSeconds	// s->ms
+////			Variable baseLevel=0		// V
+////			Variable amplitude=5		// V, for a TTL signal
+////			Make /FREE parameters={delay,duration,pulseRate,pulseDuration,baseLevel,amplitude}
+////			Make /FREE /T parameterNames={"delay","duration","pulseRate","pulseDuration","baseLevel","amplitude"}
+////			//fillTrainFromParamsBang(exposure,dt,nScans,parameters,parameterNames)
+////			StimulusSetParams(exposure,parameters)
+////		endif
+//		
+//		// Note that the acquisiton is done
+//		isAcquisitionOngoingFake=0
+//#if (exists("SIDXRootOpen")==4)
+//	endif
+//#endif
+//
+//	// Restore the data folder
+//	SetDataFolder savedDF	
+//End
 
 
 
@@ -866,43 +852,36 @@ Function CameraAcquireAbort()
 		endif
 	else
 #endif
-		// Fill the framebuffer with fake data
-		//Variable widthROIFake=iRight-iLeft+1
-		//Variable heightROIFake=iBottom-iTop+1
-		//Variable widthROIBinnedFake=round(widthROIFake/binSize)
-		//Variable heightROIBinnedFake=round(heightROIFake/binSize)
-		//Redimension /N=(widthROIBinnedFake,heightROIBinnedFake,nFramesBufferFake) bufferFrame	// sic, this is how Igor Pro organizes image data
-		//SetScale /P x, iLeft+0.5*binSize, binSize, "px", bufferFrame		// Want the upper left corner of of the upper left pel to be at (0,0), not (-0.5,-0.5)
-		//SetScale /P y, iTop+0.5*binSize, binHeight, "px", bufferFrame
-		Variable interExposureDelay=0.001		// s, could be shift time for FT camera, or readout time for non-FT camera
-		Variable frameInterval=exposureWantedInSeconds+interExposureDelay		// s, Add a millisecond of shift time, for fun
-		Variable frameOffset=exposureWantedInSeconds/2
-		// Assumes the first exposure starts at t==0, so the middle of it occurs at exposureWantedInSeconds/2.
-		// After that, the middle of the next exposure comes frameInterval later, etc.
-		//SetScale /P z, 1000*frameOffset, 1000*frameInterval, "ms", bufferFrame		// s -> ms
-		//bufferFrame=2^15+(2^12)*gnoise(1)
-		//countReadFrameFake=0
-		//bufferFrame=p
-		
-		// If there's a wave with base name "exposure" for this trial, overwrite it with a fake TTL exposure signal
-		Variable iSweep=SweeperGetLastAcqSweepIndex()
-		String exposureWaveNameRel=WaveNameFromBaseAndSweep("exposure",iSweep)
-		String exposureWaveNameAbs=sprintf1s("root:%s",exposureWaveNameRel)
-		if ( WaveExistsByName(exposureWaveNameAbs) )
-			Wave exposure=$exposureWaveNameAbs
-			Variable dt=DimDelta(exposure,0)	// ms
-			Variable nScans=DimSize(exposure,0)
-			Variable delay=0	// ms
-			Variable duration=1000*(frameInterval*nFramesAcquiredFake)	// s->ms
-			Variable pulseRate=1/frameInterval	// Hz
-			Variable pulseDuration=1000*exposureWantedInSeconds	// s->ms
-			Variable baseLevel=0		// V
-			Variable amplitude=5		// V, for a TTL signal
-			Make /FREE parameters={delay,duration,pulseRate,pulseDuration,baseLevel,amplitude}
-			Make /FREE /T parameterNames={"delay","duration","pulseRate","pulseDuration","baseLevel","amplitude"}
-			//fillTrainFromParamsBang(exposure,dt,nScans,parameters,parameterNames)
-			StimulusSetParams(exposure,parameters)
-		endif
+//		Variable interExposureDelay=0.001		// s, could be shift time for FT camera, or readout time for non-FT camera
+//		Variable frameInterval=exposureWantedInSeconds+interExposureDelay		// s, Add a millisecond of shift time, for fun
+//		Variable frameOffset=exposureWantedInSeconds/2
+//		
+//		// If there's a wave with base name "exposure" for this trial, overwrite it with a fake TTL exposure signal
+//		Variable iSweep=SweeperGetLastAcqSweepIndex()
+//		String exposureWaveNameRel=WaveNameFromBaseAndSweep("exposure",iSweep)
+//		String exposureWaveNameAbs=sprintf1s("root:%s",exposureWaveNameRel)
+//		if ( WaveExistsByName(exposureWaveNameAbs) )
+//			Wave exposure=$exposureWaveNameAbs
+//			Variable dt=DimDelta(exposure,0)	// ms
+//			Variable nScans=DimSize(exposure,0)
+//			Variable delay=0	// ms
+//			Variable duration=1000*(frameInterval*nFramesAcquiredFake)	// s->ms
+//			Variable pulseRate=1/frameInterval	// Hz
+//			Variable pulseDuration=1000*exposureWantedInSeconds	// s->ms
+//			Variable baseLevel=0		// V
+//			Variable amplitude=5		// V, for a TTL signal
+//			Make /FREE parameters={delay,duration,pulseRate,pulseDuration,baseLevel,amplitude}
+//			Make /FREE /T parameterNames={"delay","duration","pulseRate","pulseDuration","baseLevel","amplitude"}
+//			//fillTrainFromParamsBang(exposure,dt,nScans,parameters,parameterNames)
+//			//StimulusSetParams(exposure,parameters)
+//			
+//			// Have to fil the samples "manually", because want the WAVETYPE to stay "adc"
+//			String stimulusType="TTLTrain"
+//			String fillFunctionName=stimulusType+"FillFromParams"
+//			Funcref StimulusFillFromParamsSig fillFunction=$fillFunctionName
+//			fillFunction(exposure,parameters)
+//
+//		endif
 		
 		// Note that the acquisiton is done
 		isAcquisitionOngoingFake=0

@@ -331,7 +331,46 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 		SetScale d 0, 0, units, thisWave
 	endfor
 
-	// If doing imaging, and triggered acquistion, babysit the camera to get the frames without overflowing the buffer
+	// If doing imaging, and triggered acquistion, and using a faux camera, replace the exposure signal with a faked one
+	if ( IsImagingModuleInUse() && ImagerGetIsTriggered() && !CameraGetIsForReal() )
+		Variable interExposureDelay=0.001		// s, could be shift time for FT camera, or readout time for non-FT camera
+		Variable exposureWantedInSeconds=0.001*ImagerGetVideoExposureWanted()
+		Variable frameInterval=exposureWantedInSeconds+interExposureDelay		// s, Add a millisecond of shift time, for fun
+		Variable frameOffset=exposureWantedInSeconds/2
+		// Assumes the first exposure starts at t==0, so the middle of it occurs at exposureWantedInSeconds/2.
+		// After that, the middle of the next exposure comes frameInterval later, etc.
+		//SetScale /P z, 1000*frameOffset, 1000*frameInterval, "ms", bufferFrame		// s -> ms
+		//bufferFrame=2^15+(2^12)*gnoise(1)
+		//countReadFrameFake=0
+		//bufferFrame=p
+		
+		// If there's a wave with base name "exposure" for this trial, overwrite it with a fake TTL exposure signal
+		String exposureWaveNameRel=WaveNameFromBaseAndSweep("exposure",thisSweepIndex)
+		String exposureWaveNameAbs=sprintf1s("root:%s",exposureWaveNameRel)
+		if ( WaveExistsByName(exposureWaveNameAbs) )
+			Wave exposure=$exposureWaveNameAbs
+			Variable dt=DimDelta(exposure,0)	// ms
+			Variable nScans=DimSize(exposure,0)
+			Variable delay=ImagerGetTriggerDelay()	// ms
+			Variable duration=1000*(frameInterval*ImagerGetNFramesForVideo())	// s->ms
+			Variable pulseRate=1/frameInterval	// Hz
+			Variable pulseDuration=1000*exposureWantedInSeconds	// s->ms
+			Variable baseLevel=0		// V
+			Variable amplitude=5		// V, for a TTL signal
+			Make /FREE parameters={delay,duration,pulseRate,pulseDuration,baseLevel,amplitude}
+			Make /FREE /T parameterNames={"delay","duration","pulseRate","pulseDuration","baseLevel","amplitude"}
+			//fillTrainFromParamsBang(exposure,dt,nScans,parameters,parameterNames)
+			//StimulusSetParams(exposure,parameters)
+			
+			// Have to fil the samples "manually", because want the WAVETYPE to stay "adc"
+			String stimulusType="Train"
+			String fillFunctionName=stimulusType+"FillFromParams"
+			Funcref StimulusFillFromParamsSig fillFunction=$fillFunctionName
+			fillFunction(exposure,parameters)
+		endif
+	endif
+
+	// If doing imaging, and triggered acquistion, extract the ROI signals
 	if ( IsImagingModuleInUse() && ImagerGetIsTriggered() )
 		 ImagerContExtractROIs(thisSweepIndex)
 	endif
