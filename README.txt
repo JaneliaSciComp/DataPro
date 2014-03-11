@@ -2,10 +2,10 @@ DataPro
 =======
 
 Package of Igor Pro scripts for doing data acquisition using
-Instrutech ITC 18 or ITC 16.  Also includes an imaging module for
-imaging using the Andor iXon Ultra camera via the Bruxton Corporation
-SIDX 7.2 API.  DataPro only works with the Windows version of Igor Pro
-6, and development and testing has all been done on the 32-bit version of
+Instrutech ITC 18 or ITC 16.  Also includes an optional imaging module
+for using the Andor iXon Ultra camera via the Bruxton Corporation SIDX
+7.2 API.  DataPro only works with the Windows version of Igor Pro 6,
+and development and testing has all been done on the 32-bit version of
 Igor Pro.
 
 
@@ -30,17 +30,17 @@ How to Install
 
        http://www.bruxton.com/SIDX/index.html  
 
-2. Unzip the DataPro-release_8.11.zip file, which creates a folder called 
-   DataPro-release_8.11.
+2. Unzip the DataPro-release_8.12.zip file, which creates a folder called 
+   DataPro-release_8.12.
 
-3. Copy the folder DataPro-release_8.11 to the "Igor Pro 6 User Files"
+3. Copy the folder DataPro-release_8.12 to the "Igor Pro 6 User Files"
    folder.  (You must copy the whole folder, not just the files within
    the folder.)
 
 4. In experiments where you want to use this version of DataPro, add
    the line
 
-     #include ":DataPro-release_8.11:DataPro"
+     #include ":DataPro-release_8.12:DataPro"
 
    to the experiment's procedure file.  You can access this from the
    Igor Pro menu by going to
@@ -50,8 +50,8 @@ How to Install
    template where you've added the above line to the template's
    procedure file.)
 
-If DataPro is installed correctly, you should have a
-menu item called "DataPro" in the Igor Pro main menu.
+If DataPro is installed correctly, you should have a menu item called
+"DataPro" in the Igor Pro main menu.
 
 To get started using DataPro, select "All Controls" from the "DataPro"
 menu.
@@ -234,3 +234,12 @@ frames.
 Added ability to export videos as TIFF files.  "Get Data" button is
 now disabled if doing triggered video acquisition and the sweep
 duration is not long enough to accommodate the video.
+
+
+
+
+8.11 -> 8.12    (March 11, 2014)
+
+Fixed bug where DataPro wouldn't compile until SIDX XOP was present.
+Also fixed some bugs with faux camera operation.
+
