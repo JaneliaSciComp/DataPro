@@ -727,7 +727,7 @@ End
 
 Function unitPulse(x,duration)
 	Variable x, duration
-	return ( (x>=0)&&(x<duration) )
+	return ( (0<=x)&&(x<duration) )
 End
 
 Function /S stringFif(test,trueString,falseString)

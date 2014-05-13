@@ -9,7 +9,9 @@ Function WNoiseBuilderViewConstructor() : Graph
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
 	Variable mu=parameters[2]
-	Variable sigma=parameters[3]
+	Variable sigma=parameters[3]	
+	Variable fLow=parameters[4]
+	Variable fHigh=parameters[5]
 	// These are all in pixels
 	Variable xOffset=105
 	Variable yOffset=200
@@ -36,6 +38,13 @@ Function WNoiseBuilderViewConstructor() : Graph
 	SetVariable muSV,win=WNoiseBuilderView,limits={-10000,10000,10},value= _NUM:mu
 	SetVariable sigmaSV,win=WNoiseBuilderView,pos={205,43},size={150,17},proc=BuilderContSVTwiddled,title="Standard Deviation"
 	SetVariable sigmaSV,win=WNoiseBuilderView,format="%g",limits={0,10000,10},value= _NUM:sigma
+
+	SetVariable fLowSV,win=WNoiseBuilderView,pos={390,12},size={140,17},proc=BuilderContSVTwiddled,title="Low Cutoff (kHz)"
+	SetVariable fLowSV,win=WNoiseBuilderView,format="%g",limits={0,50000,100},value= _NUM:fLow
+
+	SetVariable fHighSV,win=WNoiseBuilderView,pos={390,43},size={140,17},proc=BuilderContSVTwiddled,title="High Cutoff (kHz)"
+	SetVariable fHighSV,win=WNoiseBuilderView,format="%g",limits={0,50000,100},value= _NUM:fHigh
+	
 	Button saveAsDACButton,win=WNoiseBuilderView,pos={601,10},size={90,20},proc=BuilderContSaveAsButtonPressed,title="Save As..."
 	Button importButton,win=WNoiseBuilderView,pos={601,45},size={90,20},proc=BuilderContImportButtonPressed,title="Import..."
 	SetDataFolder savedDF
