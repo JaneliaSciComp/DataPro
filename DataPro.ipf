@@ -70,16 +70,12 @@
 #include ":DP_ImageBrowserModel"
 #include ":DP_ImageBrowserView"
 #include ":DP_ImageBrowserController"
-//#include ":DP_ImageTovers"
+//#include ":DP_BarrageDetector"
+//#include ":DP_BarrageDetectorView"
+//#include ":DP_BarrageDetectorCont"
 
 
 
-//#include <Strings as Lists> 
-//#include "DP_Acquire"
-//#include "DP_Analyze"
-//#include "DP_Windows"
-//#include "DP_MyVariables"
-//#include "DP_LTP"
 
 //---------------------- DataPro MENU -----------------------//
 
@@ -113,6 +109,8 @@ Menu "DataPro"
 	dpMenu("-")
 	dpMenu("Switcher"), SwitcherContConstructor()
 	dpMenu("Axon Switcher"), ASwitcherContConstructor()
+	//dpMenu("-")	
+	//dpMenu("Barrage Detector"), BarrageDetectorContConstructor()
 End
 
 Function /S dpMenu(item)
