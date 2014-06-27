@@ -33,6 +33,8 @@
 #include ":DP_RampStimulus"
 #include ":DP_TrainBuilder"
 #include ":DP_TrainStimulus"
+#include ":DP_TrainWPPBuilder"
+#include ":DP_TrainWPPStimulus"
 #include ":DP_TTLTrainBuilder"
 #include ":DP_TTLTrainStimulus"
 #include ":DP_MulTrainBuilder"
@@ -96,6 +98,7 @@ Menu "DataPro"
 	dpMenu("Pulse Builder"), BuilderContConstructor("Pulse")
 	dpMenu("TTL Pulse Builder"), BuilderContConstructor("TTLPulse")
 	dpMenu("Train Builder"), BuilderContConstructor("Train")
+	dpMenu("Train-with-Prepulse Builder"), BuilderContConstructor("TrainWPP")
 	dpMenu("TTL Train Builder"), BuilderContConstructor("TTLTrain")
 	dpMenu("Multiple Train Builder"), BuilderContConstructor("MulTrain")
 	dpMenu("Multiple TTL Train Builder"), BuilderContConstructor("TTLMTrain")
