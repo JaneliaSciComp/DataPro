@@ -102,7 +102,7 @@ End
 
 // This gets run just after DataPro is initialized, always
 Function PostInitializationHook()
-	//BarrageDetectorConstructor()
+	BarrageDetectorConstructor()
 End
 
 
@@ -114,7 +114,7 @@ End
 // Use the PreTrialHook function to call code that should occur before the acquisition of each trial
 Function PreTrialHook()
 	//Print "Inside PreTrialHook() function!"
-	//BarrageDetectorSaveDACMult()
+	BarrageDetectorSaveDACMult()
 End
 
 // Use the PreSweepHook function to call code that should occur before the acquisition of each sweep
@@ -127,12 +127,12 @@ End
 Function PostSweepHook(iThisSweep)
 	Variable iThisSweep	// index of the just-acquired sweep
 	//Print "Inside PostSweepHook() function!"
-	//BarrageDetectorSilenceStimIf(iThisSweep)
+	BarrageDetectorSilenceStimIf(iThisSweep)
 End
 
 // Use the PostTrialHook function to call analysis that should occur after the acquisition of each trial
 Function PostTrialHook()
 	//Print "Inside PostTrialHook() function!"
-	//BarrageDetectorRestoreDACMult()
+	BarrageDetectorRestoreDACMult()
 End
 

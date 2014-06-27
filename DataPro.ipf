@@ -70,9 +70,9 @@
 #include ":DP_ImageBrowserModel"
 #include ":DP_ImageBrowserView"
 #include ":DP_ImageBrowserController"
-//#include ":DP_BarrageDetector"
-//#include ":DP_BarrageDetectorView"
-//#include ":DP_BarrageDetectorCont"
+#include ":DP_BarrageDetector"
+#include ":DP_BarrageDetectorView"
+#include ":DP_BarrageDetectorCont"
 
 
 
@@ -109,8 +109,8 @@ Menu "DataPro"
 	dpMenu("-")
 	dpMenu("Switcher"), SwitcherContConstructor()
 	dpMenu("Axon Switcher"), ASwitcherContConstructor()
-	//dpMenu("-")	
-	//dpMenu("Barrage Detector"), BarrageDetectorContConstructor()
+	dpMenu("-")	
+	dpMenu("Barrage Detector"), BarrageDetectorContConstructor()
 End
 
 Function /S dpMenu(item)
