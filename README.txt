@@ -30,17 +30,17 @@ How to Install
 
        http://www.bruxton.com/SIDX/index.html  
 
-2. Unzip the DataPro-release_8.13.zip file, which creates a folder called 
-   DataPro-release_8.13.
+2. Unzip the DataPro-release_8.14.zip file, which creates a folder called 
+   DataPro-release_8.14.
 
-3. Copy the folder DataPro-release_8.13 to the "Igor Pro 6 User Files"
+3. Copy the folder DataPro-release_8.14 to the "Igor Pro 6 User Files"
    folder.  (You must copy the whole folder, not just the files within
    the folder.)
 
 4. In experiments where you want to use this version of DataPro, add
    the line
 
-     #include ":DataPro-release_8.13:DataPro"
+     #include ":DataPro-release_8.14:DataPro"
 
    to the experiment's procedure file.  You can access this from the
    Igor Pro menu by going to
@@ -250,4 +250,10 @@ Also fixed some bugs with faux camera operation.
 
 White noise stimulus builder now supports bandpass filtering.
 
+
+
+
+8.13 -> 8.14    (June 27, 2014)
+
+Added a Train-with-Prepulse builder.
 
