@@ -156,6 +156,16 @@ Function /S sprintf2sv(templateString,str,i)
 	return outputString
 End
 
+Function /S sprintf2vs(templateString,i,str)
+	String templateString
+	Variable i
+	String str
+	
+	String outputString
+	sprintf outputString templateString i, str
+	return outputString
+End
+
 Function /S sprintf2vv(templateString,f1,f2)
 	String templateString
 	Variable f1, f2
@@ -1030,3 +1040,28 @@ Function fromEnable(isEnabled)
 	return (isEnabled?0:2)
 End
 
+
+
+Function /WAVE numericWaveFromTextWave(tw)
+	Wave /T tw
+	
+	Variable n=numpnts(tw)
+	Make /FREE /N=(n) result
+	result=str2num(tw[p])
+	return result
+end
+
+Function /WAVE textWaveFromNumericWave(w)
+	Wave w
+	
+	Variable n=numpnts(w)
+	Make /T /FREE /N=(n) result
+	result=sprintf1v("%0.17g",w[p])		// Preserve as much precision as possible
+	return result
+end
+
+Function numberOfScans(dt,totalDuration)
+	// Get the number of time points ("scans") for the given sampling interval and duration settings.
+	Variable dt,totalDuration
+	return round(totalDuration/dt)+1
+End

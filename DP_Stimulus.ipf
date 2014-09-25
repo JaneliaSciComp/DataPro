@@ -1,6 +1,6 @@
 // A stimulus is a wave that has a wave note which specifies a stimulus type and a set of parameters.
 // If you want to change the duration or the dt for the stimulus, the wave note contains enough information
-// to do this.  Each stimulus should obey the invariant that the wave data points match the builder and the
+// to do this.  Each stimulus should obey the invariant that the wave data points match the stimulus type and the
 // parameters in the wave note, for some value of duration and time step.
 
 // Eventually, all the builders should be refactored such that they rely on an underlying Stimulus 'subclass', 
@@ -284,11 +284,5 @@ End
 Function /S StimulusGetSignalTypeSig()
 	// Placeholder function
 	Abort "Internal Error: Attempt to call a StimulusGetSignalTypeSig function that doesn't exist."
-End
-
-Function numberOfScans(dt,totalDuration)
-	// Get the number of time points ("scans") for the given sampling interval and duration settings.
-	Variable dt,totalDuration
-	return round(totalDuration/dt)+1
 End
 

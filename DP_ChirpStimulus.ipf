@@ -22,6 +22,17 @@ Function /WAVE ChirpGetDefaultParams()
 	return parametersDefault
 End
 
+Function /WAVE ChirpGetDefaultParamsAsStrings()
+	Variable nParameters=5
+	Make /T /FREE /N=(nParameters) result
+	result[0]="10"
+	result[1]="50"
+	result[2]="10"
+	result[3]="50"
+	result[4]="200"
+	return result
+End
+
 Function ChirpFillFromParams(w,parameters)
 	Wave w
 	Wave parameters
@@ -33,6 +44,19 @@ Function ChirpFillFromParams(w,parameters)
 	Variable finalFrequency=parameters[4]
 
 	w=amplitude*unitPulse(x-delay,duration)*amplitude*sin(2*PI*(x-delay)/1000*(0.5*(finalFrequency-initialFrequency)/(duration/1000)*(x-delay)/1000+initialFrequency))
+End
+
+Function ChirpOverlayFromParams(w,parameters)
+	Wave w
+	Wave parameters
+
+	Variable delay=parameters[0]
+	Variable duration=parameters[1]
+	Variable amplitude=parameters[2]
+	Variable initialFrequency=parameters[3]
+	Variable finalFrequency=parameters[4]
+
+	w+=amplitude*unitPulse(x-delay,duration)*amplitude*sin(2*PI*(x-delay)/1000*(0.5*(finalFrequency-initialFrequency)/(duration/1000)*(x-delay)/1000+initialFrequency))
 End
 
 Function /S ChirpGetSignalType()

@@ -70,6 +70,14 @@
 #include ":DP_ImageBrowserModel"
 #include ":DP_ImageBrowserView"
 #include ":DP_ImageBrowserController"
+
+#include ":DP_SimpStim"
+#include ":DP_CompStim"
+#include ":DP_CompStimWave"
+#include ":DP_CompStimBuilderModel"
+#include ":DP_CompStimBuilderView"
+#include ":DP_CompStimBuilderController"
+
 //#include ":DP_BarrageDetector"
 //#include ":DP_BarrageDetectorView"
 //#include ":DP_BarrageDetectorCont"
