@@ -140,11 +140,12 @@ Function CSBViewUpdateControlProperties()
 
 	ControlBar /W=CompStimBuilderView 80	// need to adjust for number of rows...
 
-	String listOfSegmentTypes=CompStimGetStimTypes()
+	Wave /T segmentTypes=CompStimWaveGetStimTypes()
+	String listOfSegmentTypes=ListFromTextWave(segmentTypes)
 	String listOfSegmentTypesFU="\""+listOfSegmentTypes+"\""	
 	
 	Variable i
-	for (i=0; i<nSegments; i++)
+	for (i=0; i<nSegments; i+=1)
 		// The segment type popup
 		segmentType=segments[i][0]
 	 	Variable popupMenuName=sprintf1v("segment%dPM",i)		

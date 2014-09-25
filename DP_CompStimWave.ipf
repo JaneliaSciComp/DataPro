@@ -97,17 +97,8 @@ End
 // Static methods
 //
 
-Function /WAVE CompStimGetStimTypes(signalType)
-	String signalType
-	
-	if ( AreStringsEqual(signalType,"DAC") )
-		Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "WNoise", "PSC" }
-	elseif ( AreStringsEqual(signalType,"TTL") )
-		Make /T /FREE result={"TTLPulse", "TTLTrain", "TTLMTrain"}
-	else
-		Make /T /FREE /N=(0) result
-	endif
-	
+Function /WAVE CompStimWaveGetStimTypes()
+	Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "WNoise", "PSC" }
 	return result
 End
 

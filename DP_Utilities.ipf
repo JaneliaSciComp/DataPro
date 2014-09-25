@@ -1065,3 +1065,18 @@ Function numberOfScans(dt,totalDuration)
 	Variable dt,totalDuration
 	return round(totalDuration/dt)+1
 End
+
+Function /S ListFromTextWave(textWave)
+	Wave /T textWave
+	
+	Variable n=numpnts(textWave)
+	String result=""
+	if (n>0)
+		result=textWave[0]
+	endif
+	Variable i
+	for (i=1; i<n; i+=1)
+		result=result+";"+textWave[i]
+	endfor
+	return result
+End
