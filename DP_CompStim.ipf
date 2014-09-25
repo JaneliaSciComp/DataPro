@@ -2,16 +2,14 @@
 
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
-Function /WAVE CompStim()
+Function /WAVE CompStimEmpty()
 	Make /T /FREE /N=(0) result
 	return result
 End
 
 Function /WAVE CompStimFromSimpStim(simpStim)
-	String simpStim
-	
-	Make /T /FREE /N=(0) result
-	CompStimAppendStimString(result,simpStim)
+	String simpStim	
+	Make /T /FREE /N=(1) result={simpStim}
 	return result
 End
 
@@ -65,7 +63,7 @@ Function SetSamplesToCompStimBang(w,compStim)
 	
 	Variable nStimuli=CompStimGetNStimuli(compStim)
 	Variable i
-	for (i=1; i<nStimuli; i+=1)
+	for (i=0; i<nStimuli; i+=1)
 		String simpStim=CompStimGetSimpStim(compStim,i)
 		String stimType=SimpStimGetStimType(simpStim)
 		Wave params=SimpStimGetParams(simpStim)
@@ -76,7 +74,7 @@ Function SetSamplesToCompStimBang(w,compStim)
 	endfor
 End
 
-Function /WAVE StimulusOverlayFromParamsSig(w,params)
+Function StimulusOverlayFromParamsSig(w,params)
 	Wave w
 	Wave params
 	// Placeholder function
@@ -90,14 +88,28 @@ Function /S CompStimGetSimpStim(compStim,i)
 	return compStim[i]
 End
 
-Function SetWaveToCompStimBang(w,dt,durationWanted,compStim)
-	Wave w
-	Variable dt
-	Variable durationWanted
-	Wave /T compStim
+Function /WAVE CompStimSetParamAsString(compStimOriginal,segmentIndex,parameterName,valueAsString)
+	Wave /T compStimOriginal
+	Variable segmentIndex
+	String parameterName
+	String valueAsString
+
+	String simpStimOriginal=compStimOriginal[segmentIndex]
+	String simpStim=SimpStimReplaceParam(simpStimOriginal,parameterName,valueAsString)
+	Duplicate /T /FREE compStimOriginal, result
+	result[segmentIndex]=simpStim
 	
-	Variable nScans=numberOfScans(dt,durationWanted)
-	Redimension /N=(nScans) w
-	Setscale /P x, 0, dt, "ms", w
-	SetSamplesToCompStimBang(w,compStim)
+	return result
 End
+
+//Function SetWaveToCompStimBang(w,dt,durationWanted,compStim)
+//	Wave w
+//	Variable dt
+//	Variable durationWanted
+//	Wave /T compStim
+//	
+//	Variable nScans=numberOfScans(dt,durationWanted)
+//	Redimension /N=(nScans) w
+//	Setscale /P x, 0, dt, "ms", w
+//	SetSamplesToCompStimBang(w,compStim)
+//End

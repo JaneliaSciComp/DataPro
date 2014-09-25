@@ -35,11 +35,18 @@ Function /S SimpStimReplaceParam(stimString,paramName,newValueAsString)
 	String paramName
 	String newValueAsString
 
+	String result
+	Variable newValue=str2num(newValueAsString)
+	if ( IsNan(newValue) )
+		result=stimString
+		return result
+	endif
+
 	String stimType=SimpStimGetStimType(stimString)
 	String paramList=SimpStimGetParamList(stimString)
 	
-	String newParamList=ReplaceStringByKey(paramName, paramList, newValueAsString, "=", ",", 1)
-	String result=SimpStimFromTypeAndParamList(stimType,newParamList)
+	String newParamList=ReplaceStringByKey(paramName, paramList, newValueAsString, "=", ",", 1)		
+	result=SimpStimFromTypeAndParamList(stimType,newParamList)
 	
 	return result
 End

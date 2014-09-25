@@ -99,6 +99,8 @@ Menu "DataPro"
 	dpMenu("-")
 	dpMenu("Test Pulser"), TestPulserContConstructor()
 	dpMenu("-")
+	dpMenu("Stimulus Builder"), CSBContConstructor()
+	dpMenu("-")
 	dpMenu("Pulse Builder"), BuilderContConstructor("Pulse")
 	dpMenu("TTL Pulse Builder"), BuilderContConstructor("TTLPulse")
 	dpMenu("Train Builder"), BuilderContConstructor("Train")

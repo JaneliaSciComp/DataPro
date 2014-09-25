@@ -5,24 +5,26 @@ Function CSBContConstructor()
 	CSBViewConstructor()
 End
 
-Function CSBContSVTwiddled(svStruct) : SetVariableControl
+Function CSBContParamSVActuated(svStruct) : SetVariableControl
 	STRUCT WMSetVariableAction &svStruct
 	if ( svStruct.eventCode==-1 ) 
 		return 0
 	endif
-	
-	// Extract the segmentIndex from somewhere
-	Variable segmentIndex=0
-	
-	// Extract the parameterName from the SV name
 	String svName=svStruct.ctrlName
-	String parameterName=svName[0,strlen(svName)-3]
+	
+	// Extract the segmentIndex and parameterName from the SV name
+	Variable firstUnderscoreIndex=strsearch(svName,"_",0)  // third arg is search start position
+	Variable secondUnderscoreIndex=strsearch(svName,"_",firstUnderscoreIndex+1)  // third arg is search start position
+	Variable thirdUnderscoreIndex=strsearch(svName,"_",secondUnderscoreIndex+1)  // third arg is search start position
+	String segmentIndexAsString=svName[firstUnderscoreIndex+1,secondUnderscoreIndex-1]
+	Variable segmentIndex=str2num(segmentIndexAsString)
+	String parameterName=svName[secondUnderscoreIndex+1,thirdUnderscoreIndex-1]
 	
 	// Get the value
-	Variable value=svStruct.dval
+	String valueAsString=svStruct.sval
 	
 	// Tell the model, tell the view
-	CSBModelSetParameter(segmentIndex,parameterName,value)
+	CSBModelSetParameterAsString(segmentIndex,parameterName,valueAsString)
 	CSBViewUpdate()
 End
 

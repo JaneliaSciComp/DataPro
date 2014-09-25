@@ -15,8 +15,9 @@ Function CSBModelConstructor()
 	
 	// Parameters of stimulus
 	Variable /G dt=SweeperGetDt()
-	Variable /G totalDuration=SweeperGetTotalDuration()	
-	Duplicate /O CompStimFromSimpStim(SimpStimDefault("Pulse")), compStim
+	Variable /G totalDuration=SweeperGetTotalDuration()
+	String pulseSimpStim=SimpStimDefault("Pulse")
+	Wave /T compStim=CompStimFromSimpStim(pulseSimpStim)
 	
 	// Create the wave
 	Make /O theWave
@@ -26,26 +27,20 @@ Function CSBModelConstructor()
 	SetDataFolder savedDF
 End
 
-Function CSBModelSetParameter(segmentIndex,parameterName,value)
+Function CSBModelSetParameterAsString(segmentIndex,parameterName,valueAsString)
 	// Set the named parameter in the indicated segment
 	Variable segmentIndex
 	String parameterName
-	Variable value
+	String valueAsString
 
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_CompStimBuilder
 
 	// instance vars
-	WAVE /T segments
 	WAVE theWave
 	
 	// Set the parameter in the segments
-	String originalParamDict=segments[segmentIndex][1]
-	String newParamDict=ReplaceStringByKey(parameterName,originalParamDict,sprintf1v("%0.16g",value))
-	segments[segmentIndex][1]=newParamDict
-
-	// Update the wave
-	StimulusSetParam(theWave,parameterName,value)
+	CompStimWaveSetParamAsString(theWave,segmentIndex,parameterName,valueAsString)
 
 	SetDataFolder savedDF
 End

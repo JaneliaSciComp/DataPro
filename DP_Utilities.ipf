@@ -1080,3 +1080,37 @@ Function /S ListFromTextWave(textWave)
 	endfor
 	return result
 End
+
+Function SetSVPosition(windowName,svName,x,y,labelWidth,bodyWidth,height)
+	// SetVariable sizing is a pain b/c IgorPro doesn't let you set the label width and the field width independently.
+	// This essentially positions the SV at (x,y), with effective size (labelWidth+bodyWidth,height).  The label is right-justified within the field, like it or not.
+	// If the label is too big for the 
+	String WindowName
+	String svName
+	Variable x, y
+	Variable labelWidth, bodyWidth
+	Variable height
+	
+	Variable totalWidth=labelWidth+bodyWidth
+	SetVariable $svName, win=$windowName, pos={x,y}, size={totalWidth,height}
+	ControlInfo /W=$windowName $svName
+	Variable initialTotalWidth=V_Width
+	Variable shimWidth=totalWidth-initialTotalWidth
+	SetVariable $svName, win=$windowName, pos={x+shimWidth,y}
+End
+
+Function GetControlWidth(winderName,ctrlName)
+	String winderName
+	String ctrlName
+	
+	ControlInfo /W=$winderName $ctrlName
+	return V_Width
+End
+
+Function GetControlRightX(winderName,ctrlName)
+	String winderName
+	String ctrlName
+	
+	ControlInfo /W=$winderName $ctrlName
+	return V_left+V_Width
+End
