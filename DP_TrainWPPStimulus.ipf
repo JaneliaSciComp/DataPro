@@ -15,7 +15,7 @@ Function /WAVE TrainWPPGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE TrainWPPGetDefaultParams()
+Function /WAVE TrainWPPGetDfltParams()
 	Variable nParameters=9
 	Make /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]=20		// ms

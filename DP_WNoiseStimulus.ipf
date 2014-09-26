@@ -12,7 +12,7 @@ Function /WAVE WNoiseGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE WNoiseGetDefaultParams()
+Function /WAVE WNoiseGetDfltParams()
 	Variable nParameters=6
 	Make /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]=10

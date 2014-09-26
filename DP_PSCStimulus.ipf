@@ -12,7 +12,7 @@ Function /WAVE PSCGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE PSCGetDefaultParams()
+Function /WAVE PSCGetDfltParams()
 	Variable nParameters=6
 	Make /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]=10

@@ -154,7 +154,7 @@ End
 Function /WAVE SimpStimGetDefParamsAsStrings(stimType)
 	String stimType
 
-	String defaultParamsFunctionName=stimType+"GetDefaultParamsAsStrings"
+	String defaultParamsFunctionName=stimType+"GetDfltParamsAsStrings"
 	Funcref SimpStimGetDefParamsAsStrsSig defaultParamsFunction=$defaultParamsFunctionName
 	Wave defaultParams=defaultParamsFunction()
 	
@@ -181,3 +181,12 @@ Function /S SimpStimGetSignalTypeSig()
 	Abort "Internal Error: Attempt to call a SimpStimGetSignalTypeSig function that doesn't exist."
 End
 
+Function /WAVE SimpStimGetStimTypes()
+	Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "WNoise", "PSC" }
+	return result
+End
+
+Function /WAVE SimpStimGetDisplayStimTypes()
+	Make /T /FREE result={"Pulse", "Train", "Multiple Trains", "Ramp", "Sine", "Chirp", "White Noise", "PSC" }
+	return result
+End

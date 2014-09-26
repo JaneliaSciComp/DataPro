@@ -115,14 +115,25 @@ Function CompStimWaveSetParamAsString(w,segmentIndex,parameterName,valueAsString
 End
 
 
+Function CompStimWaveSetSegmentType(w,segmentIndex,simpStimType)
+	Wave w
+	Variable segmentIndex
+	String simpStimType
+	
+	Wave /T compStimOriginal=CompStimWaveGetCompStim(w)
+	Wave /T compStim=CompStimSetSegmentType(compStimOriginal,segmentIndex,simpStimType)
+	CompStimWaveSetCompStim(w,compStim)	
+End
+
+
 //
 // Static methods
 //
 
-Function /WAVE CompStimWaveGetStimTypes()
-	Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "WNoise", "PSC" }
-	return result
-End
+//Function /WAVE CompStimWaveGetStimTypes()
+//	Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "WNoise", "PSC" }
+//	return result
+//End
 
 //
 // Private methods

@@ -10,7 +10,7 @@ Function /WAVE SineGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE SineGetDefaultParams()
+Function /WAVE SineGetDfltParams()
 	Variable nParameters=4
 	Make /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]=10

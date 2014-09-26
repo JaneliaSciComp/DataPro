@@ -11,7 +11,7 @@ Function /WAVE ChirpGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE ChirpGetDefaultParams()
+Function /WAVE ChirpGetDfltParams()
 	Variable nParameters=5
 	Make /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]=10
@@ -22,7 +22,7 @@ Function /WAVE ChirpGetDefaultParams()
 	return parametersDefault
 End
 
-Function /WAVE ChirpGetDefaultParamsAsStrings()
+Function /WAVE ChirpGetDfltParamsAsStrings()
 	Variable nParameters=5
 	Make /T /FREE /N=(nParameters) result
 	result[0]="10"

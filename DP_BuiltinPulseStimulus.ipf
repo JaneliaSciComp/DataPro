@@ -8,7 +8,7 @@ Function /WAVE BuiltinPulseGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE BuiltinPulseGetDefaultParams()
+Function /WAVE BuiltinPulseGetDfltParams()
 	Variable nParameters=2
 	Make /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]=100		// ms

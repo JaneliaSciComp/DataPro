@@ -12,7 +12,7 @@ Function /WAVE TTLMTrainGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE TTLMTrainGetDefaultParams()
+Function /WAVE TTLMTrainGetDfltParams()
 	Variable nParameters=6
 	Make /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]=25		// ms

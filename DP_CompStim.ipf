@@ -102,6 +102,18 @@ Function /WAVE CompStimSetParamAsString(compStimOriginal,segmentIndex,parameterN
 	return result
 End
 
+Function /WAVE CompStimSetSegmentType(compStimOriginal,segmentIndex,simpStimType)
+	Wave /T compStimOriginal
+	Variable segmentIndex
+	String simpStimType
+
+	String simpStim=SimpStimDefault(simpStimType)
+	Duplicate /T /FREE compStimOriginal, result
+	result[segmentIndex]=simpStim
+	
+	return result
+End
+
 //Function SetWaveToCompStimBang(w,dt,durationWanted,compStim)
 //	Wave w
 //	Variable dt

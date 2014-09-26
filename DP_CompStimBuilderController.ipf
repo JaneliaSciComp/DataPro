@@ -5,6 +5,14 @@ Function CSBContConstructor()
 	CSBViewConstructor()
 End
 
+Function CSBContSegmentTypePMActuated(ctrlName,popNum,popStr) : PopupMenuControl
+	String ctrlName
+	Variable popNum
+	String popStr
+	
+	
+End
+
 Function CSBContParamSVActuated(svStruct) : SetVariableControl
 	STRUCT WMSetVariableAction &svStruct
 	if ( svStruct.eventCode==-1 ) 

@@ -45,6 +45,22 @@ Function CSBModelSetParameterAsString(segmentIndex,parameterName,valueAsString)
 	SetDataFolder savedDF
 End
 
+Function CSBModelSetSegmentType(segmentIndex,simpStimType)
+	Variable segmentIndex
+	String simpStimType
+
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_CompStimBuilder
+
+	// instance vars
+	WAVE theWave
+	
+	// Set the parameter in the segments
+	CompStimWaveSetSegmentType(theWave,segmentIndex,simpStimType)
+
+	SetDataFolder savedDF
+End
+
 Function CSBModelImportWave(builderType,fancyWaveNameString)
 	// Imports the stimulus parameters from a pre-existing wave in the Sweeper
 	// This is a model method

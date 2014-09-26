@@ -259,16 +259,16 @@ End
 Function /WAVE StimulusGetDefParamsFromType(stimulusType)
 	String stimulusType
 
-	String defaultParamsFunctionName=stimulusType+"GetDefaultParams"
-	Funcref StimulusGetDefaultParamsSig defaultParamsFunction=$defaultParamsFunctionName
+	String defaultParamsFunctionName=stimulusType+"GetDfltParams"
+	Funcref StimulusGetDfltParamsSig defaultParamsFunction=$defaultParamsFunctionName
 	Wave defaultParams=defaultParamsFunction()
 	
 	return defaultParams
 End
 
-Function /WAVE StimulusGetDefaultParamsSig()
+Function /WAVE StimulusGetDfltParamsSig()
 	// Placeholder function
-	Abort "Internal Error: Attempt to call a StimulusGetDefaultParamsSig function that doesn't exist."
+	Abort "Internal Error: Attempt to call a StimulusGetDfltParamsSig function that doesn't exist."
 End
 
 Function /S StimulusGetSignalTypeFromType(stimulusType)

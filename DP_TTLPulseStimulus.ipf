@@ -8,7 +8,7 @@ Function /WAVE TTLPulseGetParamNames()
 	return paramNames
 End
 
-Function /WAVE TTLPulseGetDefaultParams()
+Function /WAVE TTLPulseGetDfltParams()
 	Variable nParameters=2
 	Make /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]=20		// ms

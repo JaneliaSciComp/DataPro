@@ -173,7 +173,7 @@ Function CSBViewUpdateControlProperties()
 
 	ControlBar /W=CompStimBuilderView 80	// need to adjust for number of rows...
 
-	Wave /T possibleSimpStimTypes=CompStimWaveGetStimTypes()
+	Wave /T possibleSimpStimTypes=SimpStimGetDisplayStimTypes()
 	String listOfPossibleSimpStimTypes=ListFromTextWave(possibleSimpStimTypes)
 	String listOfPossibleSimpStimTypesFU="\""+listOfPossibleSimpStimTypes+"\""
 
