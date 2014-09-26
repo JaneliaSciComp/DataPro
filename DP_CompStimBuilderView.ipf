@@ -1,8 +1,16 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 Function CSBViewConstructor() : Graph
+	// If the view already exists, just raise it
+	if (PanelExists("CompStimBuilderView"))
+		DoWindow /F CompStimBuilderView
+		return 0
+	endif
+
+	// Save, set the DF
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_CompStimBuilder
+
 	WAVE theWave
 	WAVE /T segments
 
@@ -88,12 +96,12 @@ Function CSBViewLayout()
 	for (i=0; i<nSimpStims; i+=1)
 		// The segment label
 		Variable rowYOffset=topRowYOffset+i*rowYSpacing
-	 	String tbName=sprintf1v("segment%dTB",i)
+	 	String tbName=sprintf1v("segment_%d_TB",i)
 	 	String segmentLabel=sprintf1v("Segment %d:",i+1)
 		TitleBox $tbName, win=CompStimBuilderView, pos={segmentLabelXOffset,rowYOffset}, size={segmentLabelHeight,segmentLabelWidth}, frame=0, title=segmentLabel
 		
 		// The segment type popup
-	 	String popupMenuName=sprintf1v("segment%dPM",i)		
+	 	String popupMenuName=sprintf1v("segment_%d_PM",i)		
 		PopupMenu $popupMenuName, win=CompStimBuilderView, pos={typePopupXOffset,rowYOffset-yShimPopup}, bodyWidth=pmWidth
 		PopupMenu $popupMenuName, win=CompStimBuilderView, proc=CSBContSegmentTypePMActuated
 	
@@ -183,7 +191,7 @@ Function CSBViewUpdateControlProperties()
 		String simpStim=CompStimGetSimpStim(compStim,i)
 		String simpStimType=SimpStimGetStimType(simpStim)
 		Variable iSimpStimType=WhichListItem(simpStimType,listOfPossibleSimpStimTypes)
-	 	String popupMenuName=sprintf1v("segment%dPM",i)		
+	 	String popupMenuName=sprintf1v("segment_%d_PM",i)		
 		PopupMenu $popupMenuName, win=CompStimBuilderView, value=#listOfPossibleSimpStimTypesFU
 		PopupMenu $popupMenuName, win=CompStimBuilderView, mode=(iSimpStimType+1)
 	

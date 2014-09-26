@@ -10,7 +10,19 @@ Function CSBContSegmentTypePMActuated(ctrlName,popNum,popStr) : PopupMenuControl
 	Variable popNum
 	String popStr
 	
+	// Extract the segmentIndex from the PM name
+	Variable firstUnderscoreIndex=strsearch(ctrlName,"_",0)  // third arg is search start position
+	Variable secondUnderscoreIndex=strsearch(ctrlName,"_",firstUnderscoreIndex+1)  // third arg is search start position
+	String segmentIndexAsString=ctrlName[firstUnderscoreIndex+1,secondUnderscoreIndex-1]
+	Variable segmentIndex=str2num(segmentIndexAsString)
+
+	// Get the stim type from the menu index
+	Wave /T simpStimTypes=SimpStimGetStimTypes()
+	String simpStimType=simpStimTypes[popNum-1]	// popNum is 1-based
 	
+	// Set the model
+	CSBModelSetSegmentType(segmentIndex,simpStimType)
+	CSBViewUpdate()
 End
 
 Function CSBContParamSVActuated(svStruct) : SetVariableControl
