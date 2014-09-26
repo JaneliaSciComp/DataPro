@@ -56,7 +56,7 @@ Function ChirpOverlayFromParams(w,parameters)
 	Variable initialFrequency=parameters[3]
 	Variable finalFrequency=parameters[4]
 
-	w+=amplitude*unitPulse(x-delay,duration)*amplitude*sin(2*PI*(x-delay)/1000*(0.5*(finalFrequency-initialFrequency)/(duration/1000)*(x-delay)/1000+initialFrequency))
+	w += amplitude*unitPulse(x-delay,duration)*amplitude*sin(2*PI*(x-delay)/1000*(0.5*(finalFrequency-initialFrequency)/(duration/1000)*(x-delay)/1000+initialFrequency))
 End
 
 Function /S ChirpGetSignalType()

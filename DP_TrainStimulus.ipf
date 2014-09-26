@@ -5,9 +5,9 @@ Function /WAVE TrainGetParamNames()
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="delay"
 	parameterNames[1]="duration"
-	parameterNames[2]="pulseRate"
-	parameterNames[3]="pulseDuration"
-	parameterNames[4]="amplitude"
+	parameterNames[2]="amplitude"
+	parameterNames[3]="pulseRate"
+	parameterNames[4]="pulseDuration"
 	return parameterNames
 End
 
@@ -16,9 +16,9 @@ Function /WAVE TrainGetParamDisplayNames()
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="Delay"
 	parameterNames[1]="Duration"
-	parameterNames[2]="Pulse Rate"
-	parameterNames[3]="Pulse Duration"
-	parameterNames[4]="Amplitude"
+	parameterNames[2]="Amplitude"
+	parameterNames[3]="Pulse Rate"
+	parameterNames[4]="Pulse Duration"
 	return parameterNames
 End
 
@@ -27,9 +27,9 @@ Function /WAVE TrainGetDfltParams()
 	Make /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]=20		// ms
 	parametersDefault[1]=100		// ms
-	parametersDefault[2]=100		// Hz
-	parametersDefault[3]=2		// ms
-	parametersDefault[4]=1
+	parametersDefault[2]=1
+	parametersDefault[3]=100		// Hz
+	parametersDefault[4]=2		// ms
 	return parametersDefault
 End
 
@@ -37,10 +37,10 @@ Function /WAVE TrainGetDfltParamsAsStrings()
 	Variable nParameters=5
 	Make /T /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]="20"		// ms
-	parametersDefault[1]="100"		// ms
-	parametersDefault[2]="100"		// Hz
-	parametersDefault[3]="2"		// ms
-	parametersDefault[4]="1"
+	parametersDefault[1]="100"	// ms
+	parametersDefault[2]="1"
+	parametersDefault[3]="100"	// Hz
+	parametersDefault[4]="2"		// ms
 	return parametersDefault
 End
 
@@ -58,9 +58,9 @@ Function TrainOverlayFromParams(w,parameters)
 
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
-	Variable pulseRate=parameters[2]				
-	Variable pulseDuration=parameters[3]
-	Variable amplitude=parameters[4]			
+	Variable amplitude=parameters[2]			
+	Variable pulseRate=parameters[3]				
+	Variable pulseDuration=parameters[4]
 
 	// Somewhat controversial, but in the common case that pulse starts are sample-aligned, and pulse durations are
       	// an integer multiple of dt, this ensures that each pulse is exactly pulseDuration samples long

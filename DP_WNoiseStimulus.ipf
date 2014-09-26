@@ -12,6 +12,18 @@ Function /WAVE WNoiseGetParamNames()
 	return parameterNames
 End
 
+Function /WAVE WNoiseGetParamDisplayNames()
+	Variable nParameters=6
+	Make /T /FREE /N=(nParameters) parameterNames
+	parameterNames[0]="Delay"
+	parameterNames[1]="Duration"
+	parameterNames[2]="Mean"
+	parameterNames[3]="Standard Deviation"
+	parameterNames[4]="Low Cutoff"
+	parameterNames[5]="High Cutoff"	
+	return parameterNames
+End
+
 Function /WAVE WNoiseGetDfltParams()
 	Variable nParameters=6
 	Make /FREE /N=(nParameters) parametersDefault
@@ -24,7 +36,27 @@ Function /WAVE WNoiseGetDfltParams()
 	return parametersDefault
 End
 
+Function /WAVE WNoiseGetDfltParamsAsStrings()
+	Variable nParameters=6
+	Make /T /FREE /N=(nParameters) parametersDefault
+	parametersDefault[0]="10"
+	parametersDefault[1]="50"
+	parametersDefault[2]="0"
+	parametersDefault[3]="1"	
+	parametersDefault[4]="0"	
+	parametersDefault[5]="10"
+	return parametersDefault
+End
+
 Function WNoiseFillFromParams(w,parameters)
+	Wave w
+	Wave parameters
+
+	w = 0
+	WNoiseOverlayFromParams(w,parameters)
+End
+
+Function WNoiseOverlayFromParams(w,parameters)
 	Wave w
 	Wave parameters
 
@@ -111,7 +143,7 @@ Function WNoiseFillFromParams(w,parameters)
 	IFFT /DEST=filteredNoise noiseInFreqDomainFiltered
 	
 	// Window in time
-	w=(mu+filteredNoise[p])*unitPulse(x-delay,duration)
+	w += (mu+filteredNoise[p])*unitPulse(x-delay,duration)
 	
 	//// Check the SD
 	//Variable sd=sqrt(Variance(w,delay,delay+duration))		// 0.5*nDFT*sigma^2

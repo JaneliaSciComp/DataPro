@@ -12,6 +12,18 @@ Function /WAVE PSCGetParamNames()
 	return parameterNames
 End
 
+Function /WAVE PSCGetParamDisplayNames()
+	Variable nParameters=6
+	Make /T /FREE /N=(nParameters) parameterNames
+	parameterNames[0]="Delay"
+	parameterNames[1]="Amplitude"
+	parameterNames[2]="Rise Tau"
+	parameterNames[3]="Decay Tau 1"
+	parameterNames[4]="Decay Tau 2"
+	parameterNames[5]="Weight of Decay 2"
+	return parameterNames
+End
+
 Function /WAVE PSCGetDfltParams()
 	Variable nParameters=6
 	Make /FREE /N=(nParameters) parametersDefault
@@ -21,6 +33,18 @@ Function /WAVE PSCGetDfltParams()
 	parametersDefault[3]=2
 	parametersDefault[4]=10
 	parametersDefault[5]=0.5
+	return parametersDefault
+End
+
+Function /WAVE PSCGetDfltParamsAsStrings()
+	Variable nParameters=6
+	Make /T /FREE /N=(nParameters) parametersDefault
+	parametersDefault[0]="10"
+	parametersDefault[1]="10"
+	parametersDefault[2]="0.2"
+	parametersDefault[3]="2"
+	parametersDefault[4]="10"
+	parametersDefault[5]="0.5"
 	return parametersDefault
 End
 
@@ -39,6 +63,26 @@ Function PSCFillFromParams(w,parameters)
 	// re-scale to have the proper amplitude
 	Wavestats /Q w
 	w=(amplitude/V_max)*w		// want the peak amplitude to be amplitude
+End
+
+Function PSCOverlayFromParams(w,parameters)
+	Wave w
+	Wave parameters
+
+	Variable delay=parameters[0]
+	Variable amplitude=parameters[1]
+	Variable tauRise=parameters[2]		
+	Variable tauDecay1=parameters[3]		
+	Variable tauDecay2=parameters[4]		
+	Variable weightDecay2=parameters[5]		
+
+	Duplicate /FREE w, wTemp	// Want same dt, number of samples	
+	wTemp=unitStep(x-delay)*(-exp(-(x-delay)/tauRise)+(1-weightDecay2)*exp(-(x-delay)/tauDecay1)+weightDecay2*exp(-(x-delay)/tauDecay2))
+	// re-scale to have the proper amplitude
+	Wavestats /Q w
+	wTemp=(amplitude/V_max)*wTemp		// want the peak amplitude to be amplitude
+	// Overlay on the destination wave
+	w+=wTemp
 End
 
 Function /S PSCGetSignalType()
