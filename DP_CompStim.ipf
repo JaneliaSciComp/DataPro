@@ -63,14 +63,21 @@ Function SetSamplesToCompStimBang(w,compStim)
 	
 	Variable nStimuli=CompStimGetNStimuli(compStim)
 	Variable i
+	Variable tEndOfLast=0	// the time at which the previous segment ended
 	for (i=0; i<nStimuli; i+=1)
 		String simpStim=CompStimGetSimpStim(compStim,i)
 		String stimType=SimpStimGetStimType(simpStim)
 		Wave params=SimpStimGetParams(simpStim)
+		Variable delayThis=params[0]
+		Variable durationThis=params[1]
+		params[0] += tEndOfLast		// Modify the delay so that the "delay" spec'ed by user is the delay from the end of the last segment
 		String overlayFunctionName=stimType+"OverlayFromParams"
 		
 		Funcref StimulusOverlayFromParamsSig overlayFunction=$overlayFunctionName
 		overlayFunction(w,params)
+		
+		// Get ready for next segment
+		tEndOfLast += (delayThis+durationThis)
 	endfor
 End
 
@@ -112,6 +119,32 @@ Function /WAVE CompStimSetSegmentType(compStimOriginal,segmentIndex,simpStimType
 	result[segmentIndex]=simpStim
 	
 	return result
+End
+
+Function /WAVE CompStimAddSegment(compStimOriginal)
+	Wave /T compStimOriginal
+
+	String simpStim=SimpStimDefault("Pulse")
+	Duplicate /T /FREE compStimOriginal, result
+	Variable nStimuliOriginal=CompStimGetNStimuli(compStimOriginal)
+	Redimension /N=(nStimuliOriginal+1) result
+	result[nStimuliOriginal]=simpStim
+	
+	return result
+
+End
+
+Function /WAVE CompStimDelSegment(compStimOriginal)
+	Wave /T compStimOriginal
+
+	Duplicate /T /FREE compStimOriginal, result
+	Variable nStimuliOriginal=CompStimGetNStimuli(compStimOriginal)
+	if (nStimuliOriginal>0)
+		Redimension /N=(nStimuliOriginal-1) result
+	endif
+	
+	return result
+
 End
 
 //Function SetWaveToCompStimBang(w,dt,durationWanted,compStim)

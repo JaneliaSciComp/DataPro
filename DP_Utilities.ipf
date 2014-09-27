@@ -1081,6 +1081,18 @@ Function /S ListFromTextWave(textWave)
 	return result
 End
 
+Function /WAVE TextWaveFromList(list)
+	String list
+	
+	Variable n=ItemsInList(list)
+	Make /T /FREE /N=(n) result
+	Variable i
+	for (i=1; i<n; i+=1)
+		result[i]=StringFromList(i,list)
+	endfor
+	return result
+End
+
 Function SetSVPosition(windowName,svName,x,y,labelWidth,bodyWidth,height)
 	// SetVariable sizing is a pain b/c IgorPro doesn't let you set the label width and the field width independently.
 	// This essentially positions the SV at (x,y), with effective size (labelWidth+bodyWidth,height).  The label is right-justified within the field, like it or not.
@@ -1114,3 +1126,17 @@ Function GetControlRightX(winderName,ctrlName)
 	ControlInfo /W=$winderName $ctrlName
 	return V_left+V_Width
 End
+
+Function /WAVE GetControlBounds(windowName,controlName)
+	String windowName
+	String controlName
+	
+	Make /FREE /N=(4) result
+	ControlInfo /W=$windowName $controlName
+	result[0]=V_left
+	result[1]=V_top
+	result[2]=V_left+V_Width
+	result[3]=V_top+V_Height
+	return result
+End
+

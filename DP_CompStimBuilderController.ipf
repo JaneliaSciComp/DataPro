@@ -105,3 +105,25 @@ Function CSBContSweepDtOrTChngd()
 	CSBViewUpdate()
 End
 
+Function CSBContAddSegButtonPressed(bStruct) : ButtonControl
+	STRUCT WMButtonAction &bStruct
+	// Check that this is really a button-up on the button
+	if (bStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif
+	
+	CSBModelAddSeg()
+	CSBViewUpdate()	
+End
+
+Function CSBContDelSegButtonPressed(bStruct) : ButtonControl
+	STRUCT WMButtonAction &bStruct
+	// Check that this is really a button-up on the button
+	if (bStruct.eventCode!=2)
+		return 0							// we only handle mouse up in control
+	endif
+
+	CSBModelDelSeg()
+	CSBViewUpdate()		
+End
+

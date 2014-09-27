@@ -1,50 +1,46 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 Function /WAVE WNoiseGetParamNames()
-	Variable nParameters=6
+	Variable nParameters=5
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="delay"
 	parameterNames[1]="duration"
-	parameterNames[2]="mu"
-	parameterNames[3]="sigma"
-	parameterNames[4]="fLow"
-	parameterNames[5]="fHigh"	
+	parameterNames[2]="amplitude"
+	parameterNames[3]="fLow"
+	parameterNames[4]="fHigh"	
 	return parameterNames
 End
 
 Function /WAVE WNoiseGetParamDisplayNames()
-	Variable nParameters=6
+	Variable nParameters=5
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="Delay"
 	parameterNames[1]="Duration"
-	parameterNames[2]="Mean"
-	parameterNames[3]="Standard Deviation"
-	parameterNames[4]="Low Cutoff"
-	parameterNames[5]="High Cutoff"	
+	parameterNames[2]="Amplitude"
+	parameterNames[3]="Low Cutoff"
+	parameterNames[4]="High Cutoff"	
 	return parameterNames
 End
 
 Function /WAVE WNoiseGetDfltParams()
-	Variable nParameters=6
+	Variable nParameters=5
 	Make /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]=10
 	parametersDefault[1]=50
-	parametersDefault[2]=0
-	parametersDefault[3]=1	
-	parametersDefault[4]=0	
-	parametersDefault[5]=10
+	parametersDefault[2]=1	
+	parametersDefault[3]=0	
+	parametersDefault[4]=10
 	return parametersDefault
 End
 
 Function /WAVE WNoiseGetDfltParamsAsStrings()
-	Variable nParameters=6
+	Variable nParameters=5
 	Make /T /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]="10"
 	parametersDefault[1]="50"
-	parametersDefault[2]="0"
-	parametersDefault[3]="1"	
-	parametersDefault[4]="0"	
-	parametersDefault[5]="10"
+	parametersDefault[2]="1"	
+	parametersDefault[3]="0"	
+	parametersDefault[4]="10"
 	return parametersDefault
 End
 
@@ -62,10 +58,9 @@ Function WNoiseOverlayFromParams(w,parameters)
 
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
-	Variable mu=parameters[2]
-	Variable sigma=parameters[3]
-	Variable fLow=parameters[4]
-	Variable fHigh=parameters[5]
+	Variable amplitude=parameters[2]	// the SD of the filtered noise
+	Variable fLow=parameters[3]
+	Variable fHigh=parameters[4]
 	
 	//// Make a noise signal, with length longer than w and a power of 2
 	Variable nDFT=2^ceil(ln(numpnts(w))/ln(2))	
@@ -78,12 +73,12 @@ Function WNoiseOverlayFromParams(w,parameters)
 	// Real
 	Make /FREE /N=(nFreqDomain) reNoiseInFreqDomain
 	SetScale /P x, 0, df, "kHz", reNoiseInFreqDomain
-	reNoiseInFreqDomain=gnoise(sigma)*sqrt(nDFT/2)
+	reNoiseInFreqDomain=gnoise(amplitude)*sqrt(nDFT/2)
 	reNoiseInFreqDomain[0]=0		// no DC
 	// Imag
 	Make /FREE /N=(nFreqDomain) imNoiseInFreqDomain
 	SetScale /P x, 0, df, "kHz", imNoiseInFreqDomain
-	imNoiseInFreqDomain=gnoise(sigma)*sqrt(nDFT/2)
+	imNoiseInFreqDomain=gnoise(amplitude)*sqrt(nDFT/2)
 	imNoiseInFreqDomain[0]=0		// no DC
 	imNoiseInFreqDomain[nFreqDomain-1]=0	// need this
 	
@@ -91,7 +86,7 @@ Function WNoiseOverlayFromParams(w,parameters)
 	// Should get same signal, modulo randomness (!)
 	//Make /FREE /N=(nDFT) noise
 	//CopyScales /P w, noise
-	//noise=gnoise(sigma)		// generate white noise
+	//noise=gnoise(amplitude)		// generate white noise
 	//// Convert the noise to its frequency-domain representation
 	//Make /FREE /N=(nDFT) noiseInFreqDomain
 	//FFT /DEST=noiseInFreqDomain noise	 // x axis should be in units of kHz
@@ -99,12 +94,12 @@ Function WNoiseOverlayFromParams(w,parameters)
 	//imNoiseInFreqDomain=imag(noiseInFreqDomain[p])
 		
 //	//// Out of curiousity, what is the the mean squared amplitude of those components?
-//	Variable vr=Variance(reNoiseInFreqDomain)		// 0.5*nDFT*sigma^2
+//	Variable vr=Variance(reNoiseInFreqDomain)		// 0.5*nDFT*amplitude^2
 //	Printf "%g\r", vr
-//	Variable vi=Variance(imNoiseInFreqDomain)		// 0.5*nDFT*sigma^2
+//	Variable vi=Variance(imNoiseInFreqDomain)		// 0.5*nDFT*amplitude^2
 //	Printf "%g\r", vi
 	
-	// Compute the scaling factor to give the specified sigma
+	// Compute the scaling factor to give the specified amplitude
 	Variable bandwidth=max(0,fHigh-fLow)
 	//Variable dt=deltax(w)		// ms
 	Variable nyquistFreq=0.5/dt		// kHz
@@ -143,10 +138,10 @@ Function WNoiseOverlayFromParams(w,parameters)
 	IFFT /DEST=filteredNoise noiseInFreqDomainFiltered
 	
 	// Window in time
-	w += (mu+filteredNoise[p])*unitPulse(x-delay,duration)
+	w += (filteredNoise[p])*unitPulse(x-delay,duration)
 	
 	//// Check the SD
-	//Variable sd=sqrt(Variance(w,delay,delay+duration))		// 0.5*nDFT*sigma^2
+	//Variable sd=sqrt(Variance(w,delay,delay+duration))		// 0.5*nDFT*amplitude^2
 	//Printf "Final SD: %g\r", sd
 End
 

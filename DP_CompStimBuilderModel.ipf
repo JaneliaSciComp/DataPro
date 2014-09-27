@@ -100,7 +100,7 @@ End
 Function CSBModelExportToSweeper(builderType,waveNameString)
 	String builderType
 	String waveNameString
-	// Send a message to the sweeper with the wave
+		// Send a message to the sweeper with the wave
 	String savedDF=GetDataFolder(1)
 	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)	
 	SetDataFolder $dataFolderName
@@ -140,3 +140,32 @@ Function CSBModelSweeperDtOrTChanged()
 	SetDataFolder savedDF		
 End
 
+Function CSBModelAddSeg()
+	// Save, set the DF
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_CompStimBuilder
+	
+	WAVE theWave
+
+	CompStimWaveAddSegment(theWave)
+
+	// Restore the DF
+	SetDataFolder savedDF		
+End
+
+Function CSBModelDelSeg()
+	// Save, set the DF
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_CompStimBuilder
+	
+	WAVE theWave
+
+	Variable nStimuliOriginal=CompStimWaveGetNStimuli(theWave)
+	// Don't delete if only one left
+	if (nStimuliOriginal>1)
+		CompStimWaveDelSegment(theWave)
+	endif
+
+	// Restore the DF
+	SetDataFolder savedDF		
+End

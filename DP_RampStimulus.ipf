@@ -23,7 +23,7 @@ Function /WAVE RampGetDfltParams()
 	Make /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]=50
 	parametersDefault[1]=100
-	parametersDefault[2]=10
+	parametersDefault[2]=1
 	return parametersDefault
 End
 
@@ -32,7 +32,7 @@ Function /WAVE RampGetDfltParamsAsStrings()
 	Make /T /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]="50"
 	parametersDefault[1]="100"
-	parametersDefault[2]="10"
+	parametersDefault[2]="1"
 	return parametersDefault
 End
 

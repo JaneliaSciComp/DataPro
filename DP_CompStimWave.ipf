@@ -125,6 +125,22 @@ Function CompStimWaveSetSegmentType(w,segmentIndex,simpStimType)
 	CompStimWaveSetCompStim(w,compStim)	
 End
 
+Function CompStimWaveAddSegment(w)
+	Wave w
+	
+	Wave /T compStimOriginal=CompStimWaveGetCompStim(w)
+	Wave /T compStim=CompStimAddSegment(compStimOriginal)
+	CompStimWaveSetCompStim(w,compStim)
+End
+
+Function CompStimWaveDelSegment(w)
+	Wave w
+	
+	Wave /T compStimOriginal=CompStimWaveGetCompStim(w)
+	Wave /T compStim=CompStimDelSegment(compStimOriginal)
+	CompStimWaveSetCompStim(w,compStim)
+End
+
 
 //
 // Static methods

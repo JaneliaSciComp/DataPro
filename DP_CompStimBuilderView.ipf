@@ -12,12 +12,11 @@ Function CSBViewConstructor() : Graph
 	SetDataFolder root:DP_CompStimBuilder
 
 	WAVE theWave
-	WAVE /T segments
 
 	// Window position and dimension, in pixels
 	Variable xOffset=105
 	Variable yOffset=200
-	Variable width=900
+	Variable width=1400
 	Variable height=400
 
 	// Convert dimensions to points
@@ -32,11 +31,11 @@ Function CSBViewConstructor() : Graph
 	Label /W=CompStimBuilderView /Z left "Signal (pure)"
 	ModifyGraph /W=CompStimBuilderView /Z tickUnit(bottom)=1
 	ModifyGraph /W=CompStimBuilderView /Z tickUnit(left)=1
-	ControlBar /W=CompStimBuilderView 80
+	//ControlBar /W=CompStimBuilderView 80
 
 	// Control positions and dimension, in pixels
-	Variable leftButtonsXOffset=695
-	Variable rightButtonsXOffset=800
+	Variable leftButtonsXOffset=width-205
+	Variable rightButtonsXOffset=width-100
 	Variable topButtonsYOffset=10
 	Variable bottomButtonsYOffset=45
 	Variable buttonWidth=90
@@ -59,6 +58,7 @@ Function CSBViewUpdate()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_CompStimBuilder
 	
+	CSBViewUpdateWhichControlsExist()
 	CSBViewLayout()
 	CSBViewUpdateControlProperties()
 	
@@ -66,31 +66,101 @@ Function CSBViewUpdate()
 End
 
 
+Function CSBViewUpdateWhichControlsExist()
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_CompStimBuilder
+
+	WAVE theWave
+
+	// Delete all existing controls, except the fixed ones
+	String listOfControlNames=ControlNameList("CompStimBuilderView")
+	Wave /T waveOfControlNames=TextWaveFromList(listOfControlNames)
+	Variable nControls=numpnts(waveOfControlNames)
+	Variable i
+	for (i=0; i<nControls; i+=1)
+		String thisControlName=waveOfControlNames[i]
+		if ( AreStringsEqual(thisControlName, "addSegmentButton") || AreStringsEqual(thisControlName, "deleteSegmentButton") || AreStringsEqual(thisControlName, "saveAsDACButton") || AreStringsEqual(thisControlName, "importButton") )
+			// do nothing
+		else
+			KillControl /W=CompStimBuilderView $(waveOfControlNames[i])
+		endif
+	endfor
+
+	// Create the proper controls
+	Wave /T compStim=CompStimWaveGetCompStim(theWave)
+	Variable nSimpStims=CompStimGetNStimuli(compStim)
+
+	for (i=0; i<nSimpStims; i+=1)
+		// The segment label
+	 	String tbName=sprintf1v("segment_%d_TB",i)
+	 	String segmentLabel=sprintf1v("Segment %d:",i+1)
+		TitleBox $tbName, win=CompStimBuilderView, frame=0, title=segmentLabel
+		
+		// The segment type popup
+	 	String popupMenuName=sprintf1v("segment_%d_PM",i)		
+		PopupMenu $popupMenuName, win=CompStimBuilderView, proc=CSBContSegmentTypePMActuated
+	
+		// The row of SetVariables, one per parameter
+		String simpStim=CompStimGetSimpStim(compStim,i)
+		String simpStimType=SimpStimGetStimType(simpStim)
+		
+		// Get the param names for this segment type
+		String getParamNamesFuncName=simpStimType+"GetParamNames"
+		Funcref SSTGetParamNamesFallback getParamNames=$getParamNamesFuncName
+		Wave /T paramNames=getParamNames()
+		// Get the display param names for this segment type
+		String getParamDisplayNamesFuncName=simpStimType+"GetParamDisplayNames"
+		Funcref SSTGetParamDisplayNamesFallback getParamDisplayNames=$getParamDisplayNamesFuncName
+		Wave /T paramDisplayNames=getParamDisplayNames()
+		String segmentParamsList=SimpStimGetParamList(simpStim)
+		Variable nParams=numpnts(paramNames)
+		Variable j
+		for (j=0; j<nParams; j+=1)
+			String paramName=paramNames[j]
+			String paramDisplayName=paramDisplayNames[j]
+			String paramLabel=sprintf1s("%s:",paramDisplayName)
+			String svName=sprintf2vs("segment_%d_%s_SV",i,paramName)
+			// Update the control
+			SetVariable $svName, win=CompStimBuilderView, title=paramLabel, limits={-inf,+inf,1}, proc=CSBContParamSVActuated
+		endfor
+	endfor	
+	
+	SetDataFolder savedDF	
+End
+
 Function CSBViewLayout()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_CompStimBuilder
 
 	WAVE theWave
 
-	Variable segmentLabelWidth=45
-	Variable segmentLabelHeight=15
+	Variable segmentLabelSpaceWidth=50
+	//Variable segmentLabelHeight=15
 	Variable svLabelApproxWidth=60
-	Variable svBodyWidth=60
-	Variable svApproxWidth=svLabelApproxWidth+svBodyWidth
-	Variable svHeight=17
-	Variable pmWidth=70
-	Variable segmentLabelXOffset=10
-	Variable typePopupXOffset=100
-	Variable leftSVXOffset=160
-	Variable widthBetweenSVs=10
+	Variable svBodyWidth=40
+	//Variable svApproxWidth=svLabelApproxWidth+svBodyWidth
+	Variable pmWidth=100
+	Variable leftOfSegmentLabelSpace=10
+	Variable segmentLabelRightX=leftOfSegmentLabelSpace+segmentLabelSpaceWidth
+	Variable segmentLabelToPopupWidth=5
+	Variable typePopupXOffset=segmentLabelRightX+segmentLabelToPopupWidth
+	Variable popupToLeftSVWidth=15
+	Variable leftSVXOffset=typePopupXOffset+pmWidth+popupToLeftSVWidth
+	Variable widthBetweenSVs=15
 	Variable topRowYOffset=12
-	Variable rowYSpacing=30
-	Variable yShimPopup=3	
+	Variable rowHeight=25
+	Variable heightBetweenRows=5
+	Variable rowYSpacing=rowHeight+heightBetweenRows
+	Variable yShimPopup= -4
+	Variable yShimSV=-2	
 
 	Wave /T compStim=CompStimWaveGetCompStim(theWave)
 	Variable nSimpStims=CompStimGetNStimuli(compStim)
 
-	ControlBar /W=CompStimBuilderView 80	// need to adjust for number of rows...
+	Variable minControlBarHeight=80
+	Variable controlBarHeightRaw=topRowYOffset+nSimpStims*rowheight+(nSimpStims-1)*heightBetweenRows
+	Variable controlBarHeight=max(minControlBarHeight,controlBarHeightRaw)
+	ControlBar /W=CompStimBuilderView controlBarHeight
 	
 	Variable i
 	for (i=0; i<nSimpStims; i+=1)
@@ -98,12 +168,15 @@ Function CSBViewLayout()
 		Variable rowYOffset=topRowYOffset+i*rowYSpacing
 	 	String tbName=sprintf1v("segment_%d_TB",i)
 	 	String segmentLabel=sprintf1v("Segment %d:",i+1)
-		TitleBox $tbName, win=CompStimBuilderView, pos={segmentLabelXOffset,rowYOffset}, size={segmentLabelHeight,segmentLabelWidth}, frame=0, title=segmentLabel
+		ControlUpdate /W=CompStimBuilderView $tbName
+		Variable segmentLabelWidth=GetControlWidth("CompStimBuilderView", tbName)	 	
+		TitleBox $tbName, win=CompStimBuilderView, pos={segmentLabelRightX-segmentLabelWidth,rowYOffset}  //, size={segmentLabelHeight,segmentLabelSpaceWidth}
 		
 		// The segment type popup
 	 	String popupMenuName=sprintf1v("segment_%d_PM",i)		
-		PopupMenu $popupMenuName, win=CompStimBuilderView, pos={typePopupXOffset,rowYOffset-yShimPopup}, bodyWidth=pmWidth
-		PopupMenu $popupMenuName, win=CompStimBuilderView, proc=CSBContSegmentTypePMActuated
+		PopupMenu $popupMenuName, win=CompStimBuilderView, bodyWidth=pmWidth
+		ControlUpdate /W=CompStimBuilderView $popupMenuName
+		PopupMenu $popupMenuName, win=CompStimBuilderView, pos={typePopupXOffset,rowYOffset+yShimPopup}
 	
 		// The row of SetVariables, one per parameter
 		String simpStim=CompStimGetSimpStim(compStim,i)
@@ -123,14 +196,33 @@ Function CSBViewLayout()
 		Variable lastSVRightX=leftSVXOffset-widthBetweenSVs
 		for (j=0; j<nParams; j+=1)
 			String paramName=paramNames[j]
-			String paramDisplayName=paramDisplayNames[j]
+			//String paramDisplayName=paramDisplayNames[j]
 			// Get the parameter value
 			Variable value=NumberByKey(paramName,segmentParamsList)
 			String svName=sprintf2vs("segment_%d_%s_SV",i,paramName)
 			// Update the control
 			Variable svXOffset=lastSVRightX+widthBetweenSVs
-			SetVariable $svName, win=CompStimBuilderView, pos={svXOffset,rowYOffset}, size={svApproxWidth,svHeight}, bodyWidth=svBodyWidth, title=paramDisplayName
-			SetVariable $svName, win=CompStimBuilderView, limits={-inf,+inf,1}, proc=CSBContParamSVActuated
+			Printf "%s desired left: %d\r", svName, svXOffset
+
+			//SetVariable $svName, win=CompStimBuilderView, pos={svXOffset,rowYOffset}, size={svApproxWidth,0}		// SV height is ignored
+			//SetVariable $svName, win=CompStimBuilderView, size={svApproxWidth,0}		// SV height is ignored
+			//ControlUpdate /W=CompStimBuilderView $svName
+
+			Wave bounds=GetControlBounds("CompStimBuilderView",svName)
+			Printf "bounds: left=%d, top=%d, right=%d, bottom=%d\r", bounds[0], bounds[1], bounds[2], bounds[3]		
+			
+			SetVariable $svName, win=CompStimBuilderView, bodyWidth=svBodyWidth	
+			ControlUpdate /W=CompStimBuilderView $svName
+
+			Wave bounds2=GetControlBounds("CompStimBuilderView",svName)
+			Printf "bounds: left=%d, top=%d, right=%d, bottom=%d\r", bounds2[0], bounds2[1], bounds2[2], bounds2[3]
+
+			SetVariable $svName, win=CompStimBuilderView, pos={svXOffset,rowYOffset+yShimSV}   
+			ControlUpdate /W=CompStimBuilderView $svName
+
+			Wave bounds3=GetControlBounds("CompStimBuilderView",svName)
+			Printf "bounds: left=%d, top=%d, right=%d, bottom=%d\r", bounds3[0], bounds3[1], bounds3[2], bounds3[3]
+
 			// Determine the x-coord of the right side of the SV 
 			lastSVRightX=GetControlRightX("CompStimBuilderView",svName)
 		endfor
@@ -171,19 +263,11 @@ Function CSBViewUpdateControlProperties()
 	Wave /T compStim=CompStimWaveGetCompStim(theWave)
 	Variable nSimpStims=CompStimGetNStimuli(compStim)
 
-//	Variable segmentLabelXOffset=10
-//	Variable typePopupXOffset=100
-//	Variable leftSVXOffset=150
-//	Variable svXSpacing=160
-//	Variable topRowYOffset=12
-//	Variable rowYSpacing=30
-//	Variable yShimPopup=3
-
-	ControlBar /W=CompStimBuilderView 80	// need to adjust for number of rows...
-
-	Wave /T possibleSimpStimTypes=SimpStimGetDisplayStimTypes()
+	Wave /T possibleSimpStimTypes=SimpStimGetStimTypes()
 	String listOfPossibleSimpStimTypes=ListFromTextWave(possibleSimpStimTypes)
-	String listOfPossibleSimpStimTypesFU="\""+listOfPossibleSimpStimTypes+"\""
+	Wave /T possibleDisplaySimpStimTypes=SimpStimGetDisplayStimTypes()
+	String listOfPossibleDispSimpStimTypes=ListFromTextWave(possibleDisplaySimpStimTypes)
+	String listOfDispSimpStimTypesFU="\""+listOfPossibleDispSimpStimTypes+"\""
 
 	Variable i
 	for (i=0; i<nSimpStims; i+=1)
@@ -192,7 +276,7 @@ Function CSBViewUpdateControlProperties()
 		String simpStimType=SimpStimGetStimType(simpStim)
 		Variable iSimpStimType=WhichListItem(simpStimType,listOfPossibleSimpStimTypes)
 	 	String popupMenuName=sprintf1v("segment_%d_PM",i)		
-		PopupMenu $popupMenuName, win=CompStimBuilderView, value=#listOfPossibleSimpStimTypesFU
+		PopupMenu $popupMenuName, win=CompStimBuilderView, value=#listOfDispSimpStimTypesFU
 		PopupMenu $popupMenuName, win=CompStimBuilderView, mode=(iSimpStimType+1)
 	
 		// Get the param names for this segment type
