@@ -422,17 +422,6 @@ Function SweeperControllerAddTTLWave(w,waveNameString)
 	OutputViewerContSweprWavsChngd()
 End
 
-Function SweeperControllerAddStimWave(w,waveNameString)
-	Wave w
-	String waveNameString
-	if (IsEmptyString(waveNameString))
-		return -1		// have to return something
-	endif
-	SweeperAddStimWave(w,waveNameString)
-	SweeperViewSweeperChanged()
-	OutputViewerContSweprWavsChngd()
-End
-
 Function SweepControllerDigitizerChanged()
 	// Used to notify the SweeperController that the Digitizer model has changed.
 	SweeperViewDigitizerChanged()

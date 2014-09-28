@@ -26,12 +26,12 @@ Function OutputViewerViewUpdate()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_OutputViewer
 	
-	SVAR stimWaveNames
+	SVAR dacWaveNames
 	SVAR ttlWaveNames
 	SVAR currentWaveName
 	NVAR currentWaveIsDAC	
 	
-	Variable nWavesDAC=ItemsInList(stimWaveNames)
+	Variable nWavesDAC=ItemsInList(dacWaveNames)
 	Variable nWavesTTL=ItemsInList(ttlWaveNames)
 	Variable nWaves=nWavesDAC+nWavesTTL
 	String popupItems=OutputViewerModelGetPopupItems()
