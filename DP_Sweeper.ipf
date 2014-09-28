@@ -384,7 +384,7 @@ Function /WAVE SweeperGetMultiplexedTTLOutput()
 				Duplicate /FREE /O thisTTLWave multiplexedTTL
 				multiplexedTTL=SamplerGetTTLBackground()	// Set all values to the background settings
 			endif
-			multiplexedTTL= (multiplexedTTL & ~(2^i)) + thisTTLWave*(2^i)		// Overwrite bit i with values from thisTTLWave
+			multiplexedTTL= (multiplexedTTL & ~(2^i)) + (thisTTLWave>=0.5)*(2^i)		// Overwrite bit i with values from binarized thisTTLWave
 		endif
 	endfor
 
@@ -1484,7 +1484,9 @@ Function SweeperUpdateBuiltinPulseWave()
 //	resampleBuiltinPulseBang(builtinPulse,dt,totalDuration)	
 		
 	Variable dt=SweeperGetDt()
-	StimulusReset(builtinPulse,dt,totalDuration,{builtinPulseDuration,builtinPulseAmplitude})	
+	//StimulusReset(builtinPulse,dt,totalDuration,{builtinPulseDuration,builtinPulseAmplitude})	
+	Wave /T compStim=CompStimFromSimpStim(SimpStim("BuiltinPulse",{num2str(builtinPulseDuration),num2str(builtinPulseAmplitude)}))
+	CompStimWaveSet(builtinPulse,dt,totalDuration,compStim)			
 		
 	// Restore the data folder
 	SetDataFolder savedDF
@@ -1500,15 +1502,17 @@ Function SweeperUpdateBuiltinTTLPulse()
 	WAVE builtinTTLPulse
 	//Duplicate /O BuiltinPulseBoolean(dt,totalDuration,builtinTTLPulseDelay,builtinTTLPulseDuration) builtinTTLPulse
 	
-	// Update the wave note
-	Note /K builtinTTLPulse
-	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"WAVETYPE","BuiltinTTLPulse")
-	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"TIME",time())
-	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"delay",num2str(builtinTTLPulseDelay))
-	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"duration",num2str(builtinTTLPulseDuration))
+//	// Update the wave note
+//	Note /K builtinTTLPulse
+//	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"WAVETYPE","BuiltinTTLPulse")
+//	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"TIME",time())
+//	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"delay",num2str(builtinTTLPulseDelay))
+//	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"duration",num2str(builtinTTLPulseDuration))
 	
 	// Update the wave proper, based in part on the wave note
-	resampleBuiltinTTLPulseBang(builtinTTLPulse,dt,totalDuration)
+	//resampleBuiltinTTLPulseBang(builtinTTLPulse,dt,totalDuration)
+	Wave /T compStim=CompStimFromSimpStim(SimpStim("TTLPulse",{num2str(builtinTTLPulseDelay),num2str(builtinTTLPulseDuration)}))
+	CompStimWaveSet(builtinTTLPulse,dt,totalDuration,compStim)			
 	
 	SetDataFolder savedDF
 End
@@ -1564,7 +1568,7 @@ Function SweeperAddHistoryForSweep(sweepIndex,iSweepWithinTrial)
 			history[iRow][ 5]=DigitizerModelGetDACModeName(iChan)
 			history[iRow][ 6]=DigitizerModelGetDACUnitsString(iChan)			
 			history[iRow][ 7]=dacWaveName(iChan)
-			String waveNote=SweeperGetDACWaveNoteByName(dacWaveName(iChan))
+			String waveNote=SweeperGetStimWaveNoteByName(dacWaveName(iChan))
 			String builderName=StringByKey("WAVETYPE", waveNote, "=", "\r", 1)  // 1 means match case
 			history[iRow][ 8]=builderName		// builder name
 			history[iRow][ 9]=extractBuilderParamsString(waveNote)	//builder parameters
@@ -1587,7 +1591,7 @@ Function SweeperAddHistoryForSweep(sweepIndex,iSweepWithinTrial)
 			history[iRow][ 5]=""
 			history[iRow][ 6]=""			
 			history[iRow][ 7]=ttlOutputWaveName(iChan)
-			waveNote=SweeperGetTTLWaveNoteByName(ttlOutputWaveName(iChan))
+			waveNote=SweeperGetStimWaveNoteByName(ttlOutputWaveName(iChan))
 			builderName=StringByKey("WAVETYPE", waveNote, "=", "\r", 1)  // 1 means match case
 			history[iRow][ 8]=builderName		// builder name
 			history[iRow][ 9]=extractBuilderParamsString(waveNote)	//builder parameters

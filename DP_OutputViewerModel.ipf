@@ -21,10 +21,10 @@ Function OutputViewerModelConstructor()
 	NewDataFolder /S root:DP_OutputViewer
 				
 	// Create instance vars
-	String /G dacWaveNames=""
-	String /G ttlWaveNames=""
+	String /G stimWaveNames=""
+	//String /G ttlWaveNames=""
 	String /G currentWaveName=""
-	Variable /G currentWaveIsDAC=1	// not used if currentWaveName is empty
+	//Variable /G currentWaveIsDAC=1	// not used if currentWaveName is empty
 
 	// Restore the original data folder
 	SetDataFolder savedDF
@@ -41,22 +41,22 @@ Function OutputViewerModelSweprWavsChngd()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_OutputViewer
 
-	SVAR dacWaveNames
-	SVAR ttlWaveNames
+	SVAR stimWaveNames
+	//SVAR ttlWaveNames
 	SVAR currentWaveName
-	NVAR currentWaveIsDAC	
+	//NVAR currentWaveIsDAC	
 
 	// Update the list of output wave names
-	dacWaveNames=SweeperGetDACWaveNames()
+	stimWaveNames=SweeperGetStimWaveNames()
 	ttlWaveNames=SweeperGetTTLWaveNames()
 
 	// If the current wave name is no longer valid, deal with that
-	Variable nWavesDAC=ItemsInList(dacWaveNames)
-	Variable nWavesTTL=ItemsInList(ttlWaveNames)
+	Variable nWavesDAC=ItemsInList(stimWaveNames)
+	//Variable nWavesTTL=ItemsInList(ttlWaveNames)
 	//Variable nWaves=nWavesDAC+nWavesTTL
 	if (!IsEmptyString(currentWaveName))
 		if (currentWaveIsDAC)
-			if (IsItemInList(currentWaveName,dacWaveNames))
+			if (IsItemInList(currentWaveName,stimWaveNames))
 				// Do nothing, all is well
 			else
 				currentWaveName=""
@@ -75,7 +75,7 @@ Function OutputViewerModelSweprWavsChngd()
 	// If there is no current wave at this point, pick the first available one, if possible
 	if ( IsEmptyString(currentWaveName) )
 		if (nWavesDAC>0)
-			currentWaveName=StringFromList(0,dacWaveNames)
+			currentWaveName=StringFromList(0,stimWaveNames)
 			currentWaveIsDAC=1
 		elseif (nWavesTTL>0)
 			currentWaveName=StringFromList(0,ttlWaveNames)
@@ -88,14 +88,14 @@ Function OutputViewerModelSweprWavsChngd()
 End
 
 Function /S OutputViewerModelGetPopupItems()
-	// A method to synthesize the popup items from the dacWaveNames and the ttlWaveNames.
+	// A method to synthesize the popup items from the stimWaveNames and the ttlWaveNames.
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_OutputViewer
 	
-	SVAR dacWaveNames
+	SVAR stimWaveNames
 	SVAR ttlWaveNames
 	
-	String popupItems=fancyWaveList(dacWaveNames,ttlWaveNames)
+	String popupItems=fancyWaveList(stimWaveNames,ttlWaveNames)
 	if (ItemsInList(popupItems)==0)
 		popupItems="(none)"
 	endif

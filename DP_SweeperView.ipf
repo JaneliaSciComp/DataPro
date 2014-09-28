@@ -272,7 +272,7 @@ Function SweeperViewUpdate()
 	endfor
 
 	// Sync all the DAC-related controls
-	String listOfDACWaveNames=SweeperGetDACWaveNames()
+	String listOfDACWaveNames=SweeperGetStimWaveNames()
 	if (IsListEmpty(listOfDACWaveNames))
 		listOfDACWaveNames="(none)"
 	endif
@@ -296,7 +296,7 @@ Function SweeperViewUpdate()
 	endfor
 	
 	// Sync all the TTL-related controls
-	String listOfTTLWaveNames=SweeperGetTTLWaveNames()
+	String listOfTTLWaveNames=SweeperGetStimWaveNames()
 	if (IsListEmpty(listOfTTLWaveNames))
 		listOfTTLWaveNames="(none)"
 	endif
