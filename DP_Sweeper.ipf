@@ -93,21 +93,25 @@ Function SweeperConstructor()
 	history[0][12]="Channel Gain Units"
 	
 	// Initialize the BuiltinPulse wave
-	SetDataFolder dacWaves
+	SetDataFolder stimWaves
+	String builtinPulseSimpStim=SimpStim("BuiltinPulse",{num2str(builtinPulseDuration),num2str(builtinPulseAmplitude)})
+	Wave /T compStim=CompStimFromSimpStim(builtinPulseSimpStim)
 	Make /O builtinPulse
-	StimulusInitialize(builtinPulse,dtWanted,totalDuration,"BuiltinPulse",{builtinPulseDuration,builtinPulseAmplitude})
+	CompStimWaveSet(builtinPulse,dtWanted,totalDuration,compStim)		// makes builtinPulse a CompStimWave
 	ReplaceStringByKeyInWaveNote(builtinPulse,"STEP",num2str(builtinPulseAmplitude))
 	SetDataFolder root:DP_Sweeper
 	//SweeperUpdateBuiltinPulseWave()
 
 	// Parameters of builtinTTLPulse
 	Variable /G builtinTTLPulseDelay=50	
-	Variable /G builtinTTLPulseDuration=0.1	// ms
+	Variable /G builtinTTLPulseDuration=0.1		// ms
 
 	// Initialize the built-in TTL pulse wave
-	SetDataFolder ttlWaves
+	SetDataFolder stimWaves
+	String builtinTTLPulseSimpStim=SimpStim("TTLPulse",{num2str(builtinTTLPulseDelay),num2str(builtinTTLPulseDuration)})
+	Wave /T ttlCompStim=CompStimFromSimpStim(builtinTTLPulseSimpStim)
 	Make /O builtinTTLPulse
-	StimulusInitialize(builtinTTLPulse,dtWanted,totalDuration,"TTLPulse",{builtinTTLPulseDelay,builtinTTLPulseDuration})
+	CompStimWaveSet(builtinTTLPulse,dtWanted,totalDuration,ttlCompStim)		// makes builtinPulse a CompStimWave
 	SetDataFolder root:DP_Sweeper
 	//SweeperUpdateBuiltinTTLPulse()
 
