@@ -154,7 +154,7 @@ End
 Function /WAVE SimpStimGetDefParamsAsStrings(stimType)
 	String stimType
 
-	String defaultParamsFunctionName=stimType+"GetDfltParamsAsStrings"
+	String defaultParamsFunctionName=stimType+"GetDfltParamsAsStr"
 	Funcref SimpStimGetDefParamsAsStrsSig defaultParamsFunction=$defaultParamsFunctionName
 	Wave defaultParams=defaultParamsFunction()
 	
@@ -182,11 +182,11 @@ Function /S SimpStimGetSignalTypeSig()
 End
 
 Function /WAVE SimpStimGetStimTypes()
-	Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "WNoise", "PSC" }
+	Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "WNoise", "PSC", "BuiltinPulse" }
 	return result
 End
 
 Function /WAVE SimpStimGetDisplayStimTypes()
-	Make /T /FREE result={"Pulse", "Train", "Multiple Trains", "Ramp", "Sine", "Chirp", "White Noise", "PSC" }
+	Make /T /FREE result={"Pulse", "Train", "Multiple Trains", "Ramp", "Sine", "Chirp", "White Noise", "PSC", "Built-in Pulse" }
 	return result
 End

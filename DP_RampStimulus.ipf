@@ -9,7 +9,7 @@ Function /WAVE RampGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE RampGetParamDisplayNames()
+Function /WAVE RampGetParamDispNames()
 	Variable nParameters=3
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="Delay"
@@ -27,7 +27,7 @@ Function /WAVE RampGetDfltParams()
 	return parametersDefault
 End
 
-Function /WAVE RampGetDfltParamsAsStrings()
+Function /WAVE RampGetDfltParamsAsStr()
 	Variable nParameters=3
 	Make /T /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]="50"

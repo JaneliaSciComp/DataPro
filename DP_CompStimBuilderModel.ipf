@@ -97,20 +97,17 @@ Function CSBModelImportWave(builderType,fancyWaveNameString)
 	SetDataFolder savedDF	
 End
 
-Function CSBModelExportToSweeper(builderType,waveNameString)
-	String builderType
+Function CSBModelExportToSweeper(waveNameString)
+	// Send a message to the sweeper with the wave
 	String waveNameString
-		// Send a message to the sweeper with the wave
+
 	String savedDF=GetDataFolder(1)
-	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)	
-	SetDataFolder $dataFolderName
+	SetDataFolder root:DP_CompStimBuilder
+
 	WAVE theWave
-	String signalType=StimulusGetSignalType(theWave)
-	if (AreStringsEqual(signalType,"DAC"))
-		SweeperControllerAddDACWave(theWave,waveNameString)
-	else
-		SweeperControllerAddTTLWave(theWave,waveNameString)
-	endif
+
+	SweeperControllerAddStimWave(theWave,waveNameString)
+
 	SetDataFolder savedDF
 End
 
@@ -168,4 +165,18 @@ Function CSBModelDelSeg()
 
 	// Restore the DF
 	SetDataFolder savedDF		
+End
+
+
+//
+// Static methods
+//
+Function /WAVE CSBModelGetStimTypes()
+	Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "WNoise", "PSC" }
+	return result
+End
+
+Function /WAVE CSBModelGetDisplayStimTypes()
+	Make /T /FREE result={"Pulse", "Train", "Multiple Trains", "Ramp", "Sine", "Chirp", "White Noise", "PSC" }
+	return result
 End

@@ -11,7 +11,7 @@ Function /WAVE WNoiseGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE WNoiseGetParamDisplayNames()
+Function /WAVE WNoiseGetParamDispNames()
 	Variable nParameters=5
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="Delay"
@@ -33,7 +33,7 @@ Function /WAVE WNoiseGetDfltParams()
 	return parametersDefault
 End
 
-Function /WAVE WNoiseGetDfltParamsAsStrings()
+Function /WAVE WNoiseGetDfltParamsAsStr()
 	Variable nParameters=5
 	Make /T /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]="10"

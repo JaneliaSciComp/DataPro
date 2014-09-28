@@ -109,8 +109,8 @@ Function CSBViewUpdateWhichControlsExist()
 		Funcref SSTGetParamNamesFallback getParamNames=$getParamNamesFuncName
 		Wave /T paramNames=getParamNames()
 		// Get the display param names for this segment type
-		String getParamDisplayNamesFuncName=simpStimType+"GetParamDisplayNames"
-		Funcref SSTGetParamDisplayNamesFallback getParamDisplayNames=$getParamDisplayNamesFuncName
+		String getParamDisplayNamesFuncName=simpStimType+"GetParamDispNames"
+		Funcref SSTGetParamDispNamesFallback getParamDisplayNames=$getParamDisplayNamesFuncName
 		Wave /T paramDisplayNames=getParamDisplayNames()
 		String segmentParamsList=SimpStimGetParamList(simpStim)
 		Variable nParams=numpnts(paramNames)
@@ -187,8 +187,8 @@ Function CSBViewLayout()
 		Funcref SSTGetParamNamesFallback getParamNames=$getParamNamesFuncName
 		Wave /T paramNames=getParamNames()
 		// Get the display param names for this segment type
-		String getParamDisplayNamesFuncName=simpStimType+"GetParamDisplayNames"
-		Funcref SSTGetParamDisplayNamesFallback getParamDisplayNames=$getParamDisplayNamesFuncName
+		String getParamDisplayNamesFuncName=simpStimType+"GetParamDispNames"
+		Funcref SSTGetParamDispNamesFallback getParamDisplayNames=$getParamDisplayNamesFuncName
 		Wave /T paramDisplayNames=getParamDisplayNames()
 		String segmentParamsList=SimpStimGetParamList(simpStim)
 		Variable nParams=numpnts(paramNames)
@@ -237,8 +237,8 @@ Function /WAVE SSTGetParamNamesFallback()
 End
 
 
-Function /WAVE SSTGetParamDisplayNamesFallback()
-	Abort "Internal Error: Attempt to call a <simpStimType>GetParamDisplayNames function that doesn't exist"
+Function /WAVE SSTGetParamDispNamesFallback()
+	Abort "Internal Error: Attempt to call a <simpStimType>GetParamDispNames function that doesn't exist"
 End
 
 
@@ -263,9 +263,9 @@ Function CSBViewUpdateControlProperties()
 	Wave /T compStim=CompStimWaveGetCompStim(theWave)
 	Variable nSimpStims=CompStimGetNStimuli(compStim)
 
-	Wave /T possibleSimpStimTypes=SimpStimGetStimTypes()
+	Wave /T possibleSimpStimTypes=CSBModelGetStimTypes()
 	String listOfPossibleSimpStimTypes=ListFromTextWave(possibleSimpStimTypes)
-	Wave /T possibleDisplaySimpStimTypes=SimpStimGetDisplayStimTypes()
+	Wave /T possibleDisplaySimpStimTypes=CSBModelGetDisplayStimTypes()
 	String listOfPossibleDispSimpStimTypes=ListFromTextWave(possibleDisplaySimpStimTypes)
 	String listOfDispSimpStimTypesFU="\""+listOfPossibleDispSimpStimTypes+"\""
 

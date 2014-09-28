@@ -13,7 +13,7 @@ Function /WAVE MulTrainGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE MulTrainGetParamDisplayNames()
+Function /WAVE MulTrainGetParamDispNames()
 	Variable nParameters=7
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="Delay"
@@ -39,7 +39,7 @@ Function /WAVE MulTrainGetDfltParams()
 	return parametersDefault
 End
 
-Function /WAVE MulTrainGetDfltParamsAsStrings()
+Function /WAVE MulTrainGetDfltParamsAsStr()
 	Variable nParameters=7
 	Make /T /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]="25"		// ms

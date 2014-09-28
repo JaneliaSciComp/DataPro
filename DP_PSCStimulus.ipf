@@ -13,7 +13,7 @@ Function /WAVE PSCGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE PSCGetParamDisplayNames()
+Function /WAVE PSCGetParamDispNames()
 	Variable nParameters=7
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="Delay"
@@ -39,7 +39,7 @@ Function /WAVE PSCGetDfltParams()
 	return parametersDefault
 End
 
-Function /WAVE PSCGetDfltParamsAsStrings()
+Function /WAVE PSCGetDfltParamsAsStr()
 	Variable nParameters=7
 	Make /T /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]="10"

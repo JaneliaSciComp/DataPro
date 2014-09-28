@@ -9,7 +9,7 @@ Function /WAVE PulseGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE PulseGetParamDisplayNames()
+Function /WAVE PulseGetParamDispNames()
 	Variable nParameters=3
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="Delay"
@@ -27,7 +27,7 @@ Function /WAVE PulseGetDfltParams()
 	return parametersDefault
 End
 
-Function /WAVE PulseGetDfltParamsAsStrings()
+Function /WAVE PulseGetDfltParamsAsStr()
 	Variable nParameters=3
 	Make /T /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]="20"			// ms

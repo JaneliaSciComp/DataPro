@@ -11,7 +11,7 @@ Function /WAVE ChirpGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE ChirpGetParamDisplayNames()
+Function /WAVE ChirpGetParamDispNames()
 	Variable nParameters=5
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="Delay"
@@ -22,7 +22,7 @@ Function /WAVE ChirpGetParamDisplayNames()
 	return parameterNames
 End
 
-Function /WAVE ChirpGetDfltParamsAsStrings()
+Function /WAVE ChirpGetDfltParamsAsStr()
 	Variable nParameters=5
 	Make /T /FREE /N=(nParameters) result
 	result[0]="10"

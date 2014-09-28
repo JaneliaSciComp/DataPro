@@ -17,7 +17,7 @@ Function CSBContSegmentTypePMActuated(ctrlName,popNum,popStr) : PopupMenuControl
 	Variable segmentIndex=str2num(segmentIndexAsString)
 
 	// Get the stim type from the menu index
-	Wave /T simpStimTypes=SimpStimGetStimTypes()
+	Wave /T simpStimTypes=CSBModelGetStimTypes()
 	String simpStimType=simpStimTypes[popNum-1]	// popNum is 1-based
 	
 	// Set the model
@@ -55,16 +55,16 @@ Function CSBContSaveAsButtonPressed(bStruct) : ButtonControl
 		return 0							// we only handle mouse up in control
 	endif
 	
-	// Extract the builderType from the window name
-	String windowName=bStruct.win
-	Variable iEnd=strsearch(windowName,"CompStimBuilderView",0)
-	String builderType=windowName[0,iEnd-1]
+//	// Extract the builderType from the window name
+//	String windowName=bStruct.win
+//	Variable iEnd=strsearch(windowName,"CompStimBuilderView",0)
+//	String builderType=windowName[0,iEnd-1]
 	
-	// Extract the signal type (DAC or TTL) from the button name
-	String buttonName=bStruct.ctrlName
-	String signalType=buttonName[6,8]	// buttonName should be either saveAsDACButton or saveAsTTLButton
+//	// Extract the signal type (DAC or TTL) from the button name
+//	String buttonName=bStruct.ctrlName
+//	String signalType=buttonName[6,8]	// buttonName should be either saveAsDACButton or saveAsTTLButton
 
-	// Get the wave name to save as	
+	// Get the wave name to save as
 	String waveNameString
 	Prompt waveNameString, "Enter wave name to save as:"
 	DoPrompt "Save as...", waveNameString
@@ -73,7 +73,7 @@ Function CSBContSaveAsButtonPressed(bStruct) : ButtonControl
 	endif
 	
 	// Send a message to the sweeper with the wave
-	CSBModelExportToSweeper(builderType,waveNameString)
+	CSBModelExportToSweeper(waveNameString)
 End
 
 Function CSBContImportButtonPressed(bStruct) : ButtonControl

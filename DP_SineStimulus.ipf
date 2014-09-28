@@ -10,7 +10,7 @@ Function /WAVE SineGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE SineGetParamDisplayNames()
+Function /WAVE SineGetParamDispNames()
 	Variable nParameters=4
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="Delay"
@@ -30,7 +30,7 @@ Function /WAVE SineGetDfltParams()
 	return parametersDefault
 End
 
-Function /WAVE SineGetDfltParamsAsStrings()
+Function /WAVE SineGetDfltParamsAsStr()
 	Variable nParameters=4
 	Make /T /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]="10"

@@ -11,7 +11,7 @@ Function /WAVE TrainGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE TrainGetParamDisplayNames()
+Function /WAVE TrainGetParamDispNames()
 	Variable nParameters=5
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="Delay"
@@ -33,7 +33,7 @@ Function /WAVE TrainGetDfltParams()
 	return parametersDefault
 End
 
-Function /WAVE TrainGetDfltParamsAsStrings()
+Function /WAVE TrainGetDfltParamsAsStr()
 	Variable nParameters=5
 	Make /T /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]="20"		// ms
