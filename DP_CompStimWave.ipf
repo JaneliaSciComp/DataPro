@@ -125,11 +125,12 @@ Function CompStimWaveSetSegmentType(w,segmentIndex,simpStimType)
 	CompStimWaveSetCompStim(w,compStim)	
 End
 
-Function CompStimWaveAddSegment(w)
+Function CompStimWaveAddSegment(w,segmentType)
 	Wave w
+	String segmentType
 	
 	Wave /T compStimOriginal=CompStimWaveGetCompStim(w)
-	Wave /T compStim=CompStimAddSegment(compStimOriginal)
+	Wave /T compStim=CompStimAddSegment(compStimOriginal,segmentType)
 	CompStimWaveSetCompStim(w,compStim)
 End
 
@@ -139,6 +140,19 @@ Function CompStimWaveDelSegment(w)
 	Wave /T compStimOriginal=CompStimWaveGetCompStim(w)
 	Wave /T compStim=CompStimDelSegment(compStimOriginal)
 	CompStimWaveSetCompStim(w,compStim)
+End
+
+Function CompStimWaveSetEachToDefault(w)
+	Wave w
+	
+	Wave /T theCompStim=CompStimWaveGetCompStim(w)
+	Variable nStimuli=CompStimGetNStimuli(theCompStim)
+	Variable i
+	for (i=0; i<nStimuli; i+=1)
+		String thisStimType=SimpStimGetSignalType(theCompStim[i])
+		theCompStim[i]=SimpStimDefault(thisStimType)
+	endfor
+	CompStimWaveSetCompStim(w,theCompStim)
 End
 
 

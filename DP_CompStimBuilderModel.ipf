@@ -64,38 +64,28 @@ Function CSBModelSetSegmentType(segmentIndex,simpStimType)
 	SetDataFolder savedDF
 End
 
-Function CSBModelImportWave(builderType,fancyWaveNameString)
+Function CSBModelImportWave(fancyWaveNameString)
 	// Imports the stimulus parameters from a pre-existing wave in the Sweeper
 	// This is a model method
-	String builderType
+	//String builderType
 	String fancyWaveNameString
 	
 	// Switch to the DF
 	String savedDF=GetDataFolder(1)
-	String dataFolderName=sprintf1s("root:DP_%sBuilder",builderType)
-	SetDataFolder $dataFolderName
+	SetDataFolder root:DP_CompStimBuilder
 	
 	// Instance vars
-	//WAVE /T parameterNames
-	WAVE parameters
 	WAVE theWave
 
-	Wave /T parameterNames=StimulusGetParamNames(theWave)
 	Variable i
-	if (AreStringsEqual(fancyWaveNameString,"(Default Settings)"))
-		Wave parameters=StimulusGetDefParamsFromType(builderType)
+	if ( AreStringsEqual(fancyWaveNameString,"(Default Settings)") )
+		CompStimWaveSetEachToDefault(theWave)
 	else
 		// Get the wave from the digitizer
 		Wave exportedWave=SweeperGetWaveByFancyName(fancyWaveNameString)
-		String waveTypeString=StringByKeyInWaveNote(exportedWave,"WAVETYPE")
-		if (AreStringsEqual(waveTypeString,builderType))
-			Wave newParameters=StimulusGetParams(exportedWave)
-			parameters=newParameters
-		else
-			Abort(sprintf1s("This is not a %s wave; choose another",builderType))
-		endif
+		Wave /T theCompStim=CompStimWaveGetCompStim(exportedWave)
+		CompStimWaveSetCompStim(theWave,theCompStim)
 	endif
-	StimulusSetParams(theWave,parameters)
 	
 	SetDataFolder savedDF	
 End
@@ -108,8 +98,13 @@ Function CSBModelExportToSweeper(waveNameString)
 	SetDataFolder root:DP_CompStimBuilder
 
 	WAVE theWave
+	SVAR signalType
 
-	SweeperControllerAddDACWave(theWave,waveNameString)
+	if ( AreStringsEqual(signalType,"DAC") )
+		SweeperControllerAddDACWave(theWave,waveNameString)
+	else
+		SweeperControllerAddTTLWave(theWave,waveNameString)
+	endif
 
 	SetDataFolder savedDF
 End
@@ -146,8 +141,10 @@ Function CSBModelAddSeg()
 	SetDataFolder root:DP_CompStimBuilder
 	
 	WAVE theWave
+	SVAR signalType
 
-	CompStimWaveAddSegment(theWave)
+	String segmentType=stringFif(AreStringsEqual(signalType,"DAC"),"Pulse","TTLPulse")	
+	CompStimWaveAddSegment(theWave,segmentType)
 
 	// Restore the DF
 	SetDataFolder savedDF		
@@ -205,6 +202,22 @@ Function /WAVE CSBModelGetDisplayStimTypes()
 	return result
 End
 
+
+Function /S CSBModelGetSignalType()
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_CompStimBuilder
+
+	// instance vars
+	SVAR signalType
+
+	SetDataFolder savedDF
+
+	return signalType
+End
+
+
+
+
 //
 // Static methods
 //
@@ -221,13 +234,21 @@ Function CSBModelSetSignalType(newSignalType)
 
 	// instance vars
 	SVAR signalType
+	WAVE theWave
 
 	// If no change, do nothing
 	if ( AreStringsEqual(newSignalType,signalType) )
 		// do nothing
 	else
+		signalType=newSignalType
+
 		// Have to reset the segments, since old segment types are no longer valid
-		
+		String segmentType=stringFif(AreStringsEqual(newSignalType,"DAC"),"Pulse","TTLPulse")
+		String pulseSimpStim=SimpStimDefault(segmentType)
+		Wave /T compStim=CompStimFromSimpStim(pulseSimpStim)
+	
+		// Set the wave to the new compStim
+		CompStimWaveSetCompStim(theWave,compStim)
 	endif	
 
 	SetDataFolder savedDF

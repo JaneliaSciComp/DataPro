@@ -5,15 +5,14 @@ Function CSBContConstructor()
 	CSBViewConstructor()
 End
 
-
 Function CSBContSignalTypePMActuated(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
 	Variable popNum
 	String popStr
 	
 	// Get the stim type from the menu index
-	Wave /T signalTypes=CSBModelGetListOfSignalTypes()
-	String signalType=StringFromList(popNum-1)  	// popNum is 1-based
+	String signalTypes=CSBModelGetListOfSignalTypes()
+	String signalType=StringFromList(popNum-1,signalTypes)  	// popNum is 1-based
 	
 	// Set the model
 	CSBModelSetSignalType(signalType)
@@ -72,8 +71,8 @@ Function CSBContSaveAsButtonPressed(bStruct) : ButtonControl
 	
 //	// Extract the builderType from the window name
 //	String windowName=bStruct.win
-/
-/	Variable iEnd=strsearch(windowName,"CompStimBuilderView",0)
+//
+//	Variable iEnd=strsearch(windowName,"CompStimBuilderView",0)
 //	String builderType=windowName[0,iEnd-1]
 	
 //	// Extract the signal type (DAC or TTL) from the button name
@@ -99,19 +98,20 @@ Function CSBContImportButtonPressed(bStruct) : ButtonControl
 		return 0							// we only handle mouse up in control
 	endif
 	
-	// Extract the builderType from the window name
-	String windowName=bStruct.win
-	Variable iEnd=strsearch(windowName,"CompStimBuilderView",0)
-	String builderType=windowName[0,iEnd-1]
+//	// Extract the builderType from the window name
+//	String windowName=bStruct.win
+//	Variable iEnd=strsearch(windowName,"CompStimBuilderView",0)
+//	String builderType=windowName[0,iEnd-1]
 
+	String signalType=CSBModelGetSignalType()
 	String fancyWaveNameString
-	String popupListString="(Default Settings);"+SweeperGetFancyWaveListOfType(builderType)
+	String popupListString="(Default Settings);"+SweeperGetFancyWaveListOfType(signalType)
 	Prompt fancyWaveNameString, "Select wave to import:", popup, popupListString
 	DoPrompt "Import...", fancyWaveNameString
 	if (V_Flag)
 		return -1		// user hit Cancel
 	endif
-	CSBModelImportWave(builderType,fancyWaveNameString)
+	CSBModelImportWave(fancyWaveNameString)
 	CSBViewUpdate()
 End
 

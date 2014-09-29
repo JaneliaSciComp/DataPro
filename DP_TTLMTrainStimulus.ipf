@@ -41,7 +41,7 @@ Function /WAVE TTLMTrainGetDfltParamsAsStr()
 	Make /T /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]="25"		// ms
 	parametersDefault[1]="150"		// ms
-	parametersDefault[2]="100	"	// Hz
+	parametersDefault[2]="100"	// Hz
 	parametersDefault[3]="2"		// ms
 	parametersDefault[4]="20"		// Hz
 	parametersDefault[5]="25"		// ms	

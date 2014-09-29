@@ -93,7 +93,7 @@ Function SweeperConstructor()
 	history[0][12]="Channel Gain Units"
 	
 	// Initialize the BuiltinPulse wave
-	SetDataFolder stimWaves
+	SetDataFolder dacWaves
 	String builtinPulseSimpStim=SimpStim("BuiltinPulse",{num2str(builtinPulseDuration),num2str(builtinPulseAmplitude)})
 	Wave /T compStim=CompStimFromSimpStim(builtinPulseSimpStim)
 	Make /O builtinPulse
@@ -107,7 +107,7 @@ Function SweeperConstructor()
 	Variable /G builtinTTLPulseDuration=0.1		// ms
 
 	// Initialize the built-in TTL pulse wave
-	SetDataFolder stimWaves
+	SetDataFolder ttlWaves
 	String builtinTTLPulseSimpStim=SimpStim("TTLPulse",{num2str(builtinTTLPulseDelay),num2str(builtinTTLPulseDuration)})
 	Wave /T ttlCompStim=CompStimFromSimpStim(builtinTTLPulseSimpStim)
 	Make /O builtinTTLPulse
@@ -818,6 +818,44 @@ Function /T SweeperGetDACWaveNoteByName(waveNameString)
 	return waveNote
 End
 
+Function /S SweeperGetDACCompStimStrByName(waveNameString)
+	String waveNameString
+
+	// Change to the Digitizer data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper:dacWaves
+
+	// Get the wave note
+	//String waveNote=note($waveNameString)
+	Wave theWave=$waveNameString
+	Wave /T compStim=CompStimWaveGetCompStim(theWave)
+	String result=StringFromCompStim(compStim)
+
+	// Restore the original DF
+	SetDataFolder savedDF
+
+	return result
+End
+
+Function /S SweeperGetTTLCompStimStrByName(waveNameString)
+	String waveNameString
+
+	// Change to the Digitizer data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper:ttlWaves
+
+	// Get the wave note
+	//String waveNote=note($waveNameString)
+	Wave theWave=$waveNameString
+	Wave /T compStim=CompStimWaveGetCompStim(theWave)
+	String result=StringFromCompStim(compStim)
+
+	// Restore the original DF
+	SetDataFolder savedDF
+
+	return result
+End
+
 Function /WAVE SweeperGetTTLWaveByName(waveNameString)
 	String waveNameString
 
@@ -1278,11 +1316,15 @@ Function /S SweeperGetFancyWaveList()
 	return fancyWaveList(dacWaveNames,ttlWaveNames)
 End
 
-Function /S SweeperGetFancyWaveListOfType(waveTypeString)
-	String waveTypeString
-	String dacWaveNames=SweeperGetDACWaveNamesOfType(waveTypeString)
-	String ttlWaveNames=SweeperGetTTLWaveNamesOfType(waveTypeString)	
-	return fancyWaveList(dacWaveNames,ttlWaveNames)
+Function /S SweeperGetFancyWaveListOfType(signalType)
+	String signalType
+	if ( AreStringsEqual(signalType,"DAC") )		
+		String dacWaveNames=SweeperGetDACWaveNames()
+		return fancyWaveList(dacWaveNames,"")
+	else
+		String ttlWaveNames=SweeperGetTTLWaveNames()	
+		return fancyWaveList("",ttlWaveNames)
+	endif
 End
 
 Function SweeperSetDACMultiplier(i,newValue)
@@ -1428,7 +1470,10 @@ Function SweeperUpdateBuiltinPulseWave()
 //	resampleBuiltinPulseBang(builtinPulse,dt,totalDuration)	
 		
 	Variable dt=SweeperGetDt()
-	StimulusReset(builtinPulse,dt,totalDuration,{builtinPulseDuration,builtinPulseAmplitude})	
+	//StimulusReset(builtinPulse,dt,totalDuration,{builtinPulseDuration,builtinPulseAmplitude})
+	String theSimpStim=SimpStim("BuiltinPulse",{num2str(builtinPulseDuration),num2str(builtinPulseAmplitude)})
+	Wave /T theCompStim=CompStimFromSimpStim(theSimpStim)
+	CompStimWaveSet(builtinPulse,dt,totalDuration,theCompStim)	
 		
 	// Restore the data folder
 	SetDataFolder savedDF
@@ -1444,15 +1489,19 @@ Function SweeperUpdateBuiltinTTLPulse()
 	WAVE builtinTTLPulse
 	//Duplicate /O BuiltinPulseBoolean(dt,totalDuration,builtinTTLPulseDelay,builtinTTLPulseDuration) builtinTTLPulse
 	
-	// Update the wave note
-	Note /K builtinTTLPulse
-	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"WAVETYPE","BuiltinTTLPulse")
-	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"TIME",time())
-	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"delay",num2str(builtinTTLPulseDelay))
-	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"duration",num2str(builtinTTLPulseDuration))
+//	// Update the wave note
+//	Note /K builtinTTLPulse
+//	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"WAVETYPE","BuiltinTTLPulse")
+//	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"TIME",time())
+//	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"delay",num2str(builtinTTLPulseDelay))
+//	ReplaceStringByKeyInWaveNote(builtinTTLPulse,"duration",num2str(builtinTTLPulseDuration))
+//	
+//	// Update the wave proper, based in part on the wave note
+//	resampleBuiltinTTLPulseBang(builtinTTLPulse,dt,totalDuration)
 	
-	// Update the wave proper, based in part on the wave note
-	resampleBuiltinTTLPulseBang(builtinTTLPulse,dt,totalDuration)
+	String theSimpStim=SimpStim("TTLPulse",{num2str(builtinTTLPulseDelay),num2str(builtinTTLPulseDuration)})
+	Wave /T theCompStim=CompStimFromSimpStim(theSimpStim)
+	CompStimWaveSet(builtinTTLPulse,dt,totalDuration,theCompStim)	
 	
 	SetDataFolder savedDF
 End
@@ -1508,10 +1557,11 @@ Function SweeperAddHistoryForSweep(sweepIndex,iSweepWithinTrial)
 			history[iRow][ 5]=DigitizerModelGetDACModeName(iChan)
 			history[iRow][ 6]=DigitizerModelGetDACUnitsString(iChan)			
 			history[iRow][ 7]=dacWaveName(iChan)
-			String waveNote=SweeperGetDACWaveNoteByName(dacWaveName(iChan))
-			String builderName=StringByKey("WAVETYPE", waveNote, "=", "\r", 1)  // 1 means match case
-			history[iRow][ 8]=builderName		// builder name
-			history[iRow][ 9]=extractBuilderParamsString(waveNote)	//builder parameters
+			//String waveNote=SweeperGetDACWaveNoteByName(dacWaveName(iChan))
+			//String builderName=StringByKey("WAVETYPE", waveNote, "=", "\r", 1)  // 1 means match case
+			history[iRow][ 8]="Compound"		// builder name, sorta
+			history[iRow][ 9]=SweeperGetDACCompStimStrByName(dacWaveName(iChan))
+			//history[iRow][ 9]=extractBuilderParamsString(waveNote)	//builder parameters
 			history[iRow][10]=sprintf1v("%.17g",dacMultiplier(iChan))	// multiplier
 			history[iRow][11]=sprintf1v("%.17g",DigitizerModelGetDACGain(iChan))	// channel gain
 			history[iRow][12]=DigitizerModelDACGainUnits(iChan)	// channel gain units
@@ -1531,10 +1581,12 @@ Function SweeperAddHistoryForSweep(sweepIndex,iSweepWithinTrial)
 			history[iRow][ 5]=""
 			history[iRow][ 6]=""			
 			history[iRow][ 7]=ttlOutputWaveName(iChan)
-			waveNote=SweeperGetTTLWaveNoteByName(ttlOutputWaveName(iChan))
-			builderName=StringByKey("WAVETYPE", waveNote, "=", "\r", 1)  // 1 means match case
-			history[iRow][ 8]=builderName		// builder name
-			history[iRow][ 9]=extractBuilderParamsString(waveNote)	//builder parameters
+			//waveNote=SweeperGetTTLWaveNoteByName(ttlOutputWaveName(iChan))
+			//builderName=StringByKey("WAVETYPE", waveNote, "=", "\r", 1)  // 1 means match case
+			//history[iRow][ 8]=builderName		// builder name
+			history[iRow][ 8]="Compound"		// builder name, sorta
+			//history[iRow][ 9]=extractBuilderParamsString(waveNote)	//builder parameters
+			history[iRow][ 9]=SweeperGetTTLCompStimStrByName(ttlOutputWaveName(iChan))
 			history[iRow][10]=""	// multiplier
 			history[iRow][11]=""	// channel gain
 			history[iRow][12]=""	// channel gain units
@@ -1565,7 +1617,8 @@ Function SweeperResampleWave(w)
 	Variable totalDuration=SweeperGetTotalDuration()
 	Variable dt=SweeperGetDt()	
 
-	StimulusChangeSampling(w,dt,totalDuration)
+	//StimulusChangeSampling(w,dt,totalDuration)
+	CompStimWaveSetDtAndDur(w,dt,totalDuration)
 End
 
 Function SweeperIsTTLInUse(ttlOutputIndex)

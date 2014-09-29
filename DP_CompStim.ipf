@@ -121,17 +121,17 @@ Function /WAVE CompStimSetSegmentType(compStimOriginal,segmentIndex,simpStimType
 	return result
 End
 
-Function /WAVE CompStimAddSegment(compStimOriginal)
+Function /WAVE CompStimAddSegment(compStimOriginal,segmentType)
 	Wave /T compStimOriginal
+	String segmentType
 
-	String simpStim=SimpStimDefault("Pulse")
+	String simpStim=SimpStimDefault(segmentType)
 	Duplicate /T /FREE compStimOriginal, result
 	Variable nStimuliOriginal=CompStimGetNStimuli(compStimOriginal)
 	Redimension /N=(nStimuliOriginal+1) result
 	result[nStimuliOriginal]=simpStim
 	
 	return result
-
 End
 
 Function /WAVE CompStimDelSegment(compStimOriginal)
@@ -144,7 +144,6 @@ Function /WAVE CompStimDelSegment(compStimOriginal)
 	endif
 	
 	return result
-
 End
 
 //Function SetWaveToCompStimBang(w,dt,durationWanted,compStim)
