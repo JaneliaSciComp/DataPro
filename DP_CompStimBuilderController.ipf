@@ -5,6 +5,21 @@ Function CSBContConstructor()
 	CSBViewConstructor()
 End
 
+
+Function CSBContSignalTypePMActuated(ctrlName,popNum,popStr) : PopupMenuControl
+	String ctrlName
+	Variable popNum
+	String popStr
+	
+	// Get the stim type from the menu index
+	Wave /T signalTypes=CSBModelGetListOfSignalTypes()
+	String signalType=StringFromList(popNum-1)  	// popNum is 1-based
+	
+	// Set the model
+	CSBModelSetSignalType(signalType)
+	CSBViewUpdate()
+End
+
 Function CSBContSegmentTypePMActuated(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
 	Variable popNum
@@ -57,7 +72,8 @@ Function CSBContSaveAsButtonPressed(bStruct) : ButtonControl
 	
 //	// Extract the builderType from the window name
 //	String windowName=bStruct.win
-//	Variable iEnd=strsearch(windowName,"CompStimBuilderView",0)
+/
+/	Variable iEnd=strsearch(windowName,"CompStimBuilderView",0)
 //	String builderType=windowName[0,iEnd-1]
 	
 //	// Extract the signal type (DAC or TTL) from the button name

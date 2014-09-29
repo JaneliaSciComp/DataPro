@@ -1127,6 +1127,14 @@ Function GetControlRightX(winderName,ctrlName)
 	return V_left+V_Width
 End
 
+Function GetControlBottomY(winderName,ctrlName)
+	String winderName
+	String ctrlName
+	
+	ControlInfo /W=$winderName $ctrlName
+	return V_top+V_Height
+End
+
 Function /WAVE GetControlBounds(windowName,controlName)
 	String windowName
 	String controlName

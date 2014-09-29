@@ -53,7 +53,7 @@ Function TTLPulseOverlayFromParams(w,params)
 	Variable delayTweaked=delay-dt/2
 
 	//Variable pulseDutyCycle=max(0,min((pulseDuration/1000)*pulseRate,1))		// pure
-	w += unitPulse(x-delayTweaked,duration)
+	w = w || unitPulse(x-delayTweaked,duration)
 End
 
 Function /S TTLPulseGetSignalType()

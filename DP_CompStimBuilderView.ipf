@@ -17,7 +17,7 @@ Function CSBViewConstructor() : Graph
 	Variable xOffset=105
 	Variable yOffset=200
 	Variable width=1400
-	Variable height=400
+	Variable height=420
 
 	// Convert dimensions to points
 	Variable pointsPerPixel=72/ScreenResolution
@@ -39,9 +39,23 @@ Function CSBViewConstructor() : Graph
 	Variable topButtonsYOffset=10
 	Variable bottomButtonsYOffset=45
 	Variable buttonWidth=90
-	Variable buttonHeight=20	
+	Variable buttonHeight=20
+	Variable leftOfSignalTypeLabelSpace=6
+	Variable signalTypeRowYOffset=8
+	Variable yShimPopup= -4
+	Variable widthBetweenSigTypeLabelAndPM=5
 
 	// Fixed controls
+	TitleBox signalTypeLabelTB, win=CompStimBuilderView, pos={leftOfSignalTypeLabelSpace,signalTypeRowYOffset}, frame=0, title="Signal Type:"
+	ControlUpdate /W=CompStimBuilderView signalTypeLabelTB
+	Variable sigTypeLabelRightX=GetControlRightX("CompStimBuilderView","signalTypeLabelTB")
+	PopupMenu signalTypePopupMenu, win=CompStimBuilderView, bodyWidth=70, proc=CSBContSignalTypePMActuated
+	ControlUpdate /W=CompStimBuilderView signalTypePopupMenu
+	PopupMenu signalTypePopupMenu, win=CompStimBuilderView, pos={sigTypeLabelRightX+widthBetweenSigTypeLabelAndPM,signalTypeRowYOffset+yShimPopup}
+	String listOfSignalTypes=CSBModelGetListOfSignalTypes()
+	String listOfSignalTypesFU="\""+listOfSignalTypes+"\""
+	PopupMenu signalTypePopupMenu, win=CompStimBuilderView, value=#listOfSignalTypesFU
+
 	Button addSegmentButton, win=CompStimBuilderView, pos={leftButtonsXOffset,topButtonsYOffset}, size={buttonWidth,buttonHeight}, proc=CSBContAddSegButtonPressed, title="Add Segment"
 	Button deleteSegmentButton, win=CompStimBuilderView, pos={leftButtonsXOffset,bottomButtonsYOffset}, size={buttonWidth,buttonHeight}, proc=CSBContDelSegButtonPressed, title="Delete Segment"
 	Button saveAsDACButton, win=CompStimBuilderView, pos={rightButtonsXOffset,topButtonsYOffset}, size={buttonWidth,buttonHeight}, proc=CSBContSaveAsButtonPressed, title="Save As..."
@@ -79,7 +93,7 @@ Function CSBViewUpdateWhichControlsExist()
 	Variable i
 	for (i=0; i<nControls; i+=1)
 		String thisControlName=waveOfControlNames[i]
-		if ( AreStringsEqual(thisControlName, "addSegmentButton") || AreStringsEqual(thisControlName, "deleteSegmentButton") || AreStringsEqual(thisControlName, "saveAsDACButton") || AreStringsEqual(thisControlName, "importButton") )
+		if ( AreStringsEqual(thisControlName,"signalTypeLabelTB") || AreStringsEqual(thisControlName,"signalTypePopupMenu") || AreStringsEqual(thisControlName, "addSegmentButton") || AreStringsEqual(thisControlName, "deleteSegmentButton") || AreStringsEqual(thisControlName, "saveAsDACButton") || AreStringsEqual(thisControlName, "importButton") )
 			// do nothing
 		else
 			KillControl /W=CompStimBuilderView $(waveOfControlNames[i])
@@ -134,6 +148,9 @@ Function CSBViewLayout()
 
 	WAVE theWave
 
+	Variable signalTypePMBottomY=GetControlBottomY("CompStimBuilderView","signalTypePopupMenu")
+	Variable heightBetweenSigTypePMAndTopRow=12
+
 	Variable segmentLabelSpaceWidth=50
 	//Variable segmentLabelHeight=15
 	Variable svLabelApproxWidth=60
@@ -147,7 +164,7 @@ Function CSBViewLayout()
 	Variable popupToLeftSVWidth=15
 	Variable leftSVXOffset=typePopupXOffset+pmWidth+popupToLeftSVWidth
 	Variable widthBetweenSVs=15
-	Variable topRowYOffset=12
+	Variable topRowYOffset=signalTypePMBottomY+heightBetweenSigTypePMAndTopRow
 	Variable rowHeight=25
 	Variable heightBetweenRows=5
 	Variable rowYSpacing=rowHeight+heightBetweenRows
@@ -157,7 +174,7 @@ Function CSBViewLayout()
 	Wave /T compStim=CompStimWaveGetCompStim(theWave)
 	Variable nSimpStims=CompStimGetNStimuli(compStim)
 
-	Variable minControlBarHeight=80
+	Variable minControlBarHeight=100
 	Variable controlBarHeightRaw=topRowYOffset+nSimpStims*rowheight+(nSimpStims-1)*heightBetweenRows
 	Variable controlBarHeight=max(minControlBarHeight,controlBarHeightRaw)
 	ControlBar /W=CompStimBuilderView controlBarHeight
@@ -259,6 +276,10 @@ Function CSBViewUpdateControlProperties()
 
 	// Instance vars
 	WAVE theWave
+	SVAR signalType
+	
+	Variable signalTypeIndex=WhichListItem(signalType,CSBModelGetListOfSignalTypes())
+	PopupMenu signalTypePopupMenu, win=CompStimBuilderView, mode=signalTypeIndex+1
 	
 	Wave /T compStim=CompStimWaveGetCompStim(theWave)
 	Variable nSimpStims=CompStimGetNStimuli(compStim)

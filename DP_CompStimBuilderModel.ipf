@@ -13,6 +13,9 @@ Function CSBModelConstructor()
 	// Create a new DF
 	NewDataFolder /O /S $dataFolderName
 	
+	// Whether the wave is a DAC or TTL wave
+	String /G signalType="DAC"
+	
 	// Parameters of stimulus
 	Variable /G dt=SweeperGetDt()
 	Variable /G totalDuration=SweeperGetTotalDuration()
@@ -106,7 +109,7 @@ Function CSBModelExportToSweeper(waveNameString)
 
 	WAVE theWave
 
-	SweeperControllerAddStimWave(theWave,waveNameString)
+	SweeperControllerAddDACWave(theWave,waveNameString)
 
 	SetDataFolder savedDF
 End
@@ -167,16 +170,66 @@ Function CSBModelDelSeg()
 	SetDataFolder savedDF		
 End
 
-
-//
-// Static methods
-//
 Function /WAVE CSBModelGetStimTypes()
-	Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "WNoise", "PSC" }
+	// Save, set the DF
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_CompStimBuilder
+
+	SVAR signalType
+
+	if ( AreStringsEqual(signalType,"DAC") )
+		Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "WNoise", "PSC" }
+	else
+		Make /T /FREE result={"TTLPulse", "TTLTrain", "TTLMTrain"}
+	endif
+
+	// Restore the DF
+	SetDataFolder savedDF		
+
 	return result
 End
 
 Function /WAVE CSBModelGetDisplayStimTypes()
-	Make /T /FREE result={"Pulse", "Train", "Multiple Trains", "Ramp", "Sine", "Chirp", "White Noise", "PSC" }
+	// Save, set the DF
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_CompStimBuilder
+
+	SVAR signalType
+
+	if ( AreStringsEqual(signalType,"DAC") )
+		Make /T /FREE result={"Pulse", "Train", "Multiple Trains", "Ramp", "Sine", "Chirp", "White Noise", "PSC" }
+	else
+		Make /T /FREE result={"Pulse", "Train", "Multiple Trains"}
+	endif	
+
 	return result
 End
+
+//
+// Static methods
+//
+
+Function /S CSBModelGetListOfSignalTypes()
+	return "DAC;TTL"
+End
+
+Function CSBModelSetSignalType(newSignalType)
+	String newSignalType
+
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_CompStimBuilder
+
+	// instance vars
+	SVAR signalType
+
+	// If no change, do nothing
+	if ( AreStringsEqual(newSignalType,signalType) )
+		// do nothing
+	else
+		// Have to reset the segments, since old segment types are no longer valid
+		
+	endif	
+
+	SetDataFolder savedDF
+End
+
