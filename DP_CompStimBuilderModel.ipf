@@ -26,6 +26,10 @@ Function CSBModelConstructor()
 	Make /O theWave
 	CompStimWaveSet(theWave,dt,totalDuration,compStim)
 
+	// Create a CompStimWave for the other signal type (TTL)
+	String ttlPulseSimpStim=SimpStimDefault("TTLPulse")
+	Duplicate /O CompStimFromSimpStim(ttlPulseSimpStim), theOtherCompStim	// bound wave
+
 	// Restore the original data folder
 	SetDataFolder savedDF
 End
@@ -202,7 +206,6 @@ Function /WAVE CSBModelGetDisplayStimTypes()
 	return result
 End
 
-
 Function /S CSBModelGetSignalType()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_CompStimBuilder
@@ -215,17 +218,6 @@ Function /S CSBModelGetSignalType()
 	return signalType
 End
 
-
-
-
-//
-// Static methods
-//
-
-Function /S CSBModelGetListOfSignalTypes()
-	return "DAC;TTL"
-End
-
 Function CSBModelSetSignalType(newSignalType)
 	String newSignalType
 
@@ -235,6 +227,7 @@ Function CSBModelSetSignalType(newSignalType)
 	// instance vars
 	SVAR signalType
 	WAVE theWave
+	WAVE theOtherCompStim
 
 	// If no change, do nothing
 	if ( AreStringsEqual(newSignalType,signalType) )
@@ -242,15 +235,23 @@ Function CSBModelSetSignalType(newSignalType)
 	else
 		signalType=newSignalType
 
-		// Have to reset the segments, since old segment types are no longer valid
-		String segmentType=stringFif(AreStringsEqual(newSignalType,"DAC"),"Pulse","TTLPulse")
-		String pulseSimpStim=SimpStimDefault(segmentType)
-		Wave /T compStim=CompStimFromSimpStim(pulseSimpStim)
-	
-		// Set the wave to the new compStim
-		CompStimWaveSetCompStim(theWave,compStim)
+		// Swap theOtherCompStim and theWave
+		// theWave is a CompStimWave, theOtherCompStim is a CompStim, but you get the idea
+		Wave /T originalCompStim=CompStimWaveGetCompStim(theWave)
+		CompStimWaveSetCompStim(theWave,theOtherCompStim)
+		Duplicate /O originalCompStim, theOtherCompStim
 	endif	
 
 	SetDataFolder savedDF
+End
+
+
+
+//
+// Static methods
+//
+
+Function /S CSBModelGetListOfSignalTypes()
+	return "DAC;TTL"
 End
 
