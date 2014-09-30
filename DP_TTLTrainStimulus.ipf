@@ -40,6 +40,17 @@ Function /WAVE TTLTrainGetDfltParamsAsStr()
 	return parametersDefault
 End
 
+Function TTLTrainAreParamsValid(parameters)
+	Wave parameters
+
+	Variable delay=parameters[0]
+	Variable duration=parameters[1]
+	Variable pulseRate=parameters[2]				
+	Variable pulseDuration=parameters[3]
+
+	return (duration>=0) && (pulseRate>0) && (pulseDuration>=0)
+End
+
 Function TTLTrainFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

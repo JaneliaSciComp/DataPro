@@ -2,7 +2,7 @@
 
 Function CSBViewConstructor() : Graph
 	// If the view already exists, just raise it
-	if (PanelExists("CompStimBuilderView"))
+	if (GraphExists("CompStimBuilderView"))
 		DoWindow /F CompStimBuilderView
 		return 0
 	endif

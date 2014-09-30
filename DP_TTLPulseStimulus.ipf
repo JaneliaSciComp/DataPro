@@ -32,6 +32,15 @@ Function /WAVE TTLPulseGetDfltParamsAsStr()
 	return parametersDefault
 End
 
+Function TTLPulseAreParamsValid(parameters)
+	Wave parameters
+
+	Variable delay=parameters[0]
+	Variable duration=parameters[1]
+
+	return (duration>=0)
+End
+
 Function TTLPulseFillFromParams(w,params)
 	Wave w
 	Wave params

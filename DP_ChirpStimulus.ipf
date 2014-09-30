@@ -33,6 +33,18 @@ Function /WAVE ChirpGetDfltParamsAsStr()
 	return result
 End
 
+Function ChirpAreParamsValid(parameters)
+	Wave parameters
+
+	Variable delay=parameters[0]
+	Variable duration=parameters[1]
+	Variable amplitude=parameters[2]
+	Variable initialFrequency=parameters[3]
+	Variable finalFrequency=parameters[4]
+
+	return (duration>=0) && (initialFrequency>0) && (finalFrequency>0)
+End
+
 Function ChirpFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

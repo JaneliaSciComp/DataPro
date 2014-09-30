@@ -44,6 +44,18 @@ Function /WAVE TrainGetDfltParamsAsStr()
 	return parametersDefault
 End
 
+Function TrainAreParamsValid(parameters)
+	Wave parameters
+
+	Variable delay=parameters[0]
+	Variable duration=parameters[1]
+	Variable amplitude=parameters[2]
+	Variable pulseRate=parameters[3]				
+	Variable pulseDuration=parameters[4]
+
+	return (duration>=0) && (pulseRate>0) && (pulseDuration>=0)
+End
+
 Function TrainFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

@@ -40,6 +40,17 @@ Function /WAVE SineGetDfltParamsAsStr()
 	return parametersDefault
 End
 
+Function SineAreParamsValid(parameters)
+	Wave parameters
+
+	Variable delay=parameters[0]
+	Variable duration=parameters[1]
+	Variable amplitude=parameters[2]
+	Variable frequency=parameters[3]
+
+	return (duration>=0) && (frequency>0)
+End
+
 Function SineFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

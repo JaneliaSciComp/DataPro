@@ -30,23 +30,28 @@ Function /S SimpStimDefault(stimType)
 	return SimpStim(stimType,paramsAsStrings)
 End
 
-Function /S SimpStimReplaceParam(stimString,paramName,newValueAsString)
-	String stimString
+Function /S SimpStimReplaceParam(simpStim,paramName,newValueAsString)
+	String simpStim
 	String paramName
 	String newValueAsString
 
+	// Make sure new value represents a number
 	String result
 	Variable newValue=str2num(newValueAsString)
 	if ( IsNan(newValue) )
-		result=stimString
+		result=simpStim
 		return result
 	endif
-
-	String stimType=SimpStimGetStimType(stimString)
-	String paramList=SimpStimGetParamList(stimString)
 	
+	// Replace the parameter with the new value
+	String stimType=SimpStimGetStimType(simpStim)
+	String paramList=SimpStimGetParamList(simpStim)	
 	String newParamList=ReplaceStringByKey(paramName, paramList, newValueAsString, "=", ",", 1)		
-	result=SimpStimFromTypeAndParamList(stimType,newParamList)
+	String newSimpStim=SimpStimFromTypeAndParamList(stimType,newParamList)
+	
+	// Return the new simpStim only if it's valid, otherwise use original
+	Variable isValid=SimpStimAreParamsValid(newSimpStim)
+	result=stringFif(isValid,newSimpStim,simpStim)
 	
 	return result
 End
@@ -58,45 +63,45 @@ Function /S SimpStimFromTypeAndParamList(stimType,paramList)
 	return result
 End
 
-Function /S SimpStimGetStimType(stimString)
-	String stimString
+Function /S SimpStimGetStimType(simpStim)
+	String simpStim
 	
-	Variable colonIndex=strsearch(stimString,":",0)  // 0 means start from start of string
-	String stimType=stimString[0,colonIndex-1]
+	Variable colonIndex=strsearch(simpStim,":",0)  // 0 means start from start of string
+	String stimType=simpStim[0,colonIndex-1]
 	return stimType
 End
 
-Function /S SimpStimGetParamList(stimString)
-	String stimString
+Function /S SimpStimGetParamList(simpStim)
+	String simpStim
 	
-	Variable colonIndex=strsearch(stimString,":",0)  // 0 means start from start of string
-	Variable n=strlen(stimString)
-	String paramList=stimString[colonIndex+1,n-1]
+	Variable colonIndex=strsearch(simpStim,":",0)  // 0 means start from start of string
+	Variable n=strlen(simpStim)
+	String paramList=simpStim[colonIndex+1,n-1]
 	return paramList
 End
 
-Function /WAVE SimpStimGetParamNames(stimString)
-	String stimString
+Function /WAVE SimpStimGetParamNames(simpStim)
+	String simpStim
 	
-	String stimType=SimpStimGetStimType(stimString)
+	String stimType=SimpStimGetStimType(simpStim)
 	Wave /T paramNames=SimpStimGetParamNamesFromType(stimType)
 	return paramNames
 End
 
-Function SimpStimGetNumOfParams(stimString)
-	String stimString
+Function SimpStimGetNumOfParams(simpStim)
+	String simpStim
 	
-	String stimType=SimpStimGetStimType(stimString)
+	String stimType=SimpStimGetStimType(simpStim)
 	Wave /T paramNames=SimpStimGetParamNamesFromType(stimType)
 	return numpnts(paramNames)
 End
 
-Function /WAVE SimpStimGetParamsAsStrings(stimString)
-	String stimString
+Function /WAVE SimpStimGetParamsAsStrings(simpStim)
+	String simpStim
 	
-	Wave /T paramNames=SimpStimGetParamNames(stimString)
+	Wave /T paramNames=SimpStimGetParamNames(simpStim)
 	Variable nParams=numpnts(paramNames)
-	String paramList=SimpStimGetParamList(stimString)
+	String paramList=SimpStimGetParamList(simpStim)
 
 	Make /T /FREE /N=(nParams) paramsAsStrings
 	Variable i
@@ -107,17 +112,17 @@ Function /WAVE SimpStimGetParamsAsStrings(stimString)
 	return paramsAsStrings
 End
 
-Function /WAVE SimpStimGetParams(stimString)
-	String stimString
+Function /WAVE SimpStimGetParams(simpStim)
+	String simpStim
 	
-	Wave /T paramsAsStrings=SimpStimGetParamsAsStrings(stimString)
+	Wave /T paramsAsStrings=SimpStimGetParamsAsStrings(simpStim)
 	Wave params=NumericWaveFromTextWave(paramsAsStrings)	
 	return params
 End
 
-Function /S SimpStimGetSignalType(stimString)
-	String stimString
-	String stimType=SimpStimGetStimType(stimString)
+Function /S SimpStimGetSignalType(simpStim)
+	String simpStim
+	String stimType=SimpStimGetStimType(simpStim)
 	String signalType=SimpStimGetSignalTypeFromType(stimType)
 	return signalType
 End
@@ -189,4 +194,31 @@ End
 Function /WAVE SimpStimGetDisplayStimTypes()
 	Make /T /FREE result={"Pulse", "Train", "Multiple Trains", "Ramp", "Sine", "Chirp", "White Noise", "PSC", "Built-in Pulse" }
 	return result
+End
+
+Function SimpStimAreParamsValidForType(stimType,params)
+	String stimType
+	Wave params
+
+	String areParamsValidFunctionName=stimType+"AreParamsValid"
+	Funcref SimpStimAreParamsValidSig areParamsValidFunction=$areParamsValidFunctionName
+	Variable areValid=areParamsValidFunction(params)
+	return areValid
+End
+
+Function SimpStimAreParamsValidSig(params)
+	Wave params
+	// Placeholder function
+	Abort "Internal Error: Attempt to call a <stimType>AreParamsValid() function that doesn't exist."
+End
+
+
+Function SimpStimAreParamsValid(simpStim)
+	String simpStim
+	
+	String stimType=SimpStimGetStimType(simpStim)
+	Wave params=SimpStimGetParams(simpStim)
+	Variable areValid=SimpStimAreParamsValidForType(stimType,params)
+	
+	return areValid
 End

@@ -44,6 +44,18 @@ Function /WAVE WNoiseGetDfltParamsAsStr()
 	return parametersDefault
 End
 
+Function WNoiseAreParamsValid(parameters)
+	Wave parameters
+
+	Variable delay=parameters[0]
+	Variable duration=parameters[1]
+	Variable amplitude=parameters[2]	// the abs(amplitude)==SD of the filtered noise
+	Variable fLow=parameters[3]
+	Variable fHigh=parameters[4]
+
+	return (duration>=0) && (fLow>=0) && (fHigh>0) && (fLow<fHigh)
+End
+
 Function WNoiseFillFromParams(w,parameters)
 	Wave w
 	Wave parameters
@@ -73,12 +85,12 @@ Function WNoiseOverlayFromParams(w,parameters)
 	// Real
 	Make /FREE /N=(nFreqDomain) reNoiseInFreqDomain
 	SetScale /P x, 0, df, "kHz", reNoiseInFreqDomain
-	reNoiseInFreqDomain=gnoise(amplitude)*sqrt(nDFT/2)
+	reNoiseInFreqDomain=gnoise(1)*sqrt(nDFT/2)
 	reNoiseInFreqDomain[0]=0		// no DC
 	// Imag
 	Make /FREE /N=(nFreqDomain) imNoiseInFreqDomain
 	SetScale /P x, 0, df, "kHz", imNoiseInFreqDomain
-	imNoiseInFreqDomain=gnoise(amplitude)*sqrt(nDFT/2)
+	imNoiseInFreqDomain=gnoise(1)*sqrt(nDFT/2)
 	imNoiseInFreqDomain[0]=0		// no DC
 	imNoiseInFreqDomain[nFreqDomain-1]=0	// need this
 	
@@ -138,11 +150,11 @@ Function WNoiseOverlayFromParams(w,parameters)
 	IFFT /DEST=filteredNoise noiseInFreqDomainFiltered
 	
 	// Window in time
-	w += (filteredNoise[p])*unitPulse(x-delay,duration)
+	w += amplitude * (filteredNoise[p]) * unitPulse(x-delay,duration)
 	
-	//// Check the SD
-	//Variable sd=sqrt(Variance(w,delay,delay+duration))		// 0.5*nDFT*amplitude^2
-	//Printf "Final SD: %g\r", sd
+//	// Check the SD
+//	Variable sd=sqrt(Variance(w,delay,delay+duration))		// 0.5*nDFT*amplitude^2
+//	Printf "Final SD: %g\r", sd
 End
 
 Function /S WNoiseGetSignalType()

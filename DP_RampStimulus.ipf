@@ -36,6 +36,16 @@ Function /WAVE RampGetDfltParamsAsStr()
 	return parametersDefault
 End
 
+Function RampAreParamsValid(parameters)
+	Wave parameters
+
+	Variable delay=parameters[0]
+	Variable duration=parameters[1]
+	Variable amplitude=parameters[2]
+
+	return (duration>=0)
+End
+
 Function RampFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

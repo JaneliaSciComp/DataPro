@@ -52,6 +52,20 @@ Function /WAVE MulTrainGetDfltParamsAsStr()
 	return parametersDefault
 End
 
+Function MulTrainAreParamsValid(parameters)
+	Wave parameters
+
+	Variable delay=parameters[0]
+	Variable duration=parameters[1]
+	Variable amplitude=parameters[2]
+	Variable pulseRate=parameters[3]				
+	Variable pulseDuration=parameters[4]
+	Variable trainRate=parameters[5]				
+	Variable trainDuration=parameters[6]
+
+	return (duration>=0) && (pulseRate>0) && (pulseDuration>=0) && (trainRate>0) && (trainDuration>=0)
+End
+
 Function MulTrainFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

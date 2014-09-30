@@ -52,6 +52,20 @@ Function /WAVE PSCGetDfltParamsAsStr()
 	return parametersDefault
 End
 
+Function PSCAreParamsValid(parameters)
+	Wave parameters
+
+	Variable delay=parameters[0]
+	Variable duration=parameters[1]
+	Variable amplitude=parameters[2]
+	Variable tauRise=parameters[3]		
+	Variable tauDecay1=parameters[4]		
+	Variable tauDecay2=parameters[5]		
+	Variable weightDecay2=parameters[6]		
+
+	return (duration>=0) && (tauRise>0) && (tauDecay1>0) && (tauDecay2>0) && (0<=weightDecay2) && (weightDecay2<=1) && (tauRise<tauDecay1) && (tauRise<tauDecay2)
+End
+
 Function PSCFillFromParams(w,parameters)
 	Wave w
 	Wave parameters
