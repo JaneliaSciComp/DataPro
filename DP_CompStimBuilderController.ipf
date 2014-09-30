@@ -89,7 +89,11 @@ Function CSBContSaveAsButtonPressed(bStruct) : ButtonControl
 	endif
 	
 	// Send a message to the sweeper with the wave
-	CSBModelExportToSweeper(waveNameString)
+	Variable returnCode=CSBModelExportToSweeper(waveNameString)
+	if (returnCode<0)
+		// Signal an error
+		DoAlert /T="Unable to Save Wave" 0, sprintf1s("Unable to save wave to Sweeper as \"%s\".",waveNameString)
+	endif
 End
 
 Function CSBContImportButtonPressed(bStruct) : ButtonControl

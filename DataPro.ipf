@@ -47,7 +47,7 @@
 #include ":DP_TTLPulseStimulus"
 //#include ":DP_PulseBuilder"
 #include ":DP_PulseStimulus"
-#include ":DP_CenteredPulseStimulus"
+//#include ":DP_CenteredPulseStimulus"
 #include ":DP_OutputViewerModel"
 #include ":DP_OutputViewerView"
 #include ":DP_OutputViewerController"

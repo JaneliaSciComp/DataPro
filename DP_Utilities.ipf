@@ -453,7 +453,14 @@ End
 
 Function AreStringsEqual(str1,str2)
 	String str1,str2
-	return (cmpstr(str1,str2)==0)
+	Variable isCaseSignificant=1
+	return (cmpstr(str1,str2,isCaseSignificant)==0)
+End
+
+Function AreStringsEqualIgnoringCase(str1,str2)
+	String str1,str2
+	Variable isCaseSignificant=0
+	return (cmpstr(str1,str2,isCaseSignificant)==0)
 End
 
 Function RiseTime(thisWave,tLeft,tRight,yBase,dyPeak,fracFrom,fracTo)

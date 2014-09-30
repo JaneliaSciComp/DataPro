@@ -404,23 +404,25 @@ End
 Function SweeperControllerAddDACWave(w,waveNameString)
 	Wave w
 	String waveNameString
-	if (IsEmptyString(waveNameString))
+	if (IsEmptyString(waveNameString) || AreStringsEqualIgnoringCase(waveNameString,"builtinPulse") )
 		return -1		// have to return something
 	endif
 	SweeperAddDACWave(w,waveNameString)
 	SweeperViewSweeperChanged()
 	OutputViewerContSweprWavsChngd()
+	return 0
 End
 
 Function SweeperControllerAddTTLWave(w,waveNameString)
 	Wave w
 	String waveNameString
-	if (IsEmptyString(waveNameString))
+	if (IsEmptyString(waveNameString) || AreStringsEqualIgnoringCase(waveNameString,"builtinTTLPulse"))
 		return -1		// have to return something
 	endif
 	SweeperAddTTLWave(w,waveNameString)
 	SweeperViewSweeperChanged()
 	OutputViewerContSweprWavsChngd()
+	return 0
 End
 
 Function SweepControllerDigitizerChanged()

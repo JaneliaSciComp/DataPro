@@ -105,13 +105,16 @@ Function CSBModelExportToSweeper(waveNameString)
 	WAVE theWave
 	SVAR signalType
 
+	Variable returnCode=0		// default ot no error condition
 	if ( AreStringsEqual(signalType,"DAC") )
-		SweeperControllerAddDACWave(theWave,waveNameString)
+		returnCode=SweeperControllerAddDACWave(theWave,waveNameString)
 	else
-		SweeperControllerAddTTLWave(theWave,waveNameString)
+		returnCode=SweeperControllerAddTTLWave(theWave,waveNameString)
 	endif
 
 	SetDataFolder savedDF
+	
+	return returnCode
 End
 
 Function CSBModelSweeperDtOrTChanged()

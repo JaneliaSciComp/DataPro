@@ -72,8 +72,9 @@ Function SweeperConstructor()
 	Make /O /N=(nTTLChannels) ttlOutputChannelHijacked  	// all TTL outputs not hijacked by default
 
 	// These control the builtinPulse wave
-	Variable /G builtinPulseAmplitude=1		// amplitude in units given by channel mode
+	Variable /G builtinPulseDelay=75		// ms
 	Variable /G builtinPulseDuration=100		// duration in ms
+	Variable /G builtinPulseAmplitude=1		// amplitude in units given by channel mode
 
 	// Initialize the history
 	Variable /G nHistoryCols=13
@@ -94,7 +95,7 @@ Function SweeperConstructor()
 	
 	// Initialize the BuiltinPulse wave
 	SetDataFolder dacWaves
-	String builtinPulseSimpStim=SimpStim("BuiltinPulse",{num2str(builtinPulseDuration),num2str(builtinPulseAmplitude)})
+	String builtinPulseSimpStim=SimpStim("Pulse",{num2str(builtinPulseDelay),num2str(builtinPulseDuration),num2str(builtinPulseAmplitude)})
 	Wave /T compStim=CompStimFromSimpStim(builtinPulseSimpStim)
 	Make /O builtinPulse
 	CompStimWaveSet(builtinPulse,dtWanted,totalDuration,compStim)		// makes builtinPulse a CompStimWave
@@ -1474,11 +1475,12 @@ Function SweeperUpdateBuiltinPulse()
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Sweeper
 
-	NVAR totalDuration, builtinPulseAmplitude, builtinPulseDuration
+	NVAR totalDuration
+	NVAR builtinPulseDelay, builtinPulseDuration, builtinPulseAmplitude
 	
 	SetDataFolder root:DP_Sweeper:dacWaves
 	WAVE builtinPulse		// bound wave
-		
+	
 //	// Update the wave note for builtinPulse
 //	Note /K builtinPulse
 //	ReplaceStringByKeyInWaveNote(builtinPulse,"WAVETYPE","BuiltinPulse")
@@ -1492,10 +1494,10 @@ Function SweeperUpdateBuiltinPulse()
 //	// Update the wave itself, based in part on the wave note
 //	Variable dt=SweeperGetDt()
 //	resampleBuiltinPulseBang(builtinPulse,dt,totalDuration)	
-		
+	
 	Variable dt=SweeperGetDt()
 	//StimulusReset(builtinPulse,dt,totalDuration,{builtinPulseDuration,builtinPulseAmplitude})
-	String theSimpStim=SimpStim("CenteredPulse",{num2str(builtinPulseDuration),num2str(builtinPulseAmplitude)})
+	String theSimpStim=SimpStim("Pulse",{num2str(builtinPulseDelay),num2str(builtinPulseDuration),num2str(builtinPulseAmplitude)})
 	Wave /T theCompStim=CompStimFromSimpStim(theSimpStim)
 	CompStimWaveSet(builtinPulse,dt,totalDuration,theCompStim)	
 		
