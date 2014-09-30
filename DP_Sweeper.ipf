@@ -1430,7 +1430,7 @@ End
 
 Function SweeperResampleInternalWaves()
 	// Private method, called to resample all the internal waves using the current dtWanted, totalDuration
-	SweeperUpdateBuiltinPulseWave()
+	SweeperUpdateBuiltinPulse()
 	SweeperUpdateBuiltinTTLPulse()
 	SweeperUpdateImportedWaves()
 End
@@ -1469,7 +1469,7 @@ Function SweeperUpdateImportedTTLWaves()
 	endfor
 End
 
-Function SweeperUpdateBuiltinPulseWave()
+Function SweeperUpdateBuiltinPulse()
 	// Updates the simple pulse wave to be consistent with the rest of the model state.
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_Sweeper
@@ -1495,7 +1495,7 @@ Function SweeperUpdateBuiltinPulseWave()
 		
 	Variable dt=SweeperGetDt()
 	//StimulusReset(builtinPulse,dt,totalDuration,{builtinPulseDuration,builtinPulseAmplitude})
-	String theSimpStim=SimpStim("BuiltinPulse",{num2str(builtinPulseDuration),num2str(builtinPulseAmplitude)})
+	String theSimpStim=SimpStim("CenteredPulse",{num2str(builtinPulseDuration),num2str(builtinPulseAmplitude)})
 	Wave /T theCompStim=CompStimFromSimpStim(theSimpStim)
 	CompStimWaveSet(builtinPulse,dt,totalDuration,theCompStim)	
 		

@@ -1,6 +1,6 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
-Function /WAVE BuiltinPulseGetParamNames()
+Function /WAVE CenteredPulseGetParamNames()
 	Variable nParameters=2
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="duration"
@@ -8,7 +8,7 @@ Function /WAVE BuiltinPulseGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE BuiltinPulseGetParamDispNames()
+Function /WAVE CenteredPulseGetParamDispNames()
 	Variable nParameters=2
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="Duration"
@@ -16,7 +16,7 @@ Function /WAVE BuiltinPulseGetParamDispNames()
 	return parameterNames
 End
 
-Function /WAVE BuiltinPulseGetDfltParams()
+Function /WAVE CenteredPulseGetDfltParams()
 	Variable nParameters=2
 	Make /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]=100		// ms
@@ -24,7 +24,7 @@ Function /WAVE BuiltinPulseGetDfltParams()
 	return parametersDefault
 End
 
-Function /WAVE BuiltinPulseGetDfltParamsAsStr()
+Function /WAVE CenteredPulseGetDfltParamsAsStr()
 	Variable nParameters=2
 	Make /T /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]="100"		// ms
@@ -32,15 +32,15 @@ Function /WAVE BuiltinPulseGetDfltParamsAsStr()
 	return parametersDefault
 End
 
-Function BuiltinPulseFillFromParams(w,parameters)
+Function CenteredPulseFillFromParams(w,parameters)
 	Wave w
 	Wave parameters
 
 	w=0
-	BuiltinPulseOverlayFromParams(w,parameters)
+	CenteredPulseOverlayFromParams(w,parameters)
 End
 
-Function BuiltinPulseOverlayFromParams(w,parameters)
+Function CenteredPulseOverlayFromParams(w,parameters)
 	Wave w
 	Wave parameters
 
@@ -57,6 +57,6 @@ Function BuiltinPulseOverlayFromParams(w,parameters)
 	w += amplitude*unitPulse(x-delayTweaked,duration)
 End
 
-Function /S BuiltinPulseGetSignalType()
+Function /S CenteredPulseGetSignalType()
 	return "DAC"
 End
