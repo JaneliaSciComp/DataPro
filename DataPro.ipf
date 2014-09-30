@@ -21,31 +21,31 @@
 #include ":DP_TestPulser"
 #include ":DP_TestPulserView"
 #include ":DP_TestPulserController"
-#include ":DP_SineBuilder"
+//#include ":DP_SineBuilder"
 #include ":DP_SineStimulus"
-#include ":DP_ChirpBuilder"
+//#include ":DP_ChirpBuilder"
 #include ":DP_ChirpStimulus"
-#include ":DP_WNoiseBuilder"
+//#include ":DP_WNoiseBuilder"
 #include ":DP_WNoiseStimulus"
-#include ":DP_PSCBuilder"
+//#include ":DP_PSCBuilder"
 #include ":DP_PSCStimulus"
-#include ":DP_RampBuilder"
+//#include ":DP_RampBuilder"
 #include ":DP_RampStimulus"
-#include ":DP_TrainBuilder"
+//#include ":DP_TrainBuilder"
 #include ":DP_TrainStimulus"
-#include ":DP_TrainWPPBuilder"
+//#include ":DP_TrainWPPBuilder"
 #include ":DP_TrainWPPStimulus"
-#include ":DP_TTLTrainBuilder"
+//#include ":DP_TTLTrainBuilder"
 #include ":DP_TTLTrainStimulus"
-#include ":DP_MulTrainBuilder"
+//#include ":DP_MulTrainBuilder"
 #include ":DP_MulTrainStimulus"
-#include ":DP_TTLMTrainBuilder"
+//#include ":DP_TTLMTrainBuilder"
 #include ":DP_TTLMTrainStimulus"
-#include ":DP_StairBuilder"
-#include ":DP_StairStimulus"
-#include ":DP_TTLPulseBuilder"
+//#include ":DP_StairBuilder"
+//#include ":DP_StairStimulus"
+//#include ":DP_TTLPulseBuilder"
 #include ":DP_TTLPulseStimulus"
-#include ":DP_PulseBuilder"
+//#include ":DP_PulseBuilder"
 #include ":DP_PulseStimulus"
 #include ":DP_BuiltinPulseStimulus"
 #include ":DP_OutputViewerModel"
@@ -53,9 +53,9 @@
 #include ":DP_OutputViewerController"
 #include ":DP_Utilities"
 #include ":DP_MyProcedures"
-#include ":DP_BuilderModel"
-#include ":DP_BuilderView"
-#include ":DP_BuilderController"
+//#include ":DP_BuilderModel"
+//#include ":DP_BuilderView"
+//#include ":DP_BuilderController"
 #include ":DP_Stimulus"
 #include ":DP_Switcher"
 #include ":DP_ASwitcher"
@@ -93,29 +93,29 @@ Menu "DataPro"
 	dpMenu("Sweeper Controls"), SweeperContConstructor()
 	dpMenu("Digitizer Controls"), DigitizerContConstructor()
 	dpMenu("Imager Controls"), ImagerContConstructor()
-	dpMenu("-")
+//	dpMenu("-")
 	dpMenu("New Signal Browser"), BrowserContConstructor("New")
 	dpMenu("Image Browser"), ImageBrowserContConstructor()
 	dpMenu("-")
-	dpMenu("Test Pulser"), TestPulserContConstructor()
-	dpMenu("-")
 	dpMenu("Stimulus Builder"), CSBContConstructor()
-	dpMenu("-")
-	dpMenu("Pulse Builder"), BuilderContConstructor("Pulse")
-	dpMenu("TTL Pulse Builder"), BuilderContConstructor("TTLPulse")
-	dpMenu("Train Builder"), BuilderContConstructor("Train")
-	dpMenu("Train-with-Prepulse Builder"), BuilderContConstructor("TrainWPP")
-	dpMenu("TTL Train Builder"), BuilderContConstructor("TTLTrain")
-	dpMenu("Multiple Train Builder"), BuilderContConstructor("MulTrain")
-	dpMenu("Multiple TTL Train Builder"), BuilderContConstructor("TTLMTrain")
-	dpMenu("Stair Builder"), BuilderContConstructor("Stair")
-	dpMenu("Ramp Builder"), BuilderContConstructor("Ramp")
-	dpMenu("PSC Builder"), BuilderContConstructor("PSC")
-	dpMenu("Sine Builder"), BuilderContConstructor("Sine")
-	dpMenu("Chirp Builder"), BuilderContConstructor("Chirp")
-	dpMenu("White Noise Builder"), BuilderContConstructor("WNoise")
-	dpMenu("-")
+//	dpMenu("-")
+//	dpMenu("Pulse Builder"), BuilderContConstructor("Pulse")
+//	dpMenu("TTL Pulse Builder"), BuilderContConstructor("TTLPulse")
+//	dpMenu("Train Builder"), BuilderContConstructor("Train")
+//	dpMenu("Train-with-Prepulse Builder"), BuilderContConstructor("TrainWPP")
+//	dpMenu("TTL Train Builder"), BuilderContConstructor("TTLTrain")
+//	dpMenu("Multiple Train Builder"), BuilderContConstructor("MulTrain")
+//	dpMenu("Multiple TTL Train Builder"), BuilderContConstructor("TTLMTrain")
+//	dpMenu("Stair Builder"), BuilderContConstructor("Stair")
+//	dpMenu("Ramp Builder"), BuilderContConstructor("Ramp")
+//	dpMenu("PSC Builder"), BuilderContConstructor("PSC")
+//	dpMenu("Sine Builder"), BuilderContConstructor("Sine")
+//	dpMenu("Chirp Builder"), BuilderContConstructor("Chirp")
+//	dpMenu("White Noise Builder"), BuilderContConstructor("WNoise")
+//	dpMenu("-")
 	dpMenu("Output Viewer"), OutputViewerContConstructor()
+	dpMenu("-")
+	dpMenu("Test Pulser"), TestPulserContConstructor()
 	dpMenu("-")
 	dpMenu("Switcher"), SwitcherContConstructor()
 	dpMenu("Axon Switcher"), ASwitcherContConstructor()

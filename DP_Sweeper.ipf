@@ -1742,29 +1742,29 @@ Function /S reconcileDACSequence(dacSequenceRaw,adcSequenceRaw)
 	return dacSequence
 End
 
-Function resampleBuiltinTTLPulseBang(w,dt,totalDuration)
-	Wave w
-	Variable dt, totalDuration
-	
-	Variable delay=NumberByKeyInWaveNote(w,"delay")
-	Variable duration=NumberByKeyInWaveNote(w,"duration")
-	
-	resampleBuiltinTTLPulsePrmsBng(w,dt,totalDuration,delay,duration)
-End
+//Function resampleBuiltinTTLPulseBang(w,dt,totalDuration)
+//	Wave w
+//	Variable dt, totalDuration
+//	
+//	Variable delay=NumberByKeyInWaveNote(w,"delay")
+//	Variable duration=NumberByKeyInWaveNote(w,"duration")
+//	
+//	resampleBuiltinTTLPulsePrmsBng(w,dt,totalDuration,delay,duration)
+//End
 
-Function resampleBuiltinTTLPulsePrmsBng(w,dt,totalDuration,delay,duration)
-	// Compute the wave from the parameters
-	Wave w
-	Variable dt,totalDuration,delay,duration
-	
-	Variable nScans=numberOfScans(dt,totalDuration)
-	Redimension /N=(nScans) w
-	Setscale /P x, 0, dt, "ms", w
-//	Wave temp
-//	Duplicate /FREE BuiltinPulseBoolean(dt,totalDuration,delay,duration) temp
-//	w=temp
-	fillTTLPulseFromParamsBang(w,dt,nScans,{delay,duration},{"delay","duration"})
-End
+//Function resampleBuiltinTTLPulsePrmsBng(w,dt,totalDuration,delay,duration)
+//	// Compute the wave from the parameters
+//	Wave w
+//	Variable dt,totalDuration,delay,duration
+//	
+//	Variable nScans=numberOfScans(dt,totalDuration)
+//	Redimension /N=(nScans) w
+//	Setscale /P x, 0, dt, "ms", w
+////	Wave temp
+////	Duplicate /FREE BuiltinPulseBoolean(dt,totalDuration,delay,duration) temp
+////	w=temp
+//	fillTTLPulseFromParamsBang(w,dt,nScans,{delay,duration},{"delay","duration"})
+//End
 
 Function /T extractBuilderParamsString(waveNote)
 	// Given a wave note from a builder-made stimulus wave, remove all the non-parameter

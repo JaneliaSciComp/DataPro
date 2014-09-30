@@ -41,19 +41,20 @@ End
 Function SweepContDtOrTotalDurChanged()
 	// private method, used to notify everyone that needs notifying after a change to dtWanted or totalDuration
 	SweeperViewSweeperChanged()	// Tell the view that the model has changed
-	BuilderContSweepDtOrTChngd("TTLPulse")
-	BuilderContSweepDtOrTChngd("Pulse")
-	BuilderContSweepDtOrTChngd("Sine")
-	BuilderContSweepDtOrTChngd("PSC")
-	BuilderContSweepDtOrTChngd("Ramp")
-	BuilderContSweepDtOrTChngd("Train")
-	BuilderContSweepDtOrTChngd("TrainWPP")
-	BuilderContSweepDtOrTChngd("TTLTrain")
-	BuilderContSweepDtOrTChngd("MulTrain")
-	BuilderContSweepDtOrTChngd("TTLMTrain")
-	BuilderContSweepDtOrTChngd("Stair")
-	BuilderContSweepDtOrTChngd("Chirp")
-	BuilderContSweepDtOrTChngd("WNoise")
+	CSBContSweepDtOrTChngd()	
+//	BuilderContSweepDtOrTChngd("TTLPulse")
+//	BuilderContSweepDtOrTChngd("Pulse")
+//	BuilderContSweepDtOrTChngd("Sine")
+//	BuilderContSweepDtOrTChngd("PSC")
+//	BuilderContSweepDtOrTChngd("Ramp")
+//	BuilderContSweepDtOrTChngd("Train")
+//	BuilderContSweepDtOrTChngd("TrainWPP")
+//	BuilderContSweepDtOrTChngd("TTLTrain")
+//	BuilderContSweepDtOrTChngd("MulTrain")
+//	BuilderContSweepDtOrTChngd("TTLMTrain")
+//	BuilderContSweepDtOrTChngd("Stair")
+//	BuilderContSweepDtOrTChngd("Chirp")
+//	BuilderContSweepDtOrTChngd("WNoise")
 	OutputViewerContSweprWavsChngd()	// Tell the OutputViewer that the sweeper waves have changed	
 End
 
