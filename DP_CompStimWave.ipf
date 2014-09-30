@@ -114,6 +114,15 @@ Function CompStimWaveSetParamAsString(w,segmentIndex,parameterName,valueAsString
 	CompStimWaveSetCompStim(w,compStim)	
 End
 
+Function /S CompStimWaveGetParamAsString(w,segmentIndex,parameterName)
+	Wave w
+	Variable segmentIndex
+	String parameterName
+	
+	Wave /T compStim=CompStimWaveGetCompStim(w)
+	String result=CompStimGetParamAsString(compStim,segmentIndex,parameterName)
+	return result
+End
 
 Function CompStimWaveSetSegmentType(w,segmentIndex,simpStimType)
 	Wave w
@@ -149,7 +158,7 @@ Function CompStimWaveSetEachToDefault(w)
 	Variable nStimuli=CompStimGetNStimuli(theCompStim)
 	Variable i
 	for (i=0; i<nStimuli; i+=1)
-		String thisStimType=SimpStimGetSignalType(theCompStim[i])
+		String thisStimType=SimpStimGetStimType(theCompStim[i])
 		theCompStim[i]=SimpStimDefault(thisStimType)
 	endfor
 	CompStimWaveSetCompStim(w,theCompStim)

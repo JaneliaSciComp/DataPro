@@ -240,16 +240,16 @@ Function CSBViewLayout()
 			//Printf "bounds: left=%d, top=%d, right=%d, bottom=%d\r", bounds2[0], bounds2[1], bounds2[2], bounds2[3]
 			SetVariable $svName, win=CompStimBuilderView, pos={svXOffset,rowYOffset+yShimSV}   
 			ControlUpdate /W=CompStimBuilderView $svName
-			Wave bounds3=GetControlBounds("CompStimBuilderView",svName)
-			Printf "bounds: left=%d, top=%d, right=%d, bottom=%d\r", bounds3[0], bounds3[1], bounds3[2], bounds3[3]
+			//Wave bounds3=GetControlBounds("CompStimBuilderView",svName)
+			//Printf "bounds: left=%d, top=%d, right=%d, bottom=%d\r", bounds3[0], bounds3[1], bounds3[2], bounds3[3]
 
 			// Position the units TB
 			Variable svRightX=GetControlRightX("CompStimBuilderView",svName)
 			String unitsTBName=sprintf2vs("segment_%d_%s_units_TB",i,paramName)
 			TitleBox $unitsTBName, win=CompStimBuilderView, pos={svRightX+widthBetweenParamSVAndUnits,rowYOffset}
 			ControlUpdate /W=CompStimBuilderView $unitsTBName
-			Wave bounds4=GetControlBounds("CompStimBuilderView",unitsTBName)
-			Printf "bounds: left=%d, top=%d, right=%d, bottom=%d\r", bounds4[0], bounds4[1], bounds4[2], bounds4[3]
+			//Wave bounds4=GetControlBounds("CompStimBuilderView",unitsTBName)
+			//Printf "bounds: left=%d, top=%d, right=%d, bottom=%d\r", bounds4[0], bounds4[1], bounds4[2], bounds4[3]
 
 			// Determine the x-coord of the right side of the units TB
 			lastParamRightX=GetControlRightX("CompStimBuilderView",unitsTBName)
@@ -275,12 +275,8 @@ End
 
 
 Function CSBViewUpdateControlProperties()
-	String builderType
-	
-	// Synthesize the window name from the builderType
-	String windowName="CompStimBuilderView"
-	
 	// If the view doesn't exist, just return
+	String windowName="CompStimBuilderView"
 	if (!GraphExists(windowName))
 		return 0		// Have to return something
 	endif
@@ -336,4 +332,27 @@ Function CSBViewUpdateControlProperties()
 			SetVariable $svName, win=CompStimBuilderView, value= _STR:valueAsString
 		endfor
 	endfor
+End
+
+
+Function CSBViewUpdateSingleSV(segmentIndex,paramName)
+	Variable segmentIndex
+	String paramName
+	
+	// If the view doesn't exist, just return
+	String windowName="CompStimBuilderView"
+	if (!GraphExists(windowName))
+		return 0		// Have to return something
+	endif
+
+	// Save, set data folder
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_CompStimBuilder
+
+	// Instance vars
+	WAVE theWave
+
+	String svName=sprintf2vs("segment_%d_%s_SV",segmentIndex,paramName)
+	String valueAsString=CompStimWaveGetParamAsString(theWave,segmentIndex,paramName)
+	SetVariable $svName, win=CompStimBuilderView, value= _STR:valueAsString
 End

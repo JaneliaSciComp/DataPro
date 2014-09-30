@@ -68,11 +68,11 @@ Function CSBModelSetSegmentType(segmentIndex,simpStimType)
 	SetDataFolder savedDF
 End
 
-Function CSBModelImportWave(fancyWaveNameString)
+Function CSBModelImportWave(waveNameString)
 	// Imports the stimulus parameters from a pre-existing wave in the Sweeper
 	// This is a model method
 	//String builderType
-	String fancyWaveNameString
+	String waveNameString
 	
 	// Switch to the DF
 	String savedDF=GetDataFolder(1)
@@ -80,13 +80,14 @@ Function CSBModelImportWave(fancyWaveNameString)
 	
 	// Instance vars
 	WAVE theWave
+	SVAR signalType
 
 	Variable i
-	if ( AreStringsEqual(fancyWaveNameString,"(Default Settings)") )
+	if ( AreStringsEqual(waveNameString,"(Default Settings)") )
 		CompStimWaveSetEachToDefault(theWave)
 	else
 		// Get the wave from the digitizer
-		Wave exportedWave=SweeperGetWaveByFancyName(fancyWaveNameString)
+		Wave exportedWave=SweeperGetWaveByTypeAndName(signalType,waveNameString)
 		Wave /T theCompStim=CompStimWaveGetCompStim(exportedWave)
 		CompStimWaveSetCompStim(theWave,theCompStim)
 	endif

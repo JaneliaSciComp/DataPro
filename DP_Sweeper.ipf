@@ -785,6 +785,19 @@ Function /WAVE SweeperGetWaveByFancyName(fancyWaveNameString)
 	return exportedWave
 End
 
+Function /WAVE SweeperGetWaveByTypeAndName(signalType,waveNameString)
+	String signalType
+	String waveNameString
+
+	if ( AreStringsEqual(signalType,"DAC") )
+		Wave result=SweeperGetDACWaveByName(waveNameString)
+	else
+		Wave result=SweeperGetTTLWaveByName(waveNameString)
+	endif
+	
+	return result
+End
+
 Function /WAVE SweeperGetDACWaveByName(waveNameString)
 	String waveNameString
 
@@ -1325,6 +1338,17 @@ Function /S SweeperGetFancyWaveListOfType(signalType)
 		String ttlWaveNames=SweeperGetTTLWaveNames()	
 		return fancyWaveList("",ttlWaveNames)
 	endif
+End
+
+Function /S SweeperGetWaveListOfSignalType(signalType)
+	String signalType
+	String result
+	if ( AreStringsEqual(signalType,"DAC") )		
+		result=SweeperGetDACWaveNames()
+	else
+		result=SweeperGetTTLWaveNames()	
+	endif
+	return result
 End
 
 Function SweeperSetDACMultiplier(i,newValue)

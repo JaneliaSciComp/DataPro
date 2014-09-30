@@ -222,3 +222,13 @@ Function SimpStimAreParamsValid(simpStim)
 	
 	return areValid
 End
+
+
+Function /S SimpStimGetParamAsString(simpStim,paramName)
+	String simpStim
+	String paramName
+	
+	String paramList=	SimpStimGetParamList(simpStim)
+	String result=StringByKey(paramName,paramList,"=",",")
+	return result
+End

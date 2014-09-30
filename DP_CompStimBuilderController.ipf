@@ -59,7 +59,8 @@ Function CSBContParamSVActuated(svStruct) : SetVariableControl
 	
 	// Tell the model, tell the view
 	CSBModelSetParameterAsString(segmentIndex,parameterName,valueAsString)
-	CSBViewUpdate()
+	//CSBViewUpdate()
+	CSBViewUpdateSingleSV(segmentIndex,parameterName)
 End
 
 Function CSBContSaveAsButtonPressed(bStruct) : ButtonControl
@@ -104,14 +105,14 @@ Function CSBContImportButtonPressed(bStruct) : ButtonControl
 //	String builderType=windowName[0,iEnd-1]
 
 	String signalType=CSBModelGetSignalType()
-	String fancyWaveNameString
-	String popupListString="(Default Settings);"+SweeperGetFancyWaveListOfType(signalType)
-	Prompt fancyWaveNameString, "Select wave to import:", popup, popupListString
-	DoPrompt "Import...", fancyWaveNameString
+	String waveNameString
+	String popupListString="(Default Settings);"+SweeperGetWaveListOfSignalType(signalType)
+	Prompt waveNameString, "Select wave to import:", popup, popupListString
+	DoPrompt "Import...", waveNameString
 	if (V_Flag)
 		return -1		// user hit Cancel
 	endif
-	CSBModelImportWave(fancyWaveNameString)
+	CSBModelImportWave(waveNameString)
 	CSBViewUpdate()
 End
 

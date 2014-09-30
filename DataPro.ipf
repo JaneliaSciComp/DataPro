@@ -171,7 +171,7 @@ End
 //End
 
 Function AfterCompiledHook()
-	Printf "Inside AfterCompiledHook()\r"
+	//Printf "Inside AfterCompiledHook()\r"
 	InitializeDataPro()
 	PostInitializationHook()
 End

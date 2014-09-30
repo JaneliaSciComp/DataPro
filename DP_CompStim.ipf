@@ -109,6 +109,17 @@ Function /WAVE CompStimSetParamAsString(compStimOriginal,segmentIndex,parameterN
 	return result
 End
 
+Function /S CompStimGetParamAsString(compStim,segmentIndex,parameterName)
+	Wave /T compStim
+	Variable segmentIndex
+	String parameterName
+
+	String simpStim=compStim[segmentIndex]
+	String result=SimpStimGetParamAsString(simpStim,parameterName)
+	
+	return result
+End
+
 Function /WAVE CompStimSetSegmentType(compStimOriginal,segmentIndex,simpStimType)
 	Wave /T compStimOriginal
 	Variable segmentIndex
