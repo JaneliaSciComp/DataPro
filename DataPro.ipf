@@ -56,7 +56,7 @@
 //#include ":DP_BuilderModel"
 //#include ":DP_BuilderView"
 //#include ":DP_BuilderController"
-#include ":DP_Stimulus"
+//#include ":DP_Stimulus"
 #include ":DP_Switcher"
 #include ":DP_ASwitcher"
 #include ":DP_Camera"

@@ -948,7 +948,9 @@ Function SweeperSetTTLWaveParams(waveNameString,params)
 	SetDataFolder root:DP_Sweeper:ttlWaves
 
 	Wave stim=$waveNameString
-	StimulusSetParams(stim,params)
+	Wave /T paramsAsStrings=textWaveFromNumericWave(params)
+	//StimulusSetParams(stim,params)
+	CompStimWaveSetSegParamsAsStrs(stim,1,paramsAsStrings)
 
 	// Notify the output viewer model
 	OutputViewerModelSweprWavsChngd()
@@ -1112,7 +1114,7 @@ Function SweeperHijackTTLOutput(i,stimName,stim)
 	WAVE ttlOutputChannelHijacked
 	
 	// If that TTL output is already in use, do nothing
-	if (SweeperGetTTLOutputChannelOn(i))
+	if ( SweeperGetTTLOutputChannelOn(i) )
 		return 0
 	endif
 

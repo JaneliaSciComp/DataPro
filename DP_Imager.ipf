@@ -1642,7 +1642,10 @@ Function ImagerHijackSweeperCamTrigger(ttlOutputIndex)
 	String name="cameraTrigger"
 	Variable delay=ImagerGetTriggerDelay()
 	Variable duration=10	// ms
-	Wave w=StimulusConstructor(SweeperGetDt(),SweeperGetTotalDuration(),"TTLPulse",{delay,duration})
+	//Wave w=StimulusConstructor(SweeperGetDt(),SweeperGetTotalDuration(),"TTLPulse",{delay,duration})
+	Make /FREE params={delay,duration}
+	Wave /T paramsAsStrings=textWaveFromNumericWave(params)
+	Wave w=CompStimWaveSingleton(SweeperGetDt(),SweeperGetTotalDuration(),"TTLPulse",paramsAsStrings)
 	SweeperHijackTTLOutput(ttlOutputIndex,name,w)	
 End
 
@@ -1666,7 +1669,10 @@ Function ImagerHijackSweeperEpiGate(ttlOutputIndex)
 	String name="epiLightGate"
 	Variable delay=EpiLightGetTriggeredDelay()
 	Variable duration=EpiLightGetTriggeredDuration()
-	Wave w=StimulusConstructor(SweeperGetDt(),SweeperGetTotalDuration(),"TTLPulse",{delay,duration})
+	//Wave w=StimulusConstructor(SweeperGetDt(),SweeperGetTotalDuration(),"TTLPulse",{delay,duration})
+	Make /FREE params={delay,duration}
+	Wave /T paramsAsStrings=textWaveFromNumericWave(params)
+	Wave w=CompStimWaveSingleton(SweeperGetDt(),SweeperGetTotalDuration(),"TTLPulse",paramsAsStrings)
 	SweeperHijackTTLOutput(ttlOutputIndex,name,w)	
 End
 

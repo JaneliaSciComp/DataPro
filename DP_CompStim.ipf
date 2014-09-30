@@ -1,4 +1,5 @@
 // This is a data type that implements a compound stimulus.
+// These are treated as _immutable_ objects.  If you change it, it returns a new and indepent one.
 
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
@@ -11,6 +12,14 @@ Function /WAVE CompStimFromSimpStim(simpStim)
 	String simpStim	
 	Make /T /FREE /N=(1) result={simpStim}
 	return result
+End
+
+Function /WAVE CompStimSingleton(stimType,paramsAsStrings)
+	String stimType
+	Wave /T paramsAsStrings
+	
+	String thisSimpStim=SimpStim(stimType,paramsAsStrings)
+	return CompStimFromSimpStim(thisSimpStim)
 End
 
 Function /S StringFromCompStim(compStim)
@@ -155,6 +164,20 @@ Function /WAVE CompStimDelSegment(compStimOriginal)
 	endif
 	
 	return result
+End
+
+Function /WAVE CompStimSetSegParamsAsStrs(compStimOriginal,segmentIndex,paramsAsStrings)
+	Wave /T compStimOriginal
+	Variable segmentIndex
+	Wave /T paramsAsStrings
+
+	String simpStimOriginal=compStimOriginal[segmentIndex]
+	String stimType=SimpStimGetStimType(simpStimOriginal)
+	String thisSimpStim=SimpStim(stimType,paramsAsStrings)
+	Duplicate /T /FREE compStimOriginal, result
+	result[segmentIndex]=thisSimpStim
+	
+	return result	
 End
 
 //Function SetWaveToCompStimBang(w,dt,durationWanted,compStim)

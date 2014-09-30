@@ -2,6 +2,7 @@
 // If you want to change the duration or the dt for the stimulus, the wave note contains enough information
 // to do this.  Each CompStimWave should obey the invariant that the wave data points match the CompStim encoded
 // as a string in the wave note.
+// These are treated as mutable objects.
 
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
@@ -13,6 +14,16 @@ Function /WAVE CompStimWave(dt,durationWanted,compStim)
 	Make /FREE /N=0 w	
 	CompStimWaveSet(w,dt,durationWanted,compStim)
 	return w
+End
+
+Function /WAVE CompStimWaveSingleton(dt,durationWanted,stimType,paramsAsStrings)
+	Variable dt
+	Variable durationWanted
+	String stimType
+	Wave /T paramsAsStrings
+	
+	Wave /T compStim=CompStimSingleton(stimType,paramsAsStrings)
+	return CompStimWave(dt,durationWanted,compStim)
 End
 
 //Function /WAVE CompStimWaveDefault(dt,durationWanted,simpStimType)
@@ -162,6 +173,17 @@ Function CompStimWaveSetEachToDefault(w)
 		theCompStim[i]=SimpStimDefault(thisStimType)
 	endfor
 	CompStimWaveSetCompStim(w,theCompStim)
+End
+
+Function CompStimWaveSetSegParamsAsStrs(w,segmentIndex,paramsAsStrings)
+	// Sets the parameters in the special case where there is only one SimpStim
+	Wave w
+	Variable segmentIndex
+	Wave /T paramsAsStrings
+	
+	Wave /T compStimOriginal=CompStimWaveGetCompStim(w)
+	Wave /T compStimNew=CompStimSetSegParamsAsStrs(compStimOriginal,segmentIndex,paramsAsStrings)
+	CompStimWaveSetCompStim(w,compStimNew)
 End
 
 

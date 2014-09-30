@@ -357,18 +357,18 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 			Variable duration=1000*(frameInterval*ImagerGetNFramesForVideo())	// s->ms
 			Variable pulseRate=1/frameInterval	// Hz
 			Variable pulseDuration=1000*exposureWantedInSeconds	// s->ms
-			Variable baseLevel=0		// V
+			//Variable baseLevel=0		// V
 			Variable amplitude=5		// V, for a TTL signal
-			Make /FREE parameters={delay,duration,pulseRate,pulseDuration,baseLevel,amplitude}
-			Make /FREE /T parameterNames={"delay","duration","pulseRate","pulseDuration","baseLevel","amplitude"}
+			Make /FREE parameters={delay,duration,amplitude,pulseRate,pulseDuration}
+			//Make /FREE /T parameterNames={"delay","duration","pulseRate","pulseDuration","baseLevel","amplitude"}
 			//fillTrainFromParamsBang(exposure,dt,nScans,parameters,parameterNames)
 			//StimulusSetParams(exposure,parameters)
 			
 			// Have to fil the samples "manually", because want the WAVETYPE to stay "adc"
-			String stimulusType="Train"
-			String fillFunctionName=stimulusType+"FillFromParams"
-			Funcref StimulusFillFromParamsSig fillFunction=$fillFunctionName
-			fillFunction(exposure,parameters)
+			//String stimulusType="Train"
+			//String fillFunctionName=stimulusType+"FillFromParams"
+			//Funcref StimulusFillFromParamsSig fillFunction=$fillFunctionName
+			TrainFillFromParams(exposure,parameters)
 		endif
 	endif
 
