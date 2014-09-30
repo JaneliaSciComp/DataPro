@@ -39,7 +39,7 @@ Function CSBViewConstructor() : Graph
 	Variable topButtonsYOffset=10
 	Variable bottomButtonsYOffset=45
 	Variable buttonWidth=90
-	Variable buttonHeight=20
+	Variable buttonHeight=24
 	Variable leftOfSignalTypeLabelSpace=6
 	Variable signalTypeRowYOffset=8
 	Variable yShimPopup= -4
@@ -174,7 +174,7 @@ Function CSBViewLayout()
 	Wave /T compStim=CompStimWaveGetCompStim(theWave)
 	Variable nSimpStims=CompStimGetNStimuli(compStim)
 
-	Variable minControlBarHeight=100
+	Variable minControlBarHeight=82
 	Variable controlBarHeightRaw=topRowYOffset+nSimpStims*rowheight+(nSimpStims-1)*heightBetweenRows
 	Variable controlBarHeight=max(minControlBarHeight,controlBarHeightRaw)
 	ControlBar /W=CompStimBuilderView controlBarHeight
@@ -283,6 +283,8 @@ Function CSBViewUpdateControlProperties()
 	
 	Wave /T compStim=CompStimWaveGetCompStim(theWave)
 	Variable nSimpStims=CompStimGetNStimuli(compStim)
+
+	Button deleteSegmentButton, win=CompStimBuilderView, disable=fromEnable(nSimpStims>1)
 
 	Wave /T possibleSimpStimTypes=CSBModelGetStimTypes()
 	String listOfPossibleSimpStimTypes=ListFromTextWave(possibleSimpStimTypes)
