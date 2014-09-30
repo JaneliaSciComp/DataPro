@@ -66,6 +66,19 @@ Function MulTrainAreParamsValid(parameters)
 	return (duration>=0) && (pulseRate>0) && (pulseDuration>=0) && (trainRate>0) && (trainDuration>=0)
 End
 
+Function /WAVE MulTrainGetParamUnits()
+	Variable nParameters=7
+	Make /T /FREE /N=(nParameters) paramUnits
+	paramUnits[0]="ms"
+	paramUnits[1]="ms"
+	paramUnits[2]=""
+	paramUnits[3]="Hz"
+	paramUnits[4]="ms"
+	paramUnits[5]="Hz"
+	paramUnits[6]="ms"
+	return paramUnits
+End
+
 Function MulTrainFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

@@ -46,6 +46,16 @@ Function RampAreParamsValid(parameters)
 	return (duration>=0)
 End
 
+Function /WAVE RampGetParamUnits()
+	Variable nParameters=3
+	Make /T /FREE /N=(nParameters) paramUnits
+	paramUnits[0]="ms"
+	paramUnits[1]="ms"
+	paramUnits[2]=""
+	return paramUnits
+End
+
+
 Function RampFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

@@ -51,6 +51,16 @@ Function SineAreParamsValid(parameters)
 	return (duration>=0) && (frequency>0)
 End
 
+Function /WAVE SineGetParamUnits()
+	Variable nParameters=4
+	Make /T /FREE /N=(nParameters) paramUnits
+	paramUnits[0]="ms"
+	paramUnits[1]="ms"
+	paramUnits[2]=""
+	paramUnits[3]="Hz"
+	return paramUnits
+End
+
 Function SineFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

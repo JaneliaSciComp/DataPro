@@ -56,6 +56,17 @@ Function TrainAreParamsValid(parameters)
 	return (duration>=0) && (pulseRate>0) && (pulseDuration>=0)
 End
 
+Function /WAVE TrainGetParamUnits()
+	Variable nParameters=5
+	Make /T /FREE /N=(nParameters) paramUnits
+	paramUnits[0]="ms"
+	paramUnits[1]="ms"
+	paramUnits[2]=""
+	paramUnits[3]="Hz"
+	paramUnits[4]="ms"
+	return paramUnits
+End
+
 Function TrainFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

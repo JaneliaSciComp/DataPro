@@ -45,6 +45,17 @@ Function ChirpAreParamsValid(parameters)
 	return (duration>=0) && (initialFrequency>0) && (finalFrequency>0)
 End
 
+Function /WAVE ChirpGetParamUnits()
+	Variable nParameters=5
+	Make /T /FREE /N=(nParameters) paramUnits
+	paramUnits[0]="ms"
+	paramUnits[1]="ms"
+	paramUnits[2]=""
+	paramUnits[3]="Hz"
+	paramUnits[4]="Hz"
+	return paramUnits
+End
+
 Function ChirpFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

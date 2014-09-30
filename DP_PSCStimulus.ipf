@@ -66,6 +66,19 @@ Function PSCAreParamsValid(parameters)
 	return (duration>=0) && (tauRise>0) && (tauDecay1>0) && (tauDecay2>0) && (0<=weightDecay2) && (weightDecay2<=1) && (tauRise<tauDecay1) && (tauRise<tauDecay2)
 End
 
+Function /WAVE PSCGetParamUnits()
+	Variable nParameters=7
+	Make /T /FREE /N=(nParameters) paramUnits
+	paramUnits[0]="ms"
+	paramUnits[1]="ms"
+	paramUnits[2]=""
+	paramUnits[3]="ms"
+	paramUnits[4]="ms"
+	paramUnits[5]="ms"
+	paramUnits[6]=""
+	return paramUnits
+End
+
 Function PSCFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

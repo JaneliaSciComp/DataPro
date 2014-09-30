@@ -122,20 +122,32 @@ Function CSBViewUpdateWhichControlsExist()
 		String getParamNamesFuncName=simpStimType+"GetParamNames"
 		Funcref SSTGetParamNamesFallback getParamNames=$getParamNamesFuncName
 		Wave /T paramNames=getParamNames()
+
 		// Get the display param names for this segment type
 		String getParamDisplayNamesFuncName=simpStimType+"GetParamDispNames"
 		Funcref SSTGetParamDispNamesFallback getParamDisplayNames=$getParamDisplayNamesFuncName
 		Wave /T paramDisplayNames=getParamDisplayNames()
-		String segmentParamsList=SimpStimGetParamList(simpStim)
+
+		// Get the parameter units for this segment type
+		String getParamUnitsFuncName=simpStimType+"GetParamUnits"
+		Funcref SSTGetParamUnitsFallback getParamUnits=$getParamUnitsFuncName
+		Wave /T paramUnits=getParamUnits()
+
+		// For each parameter, create the controls for it
 		Variable nParams=numpnts(paramNames)
 		Variable j
 		for (j=0; j<nParams; j+=1)
+			// the SV
 			String paramName=paramNames[j]
+			String svName=sprintf2vs("segment_%d_%s_SV",i,paramName)
 			String paramDisplayName=paramDisplayNames[j]
 			String paramLabel=sprintf1s("%s:",paramDisplayName)
-			String svName=sprintf2vs("segment_%d_%s_SV",i,paramName)
-			// Update the control
 			SetVariable $svName, win=CompStimBuilderView, title=paramLabel, limits={-inf,+inf,1}, proc=CSBContParamSVActuated
+			
+			// the TitleBox containing the units
+			String unitsTBName=sprintf2vs("segment_%d_%s_units_TB",i,paramName)
+			String thisParamUnits=stringFif( IsEmptyString(paramUnits[j]), " ", paramUnits[j])		// Grrr: TBs have default width of 50 if the title is empty...
+			TitleBox $unitsTBName, win=CompStimBuilderView, frame=0, title=thisParamUnits
 		endfor
 	endfor	
 	
@@ -163,13 +175,14 @@ Function CSBViewLayout()
 	Variable typePopupXOffset=segmentLabelRightX+segmentLabelToPopupWidth
 	Variable popupToLeftSVWidth=15
 	Variable leftSVXOffset=typePopupXOffset+pmWidth+popupToLeftSVWidth
-	Variable widthBetweenSVs=15
+	Variable widthBetweenParams=20
 	Variable topRowYOffset=signalTypePMBottomY+heightBetweenSigTypePMAndTopRow
 	Variable rowHeight=25
 	Variable heightBetweenRows=5
 	Variable rowYSpacing=rowHeight+heightBetweenRows
 	Variable yShimPopup= -4
 	Variable yShimSV=-2	
+	Variable widthBetweenParamSVAndUnits=2
 
 	Wave /T compStim=CompStimWaveGetCompStim(theWave)
 	Variable nSimpStims=CompStimGetNStimuli(compStim)
@@ -210,38 +223,36 @@ Function CSBViewLayout()
 		String segmentParamsList=SimpStimGetParamList(simpStim)
 		Variable nParams=numpnts(paramNames)
 		Variable j
-		Variable lastSVRightX=leftSVXOffset-widthBetweenSVs
+		Variable lastParamRightX=leftSVXOffset-widthBetweenParams
 		for (j=0; j<nParams; j+=1)
 			String paramName=paramNames[j]
-			//String paramDisplayName=paramDisplayNames[j]
-			// Get the parameter value
 			Variable value=NumberByKey(paramName,segmentParamsList)
+
+			// Update the SV position
 			String svName=sprintf2vs("segment_%d_%s_SV",i,paramName)
-			// Update the control
-			Variable svXOffset=lastSVRightX+widthBetweenSVs
-			Printf "%s desired left: %d\r", svName, svXOffset
-
-			//SetVariable $svName, win=CompStimBuilderView, pos={svXOffset,rowYOffset}, size={svApproxWidth,0}		// SV height is ignored
-			//SetVariable $svName, win=CompStimBuilderView, size={svApproxWidth,0}		// SV height is ignored
-			//ControlUpdate /W=CompStimBuilderView $svName
-
-			Wave bounds=GetControlBounds("CompStimBuilderView",svName)
-			Printf "bounds: left=%d, top=%d, right=%d, bottom=%d\r", bounds[0], bounds[1], bounds[2], bounds[3]		
-			
+			Variable svXOffset=lastParamRightX+widthBetweenParams
+			//Printf "%s desired left: %d\r", svName, svXOffset
+			//Wave bounds=GetControlBounds("CompStimBuilderView",svName)
+			//Printf "bounds: left=%d, top=%d, right=%d, bottom=%d\r", bounds[0], bounds[1], bounds[2], bounds[3]
 			SetVariable $svName, win=CompStimBuilderView, bodyWidth=svBodyWidth	
 			ControlUpdate /W=CompStimBuilderView $svName
-
-			Wave bounds2=GetControlBounds("CompStimBuilderView",svName)
-			Printf "bounds: left=%d, top=%d, right=%d, bottom=%d\r", bounds2[0], bounds2[1], bounds2[2], bounds2[3]
-
+			//Wave bounds2=GetControlBounds("CompStimBuilderView",svName)
+			//Printf "bounds: left=%d, top=%d, right=%d, bottom=%d\r", bounds2[0], bounds2[1], bounds2[2], bounds2[3]
 			SetVariable $svName, win=CompStimBuilderView, pos={svXOffset,rowYOffset+yShimSV}   
 			ControlUpdate /W=CompStimBuilderView $svName
-
 			Wave bounds3=GetControlBounds("CompStimBuilderView",svName)
 			Printf "bounds: left=%d, top=%d, right=%d, bottom=%d\r", bounds3[0], bounds3[1], bounds3[2], bounds3[3]
 
-			// Determine the x-coord of the right side of the SV 
-			lastSVRightX=GetControlRightX("CompStimBuilderView",svName)
+			// Position the units TB
+			Variable svRightX=GetControlRightX("CompStimBuilderView",svName)
+			String unitsTBName=sprintf2vs("segment_%d_%s_units_TB",i,paramName)
+			TitleBox $unitsTBName, win=CompStimBuilderView, pos={svRightX+widthBetweenParamSVAndUnits,rowYOffset}
+			ControlUpdate /W=CompStimBuilderView $unitsTBName
+			Wave bounds4=GetControlBounds("CompStimBuilderView",unitsTBName)
+			Printf "bounds: left=%d, top=%d, right=%d, bottom=%d\r", bounds4[0], bounds4[1], bounds4[2], bounds4[3]
+
+			// Determine the x-coord of the right side of the units TB
+			lastParamRightX=GetControlRightX("CompStimBuilderView",unitsTBName)
 		endfor
 	endfor
 	
@@ -256,6 +267,10 @@ End
 
 Function /WAVE SSTGetParamDispNamesFallback()
 	Abort "Internal Error: Attempt to call a <simpStimType>GetParamDispNames function that doesn't exist"
+End
+
+Function /WAVE SSTGetParamUnitsFallback()
+	Abort "Internal Error: Attempt to call a <simpStimType>GetParamUnits function that doesn't exist"
 End
 
 

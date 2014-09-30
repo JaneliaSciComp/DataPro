@@ -41,6 +41,14 @@ Function TTLPulseAreParamsValid(parameters)
 	return (duration>=0)
 End
 
+Function /WAVE TTLPulseGetParamUnits()
+	Variable nParameters=2
+	Make /T /FREE /N=(nParameters) paramUnits
+	paramUnits[0]="ms"
+	paramUnits[1]="ms"
+	return paramUnits
+End
+
 Function TTLPulseFillFromParams(w,params)
 	Wave w
 	Wave params

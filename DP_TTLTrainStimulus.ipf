@@ -51,6 +51,16 @@ Function TTLTrainAreParamsValid(parameters)
 	return (duration>=0) && (pulseRate>0) && (pulseDuration>=0)
 End
 
+Function /WAVE TTLTrainGetParamUnits()
+	Variable nParameters=4
+	Make /T /FREE /N=(nParameters) paramUnits
+	paramUnits[0]="ms"
+	paramUnits[1]="ms"
+	paramUnits[2]="Hz"
+	paramUnits[3]="ms"
+	return paramUnits
+End
+
 Function TTLTrainFillFromParams(w,parameters)
 	Wave w
 	Wave parameters

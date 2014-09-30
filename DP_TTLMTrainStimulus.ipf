@@ -40,7 +40,7 @@ Function /WAVE TTLMTrainGetDfltParamsAsStr()
 	Variable nParameters=6
 	Make /T /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]="25"		// ms
-	parametersDefault[1]="150"		// ms
+	parametersDefault[1]="150"	// ms
 	parametersDefault[2]="100"	// Hz
 	parametersDefault[3]="2"		// ms
 	parametersDefault[4]="20"		// Hz
@@ -59,6 +59,18 @@ Function TTLMTrainAreParamsValid(parameters)
 	Variable trainDuration=parameters[5]
 
 	return (duration>=0) && (pulseRate>0) && (pulseDuration>=0) && (trainRate>0) && (trainDuration>=0)
+End
+
+Function /WAVE TTLMTrainGetParamUnits()
+	Variable nParameters=6
+	Make /T /FREE /N=(nParameters) paramUnits
+	paramUnits[0]="ms"
+	paramUnits[1]="ms"
+	paramUnits[2]="Hz"
+	paramUnits[3]="ms"
+	paramUnits[4]="Hz"
+	paramUnits[5]="ms"
+	return paramUnits
 End
 
 Function TTLMTrainFillFromParams(w,parameters)

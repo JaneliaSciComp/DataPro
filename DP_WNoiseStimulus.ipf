@@ -56,6 +56,17 @@ Function WNoiseAreParamsValid(parameters)
 	return (duration>=0) && (fLow>=0) && (fHigh>0) && (fLow<fHigh)
 End
 
+Function /WAVE WNoiseGetParamUnits()
+	Variable nParameters=5
+	Make /T /FREE /N=(nParameters) paramUnits
+	paramUnits[0]="ms"
+	paramUnits[1]="ms"
+	paramUnits[2]=""
+	paramUnits[3]="kHz"
+	paramUnits[4]="kHz"
+	return paramUnits
+End
+
 Function WNoiseFillFromParams(w,parameters)
 	Wave w
 	Wave parameters
