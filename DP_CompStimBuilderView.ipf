@@ -25,7 +25,7 @@ Function CSBViewConstructor() : Graph
 	Variable yOffsetInPoints=pointsPerPixel*yOffset
 	Variable widthInPoints=pointsPerPixel*width
 	Variable heightInPoints=pointsPerPixel*height
-	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) /K=1 /N=CompStimBuilderView theWave as "Compound Stimulus Builder"
+	Display /W=(xOffsetInPoints,yOffsetInPoints,xOffsetInPoints+widthInPoints,yOffsetInPoints+heightInPoints) /K=1 /N=CompStimBuilderView theWave as "Stimulus Builder"
 	ModifyGraph /W=CompStimBuilderView /Z grid(left)=1
 	Label /W=CompStimBuilderView /Z bottom "Time (ms)"
 	Label /W=CompStimBuilderView /Z left "Signal (pure)"
@@ -69,6 +69,12 @@ End
 
 
 Function CSBViewUpdate()
+	// If the view doesn't exist, just return
+	String windowName="CompStimBuilderView"
+	if (!GraphExists(windowName))
+		return 0		// Have to return something
+	endif
+
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_CompStimBuilder
 	
@@ -81,6 +87,12 @@ End
 
 
 Function CSBViewUpdateWhichControlsExist()
+	// If the view doesn't exist, just return
+	String windowName="CompStimBuilderView"
+	if (!GraphExists(windowName))
+		return 0		// Have to return something
+	endif
+
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_CompStimBuilder
 
@@ -155,6 +167,12 @@ Function CSBViewUpdateWhichControlsExist()
 End
 
 Function CSBViewLayout()
+	// If the view doesn't exist, just return
+	String windowName="CompStimBuilderView"
+	if (!GraphExists(windowName))
+		return 0		// Have to return something
+	endif
+
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_CompStimBuilder
 
