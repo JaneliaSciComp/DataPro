@@ -30,17 +30,17 @@ How to Install
 
        http://www.bruxton.com/SIDX/index.html  
 
-2. Unzip the DataPro-release_8.15.zip file, which creates a folder called 
-   DataPro-release_8.15.
+2. Unzip the DataPro-release_8.2.zip file, which creates a folder called 
+   DataPro-release_8.2.
 
-3. Copy the folder DataPro-release_8.15 to the "Igor Pro 6 User Files"
+3. Copy the folder DataPro-release_8.2 to the "Igor Pro 6 User Files"
    folder.  (You must copy the whole folder, not just the files within
    the folder.)
 
 4. In experiments where you want to use this version of DataPro, add
    the line
 
-     #include ":DataPro-release_8.15:DataPro"
+     #include ":DataPro-release_8.2:DataPro"
 
    to the experiment's procedure file.  You can access this from the
    Igor Pro menu by going to
@@ -264,6 +264,13 @@ Added a Train-with-Prepulse builder.
 
 Manually merged in barrage silencing code, but commented out in master
 branch.
+
+
+
+
+8.15 -> 8.2    (October 1, 2014)
+
+Added compound stimulus builder.
 
 
 
