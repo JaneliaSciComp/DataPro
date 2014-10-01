@@ -86,13 +86,7 @@ Function CSBViewUpdate()
 End
 
 
-Function CSBViewUpdateWhichControlsExist()
-	// If the view doesn't exist, just return
-	String windowName="CompStimBuilderView"
-	if (!GraphExists(windowName))
-		return 0		// Have to return something
-	endif
-
+Function CSBViewUpdateWhichControlsExist()		// private
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_CompStimBuilder
 
@@ -166,13 +160,7 @@ Function CSBViewUpdateWhichControlsExist()
 	SetDataFolder savedDF	
 End
 
-Function CSBViewLayout()
-	// If the view doesn't exist, just return
-	String windowName="CompStimBuilderView"
-	if (!GraphExists(windowName))
-		return 0		// Have to return something
-	endif
-
+Function CSBViewLayout()	// private
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_CompStimBuilder
 
@@ -292,13 +280,7 @@ Function /WAVE SSTGetParamUnitsFallback()
 End
 
 
-Function CSBViewUpdateControlProperties()
-	// If the view doesn't exist, just return
-	String windowName="CompStimBuilderView"
-	if (!GraphExists(windowName))
-		return 0		// Have to return something
-	endif
-
+Function CSBViewUpdateControlProperties()		// private
 	// Save, set data folder
 	String savedDF=GetDataFolder(1)
 	SetDataFolder root:DP_CompStimBuilder
@@ -353,7 +335,7 @@ Function CSBViewUpdateControlProperties()
 End
 
 
-Function CSBViewUpdateSingleSV(segmentIndex,paramName)
+Function CSBViewUpdateSingleSV(segmentIndex,paramName)	// public
 	Variable segmentIndex
 	String paramName
 	
