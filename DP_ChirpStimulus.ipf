@@ -11,15 +11,49 @@ Function /WAVE ChirpGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE ChirpGetDefaultParams()
+Function /WAVE ChirpGetParamDispNames()
 	Variable nParameters=5
-	Make /FREE /N=(nParameters) parametersDefault
-	parametersDefault[0]=10
-	parametersDefault[1]=50
-	parametersDefault[2]=10
-	parametersDefault[3]=50
-	parametersDefault[4]=200
-	return parametersDefault
+	Make /T /FREE /N=(nParameters) parameterNames
+	parameterNames[0]="Delay"
+	parameterNames[1]="Duration"
+	parameterNames[2]="Amplitude"
+	parameterNames[3]="Initial Frequency"
+	parameterNames[4]="Final Frequency"
+	return parameterNames
+End
+
+Function /WAVE ChirpGetDfltParamsAsStr()
+	Variable nParameters=5
+	Make /T /FREE /N=(nParameters) result
+	result[0]="10"
+	result[1]="50"
+	result[2]="1"
+	result[3]="50"
+	result[4]="200"
+	return result
+End
+
+Function ChirpAreParamsValid(parameters)
+	Wave parameters
+
+	Variable delay=parameters[0]
+	Variable duration=parameters[1]
+	Variable amplitude=parameters[2]
+	Variable initialFrequency=parameters[3]
+	Variable finalFrequency=parameters[4]
+
+	return (duration>=0) && (initialFrequency>0) && (finalFrequency>0)
+End
+
+Function /WAVE ChirpGetParamUnits()
+	Variable nParameters=5
+	Make /T /FREE /N=(nParameters) paramUnits
+	paramUnits[0]="ms"
+	paramUnits[1]="ms"
+	paramUnits[2]=""
+	paramUnits[3]="Hz"
+	paramUnits[4]="Hz"
+	return paramUnits
 End
 
 Function ChirpFillFromParams(w,parameters)
@@ -33,6 +67,19 @@ Function ChirpFillFromParams(w,parameters)
 	Variable finalFrequency=parameters[4]
 
 	w=amplitude*unitPulse(x-delay,duration)*amplitude*sin(2*PI*(x-delay)/1000*(0.5*(finalFrequency-initialFrequency)/(duration/1000)*(x-delay)/1000+initialFrequency))
+End
+
+Function ChirpOverlayFromParams(w,parameters)
+	Wave w
+	Wave parameters
+
+	Variable delay=parameters[0]
+	Variable duration=parameters[1]
+	Variable amplitude=parameters[2]
+	Variable initialFrequency=parameters[3]
+	Variable finalFrequency=parameters[4]
+
+	w += amplitude*unitPulse(x-delay,duration)*amplitude*sin(2*PI*(x-delay)/1000*(0.5*(finalFrequency-initialFrequency)/(duration/1000)*(x-delay)/1000+initialFrequency))
 End
 
 Function /S ChirpGetSignalType()

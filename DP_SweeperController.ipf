@@ -12,7 +12,7 @@ Function SweeperControllerSVTwiddled(ctrlName,varNum,varStr,varName) : SetVariab
 	String varStr
 	String varName
 
-	SweeperUpdateBuiltinPulseWave()	// Update this wave
+	SweeperUpdateBuiltinPulse()	// Update this wave
 	SweeperUpdateBuiltinTTLPulse()	// Update this wave
 	SweeperViewSweeperChanged()	// Tell the view that the model has changed	
 	OutputViewerContSweprWavsChngd()	// Tell the OutputViewer that the sweeper waves were (possibly) changed
@@ -41,19 +41,20 @@ End
 Function SweepContDtOrTotalDurChanged()
 	// private method, used to notify everyone that needs notifying after a change to dtWanted or totalDuration
 	SweeperViewSweeperChanged()	// Tell the view that the model has changed
-	BuilderContSweepDtOrTChngd("TTLPulse")
-	BuilderContSweepDtOrTChngd("Pulse")
-	BuilderContSweepDtOrTChngd("Sine")
-	BuilderContSweepDtOrTChngd("PSC")
-	BuilderContSweepDtOrTChngd("Ramp")
-	BuilderContSweepDtOrTChngd("Train")
-	BuilderContSweepDtOrTChngd("TrainWPP")
-	BuilderContSweepDtOrTChngd("TTLTrain")
-	BuilderContSweepDtOrTChngd("MulTrain")
-	BuilderContSweepDtOrTChngd("TTLMTrain")
-	BuilderContSweepDtOrTChngd("Stair")
-	BuilderContSweepDtOrTChngd("Chirp")
-	BuilderContSweepDtOrTChngd("WNoise")
+	CSBContSweepDtOrTChngd()	
+//	BuilderContSweepDtOrTChngd("TTLPulse")
+//	BuilderContSweepDtOrTChngd("Pulse")
+//	BuilderContSweepDtOrTChngd("Sine")
+//	BuilderContSweepDtOrTChngd("PSC")
+//	BuilderContSweepDtOrTChngd("Ramp")
+//	BuilderContSweepDtOrTChngd("Train")
+//	BuilderContSweepDtOrTChngd("TrainWPP")
+//	BuilderContSweepDtOrTChngd("TTLTrain")
+//	BuilderContSweepDtOrTChngd("MulTrain")
+//	BuilderContSweepDtOrTChngd("TTLMTrain")
+//	BuilderContSweepDtOrTChngd("Stair")
+//	BuilderContSweepDtOrTChngd("Chirp")
+//	BuilderContSweepDtOrTChngd("WNoise")
 	OutputViewerContSweprWavsChngd()	// Tell the OutputViewer that the sweeper waves have changed	
 End
 
@@ -237,7 +238,7 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	DoWindow /F SweepControl
 	
 	// Make sure the built-in stimuli are up-to-date	
-	SweeperUpdateBuiltinPulseWave()
+	SweeperUpdateBuiltinPulse()
 	SweeperUpdateBuiltinTTLPulse()
 	
 	// If called for, run the pre-sweep hook function
@@ -356,18 +357,18 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 			Variable duration=1000*(frameInterval*ImagerGetNFramesForVideo())	// s->ms
 			Variable pulseRate=1/frameInterval	// Hz
 			Variable pulseDuration=1000*exposureWantedInSeconds	// s->ms
-			Variable baseLevel=0		// V
+			//Variable baseLevel=0		// V
 			Variable amplitude=5		// V, for a TTL signal
-			Make /FREE parameters={delay,duration,pulseRate,pulseDuration,baseLevel,amplitude}
-			Make /FREE /T parameterNames={"delay","duration","pulseRate","pulseDuration","baseLevel","amplitude"}
+			Make /FREE parameters={delay,duration,amplitude,pulseRate,pulseDuration}
+			//Make /FREE /T parameterNames={"delay","duration","pulseRate","pulseDuration","baseLevel","amplitude"}
 			//fillTrainFromParamsBang(exposure,dt,nScans,parameters,parameterNames)
 			//StimulusSetParams(exposure,parameters)
 			
 			// Have to fil the samples "manually", because want the WAVETYPE to stay "adc"
-			String stimulusType="Train"
-			String fillFunctionName=stimulusType+"FillFromParams"
-			Funcref StimulusFillFromParamsSig fillFunction=$fillFunctionName
-			fillFunction(exposure,parameters)
+			//String stimulusType="Train"
+			//String fillFunctionName=stimulusType+"FillFromParams"
+			//Funcref StimulusFillFromParamsSig fillFunction=$fillFunctionName
+			TrainFillFromParams(exposure,parameters)
 		endif
 	endif
 
@@ -403,23 +404,25 @@ End
 Function SweeperControllerAddDACWave(w,waveNameString)
 	Wave w
 	String waveNameString
-	if (IsEmptyString(waveNameString))
+	if (IsEmptyString(waveNameString) || AreStringsEqualIgnoringCase(waveNameString,"builtinPulse") )
 		return -1		// have to return something
 	endif
 	SweeperAddDACWave(w,waveNameString)
 	SweeperViewSweeperChanged()
 	OutputViewerContSweprWavsChngd()
+	return 0
 End
 
 Function SweeperControllerAddTTLWave(w,waveNameString)
 	Wave w
 	String waveNameString
-	if (IsEmptyString(waveNameString))
+	if (IsEmptyString(waveNameString) || AreStringsEqualIgnoringCase(waveNameString,"builtinTTLPulse"))
 		return -1		// have to return something
 	endif
 	SweeperAddTTLWave(w,waveNameString)
 	SweeperViewSweeperChanged()
 	OutputViewerContSweprWavsChngd()
+	return 0
 End
 
 Function SweepControllerDigitizerChanged()
