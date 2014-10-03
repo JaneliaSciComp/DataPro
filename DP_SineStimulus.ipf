@@ -20,15 +20,15 @@ Function /WAVE SineGetParamDispNames()
 	return parameterNames
 End
 
-Function /WAVE SineGetDfltParams()
-	Variable nParameters=4
-	Make /FREE /N=(nParameters) parametersDefault
-	parametersDefault[0]=10
-	parametersDefault[1]=50
-	parametersDefault[2]=1
-	parametersDefault[3]=100
-	return parametersDefault
-End
+//Function /WAVE SineGetDfltParams()
+//	Variable nParameters=4
+//	Make /FREE /N=(nParameters) parametersDefault
+//	parametersDefault[0]=10
+//	parametersDefault[1]=50
+//	parametersDefault[2]=1
+//	parametersDefault[3]=100
+//	return parametersDefault
+//End
 
 Function /WAVE SineGetDfltParamsAsStr()
 	Variable nParameters=4

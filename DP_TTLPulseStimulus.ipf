@@ -16,13 +16,13 @@ Function /WAVE TTLPulseGetParamDispNames()
 	return paramNames
 End
 
-Function /WAVE TTLPulseGetDfltParams()
-	Variable nParameters=2
-	Make /FREE /N=(nParameters) parametersDefault
-	parametersDefault[0]=20		// ms
-	parametersDefault[1]=100		// ms
-	return parametersDefault
-End
+//Function /WAVE TTLPulseGetDfltParams()
+//	Variable nParameters=2
+//	Make /FREE /N=(nParameters) parametersDefault
+//	parametersDefault[0]=20		// ms
+//	parametersDefault[1]=100		// ms
+//	return parametersDefault
+//End
 
 Function /WAVE TTLPulseGetDfltParamsAsStr()
 	Variable nParameters=2

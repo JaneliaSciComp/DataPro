@@ -20,15 +20,15 @@ Function /WAVE TTLTrainGetParamDispNames()
 	return parameterNames
 End
 
-Function /WAVE TTLTrainGetDfltParams()
-	Variable nParameters=4
-	Make /FREE /N=(nParameters) parametersDefault
-	parametersDefault[0]=20		// ms
-	parametersDefault[1]=100		// ms
-	parametersDefault[2]=100		// Hz
-	parametersDefault[3]=2		// ms
-	return parametersDefault
-End
+//Function /WAVE TTLTrainGetDfltParams()
+//	Variable nParameters=4
+//	Make /FREE /N=(nParameters) parametersDefault
+//	parametersDefault[0]=20		// ms
+//	parametersDefault[1]=100		// ms
+//	parametersDefault[2]=100		// Hz
+//	parametersDefault[3]=2		// ms
+//	return parametersDefault
+//End
 
 Function /WAVE TTLTrainGetDfltParamsAsStr()
 	Variable nParameters=4

@@ -24,17 +24,17 @@ Function /WAVE TTLMTrainGetParamDispNames()
 	return parameterNames
 End
 
-Function /WAVE TTLMTrainGetDfltParams()
-	Variable nParameters=6
-	Make /FREE /N=(nParameters) parametersDefault
-	parametersDefault[0]=25		// ms
-	parametersDefault[1]=150		// ms
-	parametersDefault[2]=100		// Hz
-	parametersDefault[3]=2		// ms
-	parametersDefault[4]=20		// Hz
-	parametersDefault[5]=25		// ms	
-	return parametersDefault
-End
+//Function /WAVE TTLMTrainGetDfltParams()
+//	Variable nParameters=6
+//	Make /FREE /N=(nParameters) parametersDefault
+//	parametersDefault[0]=25		// ms
+//	parametersDefault[1]=150		// ms
+//	parametersDefault[2]=100		// Hz
+//	parametersDefault[3]=2		// ms
+//	parametersDefault[4]=20		// Hz
+//	parametersDefault[5]=25		// ms	
+//	return parametersDefault
+//End
 
 Function /WAVE TTLMTrainGetDfltParamsAsStr()
 	Variable nParameters=6

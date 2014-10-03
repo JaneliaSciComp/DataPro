@@ -26,18 +26,18 @@ Function /WAVE PSCGetParamDispNames()
 	return parameterNames
 End
 
-Function /WAVE PSCGetDfltParams()
-	Variable nParameters=7
-	Make /FREE /N=(nParameters) parametersDefault
-	parametersDefault[0]=10
-	parametersDefault[1]=100
-	parametersDefault[2]=1
-	parametersDefault[3]=0.2
-	parametersDefault[4]=2
-	parametersDefault[5]=10
-	parametersDefault[6]=0.5
-	return parametersDefault
-End
+//Function /WAVE PSCGetDfltParams()
+//	Variable nParameters=7
+//	Make /FREE /N=(nParameters) parametersDefault
+//	parametersDefault[0]=10
+//	parametersDefault[1]=100
+//	parametersDefault[2]=1
+//	parametersDefault[3]=0.2
+//	parametersDefault[4]=2
+//	parametersDefault[5]=10
+//	parametersDefault[6]=0.5
+//	return parametersDefault
+//End
 
 Function /WAVE PSCGetDfltParamsAsStr()
 	Variable nParameters=7

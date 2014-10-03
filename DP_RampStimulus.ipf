@@ -18,14 +18,14 @@ Function /WAVE RampGetParamDispNames()
 	return parameterNames
 End
 
-Function /WAVE RampGetDfltParams()
-	Variable nParameters=3
-	Make /FREE /N=(nParameters) parametersDefault
-	parametersDefault[0]=50
-	parametersDefault[1]=100
-	parametersDefault[2]=1
-	return parametersDefault
-End
+//Function /WAVE RampGetDfltParams()
+//	Variable nParameters=3
+//	Make /FREE /N=(nParameters) parametersDefault
+//	parametersDefault[0]=50
+//	parametersDefault[1]=100
+//	parametersDefault[2]=1
+//	return parametersDefault
+//End
 
 Function /WAVE RampGetDfltParamsAsStr()
 	Variable nParameters=3

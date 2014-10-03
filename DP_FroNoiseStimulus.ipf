@@ -24,17 +24,17 @@ Function /WAVE FroNoiseGetParamDispNames()
 	return parameterNames
 End
 
-Function /WAVE FroNoiseGetDfltParams()
-	Variable nParameters=6
-	Make /FREE /N=(nParameters) parametersDefault
-	parametersDefault[0]=10
-	parametersDefault[1]=50
-	parametersDefault[2]=1	
-	parametersDefault[3]=0	
-	parametersDefault[4]=10
-	parametersDefault[5]=0.5
-	return parametersDefault
-End
+//Function /WAVE FroNoiseGetDfltParams()
+//	Variable nParameters=6
+//	Make /FREE /N=(nParameters) parametersDefault
+//	parametersDefault[0]=10
+//	parametersDefault[1]=50
+//	parametersDefault[2]=1	
+//	parametersDefault[3]=0	
+//	parametersDefault[4]=10
+//	parametersDefault[5]=0.5
+//	return parametersDefault
+//End
 
 Function /WAVE FroNoiseGetDfltParamsAsStr()
 	Variable nParameters=6

@@ -26,18 +26,18 @@ Function /WAVE MulTrainGetParamDispNames()
 	return parameterNames
 End
 
-Function /WAVE MulTrainGetDfltParams()
-	Variable nParameters=7
-	Make /FREE /N=(nParameters) parametersDefault
-	parametersDefault[0]=25		// ms
-	parametersDefault[1]=150		// ms
-	parametersDefault[2]=1
-	parametersDefault[3]=100		// Hz
-	parametersDefault[4]=2		// ms
-	parametersDefault[5]=20		// Hz
-	parametersDefault[6]=25		// ms	
-	return parametersDefault
-End
+//Function /WAVE MulTrainGetDfltParams()
+//	Variable nParameters=7
+//	Make /FREE /N=(nParameters) parametersDefault
+//	parametersDefault[0]=25		// ms
+//	parametersDefault[1]=150		// ms
+//	parametersDefault[2]=1
+//	parametersDefault[3]=100		// Hz
+//	parametersDefault[4]=2		// ms
+//	parametersDefault[5]=20		// Hz
+//	parametersDefault[6]=25		// ms	
+//	return parametersDefault
+//End
 
 Function /WAVE MulTrainGetDfltParamsAsStr()
 	Variable nParameters=7

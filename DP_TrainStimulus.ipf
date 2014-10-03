@@ -22,16 +22,16 @@ Function /WAVE TrainGetParamDispNames()
 	return parameterNames
 End
 
-Function /WAVE TrainGetDfltParams()
-	Variable nParameters=5
-	Make /FREE /N=(nParameters) parametersDefault
-	parametersDefault[0]=20		// ms
-	parametersDefault[1]=100		// ms
-	parametersDefault[2]=1
-	parametersDefault[3]=100		// Hz
-	parametersDefault[4]=2		// ms
-	return parametersDefault
-End
+//Function /WAVE TrainGetDfltParams()
+//	Variable nParameters=5
+//	Make /FREE /N=(nParameters) parametersDefault
+//	parametersDefault[0]=20		// ms
+//	parametersDefault[1]=100		// ms
+//	parametersDefault[2]=1
+//	parametersDefault[3]=100		// Hz
+//	parametersDefault[4]=2		// ms
+//	return parametersDefault
+//End
 
 Function /WAVE TrainGetDfltParamsAsStr()
 	Variable nParameters=5

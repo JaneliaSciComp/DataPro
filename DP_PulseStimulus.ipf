@@ -18,14 +18,14 @@ Function /WAVE PulseGetParamDispNames()
 	return parameterNames
 End
 
-Function /WAVE PulseGetDfltParams()
-	Variable nParameters=3
-	Make /FREE /N=(nParameters) parametersDefault
-	parametersDefault[0]=20		// ms
-	parametersDefault[1]=100		// ms
-	parametersDefault[2]=1
-	return parametersDefault
-End
+//Function /WAVE PulseGetDfltParams()
+//	Variable nParameters=3
+//	Make /FREE /N=(nParameters) parametersDefault
+//	parametersDefault[0]=20		// ms
+//	parametersDefault[1]=100		// ms
+//	parametersDefault[2]=1
+//	return parametersDefault
+//End
 
 Function /WAVE PulseGetDfltParamsAsStr()
 	Variable nParameters=3
