@@ -1,46 +1,50 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 Function /WAVE WNoiseGetParamNames()
-	Variable nParameters=5
+	Variable nParameters=6
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="delay"
 	parameterNames[1]="duration"
 	parameterNames[2]="amplitude"
 	parameterNames[3]="fLow"
-	parameterNames[4]="fHigh"	
+	parameterNames[4]="fHigh"
+	parameterNames[5]="seed"	
 	return parameterNames
 End
 
 Function /WAVE WNoiseGetParamDispNames()
-	Variable nParameters=5
+	Variable nParameters=6
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="Delay"
 	parameterNames[1]="Duration"
 	parameterNames[2]="Amplitude"
 	parameterNames[3]="Low Cutoff"
-	parameterNames[4]="High Cutoff"	
+	parameterNames[4]="High Cutoff"
+	parameterNames[5]="Seed"	
 	return parameterNames
 End
 
 Function /WAVE WNoiseGetDfltParams()
-	Variable nParameters=5
+	Variable nParameters=6
 	Make /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]=10
 	parametersDefault[1]=50
 	parametersDefault[2]=1	
 	parametersDefault[3]=0	
 	parametersDefault[4]=10
+	parametersDefault[5]=0.5
 	return parametersDefault
 End
 
 Function /WAVE WNoiseGetDfltParamsAsStr()
-	Variable nParameters=5
+	Variable nParameters=6
 	Make /T /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]="10"
 	parametersDefault[1]="50"
 	parametersDefault[2]="1"	
 	parametersDefault[3]="0"	
 	parametersDefault[4]="10"
+	parametersDefault[5]="0.5"
 	return parametersDefault
 End
 
@@ -52,18 +56,26 @@ Function WNoiseAreParamsValid(parameters)
 	Variable amplitude=parameters[2]	// the abs(amplitude)==SD of the filtered noise
 	Variable fLow=parameters[3]
 	Variable fHigh=parameters[4]
+	Variable seed=parameters[5]
 
-	return (duration>=0) && (fLow>=0) && (fHigh>0) && (fLow<fHigh)
+	Variable isSeedValid=(1e-9<=seed)&&(seed<=1)		// 1073741824==2^30
+		// Seems like seed gets multiplied by 2^30 [sic], truncated, and that that number is used as the seed.
+		// So the resulting seed must be 1<=seed<=2^30.  Not sure why 2^30, or why zero isn't a valid seed.
+		// But: passing a too-small number to SetRandomSeed doesn't yield an error, it just fails to
+		// give you a deterministic sequence (Igor!).  So you want to be damn sure a too-low value doesn't get used.
+		// 1/2^30<1e-9, and so this gives us some margin for error.
+	return isSeedValid && (duration>=0) && (fLow>=0) && (fHigh>0) && (fLow<fHigh)
 End
 
 Function /WAVE WNoiseGetParamUnits()
-	Variable nParameters=5
+	Variable nParameters=6
 	Make /T /FREE /N=(nParameters) paramUnits
 	paramUnits[0]="ms"
 	paramUnits[1]="ms"
 	paramUnits[2]=""
 	paramUnits[3]="kHz"
 	paramUnits[4]="kHz"
+	paramUnits[5]=""
 	return paramUnits
 End
 
@@ -84,6 +96,7 @@ Function WNoiseOverlayFromParams(w,parameters)
 	Variable amplitude=parameters[2]	// the SD of the filtered noise
 	Variable fLow=parameters[3]
 	Variable fHigh=parameters[4]
+	Variable seed=parameters[5]
 	
 	//// Make a noise signal, with length longer than w and a power of 2
 	Variable nDFT=2^ceil(ln(numpnts(w))/ln(2))	
@@ -93,15 +106,17 @@ Function WNoiseOverlayFromParams(w,parameters)
 	// at complex numbers
 	Variable dt=deltax(w)		// ms
 	Variable df=1/(nDFT*dt)	// kHz
+	// Set the random seed to make the numbers reproducible
+	SetRandomSeed /BETR seed
 	// Real
 	Make /FREE /N=(nFreqDomain) reNoiseInFreqDomain
 	SetScale /P x, 0, df, "kHz", reNoiseInFreqDomain
-	reNoiseInFreqDomain=gnoise(1)*sqrt(nDFT/2)
+	reNoiseInFreqDomain=gnoise(1,2)*sqrt(nDFT/2)		// ,2 makes it use Mersenne twister
 	reNoiseInFreqDomain[0]=0		// no DC
 	// Imag
 	Make /FREE /N=(nFreqDomain) imNoiseInFreqDomain
 	SetScale /P x, 0, df, "kHz", imNoiseInFreqDomain
-	imNoiseInFreqDomain=gnoise(1)*sqrt(nDFT/2)
+	imNoiseInFreqDomain=gnoise(1,2)*sqrt(nDFT/2)		// ,2 makes it use Mersenne twister
 	imNoiseInFreqDomain[0]=0		// no DC
 	imNoiseInFreqDomain[nFreqDomain-1]=0	// need this
 	
@@ -115,7 +130,7 @@ Function WNoiseOverlayFromParams(w,parameters)
 	//FFT /DEST=noiseInFreqDomain noise	 // x axis should be in units of kHz
 	//reNoiseInFreqDomain=real(noiseInFreqDomain[p])
 	//imNoiseInFreqDomain=imag(noiseInFreqDomain[p])
-		
+	
 //	//// Out of curiousity, what is the the mean squared amplitude of those components?
 //	Variable vr=Variance(reNoiseInFreqDomain)		// 0.5*nDFT*amplitude^2
 //	Printf "%g\r", vr

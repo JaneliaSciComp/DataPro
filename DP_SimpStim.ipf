@@ -116,7 +116,7 @@ Function /WAVE SimpStimGetParams(simpStim)
 	String simpStim
 	
 	Wave /T paramsAsStrings=SimpStimGetParamsAsStrings(simpStim)
-	Wave params=NumericWaveFromTextWave(paramsAsStrings)	
+	Wave params=DoubleWaveFromTextWave(paramsAsStrings)	
 	return params
 End
 
@@ -152,7 +152,7 @@ Function /WAVE SimpStimGetDefParams(stimType)
 	String stimType
 
 	Wave defParamsAsStrings=SimpStimGetDefParamsAsStrings(stimType)
-	Wave result=numericWaveFromTextWave(defParamsAsStrings)
+	Wave result=doubleWaveFromTextWave(defParamsAsStrings)
 	return result
 End
 

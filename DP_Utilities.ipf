@@ -1049,7 +1049,16 @@ End
 
 
 
-Function /WAVE numericWaveFromTextWave(tw)
+Function /WAVE DoubleWaveFromTextWave(tw)
+	Wave /T tw
+	
+	Variable n=numpnts(tw)
+	Make /FREE /D /N=(n) result
+	result=str2num(tw[p])
+	return result
+end
+
+Function /WAVE NumericWaveFromTextWave(tw)
 	Wave /T tw
 	
 	Variable n=numpnts(tw)
@@ -1058,7 +1067,7 @@ Function /WAVE numericWaveFromTextWave(tw)
 	return result
 end
 
-Function /WAVE textWaveFromNumericWave(w)
+Function /WAVE TextWaveFromNumericWave(w)
 	Wave w
 	
 	Variable n=numpnts(w)
