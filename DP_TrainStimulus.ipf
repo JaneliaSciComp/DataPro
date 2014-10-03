@@ -67,13 +67,13 @@ Function /WAVE TrainGetParamUnits()
 	return paramUnits
 End
 
-Function TrainFillFromParams(w,parameters)
-	Wave w
-	Wave parameters
-
-	w=0
-	TrainOverlayFromParams(w,parameters)
-End
+//Function TrainFillFromParams(w,parameters)
+//	Wave w
+//	Wave parameters
+//
+//	w=0
+//	TrainOverlayFromParams(w,parameters)
+//End
 
 Function TrainOverlayFromParams(w,parameters)
 	Wave w

@@ -368,7 +368,8 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 			//String stimulusType="Train"
 			//String fillFunctionName=stimulusType+"FillFromParams"
 			//Funcref StimulusFillFromParamsSig fillFunction=$fillFunctionName
-			TrainFillFromParams(exposure,parameters)
+			exposure=0
+			TrainOverlayFromParams(exposure,parameters)
 		endif
 	endif
 

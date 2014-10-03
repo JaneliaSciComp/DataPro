@@ -55,21 +55,21 @@ Function /WAVE PulseGetParamUnits()
 	return paramUnits
 End
 
-Function PulseFillFromParams(w,parameters)
-	Wave w
-	Wave parameters
-
-	Variable delay=parameters[0]
-	Variable duration=parameters[1]
-	Variable amplitude=parameters[2]
-
-       // Somewhat controversial, but in the common case that pulse starts are sample-aligned, and pulse durations are
-       // an integer multiple of dt, this ensures that each pulse is exactly pulseDuration samples long
-	Variable dt=deltax(w)      	
-	Variable delayTweaked=delay-dt/2
-
-	w=amplitude*unitPulse(x-delayTweaked,duration)
-End
+//Function PulseFillFromParams(w,parameters)
+//	Wave w
+//	Wave parameters
+//
+//	Variable delay=parameters[0]
+//	Variable duration=parameters[1]
+//	Variable amplitude=parameters[2]
+//
+//       // Somewhat controversial, but in the common case that pulse starts are sample-aligned, and pulse durations are
+//       // an integer multiple of dt, this ensures that each pulse is exactly pulseDuration samples long
+//	Variable dt=deltax(w)      	
+//	Variable delayTweaked=delay-dt/2
+//
+//	w=amplitude*unitPulse(x-delayTweaked,duration)
+//End
 
 Function PulseOverlayFromParams(w,parameters)
 	Wave w

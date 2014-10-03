@@ -49,13 +49,13 @@ Function /WAVE TTLPulseGetParamUnits()
 	return paramUnits
 End
 
-Function TTLPulseFillFromParams(w,params)
-	Wave w
-	Wave params
-
-	w=0
-	TTLPulseOverlayFromParams(w,params)
-End
+//Function TTLPulseFillFromParams(w,params)
+//	Wave w
+//	Wave params
+//
+//	w=0
+//	TTLPulseOverlayFromParams(w,params)
+//End
 
 Function TTLPulseOverlayFromParams(w,params)
 	Wave w

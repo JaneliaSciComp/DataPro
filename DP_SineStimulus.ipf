@@ -61,17 +61,17 @@ Function /WAVE SineGetParamUnits()
 	return paramUnits
 End
 
-Function SineFillFromParams(w,parameters)
-	Wave w
-	Wave parameters
-
-	Variable delay=parameters[0]
-	Variable duration=parameters[1]
-	Variable amplitude=parameters[2]
-	Variable frequency=parameters[3]
-
-	w = amplitude*unitPulse(x-delay,duration)*sin(frequency*2*PI*(x-delay)/1000)
-End
+//Function SineFillFromParams(w,parameters)
+//	Wave w
+//	Wave parameters
+//
+//	Variable delay=parameters[0]
+//	Variable duration=parameters[1]
+//	Variable amplitude=parameters[2]
+//	Variable frequency=parameters[3]
+//
+//	w = amplitude*unitPulse(x-delay,duration)*sin(frequency*2*PI*(x-delay)/1000)
+//End
 
 Function SineOverlayFromParams(w,parameters)
 	Wave w

@@ -67,13 +67,13 @@ Function /WAVE WNoiseGetParamUnits()
 	return paramUnits
 End
 
-Function WNoiseFillFromParams(w,parameters)
-	Wave w
-	Wave parameters
-
-	w = 0
-	WNoiseOverlayFromParams(w,parameters)
-End
+//Function WNoiseFillFromParams(w,parameters)
+//	Wave w
+//	Wave parameters
+//
+//	w = 0
+//	WNoiseOverlayFromParams(w,parameters)
+//End
 
 Function WNoiseOverlayFromParams(w,parameters)
 	Wave w

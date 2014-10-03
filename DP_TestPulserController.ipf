@@ -80,7 +80,7 @@ Function TestPulserContStart()
 	Make /FREE /N=(nScans) testPulseTTL
 	Setscale /P x, 0, dt, "ms", testPulseTTL
 	//fillTTLPulseFromParamsBang(testPulseTTL,dt,nScans,{delay,duration},{"delay","duration"})
-	TTLPulseFillFromParams(testPulseTTL,{delay,duration})
+	TTLPulseOverlayFromParams(testPulseTTL,{delay,duration})
 	
 	//Variable nScans=numpnts(testPulseTTL)
 	Make /FREE /N=(nScans) testPulse

@@ -55,14 +55,13 @@ Function /WAVE RampGetParamUnits()
 	return paramUnits
 End
 
-
-Function RampFillFromParams(w,parameters)
-	Wave w
-	Wave parameters
-
-	w=0
-	RampOverlayFromParams(w,parameters)
-End
+//Function RampFillFromParams(w,parameters)
+//	Wave w
+//	Wave parameters
+//
+//	w=0
+//	RampOverlayFromParams(w,parameters)
+//End
 
 Function RampOverlayFromParams(w,parameters)
 	Wave w

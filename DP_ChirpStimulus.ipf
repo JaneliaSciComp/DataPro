@@ -56,18 +56,13 @@ Function /WAVE ChirpGetParamUnits()
 	return paramUnits
 End
 
-Function ChirpFillFromParams(w,parameters)
-	Wave w
-	Wave parameters
-
-	Variable delay=parameters[0]
-	Variable duration=parameters[1]
-	Variable amplitude=parameters[2]
-	Variable initialFrequency=parameters[3]
-	Variable finalFrequency=parameters[4]
-
-	w=amplitude*unitPulse(x-delay,duration)*amplitude*sin(2*PI*(x-delay)/1000*(0.5*(finalFrequency-initialFrequency)/(duration/1000)*(x-delay)/1000+initialFrequency))
-End
+//Function ChirpFillFromParams(w,parameters)
+//	Wave w
+//	Wave parameters
+//
+//	w=0
+//	ChirpOverlayFromParams(w,parameters)
+//End
 
 Function ChirpOverlayFromParams(w,parameters)
 	Wave w
@@ -79,7 +74,7 @@ Function ChirpOverlayFromParams(w,parameters)
 	Variable initialFrequency=parameters[3]
 	Variable finalFrequency=parameters[4]
 
-	w += amplitude*unitPulse(x-delay,duration)*amplitude*sin(2*PI*(x-delay)/1000*(0.5*(finalFrequency-initialFrequency)/(duration/1000)*(x-delay)/1000+initialFrequency))
+	w += amplitude*unitPulse(x-delay,duration)*sin(2*PI*(x-delay)/1000*(0.5*(finalFrequency-initialFrequency)/(duration/1000)*(x-delay)/1000+initialFrequency))
 End
 
 Function /S ChirpGetSignalType()

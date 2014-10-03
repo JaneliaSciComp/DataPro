@@ -79,14 +79,14 @@ Function /WAVE PSCGetParamUnits()
 	return paramUnits
 End
 
-Function PSCFillFromParams(w,parameters)
-	Wave w
-	Wave parameters
-
-	w=0
-	PSCOverlayFromParams(w,parameters)	
-End
-
+//Function PSCFillFromParams(w,parameters)
+//	Wave w
+//	Wave parameters
+//
+//	w=0
+//	PSCOverlayFromParams(w,parameters)	
+//End
+//
 Function PSCOverlayFromParams(w,parameters)
 	Wave w
 	Wave parameters
