@@ -25,8 +25,8 @@
 #include ":DP_SineStimulus"
 //#include ":DP_ChirpBuilder"
 #include ":DP_ChirpStimulus"
-//#include ":DP_WNoiseBuilder"
-#include ":DP_WNoiseStimulus"
+//#include ":DP_FroNoiseBuilder"
+#include ":DP_FroNoiseStimulus"
 //#include ":DP_PSCBuilder"
 #include ":DP_PSCStimulus"
 //#include ":DP_RampBuilder"
@@ -111,7 +111,7 @@ Menu "DataPro"
 //	dpMenu("PSC Builder"), BuilderContConstructor("PSC")
 //	dpMenu("Sine Builder"), BuilderContConstructor("Sine")
 //	dpMenu("Chirp Builder"), BuilderContConstructor("Chirp")
-//	dpMenu("White Noise Builder"), BuilderContConstructor("WNoise")
+//	dpMenu("Frozen Noise Builder"), BuilderContConstructor("FroNoise")
 //	dpMenu("-")
 	dpMenu("Output Viewer"), OutputViewerContConstructor()
 	dpMenu("-")

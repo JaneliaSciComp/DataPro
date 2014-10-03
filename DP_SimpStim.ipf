@@ -187,12 +187,12 @@ Function /S SimpStimGetSignalTypeSig()
 End
 
 Function /WAVE SimpStimGetStimTypes()
-	Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "WNoise", "PSC", "BuiltinPulse" }
+	Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "FroNoise", "PSC", "BuiltinPulse" }
 	return result
 End
 
 Function /WAVE SimpStimGetDisplayStimTypes()
-	Make /T /FREE result={"Pulse", "Train", "Multiple Trains", "Ramp", "Sine", "Chirp", "White Noise", "PSC", "Built-in Pulse" }
+	Make /T /FREE result={"Pulse", "Train", "Multiple Trains", "Ramp", "Sine", "Chirp", "Frozen Noise", "PSC", "Built-in Pulse" }
 	return result
 End
 

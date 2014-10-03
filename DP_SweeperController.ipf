@@ -54,7 +54,7 @@ Function SweepContDtOrTotalDurChanged()
 //	BuilderContSweepDtOrTChngd("TTLMTrain")
 //	BuilderContSweepDtOrTChngd("Stair")
 //	BuilderContSweepDtOrTChngd("Chirp")
-//	BuilderContSweepDtOrTChngd("WNoise")
+//	BuilderContSweepDtOrTChngd("FroNoise")
 	OutputViewerContSweprWavsChngd()	// Tell the OutputViewer that the sweeper waves have changed	
 End
 

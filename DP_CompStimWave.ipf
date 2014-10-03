@@ -192,7 +192,7 @@ End
 //
 
 //Function /WAVE CompStimWaveGetStimTypes()
-//	Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "WNoise", "PSC" }
+//	Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "FroNoise", "PSC" }
 //	return result
 //End
 

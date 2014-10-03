@@ -1,6 +1,6 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
-Function /WAVE WNoiseGetParamNames()
+Function /WAVE FroNoiseGetParamNames()
 	Variable nParameters=6
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="delay"
@@ -12,7 +12,7 @@ Function /WAVE WNoiseGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE WNoiseGetParamDispNames()
+Function /WAVE FroNoiseGetParamDispNames()
 	Variable nParameters=6
 	Make /T /FREE /N=(nParameters) parameterNames
 	parameterNames[0]="Delay"
@@ -24,7 +24,7 @@ Function /WAVE WNoiseGetParamDispNames()
 	return parameterNames
 End
 
-Function /WAVE WNoiseGetDfltParams()
+Function /WAVE FroNoiseGetDfltParams()
 	Variable nParameters=6
 	Make /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]=10
@@ -36,7 +36,7 @@ Function /WAVE WNoiseGetDfltParams()
 	return parametersDefault
 End
 
-Function /WAVE WNoiseGetDfltParamsAsStr()
+Function /WAVE FroNoiseGetDfltParamsAsStr()
 	Variable nParameters=6
 	Make /T /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]="10"
@@ -48,7 +48,7 @@ Function /WAVE WNoiseGetDfltParamsAsStr()
 	return parametersDefault
 End
 
-Function WNoiseAreParamsValid(parameters)
+Function FroNoiseAreParamsValid(parameters)
 	Wave parameters
 
 	Variable delay=parameters[0]
@@ -67,7 +67,7 @@ Function WNoiseAreParamsValid(parameters)
 	return isSeedValid && (duration>=0) && (fLow>=0) && (fHigh>0) && (fLow<fHigh)
 End
 
-Function /WAVE WNoiseGetParamUnits()
+Function /WAVE FroNoiseGetParamUnits()
 	Variable nParameters=6
 	Make /T /FREE /N=(nParameters) paramUnits
 	paramUnits[0]="ms"
@@ -79,15 +79,15 @@ Function /WAVE WNoiseGetParamUnits()
 	return paramUnits
 End
 
-//Function WNoiseFillFromParams(w,parameters)
+//Function FroNoiseFillFromParams(w,parameters)
 //	Wave w
 //	Wave parameters
 //
 //	w = 0
-//	WNoiseOverlayFromParams(w,parameters)
+//	FroNoiseOverlayFromParams(w,parameters)
 //End
 
-Function WNoiseOverlayFromParams(w,parameters)
+Function FroNoiseOverlayFromParams(w,parameters)
 	Wave w
 	Wave parameters
 
@@ -183,7 +183,7 @@ Function WNoiseOverlayFromParams(w,parameters)
 //	Printf "Final SD: %g\r", sd
 End
 
-Function /S WNoiseGetSignalType()
+Function /S FroNoiseGetSignalType()
 	return "DAC"
 End
 
