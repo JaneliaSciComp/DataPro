@@ -100,7 +100,9 @@ Function PSCOverlayFromParams(w,parameters)
 	Variable weightDecay2=parameters[6]		
 
 	Duplicate /FREE w, wTemp	// Want same dt, number of samples	
-	wTemp=unitStep(x-delay)*(-exp(-(x-delay)/tauRise)+(1-weightDecay2)*exp(-(x-delay)/tauDecay1)+weightDecay2*exp(-(x-delay)/tauDecay2))
+	Duplicate /FREE w, xDelayedNice
+	xDelayedNice=max(0,x-delay)		// if (x-delay)<<0, we get infs below.  So we head those off at the pass.
+	wTemp=unitStep(x-delay)*( -exp(-xDelayedNice/tauRise)+(1-weightDecay2)*exp(-xDelayedNice/tauDecay1)+weightDecay2*exp(-xDelayedNice/tauDecay2) )
 	// re-scale to have the proper amplitude
 	Wavestats /Q wTemp
 	wTemp=(amplitude/V_max)*wTemp		// want the peak amplitude to be amplitude
