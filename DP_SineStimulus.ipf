@@ -40,8 +40,10 @@ Function /WAVE SineGetDfltParamsAsStr()
 	return parametersDefault
 End
 
-Function SineAreParamsValid(parameters)
-	Wave parameters
+Function SineAreParamsValid(paramsAsStrings)
+	Wave /T paramsAsStrings
+	
+	Wave parameters=DoubleWaveFromTextWave(paramsAsStrings)
 
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
@@ -73,16 +75,23 @@ End
 //	w = amplitude*unitPulse(x-delay,duration)*sin(frequency*2*PI*(x-delay)/1000)
 //End
 
-Function SineOverlayFromParams(w,parameters)
+Function SineOverlayFromParams(w,paramsAsStrings)
 	Wave w
-	Wave parameters
+	Wave /T paramsAsStrings
+
+	Wave parameters=DoubleWaveFromTextWave(paramsAsStrings)
 
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
 	Variable amplitude=parameters[2]
 	Variable frequency=parameters[3]
 
-	w += amplitude*unitPulse(x-delay,duration)*sin(frequency*2*PI*(x-delay)/1000)
+	// Somewhat controversial, but in the common case that pulse starts are sample-aligned, and pulse durations are
+      	// an integer multiple of dt, this ensures that each pulse is exactly pulseDuration samples long
+	Variable dt=deltax(w)      	
+	Variable delayTweaked=delay-dt/2
+
+	w += amplitude*unitPulse(x-delayTweaked,duration)*sin(frequency*2*PI*(x-delayTweaked)/1000)
 End
 
 Function /S SineGetSignalType()

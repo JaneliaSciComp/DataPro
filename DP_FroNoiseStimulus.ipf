@@ -48,9 +48,11 @@ Function /WAVE FroNoiseGetDfltParamsAsStr()
 	return parametersDefault
 End
 
-Function FroNoiseAreParamsValid(parameters)
-	Wave parameters
+Function FroNoiseAreParamsValid(paramsAsStrings)
+	Wave /T paramsAsStrings
 
+	Wave parameters=DoubleWaveFromTextWave(paramsAsStrings)
+	
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
 	Variable amplitude=parameters[2]	// the abs(amplitude)==SD of the filtered noise
@@ -87,9 +89,11 @@ End
 //	FroNoiseOverlayFromParams(w,parameters)
 //End
 
-Function FroNoiseOverlayFromParams(w,parameters)
+Function FroNoiseOverlayFromParams(w,paramsAsStrings)
 	Wave w
-	Wave parameters
+	Wave /T paramsAsStrings
+
+	Wave parameters=DoubleWaveFromTextWave(paramsAsStrings)
 
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
@@ -175,8 +179,13 @@ Function FroNoiseOverlayFromParams(w,parameters)
 	CopyScales /P w, filteredNoise
 	IFFT /DEST=filteredNoise noiseInFreqDomainFiltered
 	
+	// Somewhat controversial, but in the common case that pulse starts are sample-aligned, and pulse durations are
+      	// an integer multiple of dt, this ensures that each pulse is exactly pulseDuration samples long
+	//Variable dt=deltax(w)      	
+	Variable delayTweaked=delay-dt/2
+
 	// Window in time
-	w += amplitude * (filteredNoise[p]) * unitPulse(x-delay,duration)
+	w += amplitude * (filteredNoise[p]) * unitPulse(x-delayTweaked,duration)
 	
 //	// Check the SD
 //	Variable sd=sqrt(Variance(w,delay,delay+duration))		// 0.5*nDFT*amplitude^2

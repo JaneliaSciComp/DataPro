@@ -52,9 +52,11 @@ Function /WAVE MulTrainGetDfltParamsAsStr()
 	return parametersDefault
 End
 
-Function MulTrainAreParamsValid(parameters)
-	Wave parameters
+Function MulTrainAreParamsValid(paramsAsStrings)
+	Wave /T paramsAsStrings
 
+	Wave parameters=DoubleWaveFromTextWave(paramsAsStrings)
+	
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
 	Variable amplitude=parameters[2]
@@ -103,9 +105,11 @@ End
 //	w=amplitude*unitPulse(x-delayTweaked,duration)*squareWave(trainRate*(x-delayTweaked)/1000,trainDutyCycle)*squareWave(pulseRate*(x-delayTweaked)/1000,pulseDutyCycle)
 //End
 
-Function MulTrainOverlayFromParams(w,parameters)
+Function MulTrainOverlayFromParams(w,paramsAsStrings)
 	Wave w
-	Wave parameters
+	Wave /T paramsAsStrings
+
+	Wave parameters=DoubleWaveFromTextWave(paramsAsStrings)
 
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]

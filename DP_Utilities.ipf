@@ -1164,3 +1164,10 @@ Function /WAVE GetControlBounds(windowName,controlName)
 	return result
 End
 
+Function /S StringFromDouble(x)
+	// An alternative to str2num that preserves as much precision as possible
+	Variable x
+	String result=sprintf1v("%0.17g",x)
+	return result
+End
+

@@ -36,9 +36,11 @@ Function /WAVE PulseGetDfltParamsAsStr()
 	return parametersDefault
 End
 
-Function PulseAreParamsValid(parameters)
-	Wave parameters
+Function PulseAreParamsValid(paramsAsStrings)
+	Wave /T paramsAsStrings
 
+	Wave parameters=DoubleWaveFromTextWave(paramsAsStrings)
+	
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
 	Variable amplitude=parameters[2]
@@ -71,9 +73,11 @@ End
 //	w=amplitude*unitPulse(x-delayTweaked,duration)
 //End
 
-Function PulseOverlayFromParams(w,parameters)
+Function PulseOverlayFromParams(w,paramsAsStrings)
 	Wave w
-	Wave parameters
+	Wave /T paramsAsStrings
+
+	Wave parameters=DoubleWaveFromTextWave(paramsAsStrings)
 
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
@@ -84,7 +88,7 @@ Function PulseOverlayFromParams(w,parameters)
 	Variable dt=deltax(w)      	
 	Variable delayTweaked=delay-dt/2
 
-	w+=amplitude*unitPulse(x-delayTweaked,duration)
+	w += amplitude*unitPulse(x-delayTweaked,duration)
 End
 
 Function /S PulseGetSignalType()

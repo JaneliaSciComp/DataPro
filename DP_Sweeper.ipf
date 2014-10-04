@@ -95,13 +95,13 @@ Function SweeperConstructor()
 	
 	// Initialize the BuiltinPulse wave
 	SetDataFolder dacWaves
-	String builtinPulseSimpStim=SimpStim("Pulse",{num2str(builtinPulseDelay),num2str(builtinPulseDuration),num2str(builtinPulseAmplitude)})
-	Wave /T compStim=CompStimFromSimpStim(builtinPulseSimpStim)
+	//String builtinPulseSimpStim=SimpStim("Pulse",{StringFromDouble(builtinPulseDelay),StringFromDouble(builtinPulseDuration),StringFromDouble(builtinPulseAmplitude)})
+	//Wave /T compStim=CompStimFromSimpStim(builtinPulseSimpStim)
 	Make /O builtinPulse
-	CompStimWaveSet(builtinPulse,dtWanted,totalDuration,compStim)		// makes builtinPulse a CompStimWave
-	ReplaceStringByKeyInWaveNote(builtinPulse,"STEP",num2str(builtinPulseAmplitude))
+	//CompStimWaveSet(builtinPulse,dtWanted,totalDuration,compStim)		// makes builtinPulse a CompStimWave
+	//ReplaceStringByKeyInWaveNote(builtinPulse,"STEP",num2str(builtinPulseAmplitude))	
 	SetDataFolder root:DP_Sweeper
-	//SweeperUpdateBuiltinPulseWave()
+	SweeperUpdateBuiltinPulse()
 
 	// Parameters of builtinTTLPulse
 	Variable /G builtinTTLPulseDelay=50	
@@ -109,12 +109,12 @@ Function SweeperConstructor()
 
 	// Initialize the built-in TTL pulse wave
 	SetDataFolder ttlWaves
-	String builtinTTLPulseSimpStim=SimpStim("TTLPulse",{num2str(builtinTTLPulseDelay),num2str(builtinTTLPulseDuration)})
-	Wave /T ttlCompStim=CompStimFromSimpStim(builtinTTLPulseSimpStim)
+	//String builtinTTLPulseSimpStim=SimpStim("TTLPulse",{StringFromDouble(builtinTTLPulseDelay),StringFromDouble(builtinTTLPulseDuration)})
+	//Wave /T ttlCompStim=CompStimFromSimpStim(builtinTTLPulseSimpStim)
 	Make /O builtinTTLPulse
-	CompStimWaveSet(builtinTTLPulse,dtWanted,totalDuration,ttlCompStim)		// makes builtinPulse a CompStimWave
+	//CompStimWaveSet(builtinTTLPulse,dtWanted,totalDuration,ttlCompStim)		// makes builtinPulse a CompStimWave
 	SetDataFolder root:DP_Sweeper
-	//SweeperUpdateBuiltinTTLPulse()
+	SweeperUpdateBuiltinTTLPulse()
 
 //	// If the imaging module is in use, add an analog input for the exposure signal
 //	if ( IsImagingModuleInUse() )
@@ -1499,9 +1499,10 @@ Function SweeperUpdateBuiltinPulse()
 	
 	Variable dt=SweeperGetDt()
 	//StimulusReset(builtinPulse,dt,totalDuration,{builtinPulseDuration,builtinPulseAmplitude})
-	String theSimpStim=SimpStim("Pulse",{num2str(builtinPulseDelay),num2str(builtinPulseDuration),num2str(builtinPulseAmplitude)})
+	String theSimpStim=SimpStim("Pulse",{StringFromDouble(builtinPulseDelay),StringFromDouble(builtinPulseDuration),StringFromDouble(builtinPulseAmplitude)})
 	Wave /T theCompStim=CompStimFromSimpStim(theSimpStim)
 	CompStimWaveSet(builtinPulse,dt,totalDuration,theCompStim)	
+	ReplaceStringByKeyInWaveNote(builtinPulse,"STEP",StringFromDouble(builtinPulseAmplitude))	
 		
 	// Restore the data folder
 	SetDataFolder savedDF
@@ -1527,7 +1528,7 @@ Function SweeperUpdateBuiltinTTLPulse()
 //	// Update the wave proper, based in part on the wave note
 //	resampleBuiltinTTLPulseBang(builtinTTLPulse,dt,totalDuration)
 	
-	String theSimpStim=SimpStim("TTLPulse",{num2str(builtinTTLPulseDelay),num2str(builtinTTLPulseDuration)})
+	String theSimpStim=SimpStim("TTLPulse",{StringFromDouble(builtinTTLPulseDelay),StringFromDouble(builtinTTLPulseDuration)})
 	Wave /T theCompStim=CompStimFromSimpStim(theSimpStim)
 	CompStimWaveSet(builtinTTLPulse,dt,totalDuration,theCompStim)	
 	

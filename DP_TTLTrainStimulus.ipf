@@ -40,9 +40,11 @@ Function /WAVE TTLTrainGetDfltParamsAsStr()
 	return parametersDefault
 End
 
-Function TTLTrainAreParamsValid(parameters)
-	Wave parameters
+Function TTLTrainAreParamsValid(paramsAsStrings)
+	Wave /T paramsAsStrings
 
+	Wave parameters=DoubleWaveFromTextWave(paramsAsStrings)
+	
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
 	Variable pulseRate=parameters[2]				
@@ -79,9 +81,11 @@ End
 //	w=unitPulse(x-delayTweaked,duration)*squareWave(pulseRate*(x-delayTweaked)/1000,pulseDutyCycle)
 //End
 
-Function TTLTrainOverlayFromParams(w,parameters)
+Function TTLTrainOverlayFromParams(w,paramsAsStrings)
 	Wave w
-	Wave parameters
+	Wave /T paramsAsStrings
+
+	Wave parameters=DoubleWaveFromTextWave(paramsAsStrings)
 
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
@@ -100,8 +104,3 @@ End
 Function /S TTLTrainGetSignalType()
 	return "TTL"
 End
-
-
-
-
-

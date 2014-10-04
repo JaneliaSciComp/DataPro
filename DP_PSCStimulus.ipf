@@ -52,9 +52,10 @@ Function /WAVE PSCGetDfltParamsAsStr()
 	return parametersDefault
 End
 
-Function PSCAreParamsValid(parameters)
-	Wave parameters
+Function PSCAreParamsValid(paramsAsStrings)
+	Wave /T paramsAsStrings
 
+	Wave parameters=DoubleWaveFromTextWave(paramsAsStrings)
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
 	Variable amplitude=parameters[2]
@@ -87,9 +88,11 @@ End
 //	PSCOverlayFromParams(w,parameters)	
 //End
 //
-Function PSCOverlayFromParams(w,parameters)
+Function PSCOverlayFromParams(w,paramsAsStrings)
 	Wave w
-	Wave parameters
+	Wave /T paramsAsStrings
+
+	Wave parameters=DoubleWaveFromTextWave(paramsAsStrings)
 
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
@@ -99,15 +102,20 @@ Function PSCOverlayFromParams(w,parameters)
 	Variable tauDecay2=parameters[5]		
 	Variable weightDecay2=parameters[6]		
 
+	// Somewhat controversial, but in the common case that pulse starts are sample-aligned, and pulse durations are
+      	// an integer multiple of dt, this ensures that each pulse is exactly pulseDuration samples long
+	Variable dt=deltax(w)      	
+	Variable delayTweaked=delay-dt/2
+
 	Duplicate /FREE w, wTemp	// Want same dt, number of samples	
 	Duplicate /FREE w, xDelayedNice
-	xDelayedNice=max(0,x-delay)		// if (x-delay)<<0, we get infs below.  So we head those off at the pass.
-	wTemp=unitStep(x-delay)*( -exp(-xDelayedNice/tauRise)+(1-weightDecay2)*exp(-xDelayedNice/tauDecay1)+weightDecay2*exp(-xDelayedNice/tauDecay2) )
+	xDelayedNice=max(0,x-delayTweaked)		// if (x-delayTweaked)<<0, we get infs below.  So we head those off at the pass.
+	wTemp=unitStep(x-delayTweaked)*( -exp(-xDelayedNice/tauRise)+(1-weightDecay2)*exp(-xDelayedNice/tauDecay1)+weightDecay2*exp(-xDelayedNice/tauDecay2) )
 	// re-scale to have the proper amplitude
 	Wavestats /Q wTemp
 	wTemp=(amplitude/V_max)*wTemp		// want the peak amplitude to be amplitude
 	// Overlay on the destination wave
-	w += unitPulse(x-delay,duration) * wTemp
+	w += unitPulse(x-delayTweaked,duration) * wTemp
 End
 
 Function /S PSCGetSignalType()

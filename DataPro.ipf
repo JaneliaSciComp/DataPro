@@ -78,6 +78,8 @@
 #include ":DP_CompStimBuilderView"
 #include ":DP_CompStimBuilderController"
 
+#include ":DP_SampledStimulus"
+
 //#include ":DP_BarrageDetector"
 //#include ":DP_BarrageDetectorView"
 //#include ":DP_BarrageDetectorCont"

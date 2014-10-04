@@ -36,9 +36,11 @@ Function /WAVE RampGetDfltParamsAsStr()
 	return parametersDefault
 End
 
-Function RampAreParamsValid(parameters)
-	Wave parameters
+Function RampAreParamsValid(paramsAsStrings)
+	Wave /T paramsAsStrings
 
+	Wave  parameters=DoubleWaveFromTextWave(paramsAsStrings)
+	
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
 	Variable amplitude=parameters[2]
@@ -63,15 +65,22 @@ End
 //	RampOverlayFromParams(w,parameters)
 //End
 
-Function RampOverlayFromParams(w,parameters)
+Function RampOverlayFromParams(w,paramsAsStrings)
 	Wave w
-	Wave parameters
+	Wave /T paramsAsStrings
+
+	Wave parameters=DoubleWaveFromTextWave(paramsAsStrings)
 
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
 	Variable amplitude=parameters[2]
 
-	w += amplitude * max(0,min((x-delay)/duration,1)) * unitPulse(x-delay,duration)
+	// Somewhat controversial, but in the common case that pulse starts are sample-aligned, and pulse durations are
+      	// an integer multiple of dt, this ensures that each pulse is exactly pulseDuration samples long
+	Variable dt=deltax(w)      	
+	Variable delayTweaked=delay-dt/2
+
+	w += amplitude * max(0,min((x-delayTweaked)/duration,1)) * unitPulse(x-delayTweaked,duration)
 End
 
 Function /S RampGetSignalType()

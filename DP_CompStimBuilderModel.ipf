@@ -183,7 +183,7 @@ Function /WAVE CSBModelGetStimTypes()
 	SVAR signalType
 
 	if ( AreStringsEqual(signalType,"DAC") )
-		Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "FroNoise", "PSC" }
+		Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "FroNoise", "PSC", "Sampled" }
 	else
 		Make /T /FREE result={"TTLPulse", "TTLTrain", "TTLMTrain"}
 	endif
@@ -202,7 +202,7 @@ Function /WAVE CSBModelGetDisplayStimTypes()
 	SVAR signalType
 
 	if ( AreStringsEqual(signalType,"DAC") )
-		Make /T /FREE result={"Pulse", "Train", "Multiple Trains", "Ramp", "Sine", "Chirp", "Frozen Noise", "PSC" }
+		Make /T /FREE result={"Pulse", "Train", "Multiple Trains", "Ramp", "Sine", "Chirp", "Frozen Noise", "PSC", "Sampled" }
 	else
 		Make /T /FREE result={"Pulse", "Train", "Multiple Trains"}
 	endif	

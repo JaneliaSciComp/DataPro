@@ -32,9 +32,11 @@ Function /WAVE TTLPulseGetDfltParamsAsStr()
 	return parametersDefault
 End
 
-Function TTLPulseAreParamsValid(parameters)
-	Wave parameters
+Function TTLPulseAreParamsValid(paramsAsStrings)
+	Wave /T paramsAsStrings
 
+	Wave parameters=DoubleWaveFromTextWave(paramsAsStrings)
+	
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
 
@@ -57,9 +59,11 @@ End
 //	TTLPulseOverlayFromParams(w,params)
 //End
 
-Function TTLPulseOverlayFromParams(w,params)
+Function TTLPulseOverlayFromParams(w,paramsAsStrings)
 	Wave w
-	Wave params
+	Wave /T paramsAsStrings
+	
+	Wave params=DoubleWaveFromTextWave(paramsAsStrings)
 
 	Variable delay=params[0]
 	Variable duration=params[1]

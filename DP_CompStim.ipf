@@ -76,23 +76,28 @@ Function SetSamplesToCompStimBang(w,compStim)
 	for (i=0; i<nStimuli; i+=1)
 		String simpStim=CompStimGetSimpStim(compStim,i)
 		String stimType=SimpStimGetStimType(simpStim)
-		Wave params=SimpStimGetParams(simpStim)
-		Variable delayThis=params[0]
-		Variable durationThis=params[1]
-		params[0] += tEndOfLast		// Modify the delay so that the "delay" spec'ed by user is the delay from the end of the last segment
-		String overlayFunctionName=stimType+"OverlayFromParams"
+		Wave /T paramsAsStrings=SimpStimGetParamsAsStrings(simpStim)
+		Variable delayThis=str2num(paramsAsStrings[0])
 		
+		// Modify the delay so that the "delay" spec'ed by user is the delay from the end of the last segment
+		Duplicate /FREE /T paramsAsStrings, paramsAsStringsShifted
+		Variable compoundDelay=tEndOfLast+delayThis
+		paramsAsStringsShifted[0]=sprintf1v("%0.17g",compoundDelay)		// Preserve as much precision as possible
+		
+		// Call the overlay function
+		String overlayFunctionName=stimType+"OverlayFromParams"		
 		Funcref StimulusOverlayFromParamsSig overlayFunction=$overlayFunctionName
-		overlayFunction(w,params)
+		overlayFunction(w,paramsAsStringsShifted)
 		
 		// Get ready for next segment
+		Variable durationThis=str2num(paramsAsStrings[1])
 		tEndOfLast += (delayThis+durationThis)
 	endfor
 End
 
-Function StimulusOverlayFromParamsSig(w,params)
+Function StimulusOverlayFromParamsSig(w,paramsAsStrings)
 	Wave w
-	Wave params
+	Wave /T paramsAsStrings
 	// Placeholder function
 	Abort "Internal Error: Attempt to call a StimulusOverlayFromParamsSig function that doesn't exist."
 End

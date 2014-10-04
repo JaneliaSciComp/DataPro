@@ -44,9 +44,11 @@ Function /WAVE TrainGetDfltParamsAsStr()
 	return parametersDefault
 End
 
-Function TrainAreParamsValid(parameters)
-	Wave parameters
+Function TrainAreParamsValid(paramsAsStrings)
+	Wave /T paramsAsStrings
 
+	Wave parameters=DoubleWaveFromTextWave(paramsAsStrings)
+	
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]
 	Variable amplitude=parameters[2]
@@ -75,9 +77,11 @@ End
 //	TrainOverlayFromParams(w,parameters)
 //End
 
-Function TrainOverlayFromParams(w,parameters)
+Function TrainOverlayFromParams(w,paramsAsStrings)
 	Wave w
-	Wave parameters
+	Wave /T paramsAsStrings
+
+	Wave parameters=DoubleWaveFromTextWave(paramsAsStrings)
 
 	Variable delay=parameters[0]
 	Variable duration=parameters[1]

@@ -35,13 +35,13 @@ Function /S SimpStimReplaceParam(simpStim,paramName,newValueAsString)
 	String paramName
 	String newValueAsString
 
-	// Make sure new value represents a number
-	String result
-	Variable newValue=str2num(newValueAsString)
-	if ( IsNan(newValue) )
-		result=simpStim
-		return result
-	endif
+//	// Make sure new value represents a number
+//	String result
+//	Variable newValue=str2num(newValueAsString)
+//	if ( IsNan(newValue) )
+//		result=simpStim
+//		return result
+//	endif
 	
 	// Replace the parameter with the new value
 	String stimType=SimpStimGetStimType(simpStim)
@@ -51,7 +51,7 @@ Function /S SimpStimReplaceParam(simpStim,paramName,newValueAsString)
 	
 	// Return the new simpStim only if it's valid, otherwise use original
 	Variable isValid=SimpStimAreParamsValid(newSimpStim)
-	result=stringFif(isValid,newSimpStim,simpStim)
+	String result=stringFif(isValid,newSimpStim,simpStim)
 	
 	return result
 End
@@ -187,27 +187,27 @@ Function /S SimpStimGetSignalTypeSig()
 End
 
 Function /WAVE SimpStimGetStimTypes()
-	Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "FroNoise", "PSC", "BuiltinPulse" }
+	Make /T /FREE result={"Pulse", "Train", "MulTrain", "Ramp", "Sine", "Chirp", "FroNoise", "PSC", "Sampled", "BuiltinPulse" }
 	return result
 End
 
 Function /WAVE SimpStimGetDisplayStimTypes()
-	Make /T /FREE result={"Pulse", "Train", "Multiple Trains", "Ramp", "Sine", "Chirp", "Frozen Noise", "PSC", "Built-in Pulse" }
+	Make /T /FREE result={"Pulse", "Train", "Multiple Trains", "Ramp", "Sine", "Chirp", "Frozen Noise", "PSC", "Sampled", "Built-in Pulse" }
 	return result
 End
 
-Function SimpStimAreParamsValidForType(stimType,params)
+Function SimpStimAreParamsValidForType(stimType,paramsAsStrings)
 	String stimType
-	Wave params
+	Wave /T paramsAsStrings
 
 	String areParamsValidFunctionName=stimType+"AreParamsValid"
 	Funcref SimpStimAreParamsValidSig areParamsValidFunction=$areParamsValidFunctionName
-	Variable areValid=areParamsValidFunction(params)
+	Variable areValid=areParamsValidFunction(paramsAsStrings)
 	return areValid
 End
 
-Function SimpStimAreParamsValidSig(params)
-	Wave params
+Function SimpStimAreParamsValidSig(paramsAsStrings)
+	Wave /T paramsAsStrings
 	// Placeholder function
 	Abort "Internal Error: Attempt to call a <stimType>AreParamsValid() function that doesn't exist."
 End
@@ -217,8 +217,8 @@ Function SimpStimAreParamsValid(simpStim)
 	String simpStim
 	
 	String stimType=SimpStimGetStimType(simpStim)
-	Wave params=SimpStimGetParams(simpStim)
-	Variable areValid=SimpStimAreParamsValidForType(stimType,params)
+	Wave /T paramsAsStrings=SimpStimGetParamsAsStrings(simpStim)
+	Variable areValid=SimpStimAreParamsValidForType(stimType,paramsAsStrings)
 	
 	return areValid
 End
