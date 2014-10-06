@@ -15,7 +15,7 @@ Function /WAVE StairGetParamNames()
 	return parameterNames
 End
 
-Function /WAVE StairGetDefaultParams()
+Function /WAVE StairGetDfltParams()
 	Variable nParameters=9
 	Make /FREE /N=(nParameters) parametersDefault
 	parametersDefault[0]=0

@@ -156,6 +156,16 @@ Function /S sprintf2sv(templateString,str,i)
 	return outputString
 End
 
+Function /S sprintf2vs(templateString,i,str)
+	String templateString
+	Variable i
+	String str
+	
+	String outputString
+	sprintf outputString templateString i, str
+	return outputString
+End
+
 Function /S sprintf2vv(templateString,f1,f2)
 	String templateString
 	Variable f1, f2
@@ -443,7 +453,14 @@ End
 
 Function AreStringsEqual(str1,str2)
 	String str1,str2
-	return (cmpstr(str1,str2)==0)
+	Variable isCaseSignificant=1
+	return (cmpstr(str1,str2,isCaseSignificant)==0)
+End
+
+Function AreStringsEqualIgnoringCase(str1,str2)
+	String str1,str2
+	Variable isCaseSignificant=0
+	return (cmpstr(str1,str2,isCaseSignificant)==0)
 End
 
 Function RiseTime(thisWave,tLeft,tRight,yBase,dyPeak,fracFrom,fracTo)
@@ -1028,5 +1045,129 @@ Function fromEnable(isEnabled)
 	Variable isEnabled
 	
 	return (isEnabled?0:2)
+End
+
+
+
+Function /WAVE DoubleWaveFromTextWave(tw)
+	Wave /T tw
+	
+	Variable n=numpnts(tw)
+	Make /FREE /D /N=(n) result
+	result=str2num(tw[p])
+	return result
+end
+
+Function /WAVE NumericWaveFromTextWave(tw)
+	Wave /T tw
+	
+	Variable n=numpnts(tw)
+	Make /FREE /N=(n) result
+	result=str2num(tw[p])
+	return result
+end
+
+Function /WAVE TextWaveFromNumericWave(w)
+	Wave w
+	
+	Variable n=numpnts(w)
+	Make /T /FREE /N=(n) result
+	result=sprintf1v("%0.17g",w[p])		// Preserve as much precision as possible
+	return result
+end
+
+Function numberOfScans(dt,totalDuration)
+	// Get the number of time points ("scans") for the given sampling interval and duration settings.
+	Variable dt,totalDuration
+	return round(totalDuration/dt)+1
+End
+
+Function /S ListFromTextWave(textWave)
+	Wave /T textWave
+	
+	Variable n=numpnts(textWave)
+	String result=""
+	if (n>0)
+		result=textWave[0]
+	endif
+	Variable i
+	for (i=1; i<n; i+=1)
+		result=result+";"+textWave[i]
+	endfor
+	return result
+End
+
+Function /WAVE TextWaveFromList(list)
+	String list
+	
+	Variable n=ItemsInList(list)
+	Make /T /FREE /N=(n) result
+	Variable i
+	for (i=1; i<n; i+=1)
+		result[i]=StringFromList(i,list)
+	endfor
+	return result
+End
+
+Function SetSVPosition(windowName,svName,x,y,labelWidth,bodyWidth,height)
+	// SetVariable sizing is a pain b/c IgorPro doesn't let you set the label width and the field width independently.
+	// This essentially positions the SV at (x,y), with effective size (labelWidth+bodyWidth,height).  The label is right-justified within the field, like it or not.
+	// If the label is too big for the 
+	String WindowName
+	String svName
+	Variable x, y
+	Variable labelWidth, bodyWidth
+	Variable height
+	
+	Variable totalWidth=labelWidth+bodyWidth
+	SetVariable $svName, win=$windowName, pos={x,y}, size={totalWidth,height}
+	ControlInfo /W=$windowName $svName
+	Variable initialTotalWidth=V_Width
+	Variable shimWidth=totalWidth-initialTotalWidth
+	SetVariable $svName, win=$windowName, pos={x+shimWidth,y}
+End
+
+Function GetControlWidth(winderName,ctrlName)
+	String winderName
+	String ctrlName
+	
+	ControlInfo /W=$winderName $ctrlName
+	return V_Width
+End
+
+Function GetControlRightX(winderName,ctrlName)
+	String winderName
+	String ctrlName
+	
+	ControlInfo /W=$winderName $ctrlName
+	return V_left+V_Width
+End
+
+Function GetControlBottomY(winderName,ctrlName)
+	String winderName
+	String ctrlName
+	
+	ControlInfo /W=$winderName $ctrlName
+	return V_top+V_Height
+End
+
+Function /WAVE GetControlBounds(windowName,controlName)
+	String windowName
+	String controlName
+	
+	Make /FREE /N=(4) result
+	ControlInfo /W=$windowName $controlName
+	result[0]=V_left
+	result[1]=V_top
+	result[2]=V_left+V_Width
+	result[3]=V_top+V_Height
+	return result
+End
+
+Function /S StringFromDouble(x)
+	// An alternative to str2num that preserves as much precision as possible
+	Variable x
+	String result=sprintf1v("%0.17g",x)
+	return result
 End
 

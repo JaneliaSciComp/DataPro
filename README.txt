@@ -30,17 +30,17 @@ How to Install
 
        http://www.bruxton.com/SIDX/index.html  
 
-2. Unzip the DataPro-release_8.15_bsu.zip file, which creates a folder
-   called DataPro-release_8.15.
+2. Unzip the DataPro-release_8.21_bsu.zip file, which creates a folder called 
+   DataPro-release_8.21.
 
-3. Copy the folder DataPro-release_8.15_bsu to the "Igor Pro 6 User
-   Files" folder.  (You must copy the whole folder, not just the files
-   within the folder.)
+3. Copy the folder DataPro-release_8.21_bsu to the "Igor Pro 6 User Files"
+   folder.  (You must copy the whole folder, not just the files within
+   the folder.)
 
 4. In experiments where you want to use this version of DataPro, add
    the line
 
-     #include ":DataPro-release_8.15_bsu:DataPro"
+     #include ":DataPro-release_8.21_bsu:DataPro"
 
    to the experiment's procedure file.  You can access this from the
    Igor Pro menu by going to
@@ -55,6 +55,73 @@ If DataPro is installed correctly, you should have a menu item called
 
 To get started using DataPro, select "All Controls" from the "DataPro"
 menu.
+
+
+
+
+
+Intended Workflow
+-----------------
+
+Once DataPro is installed, we recommend that you create an Igor Pro
+packed experiment template for each type of recording session you plan
+to do.  Start Igor Pro, and add the line:
+
+  #include ":DataPro-release_8.21_bsu:DataPro"
+
+to the procedure file.  You can access this from the Igor Pro menu by
+going to Windows > Procedure Windows > Procedure Window.  Set up all
+the windows the way you like them, and set up any stimuli you'll need
+for that type of recording session.  Then go to File > Save Experiment
+As..., then set the "Save as type:" field to "Packed Experiment
+Template (*.pxt)").
+
+Then, at the start of each recording session, open the template, and
+immediately save the experiment as an _unpacked_ experiment (File >
+Save Experiment As..., then set the "Save as type:" field to "Unpacked
+Experiment File (*.uxp)").  Then use DataPro to collect the data, and
+finally use DataPro to collect the data, and save the Igor Pro
+experiment when done (File > Save).  (If you feel you understand the
+tradeoffs involved between packed and unpacked experiments in Igor
+Pro, you can save your experiments as packed experiments, but we
+recommed saving them as unpacked experiments.)
+
+If you want to go back and browse your data, simply open the .uxp file
+in Igor Pro, and use the "Sweep:" control in a Signal Browser window
+to browse the traces.
+
+If you know what you're doing, you don't have to use DataPro as
+outlined here, but generally speaking your life will be easier if you
+do.
+
+
+
+
+
+Multiple Versions
+-----------------
+
+DataPro is designed so that if at some point you upgrade to a new
+version, and you've been using it as outlined above, your experiments
+using the older version will still open in Igor Pro without issue. But
+note that you need to keep the older version of Igor Pro in your "Igor
+Pro 6 User Files" folder.  Each saved experiment file that uses
+DataPro contains a pointer (of sorts) to the version of DataPro that
+was used to create it.  Your older experiments will still use the
+older version of DataPro.
+
+After installing a new version of DataPro, you _will_ have to manually
+recreate your templates (described above), modifying the Procedure
+Window in each to point to the newer version.  We realize this is kind
+of a pain.
+
+At present, there is no easy way to use a newer version of DataPro to
+browse an experiment created with an older version.  This can
+sometimes be made to more-or-less work with some hacking, but best not
+to try this unless you know what you're doing.  And we probably can't
+help you if you try this and it leads to tears.  And whatever you do,
+don't modify one of your old experiment files without making a copy of
+the original first.
 
 
 
@@ -267,3 +334,17 @@ branch.
 
 
 
+
+8.15 -> 8.2    (October 1, 2014)
+
+Added compound stimulus builder.
+
+
+
+
+8.2 -> 8.21    (October 4, 2014)
+
+Fixed bugs.  Added ability to use a saved wave as a simple stimulus,
+with proper interpolation as needed.  The random number generator seed
+is now an explicit argument to the white noise stimulus, which has
+been renamed "frozen noise".
