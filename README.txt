@@ -345,4 +345,6 @@ Added compound stimulus builder.
 8.2 -> 8.21    (October 4, 2014)
 
 Fixed bugs.  Added ability to use a saved wave as a simple stimulus,
-with proper interpolation as needed.
+with proper interpolation as needed.  The random number generator seed
+is now an explicit argument to the white noise stimulus, which has
+been renamed "frozen noise".
