@@ -958,11 +958,15 @@ Function /WAVE offsetAndIntervalFromExposure(exposure,nFrames)
 	
 	// rising edge intervals
 	Make /FREE /N=(nFrames-1) risingEdgeIntervals
-	risingEdgeIntervals=risingEdgeTimes[p+1]-risingEdgeTimes[p]
+	if (nFrames>1)
+		risingEdgeIntervals=risingEdgeTimes[p+1]-risingEdgeTimes[p]
+	endif
 	
 	// falling edge intervals
 	Make /FREE /N=(nFrames-1) fallingEdgeIntervals
-	fallingEdgeIntervals=fallingEdgeTimes[p+1]-fallingEdgeTimes[p]
+	if (nFrames>1)
+		fallingEdgeIntervals=fallingEdgeTimes[p+1]-fallingEdgeTimes[p]
+	endif
 	
 	//
 	// Back to non-debugging stuff
@@ -975,7 +979,9 @@ Function /WAVE offsetAndIntervalFromExposure(exposure,nFrames)
 	// Compute the n-1 frame intervals
 	Variable n=numpnts(exposure)
 	Make /FREE /N=(nFrames-1) frameIntervals
-	frameIntervals=frameCenterTimes[p+1]-frameCenterTimes[p]
+	if (nFrames>1)
+		frameIntervals=frameCenterTimes[p+1]-frameCenterTimes[p]
+	endif
 
 	// Compute min, max, and mean of the frame intervals
 	// We'll return the mean as our overall frame interval
