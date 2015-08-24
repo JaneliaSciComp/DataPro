@@ -30,17 +30,17 @@ How to Install
 
        http://www.bruxton.com/SIDX/index.html  
 
-2. Unzip the DataPro-release_8.21_bsu.zip file, which creates a folder called 
-   DataPro-release_8.21.
+2. Unzip the DataPro-release_8.23_bsu.zip file, which creates a folder called 
+   DataPro-release_8.23.
 
-3. Copy the folder DataPro-release_8.21_bsu to the "Igor Pro 6 User Files"
+3. Copy the folder DataPro-release_8.23_bsu to the "Igor Pro 6 User Files"
    folder.  (You must copy the whole folder, not just the files within
    the folder.)
 
 4. In experiments where you want to use this version of DataPro, add
    the line
 
-     #include ":DataPro-release_8.21_bsu:DataPro"
+     #include ":DataPro-release_8.23_bsu:DataPro"
 
    to the experiment's procedure file.  You can access this from the
    Igor Pro menu by going to
@@ -67,7 +67,7 @@ Once DataPro is installed, we recommend that you create an Igor Pro
 packed experiment template for each type of recording session you plan
 to do.  Start Igor Pro, and add the line:
 
-  #include ":DataPro-release_8.21_bsu:DataPro"
+  #include ":DataPro-release_8.23_bsu:DataPro"
 
 to the procedure file.  You can access this from the Igor Pro menu by
 going to Windows > Procedure Windows > Procedure Window.  Set up all
@@ -348,3 +348,6 @@ Fixed bugs.  Added ability to use a saved wave as a simple stimulus,
 with proper interpolation as needed.  The random number generator seed
 is now an explicit argument to the white noise stimulus, which has
 been renamed "frozen noise".
+
+
+

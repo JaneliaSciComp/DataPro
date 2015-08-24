@@ -109,7 +109,7 @@ Function ImagerViewConstructor() : Panel
 	height=14
 	yOffset=groupBoxYOffset+groupBoxTitleHeight+(groupBoxHeight-height)/2
 	SetVariable ccdTemperatureSetpointSV,win=ImagerView,pos={30,yOffset},size={96,height},proc=ICTempSetpointSVTwiddled,title="Setpoint:"
-	SetVariable ccdTemperatureSetpointSV, win=ImagerView, limits={-50,20,5}, format="%0.1f"
+	SetVariable ccdTemperatureSetpointSV, win=ImagerView, limits={-100,20,5}, format="%0.1f"
 
 	ValDisplay ccdTemperatureVD,win=ImagerView,pos={154,yOffset+1},size={76,height},title="Current:"
 	ValDisplay ccdTemperatureVD,win=ImagerView,format="%0.1f",limits={0,0,0},barmisc={0,1000}

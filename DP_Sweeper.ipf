@@ -950,7 +950,7 @@ Function SweeperSetTTLWaveParams(waveNameString,params)
 	Wave stim=$waveNameString
 	Wave /T paramsAsStrings=textWaveFromNumericWave(params)
 	//StimulusSetParams(stim,params)
-	CompStimWaveSetSegParamsAsStrs(stim,1,paramsAsStrings)
+	CompStimWaveSetSegParamsAsStrs(stim,0,paramsAsStrings)
 
 	// Notify the output viewer model
 	OutputViewerModelSweprWavsChngd()
