@@ -118,14 +118,16 @@ Function PreTrialHook()
 End
 
 // Use the PreSweepHook function to call code that should occur before the acquisition of each sweep
-Function PreSweepHook(iThisSweep)
+Function PreSweepHook(iThisSweep,iSweepWithinTrial)
 	Variable iThisSweep	// index of the just-acquired sweep
+	Variable iSweepWithinTrial
 	//Print "Inside PreSweepHook() function!"
 End
 
 // Use the PostSweepHook function to call analysis that should occur after the acquisition of each sweep
-Function PostSweepHook(iThisSweep)
+Function PostSweepHook(iThisSweep,iSweepWithinTrial)
 	Variable iThisSweep	// index of the just-acquired sweep
+	Variable iSweepWithinTrial
 	//Print "Inside PostSweepHook() function!"
 	//BarrageDetectorSilenceStimIf(iThisSweep)
 End
