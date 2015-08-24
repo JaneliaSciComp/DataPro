@@ -30,17 +30,17 @@ How to Install
 
        http://www.bruxton.com/SIDX/index.html  
 
-2. Unzip the DataPro-release_8.22.zip file, which creates a folder called 
-   DataPro-release_8.22.
+2. Unzip the DataPro-release_8.23.zip file, which creates a folder called 
+   DataPro-release_8.23.
 
-3. Copy the folder DataPro-release_8.22 to the "Igor Pro 6 User Files"
+3. Copy the folder DataPro-release_8.23 to the "Igor Pro 6 User Files"
    folder.  (You must copy the whole folder, not just the files within
    the folder.)
 
 4. In experiments where you want to use this version of DataPro, add
    the line
 
-     #include ":DataPro-release_8.22:DataPro"
+     #include ":DataPro-release_8.23:DataPro"
 
    to the experiment's procedure file.  You can access this from the
    Igor Pro menu by going to
@@ -67,7 +67,7 @@ Once DataPro is installed, we recommend that you create an Igor Pro
 packed experiment template for each type of recording session you plan
 to do.  Start Igor Pro, and add the line:
 
-  #include ":DataPro-release_8.22:DataPro"
+  #include ":DataPro-release_8.23:DataPro"
 
 to the procedure file.  You can access this from the Igor Pro menu by
 going to Windows > Procedure Windows > Procedure Window.  Set up all
@@ -359,3 +359,8 @@ off-by-one error that was introduced when I added compund stimulus
 support, and was exercised only when using the imaging module.
 
 
+
+
+8.23    (August 24, 2015)
+
+Fixed off-by one error that only exhibits when using camera.
