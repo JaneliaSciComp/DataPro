@@ -30,8 +30,8 @@ How to Install
 
        http://www.bruxton.com/SIDX/index.html  
 
-2. Unzip the DataPro-release_8.23_bsu.zip file, which creates a folder called 
-   DataPro-release_8.23.
+2. Unzip the DataPro-release_8.23_bsu.zip file, which creates a folder
+   called DataPro-release_8.23_bsu.
 
 3. Copy the folder DataPro-release_8.23_bsu to the "Igor Pro 6 User Files"
    folder.  (You must copy the whole folder, not just the files within
@@ -130,7 +130,7 @@ the original first.
 Copyright Notice
 ----------------
 
-All files included in DataPro are Copyright (c) 1998-2014, Nelson
+All files included in DataPro are Copyright (c) 1998-2015, Nelson
 Spruston and Adam L. Taylor.
 All rights reserved.
 
@@ -180,7 +180,7 @@ Initial release of DataPro at Janelia Farm.
 
 
 
-7.00 -> 7.01    (August 24, 2012)
+7.01    (August 24, 2012)
 
 Aquiring a sweep now updates all DataPro browser windows.
 
@@ -192,7 +192,7 @@ Updated installation instructions.
 
 
 
-7.01 -> 7.02     (August 31, 2012)
+7.02     (August 31, 2012)
 
 Mainly code refactoring.  Some minor user-facing changes.
 
@@ -200,7 +200,7 @@ Mainly code refactoring.  Some minor user-facing changes.
 
 
 
-7.02 -> 7.03     (March 7, 2013)
+7.03     (March 7, 2013)
 
 Improved in many, many ways.  This release marks the completion of 
 "Phase I" of the DataPro project at Janelia.
@@ -209,7 +209,7 @@ Improved in many, many ways.  This release marks the completion of
 
 
 
-7.03 -> 7.04     (March 11, 2013)
+7.04     (March 11, 2013)
 
 Added a Switcher to work with Axon Instruments computer-controlled amplifier.
 DataPro now gets initialized after a compile instead of on Igor Pro start up, 
@@ -222,7 +222,7 @@ Get Data until you turn on at least one input and one output channel.
 
 
 
-7.04 -> 7.05    (May 14, 2013)
+7.05    (May 14, 2013)
 
 Made it easier for a single user to use different versions of DataPro
 without going insane.
@@ -230,7 +230,7 @@ without going insane.
 
 
 
-7.05 -> 7.06    (June 3, 2013)
+7.06    (June 3, 2013)
 
 Added Chirp Builder, Multiple Train Builder, Multiple TTL Train
 Builder.  Split Train Builder in Train Builder and TTL Train Builder.
@@ -243,7 +243,7 @@ greater robustness.
 
 
 
-7.06 -> 7.07    (June 4, 2013)
+7.07    (June 4, 2013)
 
 Small change to builders that have discontinuities in their outputs,
 to make them more predictable in the common case.
@@ -251,7 +251,7 @@ to make them more predictable in the common case.
 
 
 
-7.07 -> 7.08    (September 11, 2013)
+7.08    (September 11, 2013)
 
 Added history to the Sweeper.  Similar to the stimHistory in 
 DataPro 6, but contains more information.
@@ -259,35 +259,35 @@ DataPro 6, but contains more information.
 
 
 
-7.08 -> 7.09    (September 13, 2013)
+7.09    (September 13, 2013)
 
 Added more precise date/time information to acquired ADC waves.
 
 
 
 
-7.09 -> 7.10    (October 11, 2013)
+7.10    (October 11, 2013)
 
 Made ramp builder slightly more flexible.
 
 
 
 
-7.10 -> 7.11    (November 5, 2013)
+7.11    (November 5, 2013)
 
 Added white noise builder.
 
 
 
 
-7.11 -> 8.00    (February 11, 2014)
+8.00    (February 11, 2014)
 
 Added imaging module, for imaging with Andor iXon Ultra camera.
 
 
 
 
-8.00 -> 8.10    (February 24, 2014)
+8.10    (February 24, 2014)
 
 Enhanced imaging module to read frames from camera as they come in,
 not all at end.  This allows users to acquire videos longer than 500
@@ -296,7 +296,7 @@ frames.
 
 
 
-8.10 -> 8.11    (February 27, 2014)
+8.11    (February 27, 2014)
 
 Added ability to export videos as TIFF files.  "Get Data" button is
 now disabled if doing triggered video acquisition and the sweep
@@ -305,7 +305,7 @@ duration is not long enough to accommodate the video.
 
 
 
-8.11 -> 8.12    (March 11, 2014)
+8.12    (March 11, 2014)
 
 Fixed bug where DataPro wouldn't compile until SIDX XOP was present.
 Also fixed some bugs with faux camera operation.
@@ -313,21 +313,21 @@ Also fixed some bugs with faux camera operation.
 
 
 
-8.12 -> 8.13    (May 12, 2014)
+8.13    (May 12, 2014)
 
 White noise stimulus builder now supports bandpass filtering.
 
 
 
 
-8.13 -> 8.14    (June 27, 2014)
+8.14    (June 27, 2014)
 
 Added a Train-with-Prepulse builder.
 
 
 
 
-8.14 -> 8.15    (June 27, 2014)
+8.15    (June 27, 2014)
 
 Manually merged in barrage silencing code, but commented out in master
 branch.
@@ -335,14 +335,14 @@ branch.
 
 
 
-8.15 -> 8.2    (October 1, 2014)
+8.2    (October 1, 2014)
 
 Added compound stimulus builder.
 
 
 
 
-8.2 -> 8.21    (October 4, 2014)
+8.21    (October 4, 2014)
 
 Fixed bugs.  Added ability to use a saved wave as a simple stimulus,
 with proper interpolation as needed.  The random number generator seed
@@ -351,3 +351,16 @@ been renamed "frozen noise".
 
 
 
+
+8.22    (June 30, 2015)
+
+Lowered lower limit on CCD temperature setpoint to -100 degC.  Fixed
+off-by-one error that was introduced when I added compund stimulus
+support, and was exercised only when using the imaging module.
+
+
+
+
+8.23    (August 24, 2015)
+
+Fixed off-by one error that only exhibits when using camera.
