@@ -245,7 +245,7 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 	Variable thisSweepIndex=SweeperGetNextSweepIndex()
 	Variable runHookFunctionsChecked=SweeperGetDoRunHookFunctions()
 	if (runHookFunctionsChecked)
-		PreSweepHook(thisSweepIndex)
+		PreSweepHook(thisSweepIndex,iSweepWithinTrial)
 	endif
 	
 	// This is where Wave FIFOout=SweeperGetFIFOout() used to be
@@ -395,7 +395,7 @@ Function SweeperControllerAcquireSweep(comment,iSweepWithinTrial)
 
 	// If called for, run the post-sweep hook function
 	if (runHookFunctionsChecked)
-		PostSweepHook(thisSweepIndex)
+		PostSweepHook(thisSweepIndex,iSweepWithinTrial)
 	endif
 
 	//// Restore the original data folder

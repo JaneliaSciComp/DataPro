@@ -114,18 +114,21 @@ End
 // Use the PreTrialHook function to call code that should occur before the acquisition of each trial
 Function PreTrialHook()
 	//Print "Inside PreTrialHook() function!"
-	BarrageDetectorSaveDACMult()
+	BarrageDetectorSaveBuiltinA()
 End
 
 // Use the PreSweepHook function to call code that should occur before the acquisition of each sweep
-Function PreSweepHook(iThisSweep)
+Function PreSweepHook(iThisSweep,iSweepWithinTrial)
 	Variable iThisSweep	// index of the just-acquired sweep
+	Variable iSweepWithinTrial
 	//Print "Inside PreSweepHook() function!"
+	BarrageDetectorSetWaveform(iThisSweep,iSweepWithinTrial)
 End
 
 // Use the PostSweepHook function to call analysis that should occur after the acquisition of each sweep
-Function PostSweepHook(iThisSweep)
+Function PostSweepHook(iThisSweep,iSweepWithinTrial)
 	Variable iThisSweep	// index of the just-acquired sweep
+	Variable iSweepWithinTrial
 	//Print "Inside PostSweepHook() function!"
 	BarrageDetectorSilenceStimIf(iThisSweep)
 End
@@ -133,6 +136,6 @@ End
 // Use the PostTrialHook function to call analysis that should occur after the acquisition of each trial
 Function PostTrialHook()
 	//Print "Inside PostTrialHook() function!"
-	BarrageDetectorRestoreDACMult()
+	BarrageDetectorRestoreBuiltinA()
 End
 

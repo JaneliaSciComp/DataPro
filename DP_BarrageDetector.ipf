@@ -28,16 +28,19 @@ Function BarrageDetectorConstructor()
 	Variable /G vSpikeThreshold=-20		// mV
 	Variable /G maxSpikeFreq=200		// Hz
 	Variable /G nSpikesMinBarrage=4
+	Variable /G initialCurrentStepSize=20	// pA
+	Variable /G currentStepSizeDelta=20	// pA	
 	// internal state
 	//Variable /G iCurrentStimDAC=0
-	Variable /G dacMultiplierSaved=SweeperGetDACMultiplier(iCurrentStimDAC)
+	//Variable /G dacMultiplierSaved=SweeperGetDACMultiplier(iCurrentStimDAC)
+	Variable /G builtinPulseAmplitudeSaved = SweeperGetBuiltinPulseAmplitude()
 	
 	// Restore the original data folder
 	SetDataFolder savedDF	
 End
 
 
-Function BarrageDetectorSaveDACMult()
+Function BarrageDetectorSaveBuiltinA()
 	// Save the current DF
 	String savedDF=GetDataFolder(1)
 	
@@ -45,19 +48,46 @@ Function BarrageDetectorSaveDACMult()
 	SetDataFolder root:DP_BarrageDetector
 
 	// Instance vars
-	NVAR iCurrentStimDAC
-	NVAR dacMultiplierSaved
+	//NVAR iCurrentStimDAC
+	NVAR builtinPulseAmplitudeSaved
 	
 	// Save the DAC multiplier
 	//Printf "iCurrentStimDAC: %d\r", iCurrentStimDAC
-	dacMultiplierSaved=SweeperGetDACMultiplier(iCurrentStimDAC)
+	//dacMultiplierSaved=SweeperGetDACMultiplier(iCurrentStimDAC)
+	builtinPulseAmplitudeSaved = SweeperGetBuiltinPulseAmplitude()
 	
 	// Restore the original data folder
 	SetDataFolder savedDF	
 End
 
 
-Function BarrageDetectorRestoreDACMult()
+Function BarrageDetectorSetWaveform(iThisSweep,iSweepWithinTrial)
+	Variable iThisSweep
+	Variable iSweepWithinTrial
+
+	// Save the current DF
+	String savedDF=GetDataFolder(1)
+
+	// Switch to DF
+	SetDataFolder root:DP_BarrageDetector
+
+	// Instance vars
+	NVAR initialCurrentStepSize	// pA
+	NVAR currentStepSizeDelta	// pA	
+	
+	// Set the amplitude of the built-in stimulus
+	Variable stepAmplitude = initialCurrentStepSize + iSweepWithinTrial * currentStepSizeDelta
+	Printf "iSweepWithinTrial: %d\r", iSweepWithinTrial
+	Printf "stepAmplitude: %d\r", stepAmplitude	
+
+	SweeperSetBuiltinPulseAmplitude(stepAmplitude)
+	
+	// Restore the original data folder
+	SetDataFolder savedDF	
+End
+
+
+Function BarrageDetectorRestoreBuiltinA()
 	// Save the current DF
 	String savedDF=GetDataFolder(1)
 	
@@ -65,14 +95,10 @@ Function BarrageDetectorRestoreDACMult()
 	SetDataFolder root:DP_BarrageDetector
 
 	// Instance vars
-	NVAR iCurrentStimDAC
-	NVAR dacMultiplierSaved
+	NVAR builtinPulseAmplitudeSaved
 	
-	// Restore the DAC multiplier
-	if ( SweeperGetDACOn(iCurrentStimDAC) )
-		SweeperSetDACMultiplier(iCurrentStimDAC,dacMultiplierSaved)
-		SweeperViewSweeperChanged()	// tell the view to update
-	endif
+	// Restore the builtin amplitude
+	SweeperSetBuiltinPulseAmplitude(builtinPulseAmplitudeSaved)
 	
 	// Restore the original data folder
 	SetDataFolder savedDF	
@@ -106,12 +132,7 @@ Function BarrageDetectorSilenceStimIf(iThisSweep)
 		Variable nSpikesAfterStim=NSpikesAfterSetTimeForOneSweep(v,tfStim,vSpikeThreshold,maxSpikeFreq)
 		Printf "Number of spikes after stim: %d\r", nSpikesAfterStim
 		if (nSpikesAfterStim>=nSpikesMinBarrage)
-			if ( SweeperGetDACOn(iCurrentStimDAC) )
-				SweeperSetDACMultiplier(iCurrentStimDAC,0)	// zero the stim
-				SweeperViewSweeperChanged()	// tell the view to update
-			else
-				Printf "Barrage Detector current DAC channel is not on.\r"		
-			endif
+			SweeperSetBuiltinPulseAmplitude(0)
 		endif
 	else
 		Printf "Barrage Detector voltage wave doesn't exist.\r"

@@ -19,7 +19,7 @@ Function BarrageDetectorViewConstructor() : Panel
 	Variable xOffset=100
 	Variable yOffset=100
 	Variable width=306
-	Variable height=250
+	Variable height=325
 	
 	Variable svXOffset=20
 	Variable svWidth=200
@@ -50,6 +50,12 @@ Function BarrageDetectorViewConstructor() : Panel
 	
 	SetVariable nSpikesMinBarrageSV,win=BarrageDetectorView,pos={svXOffset,160},size={svWidth,16},bodyWidth=50,title="Minimum Spikes for Barrage:"
 	SetVariable nSpikesMinBarrageSV,win=BarrageDetectorView,limits={1,inf,1}, value= nSpikesMinBarrage
+
+	SetVariable initialCurrentStepSizeSV,win=BarrageDetectorView,pos={svXOffset,190},size={svWidth,16},bodyWidth=50,title="Initial Step Size (pA):"
+	SetVariable initialCurrentStepSizeSV,win=BarrageDetectorView,limits={-inf,inf,1}, value= initialCurrentStepSize
+
+	SetVariable currentStepSizeDeltaSV,win=BarrageDetectorView,pos={svXOffset,220},size={svWidth,16},bodyWidth=50,title="Step Size Delta (pA):"
+	SetVariable currentStepSizeDeltaSV,win=BarrageDetectorView,limits={-inf,inf,1}, value= currentStepSizeDelta
 		
 	// Sync to model
 	//SweeperViewSweeperChanged()

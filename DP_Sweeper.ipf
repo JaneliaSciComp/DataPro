@@ -1472,6 +1472,44 @@ Function SweeperUpdateImportedTTLWaves()
 	endfor
 End
 
+Function SweeperSetBuiltinPulseAmplitude(newValue)
+	// Updates the simple pulse wave to be consistent with the rest of the model state.
+	Variable newValue
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+
+	NVAR builtinPulseAmplitude
+	
+	// Set the value if legal
+	if (newValue>=0)
+		builtinPulseAmplitude = newValue
+	endif
+	
+	// Keep the wave in sync
+	SweeperUpdateBuiltinPulse()
+	
+	// Restore the data folder	
+	SetDataFolder savedDF
+End
+
+Function SweeperGetBuiltinPulseAmplitude()
+	// Updates the simple pulse wave to be consistent with the rest of the model state.
+	String savedDF=GetDataFolder(1)
+	SetDataFolder root:DP_Sweeper
+
+	NVAR builtinPulseAmplitude
+	
+	// Set the value if legal
+	Variable result = builtinPulseAmplitude
+	
+	// Restore the data folder	
+	SetDataFolder savedDF
+	
+	// Return the result
+	return result
+End
+
+
 Function SweeperUpdateBuiltinPulse()
 	// Updates the simple pulse wave to be consistent with the rest of the model state.
 	String savedDF=GetDataFolder(1)
