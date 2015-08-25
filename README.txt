@@ -30,17 +30,17 @@ How to Install
 
        http://www.bruxton.com/SIDX/index.html  
 
-2. Unzip the DataPro-release_8.24_bsu.zip file, which creates a folder
-   called DataPro-release_8.24_bsu.
+2. Unzip the DataPro-release_8.241_bsu.zip file, which creates a folder
+   called DataPro-release_8.241_bsu.
 
-3. Copy the folder DataPro-release_8.24_bsu to the "Igor Pro 6 User Files"
+3. Copy the folder DataPro-release_8.241_bsu to the "Igor Pro 6 User Files"
    folder.  (You must copy the whole folder, not just the files within
    the folder.)
 
 4. In experiments where you want to use this version of DataPro, add
    the line
 
-     #include ":DataPro-release_8.24_bsu:DataPro"
+     #include ":DataPro-release_8.241_bsu:DataPro"
 
    to the experiment's procedure file.  You can access this from the
    Igor Pro menu by going to
@@ -67,7 +67,7 @@ Once DataPro is installed, we recommend that you create an Igor Pro
 packed experiment template for each type of recording session you plan
 to do.  Start Igor Pro, and add the line:
 
-  #include ":DataPro-release_8.24_bsu:DataPro"
+  #include ":DataPro-release_8.241_bsu:DataPro"
 
 to the procedure file.  You can access this from the Igor Pro menu by
 going to Windows > Procedure Windows > Procedure Window.  Set up all
@@ -371,3 +371,12 @@ Fixed off-by one error that only exhibits when using camera.
 8.24    (August 24, 2015)
 
 Added extra args to some user hook functions.
+
+
+
+
+8.241_bsu   (August 25, 2015)
+
+Fixed barrage firing code so that it actually shuts off properly when
+a barrage is detected.  (This is the newer version that can increase
+the pulse amplitude from sweep to sweep.)
